@@ -1,0 +1,4 @@
+PBSawatea Changes
+=================
+0.01  2011-06-24  Rowan
+  - Added functions 'importRes', 'runADMB', 'readAD', and 'reweight'; set Methods for 'view', 'fix', and 'write'. (RH 6/24)
