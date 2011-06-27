@@ -29,7 +29,7 @@ readAD(txt)
   \code{vars.......}{list: numeric values of data labelled by variable number,} \cr
   \code{gcomm......}{character: vector of comments labelled by line number,} \cr
   \code{vcomm......}{character: vector of variable names labelled by line number,} \cr
-  \code{output.....}{list: Awatea results file imported by function \code{importRes},} \cr
+  \code{output.....}{list: Awatea results file imported by function \code{\link{importRes}},} \cr
   \code{reweight...}{list: empty (later populated by function \code{\link{reweight}}).}
 }
 \references{

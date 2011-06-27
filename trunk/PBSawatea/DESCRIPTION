@@ -1,11 +1,11 @@
 Package: PBSawatea
-Version: 0.01
-Date: 2011-06-24
+Version: 0.02
+Date: 2011-06-27
 Title: Tools for Running Awatea
 Author: Andrew Edwards, Rowan Haigh, Paul Starr
 Maintainer: Andrew Edwards <Andrew.Edwards@dfo-mpo.gc.ca>
-Depends: R (>= 2.12.0), PBSmodelling, scapeMCMC
-Suggests: gdata
+Depends: R (>= 2.12.0), PBSmodelling, scape, scapeMCMC, lattice, gdata, xtable
+Suggests: PBSfishery
 Description: Provides tools for running population models 
    using Awatea, which is a variant of Coleraine modified 
    by Alan Hicks and Paul Starr for marine fish stocks.

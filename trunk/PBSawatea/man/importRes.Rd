@@ -63,10 +63,9 @@ importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
   \url{http://fish.washington.edu/research/coleraine/pdf/coleraine.pdf}.
 }
 \seealso{
-  \code{\link{read.table}}, \code{\link{readLines}}, and
-  \code{\link{scan}} import any data.
-
-  \code{\link{scape-package}} gives an overview of the package.
+  \code{\link{runADMB}}, \code{\link{readAD}}, \code{\link{reweight}}, \code{\link{runSweave}} \cr
+  \code{\link{read.table}}, \code{\link{readLines}}, and \code{\link{scan}} to import any data. \cr
+  \code{\link{scape-package}} gives an overview of the package \pkg{scape}.
 }
 % Programming
 \keyword{file}

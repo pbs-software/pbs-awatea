@@ -69,7 +69,7 @@ runADMB(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC.
 }
 \seealso{
-  \code{\link{importRes}}, \code{\link{runAD}}, \code{\link{reweight}}, \code{\link{runSweave}}
+  \code{\link{importRes}}, \code{\link{readAD}}, \code{\link{reweight}}, \code{\link{runSweave}}
 }
 \keyword{models}
 \keyword{iteration}
