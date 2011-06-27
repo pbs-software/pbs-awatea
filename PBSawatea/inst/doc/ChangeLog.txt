@@ -1,4 +1,7 @@
 PBSawatea Changes
 =================
+0.02  2011-06-27  Rowan
+  - Added functions 'runSeave' and 'runS1'; also added latest 'ymrrun-master.Snw'. (RH 6/27)
+
 0.01  2011-06-24  Rowan
   - Added functions 'importRes', 'runADMB', 'readAD', and 'reweight'; set Methods for 'view', 'fix', and 'write'. (RH 6/24)

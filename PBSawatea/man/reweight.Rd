@@ -46,7 +46,7 @@ reweight(obj, cvpro=FALSE, mean.age=TRUE, ...)
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC.
 }
 \seealso{
-  \code{\link{runADMB}}, \code{\link{readAd}}
+  \code{\link{runADMB}}, \code{\link{readAD}}
 }
 \keyword{models}
 \keyword{methods}
