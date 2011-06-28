@@ -1,16 +1,16 @@
-\name{importRes}
-\alias{importRes}
+\name{importCol2}
+\alias{importCol2}
 \title{
-  Import Coleraine Model Results (RH version)
+  Import Coleraine Model Results (AME version)
 }
 \description{
   Import Coleraine model results from \code{.res} file, and 
   rearrange into a standard format suitable for plotting. 
 }
 \usage{
-importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
-    CAc=FALSE, CAs=FALSE, CLc=FALSE, CLs=FALSE, LA=FALSE, quiet=TRUE,
-    extra=TRUE, sep=" ")
+importCol2(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE, 
+    CAc=FALSE, CAs=FALSE, CLc=FALSE, CLs=FALSE, LA=FALSE, 
+    quiet=TRUE, extra=TRUE)
 }
 \arguments{
   \item{res.file}{name of Coleraine model results file to import.}
@@ -25,15 +25,13 @@ importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
   \item{LA}{logical: whether model was fitted to length-at-age data.}
   \item{quiet}{logical: whether to report progress while parsing file.}
   \item{extra}{logical: if \code{TRUE}, import likelihoods, parameters, priors, and recruitment residuals.}
-  \item{sep}{the field separator character (usually \code{" "} or \code{"\t"}). }
 }
 \details{
   This function was modified from the original \code{importCol} function
-  in the \pkg{scape} package to grab extra data and to deal with anomalous 
-  characters in Coleraine results files.
+  in the \pkg{scape} package to grab extra data.
 }
 \value{
-  A list of class \code{list} containing at least \code{N}, \code{B},
+  A list of class \code{scape} containing at least \code{N}, \code{B},
   and \code{Sel}. The other elements may or may not be included in the
   list, depending on how \code{importRes} was called:
   \item{N}{predicted numbers at age}
@@ -64,8 +62,8 @@ importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
   \emph{e.g.} \code{ll(x.cod); ll(x.cod$N); head(x.cod$N)}.
 }
 \seealso{
-  \code{\link{runADMB}}, \code{\link{readAD}}, \code{\link{reweight}}, \code{\link{importCol2}} \cr
-  \code{\link{read.table}}, \code{\link{readLines}}, and \code{\link{scan}} to import any data. \cr
+  \code{\link{importRes}}, \code{\link{read.table}}, \code{\link{readLines}}, 
+  and \code{\link{scan}} to import any data. \cr
   \code{\link{scape-package}} gives an overview of the package \pkg{scape}.
 }
 \keyword{file}
