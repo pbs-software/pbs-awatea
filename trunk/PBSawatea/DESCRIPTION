@@ -1,7 +1,7 @@
 Package: PBSawatea
-Version: 0.02
-Date: 2011-06-27
-Title: Tools for Running Awatea
+Version: 0.03
+Date: 2011-06-28
+Title: Tools for Running Awatea and Visualizing the Results
 Author: Andrew Edwards, Rowan Haigh, Paul Starr
 Maintainer: Andrew Edwards <Andrew.Edwards@dfo-mpo.gc.ca>
 Depends: R (>= 2.12.0), PBSmodelling, scape, scapeMCMC, lattice, gdata, xtable

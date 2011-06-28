@@ -9,9 +9,8 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="YMR",
 		running.awatea =0,                # 0 if just loading previous '.rep'; 1 if rerunning Awatea
 		Nsurvey = 5
 		) {
-	
 	on.exit(setwd(wd))
-	remove(list=setdiff(ls(1,all=TRUE),c("runS1","runSweave")),pos=1)
+	remove(list=setdiff(ls(1,all=TRUE),c("runMPD","runSweave")),pos=1)
 	#require(PBSmodelling, quietly=TRUE)
 	#require(xtable, quietly=TRUE) 
 	#require(lattice, quietly=TRUE)
@@ -33,10 +32,10 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="YMR",
 	run.dir  = paste(wd,run.name,sep="/")
 	ext      = sapply(strsplit(filename,"\\."),tail,1)
 	prefix   = substring(filename,1,nchar(filename)-nchar(ext)-1)
-	prefix   = gsub(runNoStr,"",prefix) # get rid of superfluous run number in name
+	prefix   = gsub(runNoStr,"",prefix)        # get rid of superfluous run number in name
 	model.name = paste(prefix,runNoStr,rwtNoStr,sep=".")
 	mpdname  = paste("MPD",runNoStr,rwtNoStr,sep=".")
-	mpd.dir  = paste(run.dir,mpdname,sep="/")  # Directory where all the postscript crap happens
+	mpd.dir  = paste(run.dir,mpdname,sep="/")  # directory where all the postscript crap happens
 	if (file.exists(mpd.dir)) 
 		setwd(mpd.dir)
 	else {
@@ -77,21 +76,19 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="YMR",
 	invisible() }
 #----------------------------------------runSweave
 
-#runS1----------------------------------2011-05-31
-# Wrapper to function 'runSweave'.
+#runMPD----------------------------------2011-05-31
+# Wrapper to function 'runSweave' for MPDs.
 #-----------------------------------------------RH
-runS1 = function(runs=1, rewts=0:6, cpue=FALSE) {
+runMPD = function(runs=1, rewts=0:6, cpue=FALSE) {
 	for (i in runs) {
 		for (j in rewts) {
 			runSweave(filename=paste("input",pad0(i,2),"-ymr.txt",sep=""), runNo=i,rwtNo=j, cpue=cpue)
 }	}	}
 
-# runS1(24:28, 0:6,cpue=FALSE)    # No switch for EstM. 
-# runS1(c(24, 26:28), 1,cpue=FALSE)    # No switch for EstM. AME doesn't
-                                #  have run25 in the new format (but
-                                #  not using it anyway, MCMCs
-                                #  weren't good).
-# runS1(29, 0:6,cpue=FALSE)    # No switch for EstM. AME doesn't
-# runS1(36, 0:6, cpue=FALSE, Nsurvey=6)    # No switch for EstM. AME doesn't
+# runMPD(24:28, 0:6,cpue=FALSE)          # No switch for EstM. 
+# runMPD(c(24, 26:28), 1,cpue=FALSE)     # No switch for EstM. AME doesn't have run25 in the new format
+                                         # (but not using it anyway, MCMCs weren't good).
+# runMPD(29, 0:6,cpue=FALSE)             # No switch for EstM. AME doesn't
+# runMPD(36, 0:6, cpue=FALSE, Nsurvey=6) # No switch for EstM. AME doesn't
 
 

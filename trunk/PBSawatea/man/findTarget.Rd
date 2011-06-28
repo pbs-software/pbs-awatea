@@ -1,0 +1,75 @@
+\name{findTarget}
+\alias{findTarget}
+\title{
+  Find Time to Achieve a Target Reference Point
+}
+\description{
+  Find the time (years) to achieve a recovery target (including a moving
+  target) with a given confidence. Produce decision tables showing the probability 
+  of exceeding the reference point.
+}
+\usage{
+findTarget(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, 
+    ratio=0.5, target=B0.MCMC, conf=0.95, plotit=FALSE, retVal="N")
+}
+\arguments{
+  \item{Vmat}{matrix of projected biomass values \eqn{B_{Nt}}{B[N,t]}, \cr
+    where \eqn{N} = number of MCMCs and \eqn{t} = projection year.}
+  \item{yrU}{user-specified projection years.}
+  \item{yrG}{number of years \eqn{G} for a moving target window (\emph{e.g.}, 
+     3 YMR generations = 90y); might not work for all possibilities.}
+  \item{ratio}{recovery target ratio \eqn{R}.}
+  \item{target}{recovery target values \eqn{T_N}{T[N]} \cr
+     = \code{B0.MCMC} for ratios of \eqn{B_0}{B0}; \cr
+     = \code{Bmsy.MCMC} for ratios of \eqn{B_{MSY}}{Bmsy}; \cr
+     = \code{Bt.MCMC} for moving window of \eqn{B_{N,t-G}}{B[N,t-G]}. }
+  \item{conf}{confidence level \eqn{C} required.}
+  \item{plotit}{logical: if \code{TRUE}, plot the probability \eqn{p_t}{p[t]} of exceeding target reference point.}
+  \item{retVal}{character name of object to return: \cr
+    \code{retVal="N"} : creates global object \code{"Ttab"} (see below); \cr
+    \code{retVal="p.hi"} : creates global object \code{"Ptab"} (see below). }
+}
+\details{
+  As this function uses Bayesian output, there are \eqn{N} (\emph{e.g.}, 1000)
+  values of some target \eqn{T_N}{T[N}, which can remain fixed (\eqn{B_0}{B0}, \eqn{B_{MSY}}{Bmsy})
+  or move forward in time \eqn{G} years before the projection year \eqn{t} 
+  (that is \eqn{T_{N,t-G}}{T[N,t-G]}). For simplification, we'll just call all targets \eqn{T_N}{T[N]}.
+
+  The probability of exceeding a target ratio \eqn{R} is:
+  
+  \deqn{p_t = \frac{1}{N} \sum^N  \left[ \frac{B_{Nt}}{T_N} \ge R \right], }{%
+        p[t] = (1/N) \Sigma_N [ B[N,t]/T[N] \ge R ],} 
+  
+  where \eqn{R} = target ratio of the reference point 
+  (\emph{e.g.}, 0.4\eqn{B_{MSY}}{Bmsy} (\eqn{R}=0.4), 0.2\eqn{B_0}{B0} (\eqn{R}=0.2), 0.5\eqn{B_{t-G}}{B[t-G]} (\eqn{R}=0.5) ).
+  
+  At a glance, we can see for any given projection year \eqn{t} whether the probability 
+  of achieving a target ratio is greater than the confidence required:
+  
+  \deqn{p_t \ge C,}{p[t] \ge C,}
+  
+  where \eqn{C} is the confidence level acceptable.
+}
+\value{
+  If \code{retVal="N"} then the function returns a data frame object 
+  called \code{"Ttab"} in the user's global environment. 
+  This table reports the number of years to achieve the target reference
+  point at various catch levels with a specified confidence.
+
+  If \code{retVal="p.hi"} then the function returns a list object
+  called \code{"Ptab"} in the user's global environment. 
+  This list contains data frames (tables) that report the probability
+  of achieving various reference points at specified catch levels.
+
+  Any other \code{retVal} will return a list of the specified object,
+  if it exists in the function.
+}
+\author{
+  Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+}
+\seealso{
+  \code{\link{runSweaveMCMC}}
+}
+\keyword{manip}
+\keyword{logic}
+

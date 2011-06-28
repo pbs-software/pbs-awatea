@@ -1,14 +1,14 @@
-\name{runS1}
-\alias{runS1}
+\name{runMPD}
+\alias{runMPD}
 \title{
-  Wrapper to function <runSweave>
+  Wrapper to Function <runSweave>
 }
 \description{
   This small utility function simply provides a wrapper to the function 
   \code{runSweave} so that multiple documents can be built at once.
 }
 \usage{
-runS1(runs=1, rewts=0:6, cpue=FALSE)
+runMPD(runs=1, rewts=0:6, cpue=FALSE)
 }
 \arguments{
   \item{runs}{the run number(s).}
@@ -25,12 +25,12 @@ runS1(runs=1, rewts=0:6, cpue=FALSE)
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \note{
-  A fairly recent Seave file called \code{ymrrun-master.Snw} can be found in 
+  A recent Seave file called \code{ymrrun-master.Snw} can be found in 
   the library directory: \cr
   \code{.../R/.../library/PBSawatea/snw}
 }
 \seealso{
-  \code{\link{runSweave}}, \code{\link{runADMB}}
+  \code{\link{runSweave}}, \code{\link{runSweaveMCMC}}, \code{\link{runMCMC}}
 }
 \keyword{character}
 \keyword{manip}

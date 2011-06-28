@@ -1,7 +1,15 @@
 PBSawatea Changes
 =================
+0.03  2011-06-28  Rowan
+  - Added Rd documentation for functions 'findTarget', 'importCol2', 'load.allResFiles'. (RH 6/28)
+  - Added AME's suite of scape functions 'ymrScape.r' (no Rd files). (RH 6/28)
+  - Transferred function 'makeErrMat' from package PBSfishery to PBSawatea. (RH 6/28)
+  - Added functions 'runSweaveMCMC' and 'runMCMC'. (RH 6/28)
+  - Added AME's Sweave files 'ymrrun-masterMCMC.Snw' and 'ymrrun-masterMCMC20yrProjs.Snw' to the 'inst/snw' directory. (RH 6/28)
+
 0.02  2011-06-27  Rowan
-  - Added functions 'runSeave' and 'runS1'; also added latest 'ymrrun-master.Snw'. (RH 6/27)
+  - Added functions 'runSeave' and 'runMPD'. (RH 6/27)
+  - Added AME's Sweave file 'ymrrun-master.Snw' to the 'inst/snw' directory. (RH 6/27)
 
 0.01  2011-06-24  Rowan
   - Added functions 'importRes', 'runADMB', 'readAD', and 'reweight'; set Methods for 'view', 'fix', and 'write'. (RH 6/24)
