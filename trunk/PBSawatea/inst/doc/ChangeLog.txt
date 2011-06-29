@@ -1,5 +1,12 @@
 PBSawatea Changes
 =================
+0.04  2011-06-29  Rowan
+  - Added Rd documentation: 
+	'plotB2', 'plotBmcmcPOP', 'plotVBcatch', 'plotVBnorm', 'plotRmcmcPOP', 'plotIndex2',
+	'allEqual', 'close.allWin', 'graphics', 'panLab', 'panLegend', 
+	'calc.projExpect', 'calc.projExpect2', 'calc.projProbs', 'calc.projProbs2', 'calc.refProbs',
+	'calc.refVal', 'getYrIdx', 'out.pmTables', 'stdRes.CA', 'stdRes.index', 'MAfun2'
+
 0.03  2011-06-28  Rowan
   - Added Rd documentation for functions 'findTarget', 'importCol2', 'load.allResFiles'. (RH 6/28)
   - Added AME's suite of scape functions 'ymrScape.r' (no Rd files). (RH 6/28)

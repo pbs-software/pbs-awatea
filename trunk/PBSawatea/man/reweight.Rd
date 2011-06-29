@@ -1,7 +1,7 @@
 \name{reweight}
 \alias{reweight}
 \title{
-  Reweight Abundance Data vs. Composition Data
+  Reweight Abundance and Composition Data
 }
 \description{
   Weight the abundance data by adjusting survey and CPUE CVs, and 
@@ -12,7 +12,7 @@ reweight(obj, cvpro=FALSE, mean.age=TRUE, ...)
 }
 \arguments{
   \item{obj}{an \code{AWATEA} class object created initially by \code{readAD}.}
-  \item{cvpro}{CV process error added to CV observation error: \eqn{c_t = \sqrt{c_o^2 + c_p^2}}; \cr
+  \item{cvpro}{CV process error added to CV observation error: \eqn{c_t = \sqrt{c_o^2 + c_p^2}}{c[t] = sqrt(c[o]^2 + c[p]^2)}; \cr
     if \code{FALSE} index CVs are reweighted using the standard deviation of normalized residuals.}
   \item{mean.age}{logical: if \code{TRUE}, use mean-age residuals to reweight
     the effective \eqn{N} for the age composition data (see Francis 2011); \cr
@@ -46,7 +46,7 @@ reweight(obj, cvpro=FALSE, mean.age=TRUE, ...)
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC.
 }
 \seealso{
-  \code{\link{runADMB}}, \code{\link{readAD}}
+  \code{\link{runADMB}}, \code{\link{readAD}}, \code{\link{stdRes.CA}}, \code{\link{stdRes.index}}
 }
 \keyword{models}
 \keyword{methods}
