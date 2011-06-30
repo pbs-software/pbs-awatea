@@ -5,9 +5,8 @@
 #-----------------------------------------------RH
 runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="YMR",
     filename="input25-ymr.txt",           # Name of Awatea .txt file in 'run.dir' to run
-    runNo=25, rwtNo=0, running.awatea=0,  # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
-    MCMCdir.name=getwd()                  # MCMC directory
-		) {
+    runNo=25, rwtNo=0, running.awatea=0   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
+	) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all=TRUE),c("runMCMC","runSweaveMCMC")),pos=1)
 	#require(PBSmodelling, quietly=TRUE)
@@ -84,8 +83,8 @@ runMCMC = function(runs=7, rewts=0:6, cpue=FALSE, estM=TRUE) {
 #runMCMC(c(24:26),1,cpue=FALSE,estM=TRUE)
 # runMCMC(c(27:28),1,cpue=FALSE,estM=FALSE)
 # runMCMC(26,1,cpue=FALSE,estM=TRUE)
-runMCMC(29,1,cpue=FALSE,estM=TRUE) # The two main runs for
-runMCMC(30,1,cpue=FALSE,estM=FALSE) # YMR11 submission
+#runMCMC(29,1,cpue=FALSE,estM=TRUE) # The two main runs for
+#runMCMC(30,1,cpue=FALSE,estM=FALSE) # YMR11 submission
 
 # To check MSY convergence:
 # test = msyCalc( dir=msy.dir, error.rep = 1 )
