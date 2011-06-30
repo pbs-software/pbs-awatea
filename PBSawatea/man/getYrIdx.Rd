@@ -21,7 +21,7 @@ getYrIdx(yrNames, mod=5)
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \seealso{
-  \code{\link{findPat}}, \code{\link{pad0}}
+  \code{\link[PBSmodelling]{findPat}}, \code{\link[PBSmodelling]{pad0}}
 }
 \keyword{utilities}
 

@@ -22,7 +22,7 @@ makeErrMat(N=60, ondiag=0.8, offdiag=0.1, corner=0.9)
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \seealso{
-  \code{\link{plotProp}}, \code{\link{weightBio}}
+  \code{\link[PBSfishery]{plotProp}}, \code{\link[PBSfishery]{weightBio}}
 }
 \keyword{array}
 

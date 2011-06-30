@@ -18,10 +18,10 @@ panLab(x, y, txt, ...)
 }
 \note{
   Currently, this function does not reset the coordinate space to the original. \cr
-  Use \code{\link{addLabel}} instead.
+  Use \code{\link[PBSmodelling]{addLabel}} instead.
 }
 \seealso{
-  \code{\link{addLabel}}, \code{\link{addLegend}}
+  \code{\link[PBSmodelling]{addLabel}}, \code{\link[PBSmodelling]{addLegend}}
 }
 \keyword{utilities}
 
