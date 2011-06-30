@@ -23,7 +23,7 @@ load.allResFiles(resList = NULL)
   If deprecated, remove from package \pkg{PBSawatea}.
 }
 \seealso{
-  \code{\link{impotCol2}}
+  \code{\link{importCol2}}
 }
 \keyword{list}
 

@@ -72,13 +72,15 @@ plotIndex2(model, what="c", series=NULL, axes=TRUE, same.limits=FALSE,
   and \code{\link[Hmisc]{panel.xYplot}} are the underlying drawing
   functions.
 
-  \code{\link{plotCA}}, \code{\link{plotCL}}, \code{plotIndex2}, and
-  \code{\link{plotLA}} plot model fit and data.
+  \code{\link[scapeMCMC]{plotCA}}, \code{\link[scapeMCMC]{plotCL}},
+  \code{\link[scapeMCMC]{plotIndex}}, and 
+  \code{\link[scapeMCMC]{plotLA}} plot model fit and data.
 
-  \code{\link{plotB2}}, \code{\link{plotN}}, and \code{\link{plotSel}}
-  plot derived quantities.
+  \code{\link[scapeMCMC]{plotB}}, \code{\link{plotB2}}, 
+  \code{\link[scapeMCMC]{plotN}}, and 
+  \code{\link[scapeMCMC]{plotSel}} plot derived quantities.
 
-  \code{\link{scape-package}} gives an overview of the package.
+  \code{\link[scapeMCMC]{scape-package}} gives an overview of the package.
 }
 % Graphics
 \keyword{hplot}

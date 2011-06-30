@@ -65,8 +65,8 @@ importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
 }
 \seealso{
   \code{\link{runADMB}}, \code{\link{readAD}}, \code{\link{reweight}}, \code{\link{importCol2}} \cr
-  \code{\link{read.table}}, \code{\link{readLines}}, and \code{\link{scan}} to import any data. \cr
-  \code{\link{scape-package}} gives an overview of the package \pkg{scape}.
+  \code{\link[utils]{read.table}}, \code{\link[base]{readLines}}, and \code{\link[base]{scan}} to import any data. \cr
+  \code{\link[scape]{scape-package}} gives an overview of the package \pkg{scape}.
 }
 \keyword{file}
 \keyword{interface}

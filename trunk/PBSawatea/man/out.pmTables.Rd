@@ -21,7 +21,7 @@ out.pmTables(obj, fileName="pm", dec=3)
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \seealso{
-  \code{\link{write.table}}, \code{\link{writeList}}
+  \code{\link[utils]{write.table}}, \code{\link[PBSmodelling]{writeList}}
 }
 \keyword{IO}
 \keyword{file}

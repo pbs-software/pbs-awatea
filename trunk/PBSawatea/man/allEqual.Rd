@@ -17,7 +17,7 @@ allEqual(x)
 \code{TRUE} or \code{FALSE}
 }
 \seealso{
-  \code{\link{all}}, \code{\link{clearAll}}, \code{\link{clipVector}}
+  \code{\link[base]{all}}, \code{\link[PBSmodelling]{clearAll}}, \code{\link[PBSmodelling]{clipVector}}
 }
 \keyword{logic}
 

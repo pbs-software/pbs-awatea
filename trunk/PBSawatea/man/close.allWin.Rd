@@ -10,7 +10,7 @@
 close.allWin()
 }
 \seealso{
-  \code{\link{closeWin}}
+  \code{\link[PBSmodelling]{closeWin}}
 }
 \keyword{device}
 

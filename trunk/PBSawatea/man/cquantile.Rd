@@ -25,7 +25,7 @@ cquantile.vec(z, prob)
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \note{
-  Arni Magnusson describes a running quatile as: \cr
+  Arni Magnusson describes a running quantile as: \cr
   \dQuote{\emph{the evolution of the sample quantiles as a function of the number of iterations}}
 }
 \seealso{

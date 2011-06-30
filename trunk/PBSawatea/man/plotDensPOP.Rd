@@ -77,7 +77,7 @@ plotDensPOP(mcmc, probs=c(0.025,0.975), points=FALSE, axes=TRUE,
 \seealso{
   \code{\link[lattice]{xyplot}} and
   \code{\link[lattice]{panel.densityplot}} are the underlying drawing
-  functions, and \code{link[coda]{densplot}} is a similar non-trellis
+  functions, and \code{\link[coda]{densplot}} is a similar non-trellis
   plot.
 
   \code{\link[scapeMCMC]{plotTrace}}, \code{\link[scapeMCMC]{plotAuto}},

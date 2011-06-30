@@ -14,7 +14,7 @@ graphics(view = "portrait")
     if \code{"landscape"}, set width = 11 in and height = 8.5 in }
 }
 \seealso{
-  \code{\link{resetGraph}}
+  \code{\link[PBSmodelling]{resetGraph}}
 }
 \keyword{device}
 
