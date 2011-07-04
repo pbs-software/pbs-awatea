@@ -8,14 +8,34 @@
 }
 \usage{
 plotDensPOP(mcmc, probs=c(0.025,0.975), points=FALSE, axes=TRUE,
-         same.limits=FALSE, between=list(x=axes,y=axes), div=1,
-         log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL,
-         cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.7,
-         las=0, tck=0.5, tick.number=5,
-         lty.density=1, lwd.density=3, col.density="black",
-         lty.median=2, lwd.median=1, col.median="darkgrey", lty.outer=3,
-         lwd.outer=1, col.outer="darkgrey", pch="|", cex.points=1,
-         col.points="black", plot=TRUE, MPD.height=0.04, ...)
+     same.limits=FALSE, between=list(x=axes,y=axes), div=1,
+     log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL,
+     cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.7,
+     las=0, tck=0.5, tick.number=5,
+     lty.density=1, lwd.density=3, col.density="black",
+     lty.median=2, lwd.median=1, col.median="darkgrey", 
+     lty.outer=3, lwd.outer=1, col.outer="darkgrey", pch="|", 
+     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,...)
+
+plotDensPOPpars(mcmc, probs=c(0.025,0.975), points=FALSE, 
+     axes=TRUE, same.limits=FALSE, between=list(x=axes,y=axes), 
+     div=1, log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
+     cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.7, 
+     las=0, tck=0.5, tick.number=5, 
+     lty.density=1, lwd.density=3, col.density="black", 
+     lty.median=2, lwd.median=1, col.median="darkgrey", 
+     lty.outer=3, lwd.outer=1, col.outer="darkgrey", pch="|", 
+     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,...) 
+
+plotDensPOPparsPrior(mcmc, probs=c(0.025,0.975), points=FALSE, 
+     axes=TRUE, same.limits=FALSE, between=list(x=axes,y=axes), 
+     div=1, log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
+     cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.7, 
+     las=0, tck=0.5, tick.number=5, 
+     lty.density=1, lwd.density=3, col.density="black", 
+     lty.median=2, lwd.median=1, col.median="darkgrey", 
+     lty.outer=3, lwd.outer=1, col.outer="darkgrey", pch="|", 
+     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,...)
 }
 \arguments{
   \item{mcmc}{MCMC chain(s) as a vector, data frame or \code{mcmc} object.}
@@ -55,12 +75,13 @@ plotDensPOP(mcmc, probs=c(0.025,0.975), points=FALSE, axes=TRUE,
 }
 \details{
   The function \code{plotDensPOPpars} differs from \code{plotDensPOP} only 
-  by a few tweaks to the internal list object \code{myscales}.
+  by a few tweaks to the internal list object \code{myscales}. \cr
+  The function \code{plotDensPOPparsPrior} adds the priors automatically.
 }
 \value{
   When \code{plot=TRUE}, a trellis plot is drawn and a data frame is
-  returned, containing the data used for plotting. When
-  \code{plot=FALSE}, a trellis object is returned.
+  returned, containing the data used for plotting. When \code{plot=FALSE}, 
+  a trellis object is returned.
 	}
 \note{
   The \code{Args} function from the \pkg{gdata} package is recommended
@@ -72,7 +93,7 @@ plotDensPOP(mcmc, probs=c(0.025,0.975), points=FALSE, axes=TRUE,
   
   For Recruits and Biomass, use \code{plotDensPOPpars} for parameters.
   Tried y-axes the same scales, but 1973--1975 are so narrow that they
-  make all the others really small: \code{same.limits = TRUE, ylim = c(0, 0.0005)}.
+  make all the others really small: \code{same.limits=TRUE, ylim=c(0, 0.0005)}.
 }
 \seealso{
   \code{\link[lattice]{xyplot}} and

@@ -1,11 +1,15 @@
 PBSawatea Changes
 =================
-0.05  2011-06-30
+0.05  2011-07-04
+  - Added Rd documentation: (RH 7/4)
+	'importMCMC.ddiff', 'importProj.ddiff', 'msyCalc', 'refPoints', 'refPointsB0',
+	'plotSnail', 'plotDensPOPparsPrior', 'plotBVBnorm', 'plotCPUE', 'plt.mpdGraphs',
+	'plt.mcmcGraphs', 'plt.quantBio', 'plt.quantBioBB0', 'plt.numR'
   - Added Rd documentation: (RH 6/30)
 	'plt.ageResidsPOP', 'plt.ageResidsqqPOP', 'plt.yearResidsPOP', 'plt.cohortResids',
 	'plt.allTraces', 'plt.expRate', 'plt.idx', 'plotIndexNotLattice', 'plotTracePOP',
 	'plotChains', 'cquantile', 'cquantile.vec', 'plotDensPOP', 'plotDensPOPpars',
-	'get.resFile', 'mainMenu', 'loadMenu', 'mpdMenu', 'mcmcMenu', 'utilMenu',
+	'get.resFile', 'mainMenu', 'loadMenu', 'mpdMenu', 'mcmcMenu', 'utilMenu'
   - Added a number of support documents to '/tunk/documentation'. (RH 6/30)
   - Added functions 'plotTracePOP', 'cquantile', 'plotDensPOP', and 'plotDensPOPpars'. (RH 6/30)
   - Removed calls to runSweave that should not have been active. (RH 6/30)
