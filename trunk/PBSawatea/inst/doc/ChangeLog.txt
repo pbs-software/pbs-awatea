@@ -1,6 +1,8 @@
 PBSawatea Changes
 =================
 0.05  2011-07-04
+  - Added Rd documentation: (RH 7/5)
+	'plt.ssbVbCatch', 'plt.stdResids', 'PBSawatea'
   - Added Rd documentation: (RH 7/4)
 	'importMCMC.ddiff', 'importProj.ddiff', 'msyCalc', 'refPoints', 'refPointsB0',
 	'plotSnail', 'plotDensPOPparsPrior', 'plotBVBnorm', 'plotCPUE', 'plt.mpdGraphs',
