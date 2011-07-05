@@ -5,7 +5,7 @@
   Plot a Set of Figures for MPD and MCMC
 }
 \description{
-  Plot a set of postscript figures \code{.eps} for the MPD (most prabable density)
+  Plot a set of postscript figures \code{.eps} for the MPD (mode of the posterior distribution)
   and MCMC (Monte Carlo Markoff Chain) results.
 }
 \usage{

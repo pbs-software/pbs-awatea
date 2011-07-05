@@ -1,0 +1,31 @@
+\name{plt.stdResids}
+\alias{plt.stdResids}
+\title{
+  Plot Diagnostics for Standardised Residuals
+}
+\description{
+  Plot standardised residuals against year, fitted value, and theoretical residuals.
+}
+\usage{
+plt.stdResids(obj, pct=c(5,25,50,75,95), 
+     main=NULL, yLim=NULL, xLim=xLim)
+}
+\arguments{
+  \item{obj}{a data frame with columns \code{Year}, \code{stdRes}, and \code{Fit}.}
+  \item{pct}{percentiles to display as horizontal lines on the quantile-quantile plot.}
+  \item{main}{title for the figure.}
+  \item{yLim}{limits of the y-axis.}
+  \item{xLim}{limits of the x-axis.}
+}
+\details{
+  Figure provides three panels of standardised residuals \emph{vs.} \cr
+  (i) years, (ii) fitted or predicted values, and (iii) theoretical quantiles.
+}
+\author{
+  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+}
+\seealso{
+  \code{\link{plt.ssbVbCatch}}
+}
+\keyword{hplot}
+%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
