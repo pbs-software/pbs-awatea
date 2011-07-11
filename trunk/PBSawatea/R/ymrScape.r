@@ -2271,7 +2271,7 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
 plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) )   # xlimrec is range for recruitments
 {
   # Does all MCMC graphs below.  If save=TRUE then PNG file saved.
-  # close.allWin()
+  # close.allWin(). Note that I've used currentMCMC below,not mcmcObj
 
   # Plot the biomass quantiles and projections by policy.
   # plt.quantBio( mcmcObj$B,projObj$B, policy=policy, xyType=rpType,
@@ -2417,6 +2417,23 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
             # save needed to stop .png. No option for picking years.
   dev.off()
 
+  # Recruitment projections plot
+  postscript("Rproj.eps", 
+     horizontal=FALSE,  paper="special", height = 7, width = 6.2)
+  plt.quantBio(currentMCMC$R, currentProj$R, xyType="quantBox",
+              policy=c("0", "500", "1000", "1500", "2000", "2500"),
+              save=FALSE, yaxislab="Recruitment (1000s)") # , yLim=c(0, 50000))
+            # save needed to stop .png. No option for picking years.
+  dev.off()
+
+  # Recruitment just for policy 1500 (for YMR SAR)
+  postscript("Rproj1500.eps", 
+     horizontal=FALSE,  paper="special", height = 5, width = 6.2)
+    plt.quantBioBB0(currentMCMC$R, currentProj$R, xyType="quantBox",
+             policy=c("1500"), save=FALSE, xaxis.by=10,
+             yaxis.lab="Recruitment (1000s)")
+  dev.off()
+  
   postscript("snail.eps", height = 5, width = 6.2,
               horizontal=FALSE,  paper="special")
   plotSnail(currentMCMC$BoverBmsy, currentMCMC$UoverUmsy,p=c(0.1,0.9),
@@ -2766,15 +2783,6 @@ plt.mpdGraphs <- function( obj, save=FALSE ) #AME some actually MCMC.
   dev.off()
 
   # Plot stock-recruitment function (based on MPD's)
-  srFun = function(spawners, h=h.mpd, R0=R0.mpd, B0=B0.mpd)
-                                   # to input a vector of
-    {                                # spawners and calc recruits
-    4 * h * R0 * spawners / ( ( 1 - h) * B0 + (5 * h - 1) * spawners)
-    }
-  # These still might need to be offset by a year, as for
-  #  currentMCMC, but for plotting on SR curve won't make much
-  #  difference (as Bt not changing a huge amount each year).
-  # See also srFun.r.
   # xLimSR and yLimSR fixed here for YMR to have Run 26 and 27 figs
   #  on same scales. Use these first two values to scale to data:
   # xLimSR =c(0, max(currentRes$B$SB))
@@ -2874,7 +2882,8 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
                   xyType="lines",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=T )
+                  userPrompt=FALSE, save=T,
+                  yaxislab= "Spawning biomass" )
 {
   plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", ... )   #AME line.col="black", col is for filling rect
   {
@@ -2976,9 +2985,9 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
       pol <- policyList[j]
       result2[[j]] <- apply( projObj[[pol]],2,quantile,probs=p )
 
-      cat( "\n\nQuantiles of projection for policy = ",
-        policyList[j],"\n" )
-      print( result2[[j]] )
+      # cat( "\n\nQuantiles of projection for policy = ",
+      #   policyList[j],"\n" )
+      # print( result2[[j]] )
 
       yrs2 <- as.numeric( dimnames(result2[[j]])[[2]] )
       if ( is.null(xLim) )
@@ -2988,9 +2997,9 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
 
       # Plot the quantiles of the biomass.
       if ( xyType=="quantBox" )
-        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col=NA, line.col="black" )      
+        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col=NA, line.col="black", med.col="red" )      
       else
-        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim,col="black" )
+        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim,col="red" )
 
       if ( !is.null(refLines) )
         abline( v=refLines,lty=4 )
@@ -3011,8 +3020,8 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
       {
         mtext( side=1, line=0.8, cex=1.0, outer=T, "Year" )
                                        #AME line=0 changed
-        mtext( side=2, line=0.8, cex=1.0, outer=T,
-              "Spawning biomass" ) # "   and Spawning
+        mtext( side=2, line=0.8, cex=1.0, outer=T, yaxislab,
+           ) # "   and Spawning
       }
       mtext( side=3, line=0.25, cex=0.8,
         paste( "Catch strategy:",policyList[j]) )
@@ -3039,22 +3048,24 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
   val
 }
 
-# Copied this from popScapeRuns2.r - not sure if needed.
+
 # This is for B/B0 for each run, with just one projection. Doing one
 #  plot here instead of multiple, so taking some from plotBVBnorm
-#  which did one for each run.
+#  which did one for each run. Don't think used for biomasses.
+# Now using for single recruitment projection plot
 plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="lines",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
                   userPrompt=FALSE, save=T, main="", cex.main="",
-                  tcl.val=-0.2 )
+                  tcl.val=-0.2, xaxis.by = 1, yaxis.by=10000,
+                  xaxis.lab = "Year", yaxis.lab= "Spawning biomass" )
 {
-  plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", ... )   #AME line.col="black", col is for filling rect
+  plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", med.col="black", ... )   #AME line.col="black", col is for filling rect med.col is for median
   {
     if ( new )
-      plot( xLim,yLim, type="n", xlab="",ylab="" )
+      plot( xLim,yLim, type="n", xlab=xaxis.lab,ylab=yaxis.lab )
 
     yrs <- as.numeric(dimnames(obj)[[2]])
 
@@ -3090,7 +3101,8 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
         rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i],
              border=line.col, col="white")#AME border,col=NA (empty)
       # Add the median.
-      segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col=line.col )   #AME black
+      # segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col=line.col )   #AME black
+      segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col=med.col )   #AME black
     }
   }
 
@@ -3141,9 +3153,9 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
       pol <- policyList[j]
       result2[[j]] <- apply( projObj[[pol]],2,quantile,probs=p )
 
-      cat( "\n\nQuantiles of projection for policy = ",
-        policyList[j],"\n" )
-      print( result2[[j]] )
+      # cat( "\n\nQuantiles of projection for policy = ",
+      #   policyList[j],"\n" )
+      # print( result2[[j]] )
 
       yrs2 <- as.numeric( dimnames(result2[[j]])[[2]] )
       if ( is.null(xLim) )
@@ -3153,16 +3165,16 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
 
       # Plot the quantiles of the biomass.
       if ( xyType=="quantBox" )
-        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col=NA, line.col="black" )      
+        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col="black", line.col="black", med.col="red" )      
       else
-        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim,col="black" )
+        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col="red") # line.col="red")
 
       if ( !is.null(refLines) )
         abline( v=refLines,lty=4 )
 
       # Plot the quantiles of the projected biomass.
       if ( xyType=="quantBox" )
-        plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, line.col="red")  # AME: col fills in box, I want to change line cols 
+        plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, line.col="red", med.col="black")  # AME: col fills in box, I want to change line cols 
       else
         plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, col="red" )
 
@@ -3170,8 +3182,10 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
       #  lines( yrs2,result2[[j]][i,],lty=lineType[i],lwd=2,col=2 )
 
       abline( v=yrs2[1]-0.5, lty=2 )
-      axis(1, at=xLim[1]:xLim[2], tcl=tcl.val, labels=FALSE)
-      axis(2, at = seq(0, yLim[2], by=0.1), tcl=tcl.val, labels=FALSE)
+      axis(1, at=seq(xLim[1], xLim[2], by=xaxis.by),
+           tcl=tcl.val, labels=FALSE)
+      axis(2, at = seq(0, yLim[2], by=yaxis.by),
+           tcl=tcl.val, labels=FALSE)
       
       # mfg <- par( "mfg" )
       # if ( mfg[1]==1 & mfg[2]==1 )
@@ -4126,3 +4140,146 @@ findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0
 	eval(parse(text=paste("return(",retVal,")",sep="")))
 }
 
+
+# importProjRec - importing the projected recruitments (actually
+#  what's saved is the N(0,1) random numbers, which for a particular
+#  MCMC sample are the same for all the catch strategies), which
+#  importProj does not do. Need this for YMR. 4th July 2011
+importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE) 
+{
+    get.Policies <- function() {
+        if (!quiet) 
+            cat("Policies  ")
+        Policies <- read.table(paste(dir, "strategy.out", sep = "/"), 
+            skip = 1)
+        if (!quiet) 
+            cat("file...")
+        Policies <- unique(as.vector(as.matrix(Policies)))
+        if (!quiet) 
+            cat("unique...OK\n")
+        return(Policies)
+    }
+    get.Years <- function() {
+        if (!quiet) 
+            cat("Years     ")
+        Years <- read.table(paste(dir, "strategy.out", sep = "/"), 
+            nrows = 1)
+        if (!quiet) 
+            cat("file...")
+        Years <- unlist(strsplit(as.matrix(Years), "_"))
+        if (!quiet) 
+            cat("labels...")
+        Years <- unique(matrix(Years, nrow = 3)[2, ])
+        if (!quiet) 
+            cat("unique...OK\n")
+        return(Years)
+    }
+    get.B <- function(Policies, Years) {
+        if (!quiet) 
+            cat("Biomass   ")
+        B <- read.table(paste(dir, "projspbm.out", sep = "/"), 
+            header = TRUE)[, -c(1, 2)]
+        if (!quiet) 
+            cat("file...")
+        Blist <- list()
+        for (p in 1:length(Policies)) {
+            from <- (p - 1) * length(Years) + 1
+            to <- p * length(Years)
+            Blist[[p]] <- B[, from:to]
+            names(Blist[[p]]) <- Years
+        }
+        names(Blist) <- Policies
+        B <- Blist
+        if (!quiet) 
+            cat("list...OK\n")
+        return(B)
+    }
+    get.Y <- function(Policies, Years) {
+        if (!quiet) 
+            cat("Landings  ")
+        Y <- read.table(paste(dir, "procatch.out", sep = "/"), 
+            header = TRUE)
+        if (!quiet) 
+            cat("file...")
+        Ylist <- list()
+        for (p in 1:length(Policies)) {
+            from <- (p - 1) * length(Years) + 1
+            to <- p * length(Years)
+            Ylist[[p]] <- Y[, from:to]
+            names(Ylist[[p]]) <- Years
+        }
+        names(Ylist) <- Policies
+        Y <- Ylist
+        if (!quiet) 
+            cat("list...OK\n")
+        return(Y)
+    }
+        # AME adding to load in projected recruitment residuals.
+        #  Bit different to the others as the file is saved
+        #  differently. NOTE that this returns the 'tempdev' values
+        #  from Awatea, which are just N(0,1) values, without
+        #  multiplying by the sigma_R. Call this epsilon_t
+        #  and maybe multiply here by sigmaR, which is
+        #    currentRes$extra$residuals$p_log_RecDev[6]
+        get.eps <- function(Policies, Years) {
+        if (!quiet) 
+            cat("Recruitment")
+        eps <- read.table(paste(dir, "RecRes.out", sep = "/"), 
+            header = FALSE, skip=1)
+        if (!quiet) 
+            cat("file...")
+        nRow = dim(eps)[1] / length(Policies)
+        epslist <- list()
+        for (p in 1:length(Policies)) {
+            rows <- (0:(nRow-1)) * length(Policies) + p 
+            epslist[[p]] <- sigmaR * eps[rows, ]
+            names(epslist[[p]]) <- Years
+        }
+        names(epslist) <- Policies
+        eps <- epslist
+        if (!quiet) 
+            cat("list...OK\n")
+        return(eps)
+    }
+
+    files <- paste(dir, c("strategy.out", "projspbm.out",
+                          "procatch.out", "recres.out"), sep = "/")
+    sapply(files, function(f) if (!file.exists(f)) 
+        stop("File ", f, " does not exist. Please check the 'dir' argument.", 
+            call. = FALSE))
+    if (!quiet) 
+        cat("\nParsing files in directory ", dir, ":\n\n", sep = "")
+    Policies <- get.Policies()
+    Years <- get.Years()
+    B <- get.B(Policies, Years)
+    Y <- get.Y(Policies, Years)
+    eps <- get.eps(Policies, Years)
+    if (!quiet) 
+        cat("\n")
+    output <- list(B = B, Y = Y, eps = eps)
+    if (coda) {
+        require(coda, quiet = TRUE, warn = FALSE)
+        output <- lapply(output, function(x) lapply(x, mcmc))
+    }
+    attr(output, "call") <- match.call()
+    attr(output, "info") <- info
+    return(output)
+} 
+
+
+# srFun - stock recruit function. From ProjRecCalcs.r
+           # To input a vector of spawners in year t-1
+           #  and calculate recruits in year t. Output for recruits
+           #  is vector, each element corresponds to spawners the
+           #  the year before, so will usually want to shift the
+           #  output by 1 so that recruits in year t are based on
+           #  spawners in year t-1.
+           # Can also have each input as a vector (used when
+           #  calculating a single year but multiple MCMCs, as in
+           #  first year of projections is based on penultimate year
+           #  of MCMC calcualtions.
+srFun = function(spawners, h=h.mpd, R0=R0.mpd, B0=B0.mpd)
+                    # to input a vector of spawners in year t-1
+    {               #  and calculate recruits in year t 
+    4 * h * R0 * spawners / ( ( 1 - h) * B0 + (5 * h - 1) * spawners)
+    }
