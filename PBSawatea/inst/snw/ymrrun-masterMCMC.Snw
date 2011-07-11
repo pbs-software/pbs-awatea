@@ -220,6 +220,11 @@ currentRes = importCol2(paste(run.dir,"/", model.name, ".res", sep=""),
              Dev=TRUE, CPUE=TRUE, Survey=TRUE, 
              CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
 
+sigmaR = currentRes$extra$residuals$p_log_RecDev[6]
+    # to use when importing projected recruitment deviations (that
+    #  are actually just the random N(0,1) numbers so need 
+    #  multiplying by sigmaR).
+
 # Assign a generic title for use in some plots.
 mainTitle <- "Yellowmouth rockfish"
 
@@ -314,15 +319,41 @@ currentMCMC[["VB"]] = vbMCMC
 # year.  The "B" element is itself a list of matrices with a matrix 
 # for each level of the catch.  This matrix has rows equal to the   
 # length of the chain and columns corresponding to projection years.
-# There are no [specific - AME] plotting routines for these data.                    
+# There are no [specific - AME] plotting routines for these data.    
+
+# currentProj$eps is a list of data frames, one for each catch
+#  strategy, though each data frame is the same (because the same
+#  random N(0,1) are used for each one). Each data frame is 1000x91
+#  as each row is an MCMC sample and each column is projected year,
+#  from 2011 to 2101. For a given MCMC sample, the same random
+#  numbers are used for each strategy (but random numbers are
+#  different between MCMC samples). i.e.:
+# > range(currentProj$eps$'0'[1,] - currentProj$eps$'0'[2,] )
+# [1] -2.722770  2.844936
+# > range(currentProj$eps$'0'[1,] - currentProj$eps$'250'[1,] )
+# [1] 0 0
+# So although the eps are the same for each strategy, the actual
+#  recruitments won't be because the spawning biomassess will be
+#  changing (first year should be the same though).
+
 # currentProj <- importProj( dir=".", quiet=FALSE )
 
-currentProj <- importProj( dir="./Proj.90yrs/", 
-                          quiet=FALSE )
+currentProj <- importProjRec( dir="./Proj.90yrs/", 
+                           quiet=FALSE )
+   # importProjRec includes epsilons for recruitments
+   # Then below we calcualte the actual recruitments.
+
 assign( "currentProj", currentProj, pos=1 )
 # Take off final year: "2032" or "2102":
 currentProj$B = lapply(currentProj$B, function(x) { x[ , names(x) != "2102"] })
 currentProj$Y = lapply(currentProj$Y, function(x) { x[ , names(x) != "2102"] })
+currentProj$eps = lapply(currentProj$eps, function(x) { x[ , names(x) != "2102"] })
+# currentProj$R is calculated below
+# sd(unlist(currentProj$eps$'0'))
+# [1] 0.8993165
+#  sd(unlist(currentProjaa$eps$'250'))
+# [1] 0.8993165
+#  etc., as they're all the same, and the sd equals sigmaR.
 
 
 # Awatea MSY.
@@ -343,6 +374,55 @@ Bmsy.MCMC = currentMSY$B
 VBmsy.MCMC = currentMSY$VB
 msy.MCMC = currentMSY$yield
 umsy.MCMC = currentMSY$u
+
+
+# To calculate the actual projected recruitments (from the eps)
+currentProj$R = list()
+NN = matrix(1:1000, nrow=1)      # to use to populate each data.frame
+projYearsNames = names(currentProj$B[[1]])
+
+# First calculate recruits for first projection year, which is based
+#  on penultimate MCMC year's spawners (which is 2010, final year
+#  of that is 2011, first proj year is 2011, and I checked that
+#  values for last year of MCMC equal those for first yr of proj:
+#  > range(currentMCMC$B[, 72] - currentProj$B$'250'[, 1])
+#      0 0.
+# Do this here as does not depend on projections (and so is same for
+#  all catch strategies).
+Bpen.MCMC = currentMCMC$B[, rev(names(currentMCMC$B))[2]]
+     # spawning biomass for penultimate year of MCMC
+RfirstProj = srFun(Bpen.MCMC, R0 = currentMCMC$P$R_0,
+    h = currentMCMC$P$h, B0=B0.MCMC)
+
+# Stochastic multiplier, will be same for all strategies as random
+#  numbers currentProj$eps[[j]] are the same for each strategy j
+stochMult = exp(currentProj$eps$'0' - sigmaR^2/2)
+
+for(j in 1:length(currentProj$eps) )    # loop over policies
+  {
+  junk = apply(NN, 2, function(i, B, R0, h, B0) {
+   srFun(as.numeric(B[i,]), h = h[i], R0=R0[i], B0=B0[i] ) },
+   B = currentProj$B[[j]],
+   R0 = currentMCMC$P$R_0, h = currentMCMC$P$h, B0=B0.MCMC)
+       # Rowan's trick for using apply on each row.
+  junk = t(junk)
+  junk = as.data.frame(junk)
+       # This gives data
+       #  frame, rows are MCMC samples, columns are recruits for the
+       #  next year. Need to insert RfirstProj as first column,
+       #  and remove final column (which
+       #  corresponds to recruits for the year after final projection
+       #  year).
+  detR = cbind(RfirstProj, junk)
+  detR = detR[, -dim(detR)[2] ]     # take off final column
+  names(detR) = projYearsNames      # detR is deterministic values
+  stochR = detR * stochMult
+  currentProj$R[[j]] = stochR
+  }
+names(currentProj$R) = names(currentProj$eps)
+
+
+
 
 
 # Bmsy Reference points (could move this to scape at some point):
@@ -539,7 +619,8 @@ mat = currentRes$Sel[currentRes$Sel$"Series" == "Maturity" &
 # M2 = currentMCMC$P[1,"M_2"]           # MPD is first line of MCMC
 Rt = currentRes$B$R[-length(currentRes$B$R)]   
                                         # Remove final NA for 2011,
-
+Rt.mpd = Rt       # don't think Rt gets used elsewhere, but leave
+                  #  it valid just in case.
 # For confirmation:
 # R0.mpd = currentMCMC$P[1,"R_0"] #Matches numbers from Ro_So_VB.pst,
                                   # but wasn't going to use that 
@@ -552,6 +633,8 @@ Bt.mpd = currentRes$B$SB
 B0.mpd = Bt.mpd[1]
 Vt.mpd = currentRes$B$V
 logRecDev.mpd = currentRes$Dev$Annual
+# Also equals currentRes$extra$parameters$log_RecDev   from Rowan's
+#  extra.
 
 
 # From Rowan's extra function, to give the mpd's:
@@ -819,6 +902,15 @@ qtab = function(xx.MCMC, dig=0)     # dig is number of dec places
 # > plot(years, Bt.mpd, ylim=c(0,200000))
 # > plot(years, Bt.mpd, ylim=c(0,120000))
 # > plot(years[-length(years)], Ct)
+
+# Want to report the mean of the median recruitments for past and
+#  projections.
+recMed = apply(currentMCMC$R, 2, median)
+meanRecMed = mean(recMed)
+recProjMed1500 = apply(currentProj$R$'1500', 2, median)
+meanRecProjMed1500 = mean(recProjMed1500)
+
+
 @ 
 
 % Comment out table parest for now (Priors and MPD estimates - see
@@ -875,6 +967,17 @@ qtab = function(xx.MCMC, dig=0)     # dig is number of dec places
 \ymrfig{snail}{Trace through time of the medians of the ratios $B_t / B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_t / u_\mathrm{MSY}$ (the exploitation rate in year $t$ relative to $u_\mathrm{MSY}$) for run \Sexpr{model.name}. Blue filled circle is the starting year (1940). Years then proceed from light grey through to dark grey with the final year (2010) as a filled red circle, and the red lines represent the 10\% and 90\% percentiles of the posterior distributions for the final year. Vertical grey lines indicate the provisional limit and upper stock reference points of 0.4$B_\mathrm{MSY}$ and 0.8$B_\mathrm{MSY}$, and horizontal grey line indicates $u_\mathrm{MSY}$.}
 
 \ymrfig{Bproj}{Projected biomass under different constant catch strategies for run \Sexpr{model.name}~(boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results). For each of the 1000 samples from the MCMC posterior, the model was run forward in time (red) with a constant catch, and recruitment was simulated from the stock-recruitment function with lognormal error (see equation F.24). For reference, the average catch over the last five years (2006-2010) is 1442~t.}
+
+\ymrfig{Rproj}{Projected recruitments under different constant catch strategies for run \Sexpr{model.name}~(boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results). This shows that the random projected recruitments are fairly similar from year-to-year, without the large recruitment events that are seen in the past. While individual MCMC simulations may have occasional large recruitments, this will not happen for a particular year for all MCMC simulations concurrently, which did happen in the past (so, in particular, the lowest estimates of recruitment were still high).}
+% xx = apply(currentProj$R$'0', 2, max)
+% summary(xx)
+  
+\ymrfig{Rproj1500}{Projected recruitments for just 1500 t constant catch strategy (to go into SAR) for run \Sexpr{model.name}~(boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results). This shows that the random projected recruitments are fairly similar from year-to-year, without the large recruitment events that are seen in the past. While individual MCMC simulations may have occasional large recruitments, this will not happen for a particular year for all MCMC simulations concurrently, which did happen in the past (so, in particular, the lowest estimates of recruitment were still high). The mean of the median historical recruitments is \Sexpr{round(meanRecMed, digits=0)}, whereas the mean of the median projected recruitments is \Sexpr{round(meanRecProjMed1500, digits=0)}.}
+% xx = apply(currentProj$R$'1500', 2, median)
+% mean(xx)   
+% yy = apply(currentMCMC$R, 2, median)
+% mean(yy)
+
 
 \clearpage     % to get tables at end
 

@@ -1,6 +1,12 @@
 PBSawatea Changes
 =================
-0.05  2011-07-04
+0.06  2011-07-11  Rowan
+  - Added the PDF summary of package functions. (RH 7/11)
+  - Added support document 'Latex.pdf' to .../trunk/documentation (not in package). (RH 7/11)
+  - Added documention for new functions 'srFun' and 'importProjRec'. (RH 7/11)
+  - Updated versions of 'ymrScape.r' and 'ymrrun-masterMCMC.Snw' (AME 7/8)
+
+0.05  2011-07-04  Rowan
   - Added Rd documentation: (RH 7/5)
 	'plt.ssbVbCatch', 'plt.stdResids', 'PBSawatea'
   - Added Rd documentation: (RH 7/4)
