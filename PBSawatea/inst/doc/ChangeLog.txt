@@ -1,5 +1,9 @@
 PBSawatea Changes
 =================
+0.07  2011-07-14  Rowan
+  - Added new function 'compB0' to compare various reference points in terms of B0. (RH 7/13)
+  - Added modified version of 'boxplot' called 'plotBox' to use quantiles in whiskers. (RH 7/13)
+
 0.06  2011-07-11  Rowan
   - Added the PDF summary of package functions. (RH 7/11)
   - Added support document 'Latex.pdf' to .../trunk/documentation (not in package). (RH 7/11)
