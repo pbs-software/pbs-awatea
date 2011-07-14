@@ -36,7 +36,7 @@ importProjRec(dir, info="", coda=FALSE, quiet=TRUE)
 
   This function grabs the \code{tempdev} values from Awatea, 
   which are just \eqn{N(0,1)} values, then multiplies them by \eqn{\sigma_R}{\sigma[R]}
-  to yield \eqn{\epsilon_t \sim N(0,\sigma_R^2)}{\epsilon[t] ~ N(0,\simga[R]^2)}.
+  to yield \eqn{\epsilon_t \sim N(0,\sigma_R^2)}{\epsilon[t] ~ N(0,\sigma[R]^2)}.
 
   The parameter value for \eqn{\sigma_R}{sigma[R]} can be found in \cr
   \code{currentRes$extra$residuals$p_log_RecDev[6]}.
