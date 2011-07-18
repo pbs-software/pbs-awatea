@@ -50,4 +50,4 @@ tabSAR = function(models=paste("input-ymr",pad0(c(29,30),2),pad0(1,2),sep="."),
 	}
 }
 #-------------------------------------------tabSAR
-tabSAR(digits=2)
+#tabSAR(digits=2)
