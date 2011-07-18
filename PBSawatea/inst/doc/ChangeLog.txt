@@ -1,6 +1,7 @@
 PBSawatea Changes
 =================
-0.07  2011-07-14  Rowan
+0.07  2011-07-18  Rowan
+  - Added new function 'tabSAR' to create output tables for the SAR (Science Advisory Report). (RH 7/18)
   - Added new function 'compB0' to compare various reference points in terms of B0. (RH 7/13)
   - Added modified version of 'boxplot' called 'plotBox' to use quantiles in whiskers. (RH 7/13)
 
