@@ -1,5 +1,8 @@
 PBSawatea Changes
 =================
+0.08  2011-11-09  Rowan
+  - R-2.14.0 requires namespace and loading via '.onLoad' (RH 11/9)
+
 0.07  2011-07-20  Rowan
   - Revised function 'compB0' to satisfy AME's 'attention to detail'. (RH 7/20)
   - Added new function 'tabSAR' to create output tables for the SAR (Science Advisory Report). (RH 7/18)

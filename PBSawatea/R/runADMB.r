@@ -205,11 +205,11 @@ readAD = function(txt) {
 	return(Data) }
 #-------------------------------------------readAD
 
-#setMethod.view-------------------------2011-05-31
+#setMethod.view-------------------------2011-11-09
 # Set the method for 'view' when using an AWATEA class.
 #-----------------------------------------------RH
 setMethod("view", signature(obj = "AWATEAdata"),
-     function (obj, n = 1:5, last = FALSE, random = FALSE, see=TRUE, ...) {
+     function (obj, n = 1:5, last = FALSE, random = FALSE, print.console=TRUE, see=TRUE, ...) {
 	dat = obj@vars; desc= obj@vdesc; nvars=obj@nvars
 	dots = list(...)
 	if (!is.null(dots$pat)) {
