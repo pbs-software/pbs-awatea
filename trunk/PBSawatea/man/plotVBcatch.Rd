@@ -13,7 +13,7 @@ plotVBcatch( obj, currentRes1=currentRes,
              xyType="quantBox",
              lineType=c(3,2,1,2,3),
              refLines=NULL, xLim=NULL, yLim=NULL,
-             userPrompt=FALSE, save=T, xLab = c(1939,1939),
+             userPrompt=FALSE, save=TRUE, xLab = c(1939,1939),
              yLab=c(10000,220000),
              textLab=c("catch","vulnerable"),
              yaxis.by=10000, tcl.val=-0.2, ...)

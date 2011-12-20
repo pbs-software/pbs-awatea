@@ -1,5 +1,14 @@
 PBSawatea Changes
 =================
+Authors : RH  = Rowan Haigh
+          AME = Andrew Edwards
+
+0.09  2011-12-20  Rowan
+  - Added documentation for AWATEAdata S4 class; cleaned up mismatches caught by Rcheck. (RH 12/20)
+  - Added new function 'compBmsy' to compare biomass posteriors relative to Bmsy. (RH 12/19)
+  - Revised function 'plotBox' to handle vector data not in list format. (RH 12/15)
+  - Updated function 'compB0' to allow the choice of reference criteria and points for plotting. (RH 12/15)
+
 0.08  2011-11-09  Rowan
   - R-2.14.0 requires namespace and loading via '.onLoad' (RH 11/9)
 
@@ -12,7 +21,7 @@ PBSawatea Changes
 0.06  2011-07-11  Rowan
   - Added the PDF summary of package functions. (RH 7/11)
   - Added support document 'Latex.pdf' to .../trunk/documentation (not in package). (RH 7/11)
-  - Added documention for new functions 'srFun' and 'importProjRec'. (RH 7/11)
+  - Added documentation for new functions 'srFun' and 'importProjRec'. (RH 7/11)
   - Updated versions of 'ymrScape.r' and 'ymrrun-masterMCMC.Snw' (AME 7/8)
 
 0.05  2011-07-04  Rowan

@@ -12,7 +12,7 @@ plotRmcmcPOP( obj,
               xyType="quantBox",
               lineType=c(3,2,1,2,3),
               refLines=NULL, xLim=NULL, yLim=NULL,
-              userPrompt=FALSE, save=T, tcl.val=-0.2,
+              userPrompt=FALSE, save=TRUE, tcl.val=-0.2,
               yaxis.by=10000, yLab="Recruitment", ...)
 }
 \arguments{

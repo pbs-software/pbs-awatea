@@ -72,14 +72,14 @@ plotB2(model, what="d", series=NULL, years=NULL, axes=TRUE, div=1,
   and \code{\link[lattice]{panel.superpose}} are the underlying drawing
   functions.
 
-  \code{\link[scapeMCMC]{plotCA}}, \code{\link[scapeMCMC]{plotCL}},
-  \code{\link[scapeMCMC]{plotIndex}}, \code{\link{plotIndex2}}
-  and \code{\link[scapeMCMC]{plotLA}} plot model fit and data.
+  \code{\link[scape]{plotCA}}, \code{\link[scape]{plotCL}},
+  \code{\link[scape]{plotIndex}}, \code{\link[PBSawatea]{plotIndex2}}
+  and \code{\link[scape]{plotLA}} plot model fit and data.
 
-  \code{\link[scapeMCMC]{plotB}}, \code{\link[scapeMCMC]{plotN}}, 
-  and \code{\link[scapeMCMC]{plotSel}} plot derived quantities.
+  \code{\link[scape]{plotB}}, \code{\link[scape]{plotN}}, 
+  and \code{\link[scape]{plotSel}} plot derived quantities.
 
-  \code{\link[scapeMCMC]{scape-package}} gives an overview of the \pkg{scapeMCMC} package.
+  \code{\link[scape]{scape-package}} gives an overview of the \pkg{scape} package.
 }
 % Graphics
 \keyword{hplot}

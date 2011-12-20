@@ -1,5 +1,5 @@
-\name{plotVBnorm}
-\alias{plotVBnorm}
+\name{plotBVBnorm}
+%\alias{plotVBnorm}
 \alias{plotBVBnorm}
 \title{
   Plot Spawning and Vulnerable Biomass Relative to Virgin
@@ -9,24 +9,24 @@
   \eqn{B_0}{B0} and \eqn{V_0}{V0}, respectively.
 }
 \usage{
-plotVBnorm( mcmcObj,
-            p=c(0.025,0.25,0.5,0.75,0.975),
-            xyType="quantBox",
-            lineType=c(3,2,1,2,3),
-            refLines=NULL, xLim=NULL, yLim=NULL,
-            userPrompt=FALSE, save=T, xLeg=0.7, yLeg=0.9,
-            yaxis.by=0.02, tcl.val=-0.2,
-            B.col="black", VB.col="black", ...)
-
 plotBVBnorm(mcmcObj, 
             p=c(0.025,0.25,0.5,0.75,0.975), 
             xyType="quantBox", 
             lineType=c(3,2,1,2,3), 
             refLines=NULL, xLim=NULL, yLim=NULL, 
-            userPrompt=FALSE, save=T, xLeg=0.7, yLeg=0.9, 
+            userPrompt=FALSE, save=TRUE, xLeg=0.7, yLeg=0.9, 
             yaxis.by=0.02, tcl.val=-0.2, 
             B.col="black", VB.col="black", ...)
 }
+%plotVBnorm( mcmcObj,
+%            p=c(0.025,0.25,0.5,0.75,0.975),
+%            xyType="quantBox",
+%            lineType=c(3,2,1,2,3),
+%            refLines=NULL, xLim=NULL, yLim=NULL,
+%            userPrompt=FALSE, save=TRUE, xLeg=0.7, yLeg=0.9,
+%            yaxis.by=0.02, tcl.val=-0.2,
+%            B.col="black", VB.col="black", ...)
+
 \arguments{
   \item{mcmcObj}{MCMC list object (\code{currentMCMC}).}
   \item{p}{quantiles to use in \code{quantBox}.}

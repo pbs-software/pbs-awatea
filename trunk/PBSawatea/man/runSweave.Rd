@@ -34,8 +34,7 @@ runSweave(wd=getwd(), cpue=FALSE, strSpp="YMR",
 }
 \value{
   A customised Sweave file for \code{runNo} and \code{rwtNo} is created in a subdirectory \cr
-  \code{./\emph{strSpp}run/MPD.\emph{runNo}.\emph{rwtNo}} \cr
-  from where it is run.
+  (e.g., \code{./YMRrun/MPD.29.01/}) from where it is run.
 }
 \author{
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
@@ -46,7 +45,7 @@ runSweave(wd=getwd(), cpue=FALSE, strSpp="YMR",
   \code{.../R/.../library/PBSawatea/snw}
 }
 \seealso{
-  \code{\link{runMPD}}, \code{\link{runSweaveMCMC}}, \code{\link{runADMB}}
+  \code{\link[PBSawatea]{runMPD}}, \code{\link[PBSawatea]{runSweaveMCMC}}, \code{\link[PBSawatea]{runADMB}}
 }
 \keyword{character}
 \keyword{manip}

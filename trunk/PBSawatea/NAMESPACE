@@ -1,12 +1,12 @@
 # Export all functions that do NOT begin with a dot (period)
-#exportPattern("^[^\\.]")
-#exportPattern("^[^\\*]") # export all objects
+exportPattern("^[^\\.]")
 
-# Export all names
-exportPattern(".")
+# Export some handy dot functions
+export(.compB0.get, .flush.cat)
 
 # Import all packages listed as Imports or Depends
 import(
   PBSmodelling, scape, scapeMCMC, lattice, gdata, xtable
 )
+
 

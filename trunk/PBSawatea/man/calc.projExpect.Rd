@@ -22,7 +22,7 @@ calc.refProbs   ( projObj=currentProj$B, refPlist=refPointsList )
   \item{projObj}{matrix of biomass projections.}
   \item{refYrs}{numeric vector of reference years}
   \item{refList}{list of reference years (numeric vectors).}
-  \item{refPList}{list of reference points.}
+  \item{refPlist}{list of reference points.}
 }
 \details{
   \code{calc.projExpect....}{Calculate the expectation of projection to reference.} \cr
@@ -41,7 +41,7 @@ calc.refProbs   ( projObj=currentProj$B, refPlist=refPointsList )
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \seealso{
-  \code{\link{calc.refVal}}
+  \code{\link[PBSawatea]{calc.refVal}}
 }
 \keyword{array}
 \keyword{list}
