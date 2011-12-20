@@ -1,6 +1,7 @@
 \name{plotDensPOP}
 \alias{plotDensPOP}
 \alias{plotDensPOPpars}
+\alias{plotDensPOPparsPrior}
 \title{Plot MCMC Density (AME Version)}
 \description{
   Plot Markov-chain Monte Carlo density. This is an approximation of the

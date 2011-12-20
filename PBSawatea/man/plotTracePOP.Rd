@@ -65,7 +65,7 @@ plotTracePOP(mcmc, axes=FALSE, same.limits=FALSE,
   are the underlying drawing functions, and
   \code{\link[coda]{traceplot}} is a similar non-trellis plot.
 
-  \code{\link[scapeMCMC]{plotTracePOP}}, \code{\link[scapeMCMC]{plotAuto}}, \code{\link[scapeMCMC]{plotCumu}}, and
+  \code{\link[scapeMCMC]{plotTrace}}, \code{\link[scapeMCMC]{plotAuto}}, \code{\link[scapeMCMC]{plotCumu}}, and
   \code{\link[scapeMCMC]{plotSplom}} are diagnostic plots.
 
   \code{\link{plotDensPOP}}, \code{\link[scapeMCMC]{plotDens}}, \code{\link[scapeMCMC]{plotQuant}}, and 

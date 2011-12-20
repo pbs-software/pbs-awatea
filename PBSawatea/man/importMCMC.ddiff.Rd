@@ -13,7 +13,10 @@
 }
 \usage{
 importMCMC.ddiff()
-importProj.ddiff()
+importProj.ddiff(yrVal="2006")
+}
+\arguments{
+  \item{yrVal}{character year for delay-difference model (?).}
 }
 \value{
   \code{importMCMC.ddiff} returns a list object containing: \cr

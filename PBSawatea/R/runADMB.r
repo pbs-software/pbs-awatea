@@ -82,7 +82,6 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
 			Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age, sfile=sdnrfile, fileN=fileN)
 		}
 		if (!file.exists(rundir)) dir.create(rundir)
-#browser();return()
 		filesN = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=3),rep(c(ext,"par","res"),N.reweight+1),sep=".")
 		file.copy(paste(wd,c(filename.ext,filesN,sdnrfile),sep="/"),rundir,overwrite=TRUE)
 		file.remove(paste(wd,c(filesN,sdnrfile),sep="/"))
@@ -98,7 +97,6 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
 		if (!file.exists(mcdir)) dir.create(mcdir)
 		filesN = paste(prefix,runNoStr,rwtNoStr,c(ext,"res","par"),sep=".")
 		file.copy(paste(rundir,filesN,sep="/"),mcdir,overwrite=TRUE); setwd(mcdir)
-#browser();return()
 		#if (!doMPD) {
 		#	eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
 		#	Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age) 
@@ -150,7 +148,6 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
 # Read the ADMB input file and create an AWATEA class object.
 #-----------------------------------------------RH
 readAD = function(txt) {
-	#require(PBSmodelling)
 	txtnam = as.character(substitute(txt))
 	otxt = readLines(txt) # original text
 	xlst = strsplit(otxt,"")
@@ -293,8 +290,11 @@ setMethod("write", signature(x = "AWATEAdata"),
 # Set the method for 'reweight' when using an AWATEA class.
 #-----------------------------------------------RH
 reweight <- function(obj, cvpro=FALSE, mean.age=TRUE, ...) return(obj)
-setMethod("reweight", signature(obj = "AWATEAdata"),
-    function (obj, cvpro=FALSE,  mean.age=TRUE, ...) {
+#setMethod("reweight", signature(obj = "AWATEAdata"),
+#    function (obj, cvpro=FALSE,  mean.age=TRUE, ...) {
+setMethod("reweight", signature="AWATEAdata",
+    definition = function (obj, cvpro=FALSE,  mean.age=TRUE, ...) {
+
 	nrwt = obj@reweight$nrwt; dat = obj@vars; desc=obj@vdesc; res=obj@output
 	dots = list(...)
 #	NRfun  = function(O,P,dO)  { (O-P)/dO }        # Normal residual for an observation (F.26)
@@ -446,8 +446,6 @@ setMethod("reweight", signature(obj = "AWATEAdata"),
 		wNspa  = eNfun(spa$Series,spa$Year,spa$Obs,spa$Fit)
 	SDNR["spa"] = sd(spa$NR,na.rm=TRUE)
 
-#browser();return()
-
 	if (!is.null(dots$sfile)) {
 		sfile=dots$sfile
 		.flush.cat(paste(dots$fileN," (",paste(names(SDNR),collapse=", "),")\n",sep=""))
@@ -475,12 +473,13 @@ setMethod("reweight", signature(obj = "AWATEAdata"),
 #popin = reweight(popin)
 
 #=== POP ===
-#out=runADMB("s3age-estmh02.txt",doMPD=F,doMCMC=T,mcmc=1000,mcsave=100)
-#out=runADMB("s3age-estmh.txt",doMPD=T,N.reweight=2,ADargs=list("-nohess"))
-#out=runADMB("s3age-estmh.002.txt",doMPD=F,doMCMC=T,mcmc=1000,mcsave=100)
-#out=runADMB("s3age-estmh.txt",doMPD=T,N.reweight=1,doMCMC=T,mcmc=1000,mcsave=100,ADargs=list("-nohess"))
+#out=runADMB("s3age-estmh02.txt",doMPD=FALSE,doMCMC=TRUE,mcmc=1000,mcsave=100)
+#out=runADMB("s3age-estmh.txt",doMPD=TRUE,N.reweight=2,ADargs=list("-nohess"))
+#out=runADMB("s3age-estmh.002.txt",doMPD=FALSE,doMCMC=TRUE,mcmc=1000,mcsave=100)
+#out=runADMB("s3age-estmh.txt",doMPD=TRUE,N.reweight=1,doMCMC=TRUE,mcmc=1000,mcsave=100,ADargs=list("-nohess"))
 
 #=== YMR ===
+#out=runADMB("input29-ymr.txt",runNo=29,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
 #out=runADMB("input36-ymr.txt",runNo=36,doMPD=TRUE,N.reweight=6,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
 #out=runADMB("input25-ymr.txt",runNo=25,rwtNo=1,doMCMC=TRUE,mcmc=1e6,mcsave=1e3,mean.age=TRUE,cvpro=0.2)
 #out=runADMB("input24-ymr.txt",runNo=24,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001)

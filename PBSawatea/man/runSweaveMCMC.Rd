@@ -36,8 +36,7 @@ runSweaveMCMC( wd=getwd(), cpue=FALSE, estM=TRUE,
 }
 \value{
   A customised Sweave file for \code{runNo} and \code{rwtNo} is created in a subdirectory \cr
-  \code{./\emph{strSpp}run/MCMC.\emph{runNo}.\emph{rwtNo}} \cr
-  from where it is run.
+  (e.g., \code{./YMRrun/MCMC.29.01/}) from where it is run.
 }
 \author{
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
@@ -48,7 +47,7 @@ runSweaveMCMC( wd=getwd(), cpue=FALSE, estM=TRUE,
   \code{.../R/.../library/PBSawatea/snw/ymrrun-masterMCMC20yrProjs.Snw} 
 }
 \seealso{
-  \code{\link{runMCMC}}, \code{\link{runSweave}}, \code{\link{runADMB}}
+  \code{\link[PBSawatea]{runMCMC}}, \code{\link[PBSawatea]{runSweave}}, \code{\link[PBSawatea]{runADMB}}
 }
 \keyword{character}
 \keyword{manip}

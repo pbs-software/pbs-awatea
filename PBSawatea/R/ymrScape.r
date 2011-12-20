@@ -261,7 +261,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         # BUG FIX: Appears should call readMatrix to accommodate multiple gear series.
         #          Then, sum over the gears to get total catch.
         y <- readMatrix( "Total_Catch_by_Method_and_Year", nrow=ngears )
-        y <- apply( y,2,sum,na.rm=T )
+        y <- apply( y,2,sum,na.rm=TRUE )
         y <- c( y,NA )
 
         B <- as.data.frame( cbind(years, t(vb), sb, y, t(U)) )
@@ -490,7 +490,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
                 (CVratio[2] - 1)/(Ln[2] - L1[2]) * (fit$Fit[fit$Sex ==
                 sexes[2]] - L1[2])
         }
-        LA <- merge(obs, fit, by = c("Sex", "Age"), all = T)
+        LA <- merge(obs, fit, by = c("Sex", "Age"), all = TRUE)
         LA$Age <- as.integer(LA$Age)
         LA$Fit <- LA$Fit
         LA$CV <- LA$CV
@@ -633,9 +633,9 @@ load.allResFiles <- function( resList=NULL )
   names( result) <- resList
 
   for ( i in 1:length(result) )
-    result[[i]] <- importCol2( res.file=resList[i], Dev=T, CPUE=T,
-                               Survey=T, CLc=T, CLs=T, CAs=T, CAc=T)
-  result                             # AME added CAc=T, CAs=T.
+    result[[i]] <- importCol2( res.file=resList[i], Dev=TRUE, CPUE=TRUE,
+                               Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE)
+  result                             # AME added CAc=TRUE, CAs=TRUE.
 }
 
 
@@ -770,7 +770,7 @@ plotBmcmcPOP = function(obj, currentRes1 = currentRes,
                   xyType="quantBox",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=T, xLab = c(1939, 1939, 1939),
+                  userPrompt=FALSE, save=TRUE, xLab = c(1939, 1939, 1939),
                   yLab = c(10000, 70000, 170000),
                   textLab = c("catch", "spawning", "vulnerable"),
                   yaxis.by=10000, tcl.val=-0.2, ...)
@@ -839,7 +839,7 @@ plotVBcatch = function(obj, currentRes1 = currentRes,
                   xyType="quantBox",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=T, xLab = c(1939, 1939),
+                  userPrompt=FALSE, save=TRUE, xLab = c(1939, 1939),
                   yLab = c(10000, 220000),
                   textLab = c("catch", "vulnerable"),
                   yaxis.by=10000, tcl.val=-0.2, ...)
@@ -917,7 +917,7 @@ plotBVBnorm = function(mcmcObj,
                    xyType="quantBox",
                    lineType=c(3,2,1,2,3),
                    refLines=NULL, xLim=NULL, yLim=NULL,
-                   userPrompt=FALSE, save=T, xLeg = 0.7, yLeg=0.9,
+                   userPrompt=FALSE, save=TRUE, xLeg = 0.7, yLeg=0.9,
                    yaxis.by=0.02, tcl.val=-0.2,
                    B.col="black", VB.col="black", ...)
                                 # xLab - x position for label, etc.
@@ -983,7 +983,7 @@ plotRmcmcPOP = function(obj,
                   xyType="quantBox",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=T, tcl.val=-0.2,
+                  userPrompt=FALSE, save=TRUE, tcl.val=-0.2,
                   yaxis.by=10000, yLab="Recruitment", ...)
   {
                   # See plt.quantBio if want other xyTypes, as took out here:
@@ -1576,10 +1576,10 @@ stdRes.CA <- function( obj, trunc=3, myLab="Age Residuals", prt=TRUE )
 
   if ( prt )
   {
-    sdRes <- sqrt( var( result$stdRes,na.rm=T ) )
+    sdRes <- sqrt( var( result$stdRes,na.rm=TRUE ) )
     sdTrunc <- ifelse( result$stdRes > trunc, trunc, result$stdRes )
     sdTrunc <- ifelse( result$stdRes < -trunc, -trunc, result$stdRes )
-    sdResTrunc <- sqrt( var( sdTrunc,na.rm=T ) )
+    sdResTrunc <- sqrt( var( sdTrunc,na.rm=TRUE ) )
     cat( "\n",myLab,"\n" )
     cat( "\n     Std. Dev. of standardised Residuals = ",sdRes,"\n" )
     cat( "     Std. Dev. of Truncated standardised Residuals = ",sdResTrunc,"\n" )
@@ -1597,7 +1597,7 @@ stdRes.index <- function( obj, label=NULL, prt=TRUE )
 
   if ( prt )
   {
-    sdRes <- sqrt( var( stdRes,na.rm=T ) )
+    sdRes <- sqrt( var( stdRes,na.rm=TRUE ) )
     cat( "\n",label,"\n" )
     cat( "\n     Std. Dev. of standardised Residuals = ",sdRes,"\n" )
   }
@@ -1656,10 +1656,10 @@ plt.ageResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95)
       allAges = min(obj$Age):max(obj$Age)
       nodataAges = allAges[ !(allAges %in% obj$Age)]
       xx = split(c(obj$stdRes, rep(NA, length(nodataAges))), c(obj$Age, nodataAges))
-      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = F removes outliers
+      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = FALSE removes outliers
     } else
     {            
-    xpos <- boxplot( split( obj$stdRes, obj$Age ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = F removes outliers
+    xpos <- boxplot( split( obj$stdRes, obj$Age ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = FALSE removes outliers
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, "Age class" )
@@ -1679,12 +1679,12 @@ plt.ageResidsqqPOP <- function( obj, ages=c(2,60),
   # Plot the q-normal plot of the standardised residuals 
   qqnorm( obj$stdRes,xlab="",ylab="",main="" )
   abline( a=0,b=1 )
-  abline( h=quantile(obj$stdRes,p=pct/100,na.rm=T),lty=2 )
+  abline( h=quantile(obj$stdRes,p=pct/100,na.rm=TRUE),lty=2 )
   mtext( side=1, line=2, cex=0.8, "Theoretical quantiles" )
 
-  mtext( side=2, line=-1, cex=0.8, outer=T, "Standardised Residuals" )
+  mtext( side=2, line=-1, cex=0.8, outer=TRUE, "Standardised Residuals" )
   if ( !is.null(main) )
-    mtext( side=3, line=-0.5, cex=1.0, outer=T, main )
+    mtext( side=3, line=-0.5, cex=1.0, outer=TRUE, main )
 }
 
 
@@ -1702,11 +1702,11 @@ plt.yearResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95),
       nodataYears = allYears[ !(allYears %in% obj$Year)]
       xx = split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$Year, nodataYears))
       xpos <- boxplot( xx, whisklty=1, xlab="", ylab="",
-          outline=FALSE, ... )     #AME outline = F removes outliers
+          outline=FALSE, ... )     #AME outline = FALSE removes outliers
       # browser()
     } else
     {  
-      xpos <- boxplot( split( obj$stdRes, obj$Year ), whisklty=1, xlab="", ylab="", outline=FALSE, ... )     #AME outline = F removes outliers
+      xpos <- boxplot( split( obj$stdRes, obj$Year ), whisklty=1, xlab="", ylab="", outline=FALSE, ... )     #AME outline = FALSE removes outliers
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, "Year" )
@@ -1733,10 +1733,10 @@ plt.cohortResids <- function( obj, ages=c(2,59), pct=c(5,25,50,75,95),          
       allYears = min(obj$birthyr):max(obj$birthyr)
       nodataYears = allYears[ !(allYears %in% obj$birthyr)]
       xx = split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$birthyr, nodataYears))
-      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = F removes outliers
+      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = FALSE removes outliers
     } else
     {            
-    xpos = boxplot( split( obj$stdRes, obj$birthyr ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = F removes outliers
+    xpos = boxplot( split( obj$stdRes, obj$birthyr ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = FALSE removes outliers
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, "Year of birth" )
@@ -1744,12 +1744,12 @@ plt.cohortResids <- function( obj, ages=c(2,59), pct=c(5,25,50,75,95),          
   # Plot the q-normal plot of the standardised residuals.
   # qqnorm( obj$stdRes,xlab="",ylab="",main="" )
   # abline( a=0,b=1 )
-  # abline( h=quantile(obj$stdRes,p=pct/100,na.rm=T),lty=2 )
+  # abline( h=quantile(obj$stdRes,p=pct/100,na.rm=TRUE),lty=2 )
   # mtext( side=1, line=2, cex=0.8, "Theoretical quantiles" )
 
-  # mtext( side=2, line=0, cex=1.0, outer=T, "Standardised Residuals" )
+  # mtext( side=2, line=0, cex=1.0, outer=TRUE, "Standardised Residuals" )
   # if ( !is.null(main) )
-    mtext( side=3, line=-0.5, cex=1.0, outer=T, main )
+    mtext( side=3, line=-0.5, cex=1.0, outer=TRUE, main )
 
   # par( mfrow=c(1,1) )
 }
@@ -1798,8 +1798,8 @@ plt.allTraces <- function( obj, bioYrList=NULL, recYrList=NULL, save=TRUE )
     plt.trace( biomass )
     panLab( 0.5,0.95, cex=1.0, bioYrList[i] )
 
-    mtext( side=1, line=0.5, cex=1.0, outer=T, "Sample" )
-    mtext( side=2, line=0.5, cex=1.0, outer=T, "Biomass" )
+    mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Sample" )
+    mtext( side=2, line=0.5, cex=1.0, outer=TRUE, "Biomass" )
   }
   if ( save )
     savePlot( paste("biomassTracePJS"), type="jpg" )
@@ -1819,8 +1819,8 @@ plt.allTraces <- function( obj, bioYrList=NULL, recYrList=NULL, save=TRUE )
     plt.trace( recruits )
     panLab( 0.5,0.95, cex=1.0, recYrList[i] )
 
-    mtext( side=1, line=0.5, cex=1.0, outer=T, "Sample" )
-    mtext( side=2, line=0.5, cex=1.0, outer=T, "Recruitment" )
+    mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Sample" )
+    mtext( side=2, line=0.5, cex=1.0, outer=TRUE, "Recruitment" )
   }
   if ( save )
     savePlot( paste("recruitTracePJS"), type="jpg" )
@@ -1841,7 +1841,7 @@ plt.allTraces <- function( obj, bioYrList=NULL, recYrList=NULL, save=TRUE )
     plt.trace( parVec )
     panLab( 0.5,0.95, cex=1.0, parNames[i] )
 
-    mtext( side=1, line=0.5, cex=1.0, outer=T, "Sample" )
+    mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Sample" )
   }
   if ( save )
     savePlot( paste("parTracePJS"), type="jpg" )
@@ -1880,8 +1880,8 @@ plt.expRate <- function( obj, yLim=c(0,0.5), xLim=c(1954,2005) )
     mfg <- par( "mfg" )
     if ( mfg[1]==mfg[3] & mfg[2]==mfg[4] | i==nPanels )
     {
-      mtext( side=1, line=0.5, cex=1.0, outer=T, "Year" )
-      mtext( side=2, line=0.5, cex=1.0, outer=T, "Exploitation Rate" )
+      mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Year" )
+      mtext( side=2, line=0.5, cex=1.0, outer=TRUE, "Exploitation Rate" )
     }
   }
 
@@ -1910,7 +1910,7 @@ plt.idx <- function( obj,main="Residuals",save=NULL,...)
     plt.stdResids( result,
                xLim = range(result[!is.na(result$Obs), ]$Year))
                # restrict years for plot
-      mtext( side=3, line=0, cex=1.0, outer=T,
+      mtext( side=3, line=0, cex=1.0, outer=TRUE,
            surveyHeadName[i])
     dev.off()
     # if ( !is.null(save) )
@@ -1960,7 +1960,7 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96, ...)
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
     mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
-          surveyHeadName[i]) #  outer=T
+          surveyHeadName[i]) #  outer=TRUE
     if(i==3)
        mtext( side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
     if(i==5)
@@ -2005,9 +2005,9 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96, ...)
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
     mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
-          surveyHeadName[i]) #  outer=T
+          surveyHeadName[i]) #  outer=TRUE
     if(i==3)
-       mtext( side=2, line=-0.5, cex=1, outer=T,"Relative biomass")
+       mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
     if(i==5)
        mtext(side=1, line=0, cex=1, outer=TRUE, "Year")      
   }                         # cex was 0.8 for POP
@@ -2120,7 +2120,7 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96, ...)
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
     mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
-          surveyHeadName[i]) #  outer=T
+          surveyHeadName[i]) #  outer=TRUE
     #if(i==3)
     #   mtext( side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
     #if(i==5)
@@ -2258,8 +2258,8 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
          # restrict years for plot, does error bars
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-    # mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=T
-    # if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=T,"Relative biomass")
+    # mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+    # if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
     # if(i==5)  mtext(side=1, line=0, cex=1, outer=TRUE, "Year")
   }                         # cex was 0.8 for POP
   dev.off()
@@ -2275,7 +2275,7 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
 
   # Plot the biomass quantiles and projections by policy.
   # plt.quantBio( mcmcObj$B,projObj$B, policy=policy, xyType=rpType,
-  #  userPrompt=FALSE, save=T )
+  #  userPrompt=FALSE, save=TRUE )
 
   # recruitment, was in plt.mpdGraphs for popScape2.r
   postscript("recruitsMCMC.eps", height = 5, width = 6.2,
@@ -2359,7 +2359,7 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
   postscript("traceRecruits.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)
   plotTracePOP( mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000,
-    axes=T,
+    axes=TRUE,
     between = list(x=0.2, y=0.2),  xlab = "Sample",
     ylab="Recruitment, Rt (1000s)" )
        #AME - between, xlab, ylab, plotTracePOP to add MPD
@@ -2369,7 +2369,7 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
   postscript("traceBiomass.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)  
   plotTracePOP( mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000,
-             axes=T,
+             axes=TRUE,
     between = list(x=0.2, y=0.2),  xlab = "Sample",
     ylab="Female spawning biomass, Bt (1000 t)" )
   dev.off()
@@ -2377,7 +2377,7 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
   postscript("traceParams.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)  
   idx <- apply( mcmcObj$P,2,allEqual )   # checks if repeated.
-  plotTracePOP( mcmcObj$P[,!idx],axes=T,
+  plotTracePOP( mcmcObj$P[,!idx],axes=TRUE,
     between = list(x=0.2, y=0.2),  xlab = "Sample",
     ylab="Parameter estimate" )
                 #AME - between, xlab, ylab, plotTracePOP to add MPD
@@ -2422,7 +2422,7 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)
   plt.quantBio(currentMCMC$R, currentProj$R, xyType="quantBox",
               policy=c("0", "500", "1000", "1500", "2000", "2500"),
-              save=FALSE, yaxislab="Recruitment (1000s)") # , yLim=c(0, 50000))
+              save=FALSE, yaxis.lab="Recruitment (1000s)") # , yLim=c(0, 50000))
             # save needed to stop .png. No option for picking years.
   dev.off()
 
@@ -2757,7 +2757,7 @@ plt.mpdGraphs <- function( obj, save=FALSE ) #AME some actually MCMC.
   points(as.numeric(substring(names(MAc$MAexp), 3)), MAc$MAexp,
          pch=20, type="o")
   mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
-          "Commercial") #  outer=T
+          "Commercial") #  outer=TRUE
 
   MAsSurvNum = as.numeric(substring(names(MAs$MAobs), 1, last=1))
          # 1 or 2 for YMR
@@ -2778,7 +2778,7 @@ plt.mpdGraphs <- function( obj, save=FALSE ) #AME some actually MCMC.
           unique(MAsSurvNum)[i]],
           pch=20, type="o")
       mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
-          surveyHeadName[i]) #  outer=T
+          surveyHeadName[i]) #  outer=TRUE
     }
   dev.off()
 
@@ -2867,7 +2867,7 @@ plt.numR <- function( obj, minYr=NULL )
 
     if ( mfg[1]==mfg[3] & mfg[2]==mfg[4] )
     {
-      mtext( side=1, line=0, cex=1.0, outer=T, "Year" )
+      mtext( side=1, line=0, cex=1.0, outer=TRUE, "Year" )
     }
   }
 
@@ -2882,8 +2882,8 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
                   xyType="lines",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=T,
-                  yaxislab= "Spawning biomass" )
+                  userPrompt=FALSE, save=TRUE,
+                  yaxis.lab="Spawning biomass" )
 {
   plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", ... )   #AME line.col="black", col is for filling rect
   {
@@ -3018,9 +3018,9 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
       mfg <- par( "mfg" )
       if ( mfg[1]==1 & mfg[2]==1 )
       {
-        mtext( side=1, line=0.8, cex=1.0, outer=T, "Year" )
+        mtext( side=1, line=0.8, cex=1.0, outer=TRUE, "Year" )
                                        #AME line=0 changed
-        mtext( side=2, line=0.8, cex=1.0, outer=T, yaxislab,
+        mtext( side=2, line=0.8, cex=1.0, outer=TRUE, yaxis.lab,
            ) # "   and Spawning
       }
       mtext( side=3, line=0.25, cex=0.8,
@@ -3058,7 +3058,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
                   xyType="lines",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=T, main="", cex.main="",
+                  userPrompt=FALSE, save=TRUE, main="", cex.main="",
                   tcl.val=-0.2, xaxis.by = 1, yaxis.by=10000,
                   xaxis.lab = "Year", yaxis.lab= "Spawning biomass" )
 {
@@ -3190,9 +3190,9 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
       # mfg <- par( "mfg" )
       # if ( mfg[1]==1 & mfg[2]==1 )
       # {
-      #  mtext( side=1, line=0.8, cex=1.0, outer=T, "Year" )
+      #  mtext( side=1, line=0.8, cex=1.0, outer=TRUE, "Year" )
       #                                 #AME line=0 changed
-      #  mtext( side=2, line=0.8, cex=1.0, outer=T,
+      #  mtext( side=2, line=0.8, cex=1.0, outer=TRUE,
       #        "Spawning biomass" ) # "   and Spawning
       #}
       #mtext( side=3, line=0.25, cex=0.8,
@@ -3258,8 +3258,8 @@ plt.ssbVbCatch <- function( obj, x1=1966, xLim=c(1954,2005), yLim=c(0,25000) )
     mfg <- par( "mfg" )
     if ( mfg[1]==mfg[3] & mfg[2]==mfg[4] | i==nPanels )
     {
-      mtext( side=1, line=0.5, cex=1.0, outer=T, "Year" )
-      mtext( side=2, line=0.5, cex=1.0, outer=T, "Metric tonnes" )
+      mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Year" )
+      mtext( side=2, line=0.5, cex=1.0, outer=TRUE, "Metric tonnes" )
     }
   }
   par( mfrow=c(1,1) )
@@ -3275,7 +3275,7 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
   par( oma=c(1,1,2,1), mar=c(3,3,1,1), mfrow=c(3,1) )
 
   if ( is.null(yLim) )
-    yLim <- range( obj$stdRes, na.rm=T )
+    yLim <- range( obj$stdRes, na.rm=TRUE )
 
   # Plot the standardised residuals against time.
   plot( obj$Year, obj$stdRes, type="n", xlab="", ylab="", ylim=yLim,
@@ -3293,13 +3293,13 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
   # Plot the q-normal plot of the standardised residuals.
   wiggle=qqnorm( obj$stdRes,xlab="",ylab="",main="" , pch=19, cex=1.5)
   abline( a=0,b=1 )
-  abline( h=quantile(obj$stdRes,p=pct/100,na.rm=T),lty=2 )
+  abline( h=quantile(obj$stdRes,p=pct/100,na.rm=TRUE),lty=2 )
   points(wiggle, pch=19, cex=1.5) #, bg="orange")
   mtext( side=1, line=2, cex=0.8, "Theoretical quantiles" )
 
-  mtext( side=2, line=-0.5, cex=0.8, outer=T, "Standardised residuals" )
+  mtext( side=2, line=-0.5, cex=0.8, outer=TRUE, "Standardised residuals" )
   if ( !is.null(main) )
-    mtext( side=3, line=0, cex=1.0, outer=T, main )
+    mtext( side=3, line=0, cex=1.0, outer=TRUE, main )
 }
 
 #--------------------------------------------------------------------#
@@ -3313,15 +3313,15 @@ importMCMC.ddiff <- function()
   # The difference is that B is biomass defined by ddiff model.
 
   # Get the likelihood MCMCs. PJS includes other derived parameters here.
-  L <- read.table( "mcmclike.csv", header=T, sep="," )
+  L <- read.table( "mcmclike.csv", header=TRUE, sep="," )
 
   # Get the parameter MCMCs.
-  params <-read.table( "mcmcparams.csv", header=T, sep="," )
+  params <-read.table( "mcmcparams.csv", header=TRUE, sep="," )
   rdevID <- grep( "rdev",names(params) )
   P <- params[ ,setdiff(c(1:ncol(params)),rdevID ) ]
 
   # Get the biomass MCMCs and strip "biom" off to leave only "yyyy".
-  B <- read.table( "mcmcbiom.csv", header=T, sep="," )
+  B <- read.table( "mcmcbiom.csv", header=TRUE, sep="," )
   names( B ) <- substring( names( B ),5 )
 
   # Get the recruitments.  They are already in the mcmcparams file
@@ -3347,7 +3347,7 @@ importProj.ddiff <- function( yrVal="2006" )
   # exist in the mcmcprojbiom.csv file.
   # Note also that "cat=" in csv file becomes "cat." in read.table.
 
-  projbiom <- read.table( "mcmcprojbiom.csv",header=T,sep="," )
+  projbiom <- read.table( "mcmcprojbiom.csv",header=TRUE,sep="," )
   projNames <- gsub( "cat.","",names( projbiom ) )
   names( projbiom ) <- projNames
 
@@ -3370,7 +3370,7 @@ importProj.ddiff <- function( yrVal="2006" )
   # exist in the mcmcprojbiom.csv file.
   # Note also that "cat=" in csv file becomes "cat." in read.table.
 
-  projhr <- read.table( "mcmcprojhr.csv",header=T,sep="," )
+  projhr <- read.table( "mcmcprojhr.csv",header=TRUE,sep="," )
   projNames <- gsub( "cat.","",names( projhr ) )
   names( projhr ) <- projNames
 
@@ -3417,15 +3417,15 @@ get.resFile <- function( resFile=NULL )
     }
   }
 
-   #  newRes <- importCol2( res.file=resFile, Dev=T, CPUE=T, Survey=T, CAc=T)
+   #  newRes <- importCol2( res.file=resFile, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CAc=TRUE)
    #  AME changed to the following, for which the options agree
    #  with those in load.allResFiles, which works. Now it loads
    #  in okay, previously had trouble when overwriting.
    #  load.allResFiles does load in them all at the beginning, but
    #  the reloading here was probably done so an updated .res file
-   #  can be loaded in. Also added CAc=T, CAs=T
-   newRes <- importCol2( res.file=resFile, Dev=T, CPUE=T,
-                               Survey=T, CLc=T, CLs=T, CAs=T, CAc=T)
+   #  can be loaded in. Also added CAc=TRUE, CAs=TRUE
+   newRes <- importCol2( res.file=resFile, Dev=TRUE, CPUE=TRUE,
+                               Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE)
   assign( "currentRes", newRes, pos=1 )
   assign( "resFile",resFile )
   cat( "\nLoaded Awatea res file: ",resFile,"\n\n" )
@@ -3459,7 +3459,7 @@ mainMenu <- function()
          loadMenu()
 #        resFile <- get.resFile( resFile )
 #        assign( "resFile",resFile,pos=1 )
-#        currentRes <- importCol( res.file=resFile, Dev=T, CPUE=T, Survey=T, CAc=T )
+#        currentRes <- importCol( res.file=resFile, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CAc=TRUE )
 #        assign( "currentRes", currentRes, pos=1 )
 #        cat( "\nLoaded Awatea res file: \n\n" )
 #        print( ll( currentRes ) )
@@ -3742,42 +3742,42 @@ mcmcMenu <- function()
         else
           #ACH 9/20/07: I'm changing the mfRow becasue the canary model has 68 years
           mfRow <- c(5,3)
-        windows(record=T)
+        windows(record=TRUE)
         par( oma=c(2,2,1,1), mar=c(2,2,2,1), mfrow=mfRow )
         plotCumu( currentMCMC$B[,getYrIdx(names(currentMCMC$B))],
           auto.layout=FALSE, xlab="", ylab="", main="" )
-        mtext( side=1, line=0.5, cex=1.0, outer=T, "Iteration" )
-        mtext( side=2, line=1, cex=1.0, outer=T, "Biomass" )
+        mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
+        mtext( side=2, line=1, cex=1.0, outer=TRUE, "Biomass" )
 
         windows()
         par(mfrow=c(3,4), oma=c(2,2,1,1), mar=c(2,2,2,1) )
         idx <- apply( currentMCMC$P,2,allEqual )
         #ACH: Added the next few lines as a quick fix. Awatea now only outputs estimated parameters, thus the allEqual stuff is not necessary
-        #plotCumu( (currentMCMC$P[,!idx])[,1:12] , auto.layout=F)
+        #plotCumu( (currentMCMC$P[,!idx])[,1:12] , auto.layout=FALSE)
         npars <- length(idx)
-        plotCumu( (currentMCMC$P[,!idx])[,1:(min(npars,12))] , auto.layout=F)
-        mtext( side=1, line=0.5, cex=1.0, outer=T, "Iteration" )
-        mtext( side=2, line=1, cex=1.0, outer=T, "Value" )
+        plotCumu( (currentMCMC$P[,!idx])[,1:(min(npars,12))] , auto.layout=FALSE)
+        mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
+        mtext( side=2, line=1, cex=1.0, outer=TRUE, "Value" )
         if(npars > 12) {
             windows()
             par(mfrow=c(3,4), oma=c(2,2,1,1), mar=c(2,2,2,1) )
-            plotCumu( (currentMCMC$P[,!idx])[,13:22], auto.layout=F )
-            mtext( side=1, line=0.5, cex=1.0, outer=T, "Iteration" )
-            mtext( side=2, line=1, cex=1.0, outer=T, "Value" )
+            plotCumu( (currentMCMC$P[,!idx])[,13:22], auto.layout=FALSE )
+            mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
+            mtext( side=2, line=1, cex=1.0, outer=TRUE, "Value" )
         }
       },
       {
         scapeMCMC::plotTrace( currentMCMC$R[,getYrIdx(
-          names(currentMCMC$R))],axes=T,
+          names(currentMCMC$R))],axes=TRUE,
           xlab="Recruitment" )
         windows()
         par( oma=c(2,2,1,1), mar=c(2,2,2,1), mfrow=mfRow )
         scapeMCMC::plotTrace( currentMCMC$B[,getYrIdx(
-          names(currentMCMC$B))],axes=T,
+          names(currentMCMC$B))],axes=TRUE,
           xlab="Biomass" )
         windows()
         idx <- apply( currentMCMC$P,2,allEqual )
-        scapeMCMC::plotTrace( currentMCMC$P[,!idx], axes=T )
+        scapeMCMC::plotTrace( currentMCMC$P[,!idx], axes=TRUE )
       },
       {
         plt.allTraces( currentMCMC )
@@ -3801,8 +3801,8 @@ utilMenu <- function()
     cat( "\nUtilities:\n" )
     choice <- menu( menuItems )
     switch( choice,
-      print( help( "scape", htmlhelp=TRUE ) ),
-      print( help( "scapeMCMC", htmlhelp=TRUE ) ),
+      print( help( "scape", help_type="html" ) ),
+      print( help( "scapeMCMC", help_type="html" ) ),
       graphics( view="portrait" ),
       graphics( view="landscape" )
     )

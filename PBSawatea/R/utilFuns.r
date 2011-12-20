@@ -1,6 +1,13 @@
-#--------------------------------------------------------------------#
+#===============================================================================
+# PBSawatea utility functions:
+#  importRes        : import Awatea results.
+#  makeErrMat       : mMake simple ageing error matrix for Awatea.
+#  tabSAR           : generate comma-del., 2-D tables from reference point objects.
+#===============================================================================
+
+#importRes--------------------------------------------------2011-05-03
 # Awatea res file has following structure (some elements may be      #
-# missing dependent on model configuration and importCol details).   #
+# missing dependent on model configuration and importCol details.    #
 #                                                                    #
 # N predicted numbers at age                                         #
 # B predicted biomass, recruitment, and observed landings            #
@@ -11,7 +18,7 @@
 # CLc, CLs commercial and survey C@L (catch at length) and fit       #
 # LA observed L@A and fit                                            #
 # extra = bits and bobs requested by Andy                            #
-#--------------------------------------------------------------------#
+#-------------------------------------------------------------------RH
 
 importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE, 
      Survey=FALSE, CAc=FALSE, CAs=FALSE, CLc=FALSE, CLs=FALSE, 
@@ -304,7 +311,6 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 						"errSfull_prior","errvarL_prior","errvarR_prior",
 						"log_qCPUE_prior","log_BetaCPUE_prior","qCPUEerr_prior")) index = index + (1:NCPUEindex) - 1
 					exvec = strsplit(resvec[index],split=sep)
-#browser();return()
 					exmat = t(sapply(exvec,function(x){as.numeric(x[!is.element(x,c(i,""))])}))
 					if (nrow(exmat)==1) exres=as.vector(exmat)
 					else                exres=exmat
@@ -391,6 +397,74 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 	class(model) <- "scape"
 	return(model)
 }
-#test=importRes(res.file="input5-ymr.001.res", Dev=T, CPUE=T, Survey=T, CLc=T, CLs=T, CAs=T, CAc=T, extra=T)
-#test=importRes("s3age-estmh00.res", CAc=T, extra=T)
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importRes
+
+#makeErrMat-----------------------------2011-05-05
+# Make a simple ageing error matrix for Awatea.
+#-----------------------------------------------RH
+makeErrMat = function(N=60, ondiag=0.8, offdiag=0.1, corner=0.9) {
+	errMat = diag(ondiag,N,N)
+	for (i in 1:(N-1))
+		errMat[i,i+1] = offdiag
+	for (j in 1:(N-1))
+		errMat[j+1,j] = offdiag
+	errMat[1,1] = errMat[N,N] = corner
+	write.table(errMat,file="errmat.dat",sep="\t",row.names=FALSE,col.names=FALSE)
+	return(errMat)
+}
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^makeErrMat
+
+#tabSAR---------------------------------2011-07-18
+# Generate comma-delimited, two-dimensional output tables from reference point objects.
+#  models - names of binary system files that store the decision tables.
+#  pnam   - name of list object containing matrices of reference probabilities.
+#  tnam   - names of matrices reporting times to reach reference points/criteria.
+#  cats   - catch strategies (subset) to report in output tables.
+#  digits - number of digits to retain after the decimal.
+#-----------------------------------------------RH
+tabSAR = function(models=paste("input-ymr",pad0(c(29,30),2),pad0(1,2),sep="."),
+    #prefix="input-ymr", run=c(29,30), rwt=1,
+    pnam = "refProbs3Gen90", tnam=c("Ttab0.5", "Ttab0.8", "Ttab0.95"),
+    cats = seq(0,2500,500), digits=2 ) {
+
+	#models = paste(prefix,pad0(run,2),pad0(rwt,2),sep=".")
+	files  = paste(models,"Tables.RData",sep="")
+	nfiles = length(files)
+	for (i in 1:nfiles) {
+		ifile = files[i]
+		load(ifile)
+
+		pcsv = gsub("Tables\\.RData","_prob.csv",ifile)  # output CSV name for probabilities
+		cat(models[i],"\n",file=pcsv)
+		cat("Annual catch,,,,Projection Year,,,\n",file=pcsv,append=TRUE)
+		probs = get(pnam)
+		cat(paste(c("strategy",dimnames(probs[[1]])[[2]]),collapse=","),"\n",file=pcsv,append=TRUE)
+		for (j in names(probs)) {
+			cat(paste("P(Bt > ",j,")",sep=""),"\n",file=pcsv,append=TRUE)
+			ptab = probs[[j]]
+			ptab = ptab[as.character(cats),]
+			mess = paste(paste(dimnames(ptab)[[1]],apply(ptab,1,function(x){
+				paste(show0(round(x,digits),digits,add2int=TRUE),collapse=",")}),sep=","),collapse="\n") # flatten table
+			cat(mess,"\n",file=pcsv,append=TRUE)
+		}
+
+		tcsv = gsub("Tables\\.RData","_targ.csv",ifile)  # output CSV name for years to target
+		cat(models[i],"\n",file=tcsv)
+		cat("Annual catch,,,,Target Reference,,\n",file=tcsv,append=TRUE)
+		for (k in tnam) {
+			ttab = get(k)
+			if (k==tnam[1])
+				cat(paste(c("strategy",dimnames(ttab)[[2]]),collapse=","),"\n",file=tcsv,append=TRUE)
+#browser();return()
+			cat(paste(as.numeric(substring(k,5))*100,"% confidence",sep=""),"\n",file=tcsv,append=TRUE)
+			ttab = ttab[as.character(cats),]
+			mess = paste(paste(dimnames(ttab)[[1]],apply(ttab,1,function(x){
+				paste(show0(round(x,digits),digits,add2int=TRUE),collapse=",")}),sep=","),collapse="\n") # flatten table
+			cat(mess,"\n",file=tcsv,append=TRUE)
+		}
+		
+	}
+}
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^tabSAR
+
 

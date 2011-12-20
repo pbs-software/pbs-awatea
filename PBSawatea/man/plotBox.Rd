@@ -12,29 +12,21 @@
   that sets the whiskers to specified quantiles rather than 1.5 IRQ.
 }
 \usage{
-plotBox(x, \dots, range = 1.5, width = NULL, varwidth = FALSE,
-        notch = FALSE, outline = TRUE, names, plot = TRUE,
-        border = par("fg"), col = NULL, log = "",
-        pars = list(boxwex = 0.8, staplewex = 0.5, outwex = 0.5),
-        horizontal = FALSE, add = FALSE, at = NULL,
-        quants=c(0.025,0.25,0.5,0.75,0.975), outliers=FALSE)
+plotBox(x, \dots, range=1.5, width=NULL, varwidth=FALSE, 
+    notch=FALSE, outline=TRUE, names, plot=TRUE, 
+    border=par("fg"), col=NULL, log="", 
+    pars=list(boxwex=0.8, staplewex=0.5, outwex=0.5, whisklty=1), 
+    horizontal=FALSE, add=FALSE, at=NULL,
+    quants=c(0.025,0.25,0.5,0.75,0.975), outliers=FALSE)
 }
 \arguments{
-  \item{formula}{a formula, such as \code{y ~ grp}, where \code{y} is a
-    numeric vector of data values to be split into groups according to
-    the grouping variable \code{grp} (usually a factor).}
-  \item{data}{a data.frame (or list) from which the variables in
-    \code{formula} should be taken.}
-  \item{subset}{an optional vector specifying a subset of observations
-    to be used for plotting.}
-  \item{na.action}{a function which indicates what should happen
-    when the data contain \code{NA}s.  The default is to ignore missing
-    values in either the response or the group.}
   \item{x}{for specifying data from which the boxplots are to be
     produced. Either a numeric vector, or a single list containing such
     vectors. Additional unnamed arguments specify further data
     as separate vectors (each corresponding to a component boxplot).
-    \code{\link[base]{NA}}s are allowed in the data.}
+    \code{\link[base]{NA}}s are allowed in the data.\cr
+    Arguments \code{formula}, \code{data}, code{subset}, and \code{na.action}
+    are itemized below in \bold{Notes}, but have not been tested for \code{plotBox}.}
   \item{\dots}{For the \code{formula} method, named arguments to be passed to
     the default method.
 
@@ -66,13 +58,6 @@ plotBox(x, \dots, range = 1.5, width = NULL, varwidth = FALSE,
   \item{names}{group labels which will be printed under each boxplot.
     Can be a character vector or an \link[base]{expression} (see
     \link[grDevices]{plotmath}).}
-  \item{boxwex}{a scale factor to be applied to all boxes.  When there
-    are only a few groups, the appearance of the plot can be improved
-    by making the boxes narrower.}
-  \item{staplewex}{staple line width expansion, proportional to box
-    width.}
-  \item{outwex}{outlier line width expansion, proportional to box
-    width.}
   \item{plot}{if \code{TRUE} (the default) then a boxplot is
     produced.  If not, the summaries which the boxplots are based on
     are returned.}
@@ -86,7 +71,14 @@ plotBox(x, \dots, range = 1.5, width = NULL, varwidth = FALSE,
     be plotted in log scale.}
   \item{pars}{a list of (potentially many) more graphical parameters,
     e.g., \code{boxwex} or \code{outpch}; these are passed to
-    \code{\link[graphics]{bxp}} (if \code{plot} is true); for details, see there.}
+    \code{\link[graphics]{bxp}} (if \code{plot} is true); for details, see there.\cr
+    Some explicit settings: \cr
+    \code{boxwex }{-- a scale factor to be applied to all boxes.  When there
+    are only a few groups, the appearance of the plot can be improved
+    by making the boxes narrower.} \cr
+    \code{staplewex }{-- staple line width expansion, proportional to box width.} \cr
+    \code{outwex }{-- outlier line width expansion, proportional to box width.} \cr
+    \code{whisklty }{-- whisker line type.} }
   \item{horizontal}{logical indicating if the boxplots should be
     horizontal; default \code{FALSE} means vertical boxes.}
   \item{add}{logical, if true \emph{add} boxplot to current plot.}
@@ -99,6 +91,17 @@ plotBox(x, \dots, range = 1.5, width = NULL, varwidth = FALSE,
     (v) the extent of the upper whisker.}
   \item{outliers}{logical: if \code{TRUE} show the outliers (but used primarily to 
     suppress outliers when \code{FALSE}).}
+}
+\section{Additional arguments}{
+  Additional arguments used by \code{boxplot} but not tested in \code{plotBox}:
+  \tabular{ll}{
+  \code{formula.....} \tab A formula, such as \code{y ~ grp}, where \code{y} is a numeric vector of data values \cr
+                      \tab to be split into groups according to the grouping variable \code{grp} (usually a factor). \cr
+  \code{data........} \tab A data.frame (or list) from which the variables in \code{formula} should be taken.\cr
+  \code{subset......} \tab An optional vector specifying a subset of observations to be used for plotting. \cr 
+  \code{na.action...} \tab A function which indicates what should happen when the data contain \code{NA}s. \cr
+                      \tab The default is to ignore missing values in either the response or the group.
+  }
 }
 \details{
   The generic function \code{boxplot} currently has a default method
@@ -139,6 +142,8 @@ plotBox(x, \dots, range = 1.5, width = NULL, varwidth = FALSE,
   See also \code{\link[grDevices]{boxplot.stats}}.
 }
 \seealso{
+  See \code{\link[PBSawatea]{compB0}} to show MCMC distributions of \eqn{B} relative to \eqn{B_0}{B0}.
+
   \code{\link[grDevices]{boxplot.stats}} which does the computation,
   \code{\link[graphics]{bxp}} for the plotting and more examples;
   and \code{\link[graphics]{stripchart}} for an alternative (with small data

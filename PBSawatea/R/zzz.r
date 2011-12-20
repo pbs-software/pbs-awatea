@@ -8,14 +8,14 @@
 	
 	userguide_path <- system.file( "doc/PBSawatea.pdf", package = "PBSawatea" )
 	
-	cat("
+	packageStartupMessage("
 -----------------------------------------------------------
-PBS Awatea", pkg_info$Version, "-- Copyright (C) 2011 Fisheries and Oceans Canada
+PBS Awatea ", pkg_info$Version, " -- Copyright (C) 2011 Fisheries and Oceans Canada
 
 A rough guide 'PBSawatea.pdf' is located at 
 ", userguide_path, "
 
-Packaged on", pkg_date, "
+Packaged on ", pkg_date, "
 Pacific Biological Station, Nanaimo
 
 Aotearoa, six months in a leaky boat...
