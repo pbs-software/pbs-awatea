@@ -1,5 +1,5 @@
-\name{close.allWin}
-\alias{close.allWin}
+\name{closeAllWin}
+\alias{closeAllWin}
 \title{
   Close All Open Devices
 }
@@ -7,7 +7,7 @@
   Close all open devices.
 }
 \usage{
-close.allWin()
+closeAllWin()
 }
 \seealso{
   \code{\link[PBSmodelling]{closeWin}}

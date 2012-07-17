@@ -33,8 +33,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		line <- match(keyword, substring(vector, 1, nchar(keyword)))
 		v <- if (same.line)
 			as.numeric(scan(file, what = "", skip = line - 1, nlines = 1, quiet = TRUE)[-1])
-		else as.numeric(scan(file, what = "", skip = line, nlines = 1,
-			quiet = TRUE))
+		else as.numeric(scan(file, what = "", skip = line, nlines = 1, quiet = TRUE))
 		if (!quiet) .flush.cat("vector...")
 		return(v)
 	}
