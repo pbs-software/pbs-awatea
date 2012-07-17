@@ -10,7 +10,7 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="YMR",
 		Nsurvey = 5
 		) {
 	on.exit(setwd(wd))
-	remove(list=setdiff(ls(1,all=TRUE),c("runMPD","runSweave")),pos=1)
+	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave")),pos=1)
 	#require(PBSmodelling, quietly=TRUE)
 	#require(xtable, quietly=TRUE) 
 	#require(lattice, quietly=TRUE)

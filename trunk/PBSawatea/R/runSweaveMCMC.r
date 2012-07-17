@@ -8,7 +8,7 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="YMR",
     runNo=25, rwtNo=0, running.awatea=0   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
 	) {
 	on.exit(setwd(wd))
-	remove(list=setdiff(ls(1,all=TRUE),c("runMCMC","runSweaveMCMC")),pos=1)
+	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC")),pos=1)
 	#require(PBSmodelling, quietly=TRUE)
 	#require(xtable, quietly=TRUE) 
 	#require(lattice, quietly=TRUE)

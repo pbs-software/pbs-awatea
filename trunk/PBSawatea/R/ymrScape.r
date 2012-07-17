@@ -454,7 +454,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
             nrow = sum(nobs), header = 8)
         obs <- data.frame(Sex = rep(sexes, nobs), Age = obs[,
             1], Obs = obs[, 2])
-        owarn <- options(warn = -1)
+        owarn <- options(warn.conflicts = -1)
         Linf <- readVector("VonBeratalanfy:Linf")[-(1:3)]
         K <- readVector("VonBeratalanfy:k")[-(1:3)]
         t0 <- readVector("VonBeratalanfy:to")[-(1:3)]
@@ -1179,7 +1179,7 @@ allEqual <- function(x)
 }
 
 
-close.allWin <- function()
+closeAllWin <- function()
 {
   winList <- dev.list()
   if ( !is.null(winList) )
@@ -1953,7 +1953,8 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96, ...)
     yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
     # postscript(surveyFigName[i],  height = 4, width = 3.2,
     #     horizontal=FALSE,  paper="special")
-    gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+    #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+    plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
            li=seriesVals$Lo, xlim = xLim, ylim=yLim, xlab="",
            ylab="", gap=0, pch=19)
          # restrict years for plot, does error bars
@@ -1998,7 +1999,8 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96, ...)
     xLimmaxsurvIndSer3 = range(xLimmaxsurvIndSer3, yearsnotNA,
       na.rm=TRUE)     # setting xLimmaxsurvIndSer3 = NA above
 
-    gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+    #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+    plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
            li=seriesVals$Lo, xlim = xLimAll, ylim=yLim, xlab="",
            ylab="", gap=0, pch=19)
          # restrict years for plot, does error bars
@@ -2113,7 +2115,8 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96, ...)
     postscript(paste("survIndSer4-", i, ".eps", sep=""),
     height = 6.0, width = 6.0,
     horizontal=FALSE,  paper="special")   # height was 6 for POP
-    gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+    #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+    plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
            li=seriesVals$Lo, xlim = xLim, ylim=yLim, xlab="Year",
            ylab="Relative biomass", gap=0, pch=19)
          # restrict years for plot, does error bars
@@ -2170,8 +2173,8 @@ plotChains = function (mcmc, nchains=3, pdisc=0.1,
 	p <- ncol(mcmc)
 	dat <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
 		names(mcmc)), Draw = rep(1:n, p), Chain = rep(rep(1:nchains,f),p), Value = as.vector(as.matrix(mcmc)))
-	require(grid, quiet = TRUE, warn = FALSE)
-	require(lattice, quiet = TRUE, warn = FALSE)
+	require(grid, quietly = TRUE, warn.conflicts = FALSE)
+	require(lattice, quietly = TRUE, warn.conflicts = FALSE)
 	if (trellis.par.get()$background$col == "#909090") {
 		for (d in dev.list()) dev.off()
 		trellis.device(color = FALSE)
@@ -2252,7 +2255,8 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
     yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
     # postscript(surveyFigName[i],  height = 4, width = 3.2,
     #     horizontal=FALSE,  paper="special")
-    gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+    #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+    plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
            li=seriesVals$Lo, xlim = xLim, ylim=yLim, xlab="Year",
            ylab=paste("CPUE index:",seriesList[i]), gap=0, pch=19)
          # restrict years for plot, does error bars
@@ -2271,7 +2275,7 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
 plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) )   # xlimrec is range for recruitments
 {
   # Does all MCMC graphs below.  If save=TRUE then PNG file saved.
-  # close.allWin(). Note that I've used currentMCMC below,not mcmcObj
+  # closeAllWin(). Note that I've used currentMCMC below,not mcmcObj
 
   # Plot the biomass quantiles and projections by policy.
   # plt.quantBio( mcmcObj$B,projObj$B, policy=policy, xyType=rpType,
@@ -2464,7 +2468,7 @@ plt.mpdGraphs <- function( obj, save=FALSE ) #AME some actually MCMC.
                                    # Taking some out for ymr.
 {
   # Does all MPD graphs below.  If save=TRUE then PNG file saved.
-  close.allWin()
+  closeAllWin()
 
   # Plot the biomass and catch.
   # plotB2( obj,main=mainTitle )              
@@ -2609,7 +2613,7 @@ plt.mpdGraphs <- function( obj, save=FALSE ) #AME some actually MCMC.
         horizontal=FALSE,  paper="special", onefile=FALSE)
       plotCA( currentRes, what="c", ylab="Proportion", xlab="Age class",
         sex=plot.sex, layout= age.layout, key=CA.key, main=plot.sex,
-        pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd=2 ,series=i)
+        pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 ,series=i)
                  # col.lines otherwise boys are blue
                  # Tried using rbind to add dummy data for 1985, 1986
                  #  and 1988, but didn't work:
@@ -2675,7 +2679,7 @@ plt.mpdGraphs <- function( obj, save=FALSE ) #AME some actually MCMC.
         horizontal=FALSE,  paper="special", onefile=FALSE)
     plotCA( currentRes, what="s", series = i, ylab="Proportion",
         xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex,
-        pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd=2 )
+        pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
                  # col.lines otherwise boys are blue
                  # Tried using rbind to add dummy data for 1985, 1986
                  #  and 1988, but didn't work:
@@ -2809,7 +2813,7 @@ plt.mpdGraphs <- function( obj, save=FALSE ) #AME some actually MCMC.
   #  savePlot( "surveyLengthResids", type="png" )
   # plt.idx( obj$CPUE,  main="Commercial Fishery",save="fishResids" )
   # plt.idx( obj$Survey,main="Survey",save="surveyResids" )
-  close.allWin()
+  closeAllWin()
 }
 
 
@@ -3472,7 +3476,7 @@ mainMenu <- function()
       mcmcMenu(),
       plt.mcmcGraphs( currentMCMC, currentProj, save=FALSE ),
       plt.mcmcGraphs( currentMCMC, currentProj, save=TRUE ),
-      close.allWin(),
+      closeAllWin(),
       utilMenu()
     )
   }
@@ -4014,8 +4018,8 @@ plotDensPOPparsPrior =
     p <- ncol(mcmc)
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
-    require(grid, quiet = TRUE, warn = FALSE)
-    require(lattice, quiet = TRUE, warn = FALSE)
+    require(grid, quietly = TRUE, warn.conflicts = FALSE)
+    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -4258,7 +4262,7 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
         cat("\n")
     output <- list(B = B, Y = Y, eps = eps)
     if (coda) {
-        require(coda, quiet = TRUE, warn = FALSE)
+        require(coda, quietly = TRUE, warn.conflicts = FALSE)
         output <- lapply(output, function(x) lapply(x, mcmc))
     }
     attr(output, "call") <- match.call()

@@ -6,7 +6,10 @@ export(.compB0.get, .flush.cat)
 
 # Import all packages listed as Imports or Depends
 import(
-  PBSmodelling, scape, scapeMCMC, lattice, gdata, xtable
+  PBSmodelling, scape, scapeMCMC, lattice, xtable, gdata, gplots
 )
+#importFrom(gplots, plotCI)
+#importFrom(gdata, ll)
+
 
 

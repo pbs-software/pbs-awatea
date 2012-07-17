@@ -157,7 +157,7 @@ readAD = function(txt) {
 	vlst = list(); vcom=NULL; acom=NULL
 	for (i in 1:length(ntxt)) {
 		if (substring(ntxt[i],1,1)=="#") {
-			expr = paste("vlst[[\"L",pad0(i,3),": Comment\"]] = ",deparse(ntxt[i],width=500),sep="")
+			expr = paste("vlst[[\"L",pad0(i,3),": Comment\"]] = ",deparse(ntxt[i],width.cutoff=500),sep="")
 			comm = substring(ntxt[i],2,) ; names(comm)=i
 			acom = c(acom,comm) }
 		else {

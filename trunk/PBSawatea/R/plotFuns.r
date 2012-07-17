@@ -232,7 +232,7 @@ cquantile <- function(z, probs)
        }
   cquant <- as.data.frame(cquant)
   names(cquant) <- paste(formatC(100 * probs, format = "fg", 
-      wid = 1, digits = 7), "%", sep = "")
+      width = 1, digits = 7), "%", sep = "")
   return(cquant)
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^cquantile
@@ -386,8 +386,8 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
     # scan(); print(summary(x))
-    require(grid, quiet = TRUE, warn = FALSE)
-    require(lattice, quiet = TRUE, warn = FALSE)
+    require(grid, quietly = TRUE, warn.conflicts = FALSE)
+    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -479,8 +479,8 @@ plotDensPOPpars =
     p <- ncol(mcmc)
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
-    require(grid, quiet = TRUE, warn = FALSE)
-    require(lattice, quiet = TRUE, warn = FALSE)
+    require(grid, quietly = TRUE, warn.conflicts = FALSE)
+    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -569,8 +569,8 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
     p <- ncol(mcmc)
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
-    require(grid, quiet = TRUE, warn = FALSE)
-    require(lattice, quiet = TRUE, warn = FALSE)
+    require(grid, quietly = TRUE, warn.conflicts = FALSE)
+    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
