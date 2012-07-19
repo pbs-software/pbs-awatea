@@ -9,7 +9,7 @@
   and MCMC (Monte Carlo Markoff Chain) results.
 }
 \usage{
-plt.mpdGraphs(obj, save = FALSE)
+plt.mpdGraphs(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 plt.mcmcGraphs(mcmcObj, projObj, save=FALSE, xlimrec=c(0, 2e+05))
 }
 \arguments{
@@ -17,6 +17,7 @@ plt.mcmcGraphs(mcmcObj, projObj, save=FALSE, xlimrec=c(0, 2e+05))
   \item{mcmcObj}{an Awatea MCMC object (\emph{e.g.}, \code{currentMCMC}).}
   \item{projObj}{an Awatea projected biomass object (\emph{e.g.}, \code{currentProj}).}
   \item{save}{\bold{not used}}
+  \item{ssnames}{survey series names for figure labelling and image creation.}
   \item{xlimrec}{range for recruitments (\bold{not used}).}
 }
 \details{

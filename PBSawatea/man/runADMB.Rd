@@ -8,11 +8,11 @@
   population trajectory for a marine fish stock.
 }
 \usage{
-runADMB(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0, 
-    doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
-    doMCMC=FALSE, mcmc=1e+06, mcsave=1000, ADargs=NULL, verbose=FALSE, 
-    doMSY=FALSE, msyMaxIter=15000, msyTolConv=0.01, 
-    endStrat=0.301, stepStrat=0.001, ...)
+runADMB(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
+     doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
+     doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
+     doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
+     delim="-", ...)
 }
 \arguments{
   \item{filename.ext}{character file name including its extension.}
@@ -38,6 +38,7 @@ runADMB(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
   \item{msyTolConv}{tolerance for convergence in the MSY calculations.}
   \item{endStrat}{maximum fishing mortality for the MSY analysis.}
   \item{stepStrat}{fishing mortality step size for the MSY analysis.}
+  \item{delim}{character that delimits the components of the \code{filename} prefix.}
   \item{\dots}{additional arguments (not currently used for any purpose).}
 }
 \details{

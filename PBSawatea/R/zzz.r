@@ -28,9 +28,11 @@ Aotearoa, six months in a leaky boat...
 if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"B0.MCMC","B0.mpd","B0refLevels","B0refNames","boxwidth",
 	"currentMCMC","currentMSY","currentProj","currentRes",
-	"global",
+	"delim",
+	"gfcode","global",
 	"h.mpd",
 	"mainTitle","mess","minCpueYr",
+	"obj",
 	"plt.ageResids","policy","priorBoundsList","priorDistList",
 	"R0.mpd","refPointsList","refs","resFileList","rpType",
 	"Series","sigmaR",

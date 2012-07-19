@@ -4,18 +4,19 @@ setClass ("AWATEAdata",
      gcomm="character", vcomm="character", output="list" , reweight="list") )
 
 #require(PBSmodelling)
-#source("importRes.r",local=FALSE)
+#source("utilFuns.r",local=FALSE)
 
 # Flush the cat down the console
 .flush.cat = function(...) { cat(...); flush.console() }
 
-#runADMB--------------------------------2011-05-31
+#runADMB--------------------------------2012-07-18
 # Run AD Model Builder code for Awatea
 #-----------------------------------------------RH
-runADMB = function(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
+runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
      doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
      doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
-     doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001, ...) {
+     doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
+     delim="-", ...) {
 
 	ciao = function(){setwd(cwd); gc(verbose=FALSE)} # exit function
 	cwd = getwd(); on.exit(ciao())
@@ -23,9 +24,14 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
 	runname  = paste(strSpp,"run",runNoStr,sep="")
 	rundir   = paste(wd,runname,sep="/")
 	if (file.exists("results.dat")) file.remove("results.dat")
-	ext = sapply(strsplit(filename.ext,"\\."),tail,1)
-	prefix = substring(filename.ext,1,nchar(filename.ext)-nchar(ext)-1)
-	if (substring(prefix,6,7) != runNoStr) showAlert("input file appears mismatched with Run")
+	ext      = sapply(strsplit(filename.ext,"\\."),tail,1)
+	prefix   = substring(filename.ext,1,nchar(filename.ext)-nchar(ext)-1)
+	prun     = regexpr(runNoStr,prefix)
+	if (!(prun>0 && attributes(prun)$match.length==nchar(runNoStr))) {
+		if (!getYes("Input file appears mismatched with Run specified. Continue?"))
+			stop("Resolve run number with name of input file")
+	}
+	prefix   = gsub(paste(delim,runNoStr,sep=""),"",prefix)        # get rid of superfluous run number in name
 	prefix = gsub(runNoStr,"",prefix) # get rid of superfluous run number in name
 	argsMPD = argsMCMC = NULL
 	if (!is.null(ADargs)) {
@@ -37,6 +43,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
 	}
 	argsMPD  = paste(paste(" ",unlist(argsMPD),sep=""),collapse="")
 	argsMCMC = paste(paste(" ",unlist(argsMCMC),sep=""),collapse="")
+#browser();return()
 
 	if (doMPD) {
 		.flush.cat("Reweighting surveys and proportions-at-age...\n")
@@ -79,6 +86,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="YMR", runNo=25, rwtNo=0,
 			file.copy("Awatea.par",gsub(paste("\\.",ext,sep=""),".par",fileN),overwrite=TRUE)
 			eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
 			Robj@reweight = list(nrwt=i)
+#browser();return()
 			Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age, sfile=sdnrfile, fileN=fileN)
 		}
 		if (!file.exists(rundir)) dir.create(rundir)
@@ -388,6 +396,7 @@ setMethod("reweight", signature="AWATEAdata",
 		else
 			survey$CVnew[zs] = sser$CV * SDNR[ss]
 	}
+#browser();return()
 
 	if (view(obj,pat="CPUE likelihood",see=FALSE)==0) 
 		cpue = NULL
@@ -472,17 +481,20 @@ setMethod("reweight", signature="AWATEAdata",
 #popin = readAD("s3age-estmh00.txt")
 #popin = reweight(popin)
 
-#=== POP ===
-#out=runADMB("s3age-estmh02.txt",doMPD=FALSE,doMCMC=TRUE,mcmc=1000,mcsave=100)
-#out=runADMB("s3age-estmh.txt",doMPD=TRUE,N.reweight=2,ADargs=list("-nohess"))
-#out=runADMB("s3age-estmh.002.txt",doMPD=FALSE,doMCMC=TRUE,mcmc=1000,mcsave=100)
-#out=runADMB("s3age-estmh.txt",doMPD=TRUE,N.reweight=1,doMCMC=TRUE,mcmc=1000,mcsave=100,ADargs=list("-nohess"))
+#=== POP 3CD 2012 ===
+#out=runADMB("pop29-wcvi.txt",strSpp="POP",runNo=29,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
 
-#=== YMR ===
+#=== YMR CST 2011 ===
 #out=runADMB("input29-ymr.txt",runNo=29,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
 #out=runADMB("input36-ymr.txt",runNo=36,doMPD=TRUE,N.reweight=6,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
 #out=runADMB("input25-ymr.txt",runNo=25,rwtNo=1,doMCMC=TRUE,mcmc=1e6,mcsave=1e3,mean.age=TRUE,cvpro=0.2)
 #out=runADMB("input24-ymr.txt",runNo=24,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001)
+
+#=== POP QCS 2010 ===
+#out=runADMB("s3age-estmh02.txt",doMPD=FALSE,doMCMC=TRUE,mcmc=1000,mcsave=100)
+#out=runADMB("s3age-estmh.txt",doMPD=TRUE,N.reweight=2,ADargs=list("-nohess"))
+#out=runADMB("s3age-estmh.002.txt",doMPD=FALSE,doMCMC=TRUE,mcmc=1000,mcsave=100)
+#out=runADMB("s3age-estmh.txt",doMPD=TRUE,N.reweight=1,doMCMC=TRUE,mcmc=1000,mcsave=100,ADargs=list("-nohess"))
 
 #for (i in 29:30)
 #	out=runADMB(paste("input",pad0(i,2),"-ymr.txt",sep=""),runNo=i,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001)
