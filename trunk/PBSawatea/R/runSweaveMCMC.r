@@ -1,11 +1,12 @@
-#runSweave------------------------------2011-05-31
+#runSweave------------------------------2012-07-18
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
-runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="YMR",
-    filename="input25-ymr.txt",           # Name of Awatea .txt file in 'run.dir' to run
-    runNo=25, rwtNo=0, running.awatea=0   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
+runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
+    filename="spp-area-00.txt",           # Name of Awatea .txt file in 'run.dir' to run
+    runNo=1, rwtNo=0, running.awatea=0,   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
+    delim="-"
 	) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC")),pos=1)
@@ -17,14 +18,9 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="YMR",
 	#require(gdata, quietly=TRUE)             # Data manipulation functions from CRAN.
 
 	#source("ymrScape.r",local=FALSE)
-	#source("importRes.r",local=FALSE)
+	#source("utilFuns.r",local=FALSE)
+	#source("plotFuns.r",local=FALSE)
 	#assign("importCol2",importRes,envir=.GlobalEnv)
-	#source("plotDensPOP.r",local=FALSE)      # AME's version that modifies defaults to give better
-                                             # recruitment and Bt plots
-	#source("plotDensPOPpars.r",local=FALSE)  # AME's version to add MPD for params
-	#source("plotTracePOP.r",local=FALSE)     # AME's version that adds on MPD
-	#source("plotBVBnorm.r",local=FALSE)      # B/B0 and V/V0, as lattice so can use for
-                                             # multiple runs. NOT as lattice now.
 
 	runNoStr = pad0(runNo,2)
 	rwtNoStr = pad0(rwtNo,2)
@@ -32,7 +28,8 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="YMR",
 	run.dir  = paste(wd,run.name,sep="/")
 	ext      = sapply(strsplit(filename,"\\."),tail,1)
 	prefix   = substring(filename,1,nchar(filename)-nchar(ext)-1)
-	prefix   = gsub(runNoStr,"",prefix)      # get rid of superfluous run number in name
+	#prefix   = gsub(runNoStr,"",prefix)      # get rid of superfluous run number in name
+	prefix   = gsub(paste(delim,runNoStr,sep=""),"",prefix)        # get rid of superfluous run number in name
 	model.name = paste(prefix,runNoStr,rwtNoStr,sep=".")
 	mcname   = paste("MCMC",runNoStr,rwtNoStr,sep=".")
 	mc.dir   = paste(run.dir,mcname,sep="/")  # Directory where all the postscript crap happens
@@ -42,13 +39,19 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="YMR",
 		setwd(mc.dir)
 	else {
 		dir.create(mc.dir); setwd(mc.dir) }
-	masterSweave = readLines(paste(wd,"ymrrun-masterMCMC.Snw",sep="/"))
+	if (!file.exists("run-masterMCMC.Snw"))
+		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-masterMCMC.Snw",sep=""),wd)
+	masterSweave = readLines(paste(wd,"run-masterMCMC.Snw",sep="/"))
 	tfile = gsub("@cwd",wd,masterSweave)
 	tfile = gsub("@model.name",model.name,tfile)
 	tfile = gsub("@run.dir",run.dir,tfile)
 	tfile = gsub("@fig.dir",mc.dir,tfile)
 	tfile = gsub("@msy.dir",msy.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
+	tfile = gsub("@sppcode",strSpp,tfile)
+	data(gfcode)
+	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
+
 	if (!estM){
 		tfile = gsub("\"M_1\",","",tfile)
 		tfile = gsub("\"M_2\",","",tfile) }
@@ -71,14 +74,18 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="YMR",
 	invisible() }
 #------------------------------------runSweaveMCMC
 
-#runMCMC--------------------------------2011-05-31
+#runMCMC------------------------------ -2012-07-18
 # Wrapper to function 'runSweaveMCMC' for MCMCs.
 #-----------------------------------------------RH
-runMCMC = function(runs=7, rewts=0:6, cpue=FALSE, estM=TRUE) {
+runMCMC = function(strSpp="XYZ", prefix=c("spp","area"), runs=7, rewts=0:6, cpue=FALSE, estM=TRUE, delim="-") {
 	for (i in runs) {
 		for (j in rewts) {
-			runSweaveMCMC(filename=paste("input",pad0(i,2),"-ymr.txt",sep=""), runNo=i,rwtNo=j, cpue=cpue, estM=estM)
+			#runSweaveMCMC(filename=paste("input",pad0(i,2),"-ymr.txt",sep=""), runNo=i,rwtNo=j, cpue=cpue, estM=estM)
+			runSweaveMCMC(strSpp=strSpp,filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep=""),runNo=i,rwtNo=j,cpue=cpue,estM=estM)
 }	}	}
+
+#runMCMC(strSpp="POP",prefix=c("pop","wcvi"),runs=29,rewts=1,cpue=FALSE,estM=TRUE)
+
 
 #runMCMC(c(24:26),1,cpue=FALSE,estM=TRUE)
 # runMCMC(c(27:28),1,cpue=FALSE,estM=FALSE)

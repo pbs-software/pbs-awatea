@@ -7,7 +7,8 @@
   Plot index series with error bars. Create postscript files automatically.
 }
 \usage{
-plotIndexNotLattice(obj, objCPUE, main="", save=NULL, bar=1.96, ...)
+plotIndexNotLattice(obj, objCPUE, main="", save=NULL, bar=1.96,
+    ssnames=paste("Ser",1:9, sep=""), ...)
 }
 \arguments{
   \item{obj}{data frame of survey indices from Awatea's results file
@@ -18,6 +19,7 @@ plotIndexNotLattice(obj, objCPUE, main="", save=NULL, bar=1.96, ...)
   \item{save}{\bold{not used}}
   \item{bar}{standard deviation of the normal distribution 
     (1.96 is the approximate value of the 97.5 percentile point).}
+  \item{ssnames}{survey series names for figure labelling and image creation.}
   \item{\dots}{\bold{not used}}
 }
 \value{

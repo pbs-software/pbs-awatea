@@ -7,9 +7,9 @@
   Create and run customised Sweave files for \code{Awatea} MCMC runs.
 }
 \usage{
-runSweaveMCMC( wd=getwd(), cpue=FALSE, estM=TRUE, 
-    strSpp="YMR", filename="input25-ymr.txt", 
-    runNo=25, rwtNo=0, running.awatea=0 )
+runSweaveMCMC(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
+    filename="spp-area-00.txt", runNo=1, rwtNo=0, running.awatea=0,
+    delim="-")
 }
 \arguments{
   \item{wd}{working directory in which Awatea input and master Sweave files occur.}
@@ -23,6 +23,7 @@ runSweaveMCMC( wd=getwd(), cpue=FALSE, estM=TRUE,
   \item{runNo}{the run number that identifies a unique combination of input values.}
   \item{rwtNo}{the reweight number of the MPD run to build and collate figures.}
   \item{running.awatea}{numeric: if \code{0} load a previous \code{.rep} file, if \code{1} re-run \code{Awatea}}
+  \item{delim}{character that delimits the components of the \code{filename} prefix.}
 }
 \details{
   The values specified by the arguments (or derived variables) are directly 

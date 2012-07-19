@@ -3,7 +3,9 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-07-17  Rowan
+0.10  2011-07-19  Rowan
+  - Updated 'runSweave' and 'run-Master.Snw' to be more flexible wrt the number of surveys. (7/19)
+  - Updated 'runADMB', 'runSweave', 'runSweaveMCMC' to deal with POP in WCVI and WCHG. (RH 7/18)
   - Implemented Brian Ripley's suggestion to remove NOTES about 'no visible binding for global variable xxx':
 	if(getRversion() >= "2.15.1") globalVariables(names=c(...), package="PBSawatea") (RH 7/17)
 

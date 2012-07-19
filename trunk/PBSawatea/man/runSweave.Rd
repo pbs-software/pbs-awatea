@@ -7,9 +7,9 @@
   Create and run customised Sweave files for \code{Awatea} MPD runs.
 }
 \usage{
-runSweave(wd=getwd(), cpue=FALSE, strSpp="YMR", 
-    filename="input25-ymr.txt", runNo=25, rwtNo=0, 
-    running.awatea=0, Nsurvey=5)
+runSweave(wd=getwd(), cpue=FALSE, strSpp="XYZ",
+    filename="spp-area-00.txt", runNo=1, rwtNo=0, running.awatea=0,
+    Nsurvey=5, Snames=paste("Ser",1:Nsurvey,sep=""), delim="-")
 }
 \arguments{
   \item{wd}{working directory in which Awatea input and master Sweave files occur.}
@@ -21,6 +21,8 @@ runSweave(wd=getwd(), cpue=FALSE, strSpp="YMR",
   \item{rwtNo}{the reweight number of the MPD run to build and collate figures.}
   \item{running.awatea}{numeric: if \code{0} load a previous \code{.rep} file, if \code{1} re-run \code{Awatea}}
   \item{Nsurvey}{number of surveys specified in the input file; controls image creation and placeholders.}
+  \item{Snames}{survey names for figure labelling and image creation.}
+  \item{delim}{character that delimits the components of the \code{filename} prefix.}
 }
 \details{
   The values specified by the arguments (or derived variables) are directly 

@@ -8,12 +8,13 @@
   (see \code{\link{qqnorm}}).
 }
 \usage{
-plt.idx(obj, main="Residuals", save=NULL, ...)
+plt.idx(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,sep=""), ...)
 }
 \arguments{
   \item{obj}{a data frame with columns \code{Year}, \code{stdRes}, and \code{Fit}.}
   \item{main}{title for the plot.}
   \item{save}{logical: if \code{TRUE}, save the figure to a raster file (\code{.png}).}
+  \item{ssnames}{survey series names for figure labelling and image creation.}
   \item{\dots}{\bold{not used}}
 }
 \details{
