@@ -2272,43 +2272,43 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
 }
 
 
-#plt.mcmcGraphs-------------------------2012-07-19
-# Plot the MCMC graphs.
-#-------------------------------------------AME/RH
+
+
 plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) )   # xlimrec is range for recruitments
 {
   # Does all MCMC graphs below.  If save=TRUE then PNG file saved.
-  # closeAllWin(). Note that I've used currentMCMC below,not mcmcObj (not any more)
+  # closeAllWin(). Note that I've used currentMCMC below,not mcmcObj
 
   # Plot the biomass quantiles and projections by policy.
   # plt.quantBio( mcmcObj$B,projObj$B, policy=policy, xyType=rpType,
   #  userPrompt=FALSE, save=TRUE )
 
   # recruitment, was in plt.mpdGraphs for popScape2.r
-  #-----------------------------------------------
   postscript("recruitsMCMC.eps", height = 5, width = 6.2,
               horizontal=FALSE,  paper="special")
-    plotRmcmcPOP(mcmcObj$R, yLim = c(0, 130000))
+    plotRmcmcPOP(currentMCMC$R, yLim = c(0, 130000))
                           # yLim fixed for YMR11 submission
   dev.off()
 
   # exploitation rate
-  #-----------------------------------------------
   postscript("exploitMCMC.eps", height = 5, width = 6.2,
               horizontal=FALSE,  paper="special")
-    plotRmcmcPOP(mcmcObj$U, yLab="Exploitation rate",
-                 yLim=c(0, 0.16), yaxis.by=0.01) # yLim fixed for YMR11 submission
+    plotRmcmcPOP(currentMCMC$U, yLab="Exploitation rate",
+                 yLim=c(0, 0.16), yaxis.by=0.01)
+                          # yLim fixed for YMR11 submission
   dev.off()
 
+
+  
   # Plot the posterior densities of the biomass (selected years).
   #  Commenting this out and doing every year in three postscript
   #   files, as for recruitment (which is discussed below in a bit
   #   more detail as I did that first)
-  #-----------------------------------------------
+
   postscript("pdfBiomass%d.eps", height = 7, width = 6.2,
               horizontal=FALSE,  paper="special", onefile=FALSE)
                         # from levy12loglog.r, onefile makes 3 files
-  plotDensPOP(mcmcObj$B/1000, xlab="Female spawning biomass, Bt (1000 t)",
+  plotDensPOP(currentMCMC$B/1000, xlab="Female spawning biomass, Bt (1000 t)",
               between = list(x=0.2, y=0.2), ylab="Density",
               lwd.density=2, same.limits=TRUE, layout=c(4,6),
               lty.outer=2)
@@ -2330,11 +2330,10 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
   #  ...height = 600)  # default is 480,
   # %d increments filename
   # xlimrec = c(0, 200000)
-  #-----------------------------------------------
   postscript("pdfRecruitment%d.eps", height = 7, width = 6.2,
      horizontal=FALSE,  paper="special", onefile=FALSE)
                         # from levy12loglog.r, onefile makes 3 files
-  plotDensPOP(mcmcObj$R/1000, xlab="Recruitment, Rt (1000s)",
+  plotDensPOP(currentMCMC$R/1000, xlab="Recruitment, Rt (1000s)",
               between = list(x=0.2, y=0.2), ylab="Density",
               lwd.density=2, same.limits=TRUE, layout=c(4,6),
               lty.median=2, lty.outer=2)    # xlim=xlimrec/1000,
@@ -2344,22 +2343,25 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
   
   # Plot the posterior densities of active parameters.
   # idx <- apply( mcmcObj$P,2,allEqual )   # not sure what this does
-  #-----------------------------------------------
   postscript("pdfParameters.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)
   # scapeMCMC::plotDens( mcmcObj$P[,!idx], lty.outer=2 )
-  plotDensPOPparsPrior( mcmcObj$P, lty.outer=2, between = list(x=0.3, y=0.2) )
+  plotDensPOPparsPrior( mcmcObj$P, lty.outer=2,
+                       between = list(x=0.3, y=0.2) )
   dev.off()
 
-  # Dummy selectivity plot, as not calculated yet: exploitation rate
-  #-----------------------------------------------
+
+  # Dummy selectivity plot, as not calculated yet:
+    # exploitation rate
   postscript("selectivityMCMC.eps", height = 5, width = 6.2,
               horizontal=FALSE,  paper="special")
     plot(1:10, main="This will be selectivities from MCMC")
   dev.off()
 
-  # AME: converge plots taken out, as now have running medians and quantiles on traces plots:
-  #-----------------------------------------------
+  
+  # AME: converge plots taken out, as now have running medians and
+  #  quantiles on traces plots:
+
   postscript("traceRecruits.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)
   plotTracePOP( mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000,
@@ -2370,7 +2372,6 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
        #   and running median and take off overall median and lowess
   dev.off()
 
-  #-----------------------------------------------
   postscript("traceBiomass.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)  
   plotTracePOP( mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000,
@@ -2379,7 +2380,6 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
     ylab="Female spawning biomass, Bt (1000 t)" )
   dev.off()
 
-  #-----------------------------------------------
   postscript("traceParams.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)  
   idx <- apply( mcmcObj$P,2,allEqual )   # checks if repeated.
@@ -2389,110 +2389,99 @@ plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) ) 
                 #AME - between, xlab, ylab, plotTracePOP to add MPD
   dev.off()
 
+
   # Rowan's plot - divides chain (after 1st 100) into 3x300
-  #-----------------------------------------------
   postscript("splitChain.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)  
-  plotChains(mcmc=mcmcObj$P,axes=TRUE,between=list(x=0.15,y=0.2),
+  plotChains(mcmc=currentMCMC$P,axes=TRUE,between=list(x=0.15,y=0.2),
      col.trace=c("green","red","blue"),xlab="Sample",
-     ylab="Cumulative Frequency", pdisc=0.001) # pdisc = prop to discard
+     ylab="Cumulative Frequency", pdisc=0.001)
+                     # pdisc = prop to discard
   dev.off()
-
-  #-----------------------------------------------
+  
   postscript("VBcatch.eps", 
      horizontal=FALSE,  paper="special", height = 5, width = 6.2)  
-  plotVBcatch( mcmcObj$VB, projObj, yLim = c(0, 220000)) # yLim fixed for YMR11 submission
+  plotVBcatch( currentMCMC$VB, currentRes, yLim = c(0, 220000))
+                          # yLim fixed for YMR11 submission
   dev.off()
 
   # B and VB normalised to B0 and VB0
-  #-----------------------------------------------
   postscript("BVBnorm.eps",
      horizontal=FALSE,  paper="special", height = 5, width = 6.2)  
-  plotBVBnorm(mcmcObj, xLeg=0.02, yLeg=0.2, yLim = c(0, 1.1))
+  plotBVBnorm(currentMCMC, xLeg=0.02, yLeg=0.2, yLim = c(0, 1.1))
                           # yLim fixed for YMR11 submission  
   dev.off()
 
+  
   # Projection plot (from popScapeRuns2.r)
-  #-----------------------------------------------
   options(scipen=10)     # to force not-scientific notation .
   postscript("Bproj.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)
-  plt.quantBio(mcmcObj$B, currentProj$B, xyType="quantBox",
+  plt.quantBio(currentMCMC$B, currentProj$B, xyType="quantBox",
               policy=c("0", "500", "1000", "1500", "2000", "2500"),
               save=FALSE) # , yLim=c(0, 50000))
             # save needed to stop .png. No option for picking years.
   dev.off()
 
   # Recruitment projections plot
-  #-----------------------------------------------
   postscript("Rproj.eps", 
      horizontal=FALSE,  paper="special", height = 7, width = 6.2)
-  plt.quantBio(mcmcObj$R, currentProj$R, xyType="quantBox",
+  plt.quantBio(currentMCMC$R, currentProj$R, xyType="quantBox",
               policy=c("0", "500", "1000", "1500", "2000", "2500"),
               save=FALSE, yaxis.lab="Recruitment (1000s)") # , yLim=c(0, 50000))
             # save needed to stop .png. No option for picking years.
   dev.off()
 
   # Recruitment just for policy 1500 (for YMR SAR)
-  # ----------------------------------------------
   postscript("Rproj1500.eps", 
      horizontal=FALSE,  paper="special", height = 5, width = 6.2)
-    plt.quantBioBB0(mcmcObj$R, currentProj$R, xyType="quantBox",
+    plt.quantBioBB0(currentMCMC$R, currentProj$R, xyType="quantBox",
              policy=c("1500"), save=FALSE, xaxis.by=10,
              yaxis.lab="Recruitment (1000s)")
   dev.off()
-
-  #-----------------------------------------------
+  
   postscript("snail.eps", height = 5, width = 6.2,
               horizontal=FALSE,  paper="special")
-  plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy,p=c(0.1,0.9),
+  plotSnail(currentMCMC$BoverBmsy, currentMCMC$UoverUmsy,p=c(0.1,0.9),
             xLim=c(0, 4.6), yLim = c(0,1.4))     # Values to use for YMR11 Fix and Est M
   dev.off()
 
-  #-----------------------------------------------
   postscript("pairs1.eps", height = 7, width = 7,
               horizontal=FALSE,  paper="special")
-  pairs(mcmcObj$P[,1:6], pch=20, cex=0.2, gap=0)
+  pairs(currentMCMC$P[,1:6], pch=20, cex=0.2, gap=0)
   dev.off()
 
-  #-----------------------------------------------
   postscript("pairs2.eps", height = 7, width = 7,
               horizontal=FALSE,  paper="special")
-  pairs(mcmcObj$P[,7:12], pch=20, cex=0.2, gap=0)
+  pairs(currentMCMC$P[,7:12], pch=20, cex=0.2, gap=0)
   dev.off()
 
-  #-----------------------------------------------
   postscript("pairs3.eps", height = 7, width = 7,
               horizontal=FALSE,  paper="special")
-  pairs(mcmcObj$P[,13:dim(mcmcObj$P)[2]], pch=20, cex=0.2,
+  pairs(currentMCMC$P[,13:dim(currentMCMC$P)[2]], pch=20, cex=0.2,
         gap=0)
   dev.off()             # up to 18 for estM, 16 for fixM, for YMR11.
+
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mcmcGraphs
 
 
-#plt.mpdGraphs--------------------------2012-07-19
-# Plot the MPD graphs.
-#-------------------------------------------AME/RH
-plt.mpdGraphs <- function( obj, save=FALSE,
-    ssnames=paste("Ser",1:9,sep="")) #AME some actually MCMC.
-                                   # Doing as postscript now.
-                                   # Taking some out for ymr.
-{
-  # Does all MPD graphs below.  If save=TRUE then PNG file saved.
-  closeAllWin()
+plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
+	#AME some actually MCMC. # Doing as postscript now. # Taking some out for ymr.
+	# Does all MPD graphs below.  If save=TRUE then PNG file saved.
+	closeAllWin()
 
   # Plot the biomass and catch.
-  # AME new one though not using now as spawning and catch on same axis isn't really sensible.
-  # Doing plotVBcatch in plt.mcmcGraphs above
   # plotB2( obj,main=mainTitle )              
-  # plotBmcmcPOP(currentMCMC$B, currentRes)
-  # if ( save )
-  #  savePlot( "biomass",type="png" )
+  # plotBmcmcPOP(currentMCMC$B, currentRes)    # AME new one
+  # if ( save )                           # though not using now as
+  #  savePlot( "biomass",type="png" )    # spawning and catch on same
+                                        # axis isn't really sensible
+                                        # Doing plotVBcatch in
+                                        #  plt.mcmcGraphs above
 
+  
 
   # AME adding, plot exploitation rate, not writing new function:
-  #-----------------------------------------------
   postscript("exploit.eps", height = 5, width = 6.2, horizontal=FALSE,  paper="special")
   B = obj$B
   xlim = range(B$Year,na.rm=TRUE)
@@ -2504,18 +2493,19 @@ plt.mpdGraphs <- function( obj, save=FALSE,
   lines(B$Year, B$U, col="black")
   points(B$Year, B$U, cex=0.9, pch=21, col="black", bg="white") 
   dev.off()
+  # if ( save )
+  #  savePlot( "exploit",type="png" )
   
   # AME had added recruits.eps for POP, but that's MCMC, so moving
   #  to plt.mcmcGraphs, changing that filename to recruitsMCMC.eps
   #  and just adding here to do MPD for recruits.
-  #-----------------------------------------------
   postscript("recruits.eps", height = 5, width = 6.2,
               horizontal=FALSE,  paper="special")
   plot(obj$B$Year, obj$B$R, type="o", xlab="Year",
        ylab="Recruitment, Rt (1000s)")
   dev.off()
 
-
+  
   # Plot the numbers at age and recruits. Taking out for ymr
   # windows()
 	  # plotN( obj, main=mainTitle, ages=c(2:60) )
@@ -2530,7 +2520,7 @@ plt.mpdGraphs <- function( obj, save=FALSE,
   # plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,20))
   # if ( save )
   #   savePlot( "selectivity", type="png" )
-  #-----------------------------------------------
+
   postscript("selectivity.eps", height = 5, width = 6.2,
               horizontal=FALSE,  paper="special")
   objRed = obj      # Reduced object, just plotting Selectivity to 20
@@ -2542,7 +2532,7 @@ plt.mpdGraphs <- function( obj, save=FALSE,
   # NOTE: There is a bug in plotCA that prevents plotting multiple
   #       series given a list of character vectors in series.
   #         ACH: I'm not sure if this applies to CL
-  #-----------------------------------------------
+
   seriesList <- sort( unique( obj$CAc$Series) )
   maxcol = 4
   CAc.yrs = sapply(split(obj$CAc$Year,obj$CAc$Series),unique,simplify=FALSE)
@@ -2550,6 +2540,59 @@ plt.mpdGraphs <- function( obj, save=FALSE,
 
   for ( i in 1:length(seriesList) )
   {
+            # AME dividing years into 4 groups - note no 1985, 86,
+            #  or 88 data - see below, doing more automatically saving as .eps
+    # windows()
+    # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c" )
+    # if ( save )
+    #   savePlot( paste("catchAgeComm",i,sep=""), type="png" )
+    # windows()
+    # AME trying to do two on one, from Paul Murrel's chap4:
+    # HERE
+    # plot1 <-  plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
+    # plot2 <-  plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
+    # print(plot1, position=c(0,0.2,1,1), more=TRUE)  #didn't work.
+    # ----
+#    par(mfrow=c(2,1))
+#    plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
+   # if(0==1) {   # these were four files total, now doing less per page below:
+   # windows()
+   # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
+   # if ( save )
+      # savePlot( paste("catchAgeComm",i,sep=""), type="png" )
+   #   savePlot( paste("catchAgeComm1"), type="png" ) # AME took out i
+   # windows()
+   # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i, "(no 1985, 86 or 88)"), what="c", years=1985:1994 )  # no 85, 86 or 88
+   # if ( save )
+   #   savePlot( paste("catchAgeComm2"), type="png" ) # AME took out i
+   # windows()
+   # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1995:2001 )
+   # if ( save )
+   #   savePlot( paste("catchAgeComm3"), type="png" ) # AME took out i
+   # 
+   # windows()
+   # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=2002:2009 )
+   # if ( save )
+   #   savePlot( paste("catchAgeComm4"), type="png" ) # AME took out i
+   #} # end if(0==1)
+   # unique(currentRes$CAc$Year) is, do four a page:
+   # 1978 1979 1980 1981 1982 1983 1984 1987 1989 1990 1991 1992 1993 1994 1995
+   #  1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009
+  # uniqueCAcyears = unique(currentRes$CAc$Year)  # length=29, so do groups of 4
+  # # numpanels = 4
+  # for(jj in 0:7) { 
+  #    windows()
+  #    startyr = uniqueCAcyears[jj*4 + 1]
+  #    # print(startyr)
+  #    endyr = uniqueCAcyears[(jj+1)*4]
+  #      if(jj == 7) {endyr = uniqueCAcyears[length(uniqueCAcyears)]}
+  #    plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=startyr:endyr )
+      # browser()
+  #  if ( save )
+      # savePlot( paste("catchAgeComm",i,sep=""), type="png" )
+  #    savePlot( paste("catchAgeComm", jj, sep=""), type="png" ) # AME took out i
+  # } # end for jj in 0:7
+  # END of AME manually doing multiple plots. This is much easier:
   # AME doing again, but more automatically, saving as .eps as for plotDens
   #  as multiple pages. Starting writing plotCAPOP, but could do all
   #  by changing arguments to plotCA(...). Haven't referred to i here, as for
@@ -2567,13 +2610,21 @@ plt.mpdGraphs <- function( obj, save=FALSE,
       postscript(paste("ageComm", plot.sex,i,".eps", sep=""),
         height = switch(age.layout[2],4,6,9,9,9,9,9,9,9), width = 6.5,
         horizontal=FALSE,  paper="special", onefile=FALSE)
-      plotCA( currentRes, what="c", ylab="Proportion", xlab="Age class",
+      plotCA( obj, what="c", ylab="Proportion", xlab="Age class",
         sex=plot.sex, layout= age.layout, key=CA.key, main=plot.sex,
         pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 ,series=i)
+                 # col.lines otherwise boys are blue
+                 # Tried using rbind to add dummy data for 1985, 1986
+                 #  and 1988, but didn't work:
+                 # add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
+                 #   xxx$CAc = rbind(xxx$CAc, add)
+                 #  
     dev.off()
     }    # end of plot.sex loop
   }
-  # AME adding - plotting the CA survey data for all three series. doing .eps below
+
+  # AME adding - plotting the CA survey data for all three series.
+  #  doing .eps below
     # {
       if ( exists( "currentRes" ) )
       {
@@ -2619,32 +2670,48 @@ plt.mpdGraphs <- function( obj, save=FALSE,
   age.layout[[2]] = c(4,1)
   # age.layout[[3]] = c(1,1)
   
-    for ( i in 1:length(seriesList) )
-      {
-      for(plot.sex in CAs.sex)
-        {
+    for ( i in 1:length(seriesList) ) {
+      ii = seriesList[i]
+      for(plot.sex in CAs.sex) {
         postscript(paste(ageSurveyFigName[i], plot.sex, "%d.eps",
           sep=""),  height = age.height[i], width = age.width[i],
           horizontal=FALSE,  paper="special", onefile=FALSE)
-        plotCA( currentRes, what="s", series = i, ylab="Proportion",
+        plotCA( obj, what="s", series = ii, ylab="Proportion",
           xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex,
           pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
+                 # col.lines otherwise boys are blue
+                 # Tried using rbind to add dummy data for 1985, 1986
+                 #  and 1988, but didn't work:
+                 # add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
+                 #   xxx$CAc = rbind(xxx$CAc, add)
+                 #  
     dev.off()
     }    # end of plot.sex loop
   }      # end of seriesList loop
   
   
+  # Plot the fishery index (CPUE data I think)
+  # windows()
+  # plotIndex(obj, main=paste(mainTitle,"CPUE"), what="c", bar=1.96 )
+  # #plotIndex2( obj, main=mainTitle, what="c", bar=1.96 )
+  # if ( save )
+  #   savePlot( "fishIndex", type="png" )
+  
+  # Plot the survey indices.
+  # windows()
+  # plotIndex( obj, main=paste(mainTitle,"Survey Indices"), what="s", bar=1.96 )
+  # #plotIndex2( obj, main=mainTitle, what="s", bar=1.96 )
+  # if ( save )
+  #   savePlot( "surveyIndex", type="png" )
+  
   # Now do on one plot as postscript:
-  #-----------------------------------------------
   plotIndexNotLattice(obj$Survey, obj$CPUE, ssnames=ssnames)
 
   # Single plot of CPUE:
-  #-----------------------------------------------
   plotCPUE(obj$CPUE, yLim=c(0, 200))
 
   # Plot standardised residuals. Now doing four plots on one page.
   #  Commercial.
-  #-----------------------------------------------
   postscript("commAgeResids.eps",
         height = 8.5, width = 6.8,
         horizontal=FALSE,  paper="special")
@@ -2662,18 +2729,17 @@ plt.mpdGraphs <- function( obj, save=FALSE,
 
   # And now for surveys.
   # AME adding - plotting the CA residuals for the two surveys:
-  #-----------------------------------------------
   seriesList <- sort( unique( obj$CAs$Series) )  
   nseries = length(seriesList)
-  for ( i in 1:nseries )# POP no fits for survey 3
-    {
-    postscript(paste("survAgeResSer", i, ".eps", sep=""),
+  for ( i in 1:nseries ) {   # POP no fits for survey 3
+		ii = seriesList[i]
+    postscript(paste("survAgeResSer", ii, ".eps", sep=""),
         height = 8.5, width = 6.8,
         horizontal=FALSE,  paper="special")
     par(mai = c(0.45, 0.5, 0.1, 0.2)) # JAE changed  for each figure
     par(omi = c(0.45,0.1,0,0))      # Outer margins of whole thing, inch
     stdRes.CA.CAs = stdRes.CA( obj$CAs[
-          obj$CAs$Series == i,] )
+          obj$CAs$Series == ii,] )
     #  Outliers don't get plotted, except for qq plot
     par(mfrow=c(4,1))
     plt.ageResidsPOP(stdRes.CA.CAs, main="" ) 
@@ -2727,7 +2793,6 @@ plt.mpdGraphs <- function( obj, save=FALSE,
   # yLimSR = c(0, max(obj$B$R, na.rm=TRUE))
   #xLimSR = c(0, max(c(max(obj$B$SB),45000)))   # so it draw bigger if necessary
   #yLimSR = c(0, max(c(max(obj$B$R, na.rm=TRUE),55000)))
-  #-----------------------------------------------
   xLimSR = c(0, 1.5*max(obj$B$SB,na.rm=TRUE))   # so it draw bigger if necessary
   xxx = (seq(0, xLimSR[2], length.out=100))
   yyy = srFun(xxx)
@@ -2742,10 +2807,16 @@ plt.mpdGraphs <- function( obj, save=FALSE,
            italic(t), ",", italic(R)[t], " (1000s)"), sep="") )
   points(obj$B$SB, obj$B$R)
   dev.off()
-
+  
+  #windows()
+  #plt.lengthResids( stdRes.CL( obj$CLs ),
+  #  main=paste("Survey",mainTitle,"Series",i) )
+  #if ( save )
+  #  savePlot( "surveyLengthResids", type="png" )
+  # plt.idx( obj$CPUE,  main="Commercial Fishery",save="fishResids" )
+  # plt.idx( obj$Survey,main="Survey",save="surveyResids" )
   closeAllWin()
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mpdGraphs
 
 
 plt.numR <- function( obj, minYr=NULL )

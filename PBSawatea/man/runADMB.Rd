@@ -12,7 +12,7 @@ runADMB(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
      doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
      doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
      doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
-     delim="-", ...)
+     delim="-", awateaPath="E:/Projects/ADMB/Coleraine", ...)
 }
 \arguments{
   \item{filename.ext}{character file name including its extension.}
@@ -39,6 +39,7 @@ runADMB(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
   \item{endStrat}{maximum fishing mortality for the MSY analysis.}
   \item{stepStrat}{fishing mortality step size for the MSY analysis.}
   \item{delim}{character that delimits the components of the \code{filename} prefix.}
+  \item{awateaPath}{system path on which the executable file \code{Awatea.exe} exists.}
   \item{\dots}{additional arguments (not currently used for any purpose).}
 }
 \details{

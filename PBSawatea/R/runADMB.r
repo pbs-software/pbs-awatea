@@ -9,17 +9,22 @@ setClass ("AWATEAdata",
 # Flush the cat down the console
 .flush.cat = function(...) { cat(...); flush.console() }
 
-#runADMB--------------------------------2012-07-18
+#runADMB--------------------------------2012-07-25
 # Run AD Model Builder code for Awatea
 #-----------------------------------------------RH
 runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
      doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
      doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
      doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
-     delim="-", ...) {
+     delim="-", awateaPath="E:/Projects/ADMB/Coleraine", ...) {
 
-	ciao = function(){setwd(cwd); gc(verbose=FALSE)} # exit function
-	cwd = getwd(); on.exit(ciao())
+	ciao = function(){setwd(cwd); Sys.setenv(PATH=syspath0); gc(verbose=FALSE)} # exit function
+	cwd  = getwd(); syspath0  = Sys.getenv()["PATH"]
+	on.exit(ciao())
+	awateaPath = gsub("/","\\\\",awateaPath)
+	syspath   = paste(syspath0,awateaPath,sep=";")
+	Sys.setenv(PATH=syspath)
+#browser();return()
 	runNoStr = pad0(runNo,2)
 	runname  = paste(strSpp,"run",runNoStr,sep="")
 	rundir   = paste(wd,runname,sep="/")
@@ -31,8 +36,8 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		if (!getYes("Input file appears mismatched with Run specified. Continue?"))
 			stop("Resolve run number with name of input file")
 	}
-	prefix   = gsub(paste(delim,runNoStr,sep=""),"",prefix)        # get rid of superfluous run number in name
-	prefix = gsub(runNoStr,"",prefix) # get rid of superfluous run number in name
+	prefix   = gsub(paste(delim,runNoStr,sep=""),"",prefix)  # get rid of superfluous run number in name
+	prefix = gsub(runNoStr,"",prefix)                        # get rid of superfluous run number in name
 	argsMPD = argsMCMC = NULL
 	if (!is.null(ADargs)) {
 		if(!is.list(ADargs)) stop("'ADargs' must be either a list or NULL")
@@ -59,6 +64,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 				file.copy(from=filename.ext,to=file0,overwrite=TRUE) }
 			else {
 				desc = Robj@vdesc; dat = Robj@vars; newdat=Robj@reweight
+				# Collect pointers to abundance and composition data to populate with re-weighted values
 				rvar1 = names(findPat("Survey abundance indices",desc))
 				rvar2 = names(findPat("CPUE \\(Index",desc))
 				rvar3 = names(findPat("Commercial catch at age data",desc))
@@ -296,17 +302,17 @@ setMethod("write", signature(x = "AWATEAdata"),
 
 #setMethod.reweight---------------------2011-05-31
 # Set the method for 'reweight' when using an AWATEA class.
+# Calculates reweighted values and populates S4 object.
 #-----------------------------------------------RH
 reweight <- function(obj, cvpro=FALSE, mean.age=TRUE, ...) return(obj)
-#setMethod("reweight", signature(obj = "AWATEAdata"),
-#    function (obj, cvpro=FALSE,  mean.age=TRUE, ...) {
 setMethod("reweight", signature="AWATEAdata",
     definition = function (obj, cvpro=FALSE,  mean.age=TRUE, ...) {
 
 	nrwt = obj@reweight$nrwt; dat = obj@vars; desc=obj@vdesc; res=obj@output
 	dots = list(...)
-#	NRfun  = function(O,P,dO)  { (O-P)/dO }        # Normal residual for an observation (F.26)
-	NRfun  = function(O,P,CV,maxR=0,logN=TRUE)  {  # Normal residual for an observation (Coleraine Excel)
+	# Normal residual for an observation (Coleraine Excel algorithm only)
+	# (F.26 POP 2010 assessment)
+	NRfun  = function(O,P,CV,maxR=0,logN=TRUE)  {
 		if (logN) {
 			num = log(O) - log(P) + 0.5*log(1+CV^2)^2
 			den = sqrt(log(1+CV^2))
@@ -319,13 +325,16 @@ setMethod("reweight", signature="AWATEAdata",
 			NR[NR > maxR[2]] = maxR[2] }
 		return(NR)
 	}
-	SDfun = function(p,N,A) {                      # Standard deviaton of observed proportion-at-ages (F.27)
+	# Standard deviaton of observed proportion-at-ages (Coleraine Excel algorithm only)
+	# (F.27 POP 2010 assessment)
+	SDfun = function(p,N,A) {
 		# p = observed proportions, N = sample size, A = no. sexes times number of age bins
 		SD = sqrt((p * (1-p) + 0.1/A) / N) 
 		SD[!is.finite(SD)] = NA
 		return(SD)
 	}
-	eNfun = function(S,Y,O,P,Nmax=200) {           #Re-weighted (effective) N for porportions-at-age (Coleraine Excel)
+	#Re-weighted (effective) N for porportions-at-age (Coleraine Excel algorithm only)
+	eNfun = function(S,Y,O,P,Nmax=200) {
 		# S = Series, Y = Year, O = Observed proportions, P = Predicted (fitted) proportions, Nmax = maximum sample size allowed
 		f   = paste(S,Y,sep="-")
 		num = sapply(split(P,f),function(x) { sum( x * (1 - x) ) } )
@@ -333,14 +342,16 @@ setMethod("reweight", signature="AWATEAdata",
 		N  = pmin(num/den, Nmax)
 		return( N )
 	}
-	MRfun = function(y,a,O,P)  {                   # Mean age residuals (Chris Francis) (not used)
+	# Mean age residuals (Chris Francis) (deprecated)
+	MRfun = function(y,a,O,P)  {
 		Oay = a * O; Pay = a * P
 		mOy = sapply(split(Oay,y),sum,na.rm=TRUE)
 		mPy = sapply(split(Pay,y),sum,na.rm=TRUE)
 		ry  = mOy - mPy
 		return(ry) 
 	}
-	CFfun = function(y,N,a,O,P) {                  # Correction factor based on mean age residuals (not used)
+	# Correction factor based on mean age residuals (deprecated)
+	CFfun = function(y,N,a,O,P) {
 		Oay = a * O; OAy = a^2 * O
 		mOy = sapply(split(Oay,y),sum,na.rm=TRUE)
 		MOy = sapply(split(OAy,y),sum,na.rm=TRUE)
@@ -349,9 +360,10 @@ setMethod("reweight", signature="AWATEAdata",
 		CF  = 1 / var(ry*(N/Vy)^.5)
 		return(CF) 
 	}
-	MAfun = function(padata,brks=NULL)  {                   # Mean age function (Chris Francis, 2011, submitted to CJFAS))
+	# Mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
+	MAfun = function(padata,brks=NULL)  {
 		# S = series, y = year, a = age bin, O = observed proportions, P = Predicted (fitted) proportions, N=sample size
-		S=padata$Series; y=padata$Year; a=padata$Age; O=padata$Obs; E=padata$Fit; N=padata$SS
+		S=padata$Series; y=padata$Year; a=padata$Age; O=padata$Obs; E=padata$Fit; N=padata$SS   # note: SD and NR not used
 		if (is.null(brks)) {
 			f = paste(S,y,sep="-"); J = unique(S) }
 		else {
@@ -364,14 +376,16 @@ setMethod("reweight", signature="AWATEAdata",
 		N    = sapply(split(N,f),mean,na.rm=TRUE)
 		return(list(MAobs=mOy, MAexp=mEy, Vexp=mEy2-mEy^2, N=N, J=J)) # observed and expected mean ages, variance of expected ages
 	}
-	wfun = function (MAlist) {                 # weighting function TA1.8 (Francis 2011, CJFAS)
+	# Weighting Method TA1.8 (Francis 2011, CJFAS, p.1137)
+	wfun = function (MAlist) {
 		# y=year, a=age bin, O=observed proportions, P=Predicted (fitted) proportions, N=sample size, J=series
 		unpackList(MAlist,scope="L")
 		w    = rep(NA,length(J)); names(w)=J
 		jvec = substring(names(N),1,nchar(names(N))-5)
 		wN   = N
-		for (j in J) {
-			z = is.element(jvec,j)
+		for (j in 1:length(J)) {
+			jj = J[j]
+			z = is.element(jvec,jj)
 			w[j] = 1 / var((MAobs[z]-MAexp[z])/((Vexp[z]/N[z])^0.5) )  
 			wN[z] = N[z] * w[j]
 			}
@@ -422,8 +436,12 @@ setMethod("reweight", signature="AWATEAdata",
 
 	sdnr = rep(0,2); names(sdnr) = c("cpa","spa"); SDNR = c(SDNR,sdnr)
 	wj   = NULL
-	CAc  = res$CAc  # commercial proportions at age
+
+	# Commercial proportions-at-age
+	CAc  = res$CAc
 	cpa  = CAc[!is.na(CAc$SS),]
+	# SD and NR not used by Francis' mean weighting but calculated for SDNR reporting anyway
+	# No formulae appropriate for composition-data likelihoods due to correlations (Francis 2011, Appendix B, CJFAS)
 	cpa$SD = SDfun(cpa$Obs, cpa$SS, A=length(unique(cpa$Sex))*length(unique(cpa$Age)) )
 	cpa$NR = NRfun(cpa$Obs, cpa$Fit, cpa$SD, maxR=3, logN=FALSE)
 	if (mean.age) {
@@ -431,7 +449,6 @@ setMethod("reweight", signature="AWATEAdata",
 		MAc   = MAfun(cpa) # commercial mean ages
 		Wc    = wfun(MAc)
 		wNcpa = Wc$wN
-		#SDNR["cpa"] = NA  # No formulae appropriate for composition-data likelihoods due to correlations (Francis 2011, Appendix B, CJFAS)
 		wtemp = Wc$w; names(wtemp)=paste("cpa-",names(wtemp),sep="")
 		wj = c(wj,wtemp)
 	}
@@ -439,8 +456,11 @@ setMethod("reweight", signature="AWATEAdata",
 		wNcpa  = eNfun(cpa$Series,cpa$Year,cpa$Obs,cpa$Fit)
 	SDNR["cpa"] = sd(cpa$NR,na.rm=TRUE)
 
-	CAs = res$CAs  # survey proportions at age
+	# Survey proportions-at-age
+	CAs = res$CAs
 	spa = CAs[!is.na(CAs$SS),]
+	# SD and NR not used by Francis' mean weighting but calculated for SDNR reporting anyway
+	# No formulae appropriate for composition-data likelihoods due to correlations (Francis 2011, Appendix B, CJFAS)
 	spa$SD = SDfun(spa$Obs, spa$SS, A=length(unique(spa$Sex))*length(unique(spa$Age)) )
 	spa$NR = NRfun(spa$Obs, spa$Fit, spa$SD, maxR=3, logN=FALSE)
 	if (mean.age) {
