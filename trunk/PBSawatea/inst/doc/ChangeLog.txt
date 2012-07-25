@@ -3,7 +3,9 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-07-19  Rowan
+0.10  2011-07-25  Rowan
+  - Updated 'runADMB' to find the system exectuable file 'Awatea.exe' using the 'awateaPath' argument. (RH 7/25)
+  - Updated the 'runMPD' wrapper for 'runSweave'. (RH 7/25)
   - Updated 'runSweave' and 'run-Master.Snw' to be more flexible wrt the number of surveys. (7/19)
   - Updated 'runADMB', 'runSweave', 'runSweaveMCMC' to deal with POP in WCVI and WCHG. (RH 7/18)
   - Implemented Brian Ripley's suggestion to remove NOTES about 'no visible binding for global variable xxx':

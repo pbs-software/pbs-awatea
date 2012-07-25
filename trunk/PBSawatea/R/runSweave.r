@@ -89,17 +89,23 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 	invisible() }
 #----------------------------------------runSweave
 
-#runMPD---------------------------------2012-07-18
+#runMPD---------------------------------2012-07-25
 # Wrapper to function 'runSweave' for MPDs.
 #-----------------------------------------------RH
-runMPD = function(strSpp="XYZ",prefix=c("spp","area"), runs=1, rewts=0:6, cpue=FALSE, delim="-") {
+#runMPD = function(strSpp="XYZ",prefix=c("spp","area"), runs=1, rewts=0:6, cpue=FALSE, delim="-") {
+runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
+	# (...) pass in arguments specific to runSweave if different from the defaults:
+	# Args: c(wd, cpue, strSpp, filename, runNo, rwtNo, running.awatea, Nsurvey, Snames, delim)
+	# If prefix=NULL, filename will be taken from (...) or set to the default.
+	dots = list(...)
+	if (is.null(dots$delim)) delim="-" else delim=dots$delim
 	for (i in runs) {
-		for (j in rewts) {
-			#runSweave(filename=paste("input",pad0(i,2),"-ymr.txt",sep=""), runNo=i,rwtNo=j, cpue=cpue)
-			runSweave(strSpp=strSpp,filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep=""), runNo=i,rwtNo=j, cpue=cpue)
+		if (!is.null(prefix)) filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep="")
+		for (j in rwts) {
+			runSweave(filename=filename, runNo=i, rwtNo=j, ...)
 }	}	}
 
-#runMPD(strSpp="POP",prefix=c("pop","wcvi"),runs=29, rewts=1, cpue=FALSE)
+#runMPD(strSpp="POP",prefix=c("ymr","cst"),runs=29, rwts=0:1, cpue=FALSE, Nsurvey=5, Snames=c("GIG","QCSsyn","QCSshr","WCHGsyn","WCVIsyn"))
 
 # runMPD(c(24, 26:28), 1,cpue=FALSE)     # No switch for EstM. AME doesn't have run25 in the new format
                                          # (but not using it anyway, MCMCs weren't good).
