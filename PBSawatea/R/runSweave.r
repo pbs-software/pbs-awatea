@@ -1,15 +1,17 @@
-#runSweave------------------------------2012-07-19
+#runSweave------------------------------2012-07-26
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
 runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
-		filename = "spp-area-00.txt",    # Name of Awatea .txt file in 'run.dir' to run
-		runNo = 1,
-		rwtNo = 0,
-		running.awatea =0,                # 0 if just loading previous '.rep'; 1 if rerunning Awatea
-		Nsurvey = 5,
-		Snames = paste("Ser",1:Nsurvey,sep=""),
-		delim="-"
+		filename = "spp-area-00.txt",             # Name of Awatea .txt file in 'run.dir' to run
+		runNo   = 1,
+		rwtNo   = 0,
+		running.awatea =0,                        # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+		Nsurvey = 3,
+		Snames  = paste("Ser",1:Nsurvey,sep=""),  # survey names (w/out spaces)
+		SApos   = rep(TRUE,Nsurvey),              # surveys with age composition data
+		delim   = "-",
+		debug   = FALSE
 		) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave")),pos=1)
@@ -52,9 +54,8 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
 	snames = rep(Snames,Nsurvey)[1:Nsurvey] # enforce same number of names as surveys
 	tfile = gsub("@surveys",paste(snames,collapse="\",\""),tfile)
-
 #browser();return()
-	
+
 	if (!cpue) {
 		rmcpue = sapply(c("CPUEser","CPUEfit"),function(x,y){
 			x=paste("ymrfig\\{",x,sep="")
@@ -69,6 +70,7 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 		aline = tfile[ Nline ]
 		alines=NULL
 		for ( i in 1:Nsurvey) {
+			if (regexpr("[Aa]ge",b)>0 && !SApos[i]) next
 			if (Nsurvey==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
 			else alines=c(alines,gsub("1",i,aline))
 		}
@@ -81,7 +83,8 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
 	writeLines(tfile,con=localSweave)
-#browser();return()
+	if (debug) {
+		browser();return() }
 	Sweave(localSweave)
 	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)
 	shell(cmd=paste("dvips -q ",gsub("\\.Snw$",".dvi",localName),sep=""),wait=TRUE)
@@ -105,8 +108,8 @@ runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 			runSweave(filename=filename, runNo=i, rwtNo=j, ...)
 }	}	}
 
+#runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=3,rwts=1,cpue=TRUE,Nsurvey=2,Snames=c("NMFS Triennial","WCVI Synoptic"),SApos=c(F,T),delim="-",debug=T)
 #runMPD(strSpp="POP",prefix=c("ymr","cst"),runs=29, rwts=0:1, cpue=FALSE, Nsurvey=5, Snames=c("GIG","QCSsyn","QCSshr","WCHGsyn","WCVIsyn"))
-
 # runMPD(c(24, 26:28), 1,cpue=FALSE)     # No switch for EstM. AME doesn't have run25 in the new format
                                          # (but not using it anyway, MCMCs weren't good).
 # runMPD(29, 0:6,cpue=FALSE)             # No switch for EstM. AME doesn't

@@ -2661,10 +2661,10 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
   CAs.sex = unique(obj$CAs$Sex)
   # GIG, survey 1      # should do a loop,         only first two
   #ageSurveyFigName =c("ageSurvGIG", "ageSurvQCSsyn", "ageSurvQCSshr")
-  ageSurveyFigName = paste("ageSurv",ssnames,sep="")
   age.height = c(3.0, 2.8, 3)    # For .eps figs:
   age.width = c(3.5, 7, 3)    # For .eps figs:
   seriesList <- sort( unique( obj$CAs$Series) )
+  ageSurveyFigName = paste("ageSurv",ssnames[seriesList],sep="") # friggin nightmare
   age.layout = list()
   age.layout[[1]] = c(2,1)
   age.layout[[2]] = c(4,1)

@@ -25,8 +25,8 @@
 \renewcommand{\theequation}{\AppLet.\arabic{equation}}
 \renewcommand{\thefigure}{\AppLet.\arabic{figure}}
 
-\renewcommand{\rmdefault}{phv}   % Arial
-\renewcommand{\sfdefault}{phv}   % Arial
+% \renewcommand{\rmdefault}{phv}   % Arial
+% \renewcommand{\sfdefault}{phv}   % Arial
 
 
 \newcommand{\eb}{\begin{eqnarray}}
@@ -88,7 +88,7 @@
 
 {\Large \bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
 
-This file started 5th April 2011.
+% This file started for 2012 assessment in July 2012.
 
 Latest is \today, with \Sexpr{print(version$version.string)}. 
 % \Sexpr{print(version$platform)}.
@@ -158,30 +158,14 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 
 {\tt > shell( paste("awatea -ind ../", model.name,".txt -nohess", sep=""))}
 
-\section{Some brief notes on inputs}
-
-Biological input data come from Rowan's file {\tt @sppcode-data-input.xls}. 
-
-$L_\infty$ and $K$ for the vonB growth equation come from the LenAge sheet, and are:
-{\tt
-\# Area: major3456789   Trip type: 23 
-
-\# pars: n  Yinf  K  t0
-
-}
-
-for research data, rather than Trip type 14 (commercial). Check with Rowan the reason.
-
-Catch is now from Rowan's updated {\tt Catch-History-396.xls}, with me summing the areas in the spreadsheet. For input {\tt .txt} file I used tabs, which is how they are in the one that's saved from Awatea.
-
 \section{History of Runs}
 
-{\tt Run01}: 1 survey (WCVI Syn + US Triennial stitched), no CPUE series, estimating $R_0$ and $q$ only, initial run with many POP defaults. \newline
-\noindent {\tt Run02}: Same as {\\tt Run01}, but estimating all parameters. \newline
+{\tt Run01}: 1 survey (WCVI Syn + US Triennial stitched just to get something running), no CPUE series, estimating $R_0$ and $q$ only, initial run with many POP QCS defaults. % \newline    %
 
-\medskip
+\noindent {\tt Run02}: Same as {\tt Run01}, but estimating all parameters. Tried extra reweightings to see if they made a difference (because average weights looked a worse fit for first reweighting than no reweighting). For ageing data, first reweight downweights survey effective sample size (originally 10, 8, 8, 29), first reweight is 15\% of that (so fit is worse). Commercial increases to 1.73 times, so it somewhat prefers that data. \newline
 
-\noindent Using Run29 and Run30 as 'Estimate $M$' and 'Fix $M$' main runs in @sppcode write-up, with Run24 and Run28 mentioned in as sensitivites to including simple ageing error.
+\noindent {\tt Run03}: Rowan to fill in. {\tt pop-3CD-03.txt} is {\tt InputPOP wcvi 05A.txt} from Paul. 25/7/12.
+
 
 
 % \section{Importing Awatea output into R}
@@ -231,11 +215,13 @@ mainTitle <- "@sppname"
 minCpueYr <- 1940
 #ACH: I'm not sure exactly what this is for but I set it to the start year
 
-# Get the survey and commercial series (RH)
-Sser=unique(currentRes$Survey$Series)
-NSser=length(Sser)
-Cser=unique(currentRes$CPUE$Series)
-NCser=length(Cser)
+# Get the commercial and survey index series (RH)
+Cser=unique(currentRes$CPUE$Series);   NCser=length(Cser)
+Sser=unique(currentRes$Survey$Series); NSser=length(Sser)
+
+# Get the commercial and survey age series (RH)
+CAser=unique(currentRes$CAc$Series);   NCAser=length(CAser)
+SAser=unique(currentRes$CAs$Series);   NSAser=length(SAser)
 
 # Set the policy list for projection plots here.
 #policy <- c( "0","400","800","1200","1600","2000" )
@@ -459,7 +445,7 @@ ptab = function(xx)
 
 
 \begin{table}[tp]
-\caption{\label{tab:parest} Priors and MPD estimates for estimated parameters. First row for each parameter is in bold, giving the written-up model notation (as for POP Appendix), corresponding Awatea input name and then Awatea export name. Next line is the prior information plus the MPD. Prior distributions are: 0 -- uniform, 1 -- normal, 2 -- lognormal, 5 -- beta. Continued overleaf.}
+\caption{\label{tab:parest} Priors and MPD estimates for estimated parameters. First row for each parameter is in bold, giving the written-up model notation (as for QCS POP Appendix), corresponding Awatea input name and then Awatea export name. Next line is the prior information plus the MPD. Prior distributions are: 0 -- uniform, 1 -- normal, 2 -- lognormal, 5 -- beta. Continued overleaf.}
 % $^*$ indicates value is not automatically updated here from {\tt .res} file. [???...In Awatea, some parameters are always written as the log of that parameter, (though note that for $v_{gL}$, $g=1,2$, the input name does not explicitly mention that it is the logarithm, but it does for $g=4$)].}
 \begin{tabular}{llllll} 
 \hline
@@ -477,7 +463,7 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 \Sexpr{ptab(h.prior)} & \Sexpr{h.mpd} \\
  & & & & & \\
 
-\multicolumn{6}{l}{\bf Survey catchabilities, $g=1,...,5$:} \\
+\multicolumn{6}{l}{\bf Survey catchabilities, $g=1,2,...$:} \\
 \multicolumn{5}{l}{\bf $\log q_g$, Log q survey (row g), log\_qsurvey (row g)} & \\
 %=======The following line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(logqvec.prior[1,])} & \Sexpr{log(qvec.mpd[1])} \\
@@ -560,11 +546,12 @@ dev.off()
 @ 
 
 
-\sppfig{catch}{Commercial catch data.}
+% \sppfig{catch}{Commercial catch data.}   % No need to repeat for
+%  every model run, and it shows up later.
 
 % \sppfig{survIndSer3}{Crude plot of time series of the five surveys, plus CPUE index (dashed line, unless it's not used), all normalised to their respective means. To see if they give conflicting signals. (Note that CPUE isn't necessarily being used in the model fitting).}
 
-\sppfig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
+% \sppfig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
 
 <<bubbleplots, results=HIDE, echo=FALSE>>=
 # Should redo as a function in scape program, but quicker for now:
@@ -582,18 +569,6 @@ plotBubbles(CAcObsFem, dnam=TRUE, size=0.10, hide0=TRUE,
 # abline(a=-1976, b=1)   # to follow cohort 
 dev.off()
 
-CAcObsMale = matrix(currentRes$CAc$Obs[is.element(currentRes$CAc$Sex,
-  "Male")], nrow=length(ages))  
-dimnames(CAcObsMale)[[1]] = ages
-dimnames(CAcObsMale)[[2]] = yrCAc
-
-postscript("CAcObsMale.eps", horizontal=FALSE, paper="special", height = 7, width = 6)
-plotBubbles(CAcObsMale, dnam=TRUE, size=0.10, hide0=TRUE, 
-            main="Males")
-# abline(a=-1976, b=1)   # to follow cohort 
-dev.off()
-
-
 # And now for Fit to data
 CAcFitFem = matrix(currentRes$CAc$Fit[is.element(currentRes$CAc$Sex,
   "Female")], nrow=length(ages))  
@@ -608,6 +583,20 @@ plotBubbles(CAcFitFem, dnam=TRUE, size=0.10, hide0=TRUE,
 # abline(a=-1976, b=1)   # to follow cohort 
 dev.off()
 
+# Data for males.
+CAcObsMale = matrix(currentRes$CAc$Obs[is.element(currentRes$CAc$Sex,
+  "Male")], nrow=length(ages))  
+dimnames(CAcObsMale)[[1]] = ages
+dimnames(CAcObsMale)[[2]] = yrCAc
+
+postscript("CAcObsMale.eps", horizontal=FALSE, paper="special", height = 7, width = 6)
+plotBubbles(CAcObsMale, dnam=TRUE, size=0.10, hide0=TRUE, 
+            main="Males")
+# abline(a=-1976, b=1)   # to follow cohort 
+dev.off()
+
+
+# Model fit
 CAcFitMale = matrix(currentRes$CAc$Fit[is.element(currentRes$CAc$Sex,
   "Male")], nrow=length(ages))  
 dimnames(CAcFitMale)[[1]] = ages
@@ -623,9 +612,9 @@ dev.off()
 
 \sppfig{CAcObsFem}{Commercial catch-at-age data for females.}
 
-\sppfig{CAcObsMale}{Commercial catch-at-age data for males.}
-
 \sppfig{CAcFitFem}{Commercial catch-at-age model output for females  for run \Sexpr{model.name}.}
+
+\sppfig{CAcObsMale}{Commercial catch-at-age data for males.}
 
 \sppfig{CAcFitMale}{Commercial catch-at-age model output for males for run \Sexpr{model.name}.}
 
@@ -662,6 +651,7 @@ dev.off()
 
 \clearpage 
 
+%=======This line will be expanded to accomodate multiple surveys=======
 \twofig{ageSurv@survey1Female1}{ageSurv@survey1Male1}{Observed and predicted proportions-at-age for @survey1 survey for run \Sexpr{model.name}.}
 
 \sppfig{meanAge}{Mean ages for the data and model output for run \Sexpr{model.name}, for commercial and survey data (open circles are data, joined filled circles are model estimates).}
