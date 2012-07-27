@@ -1,9 +1,43 @@
 #===============================================================================
 # PBSawatea utility functions:
+#  importPar        : import Awatea parameters (all)
 #  importRes        : import Awatea results.
+#  importStd        : import Awatea table of estimated parameters.
 #  makeErrMat       : mMake simple ageing error matrix for Awatea.
 #  tabSAR           : generate comma-del., 2-D tables from reference point objects.
 #===============================================================================
+
+#importPar------------------------------2012-07-27
+# Import all Awatea parameters.
+#-----------------------------------------------RH
+importPar = function(par.file, vnam="name") {
+	pfile = readLines(par.file)
+	out = list(par=pfile)
+	header = pfile[1]
+	pfile = pfile[-1]
+	mess = gsub(" ","_",gsub("  ",";",gsub(" = ","=",sub("# ","",header))))
+	mess = sub("Maximum_gradient_component","maxgrad",mess)
+	mess = sub("Number_of_parameters","npars",mess)
+	mess = sub("Objective_function_value","fval",mess)
+	eval(parse(text=mess))
+	out = c(out, list(npars=npars,fval=fval,maxgrad=maxgrad))
+	vnampos = grep("#",pfile)
+	vvalbeg = vnampos + 1
+	vvalend = vnampos+c(diff(vnampos)-1,length(pfile)-rev(vnampos)[1])
+	pfile = gsub("]","",gsub("\\[",".",pfile))
+	pfile = gsub(":","",gsub("# ","",pfile))
+	pfile = gsub(" ",",",gsub("^ ","",pfile))
+	vals  = sapply(1:length(vnampos),function(x,f,n,v1,v2){
+		#mess = paste("out[\"",f[n[x]],"\"]= c(", paste(f[v1[x]:v2[x]],collapse=","),")",sep="")
+		mess = paste(f[n[x]]," = c(", paste(f[v1[x]:v2[x]],collapse=","),")",sep="")
+		eval(parse(text=mess))
+	},f=pfile,n=vnampos,v1=vvalbeg,v2=vvalend)
+	names(vals)=pfile[vnampos]
+	out=c(out,vals)
+#browser();return()
+	return(out) }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importStd
+test=importPar("something.par")
 
 #importRes--------------------------------------------------2011-05-03
 # Awatea res file has following structure (some elements may be      #
@@ -397,6 +431,28 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 	return(model)
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importRes
+
+#importStd------------------------------2012-07-27
+# Import Awatea table of estimated parameters.
+#-----------------------------------------------RH
+importStd = function(std.file, vnam="name") {
+	sfile = readLines(std.file)
+	sfile = sub("std dev","std.dev",sfile)
+	sfile = gsub("]","",gsub("\\[",".",sfile))
+	writeLines(sfile,"std.tmp")
+	std = read.table("std.tmp",header=TRUE,sep="")
+	out = list(std=std)
+	onam =setdiff(names(std),vnam)
+	vars = unique(std[,vnam])
+	for (v in vars) {
+		mess = paste(v,"=std[is.element(std[,vnam],\"",v,"\"),onam,drop=FALSE]",sep="")
+		mess = c(mess, paste("out[\"",v,"\"] = list(",v,"=",v,")",sep=""))
+		eval(parse(text=paste(mess,collapse=";")))
+	}
+	file.remove("std.tmp")
+	return(out) }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importStd
+#test=importStd("something.std")
 
 #makeErrMat-----------------------------2011-05-05
 # Make a simple ageing error matrix for Awatea.

@@ -1,7 +1,8 @@
 setClass ("AWATEAdata", 
      representation( txtnam="character", input="character", vlst="list", 
      dnam="character", nvars="numeric", vdesc="character", vars="list", 
-     gcomm="character", vcomm="character", output="list" , reweight="list") )
+     gcomm="character", vcomm="character", resdat="list" , pardat="list", 
+     stddat="list", cordat="list", reweight="list") )
 
 #require(PBSmodelling)
 #source("utilFuns.r",local=FALSE)
@@ -9,7 +10,7 @@ setClass ("AWATEAdata",
 # Flush the cat down the console
 .flush.cat = function(...) { cat(...); flush.console() }
 
-#runADMB--------------------------------2012-07-25
+#runADMB--------------------------------2012-07-27
 # Run AD Model Builder code for Awatea
 #-----------------------------------------------RH
 runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
@@ -89,14 +90,17 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 			if (verbose)  .flush.cat(mess, sep="\n")
 			if (length(mess)<10) stop("Abnormal program termination")
 			file.copy("results.dat",gsub(paste("\\.",ext,sep=""),".res",fileN),overwrite=TRUE)
-			file.copy("Awatea.par",gsub(paste("\\.",ext,sep=""),".par",fileN),overwrite=TRUE)
+			#file.copy("Awatea.par",gsub(paste("\\.",ext,sep=""),".par",fileN),overwrite=TRUE)
+			suffix = c("par","std","cor")
+			for (j in suffix)
+				file.copy(paste("Awatea",j,sep="."),gsub(paste("\\.",ext,sep=""),paste("\\.",j,sep=""),fileN),overwrite=TRUE)
 			eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
 			Robj@reweight = list(nrwt=i)
 #browser();return()
 			Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age, sfile=sdnrfile, fileN=fileN)
 		}
 		if (!file.exists(rundir)) dir.create(rundir)
-		filesN = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=3),rep(c(ext,"par","res"),N.reweight+1),sep=".")
+		filesN = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=3),rep(c(ext,"res",suffix),N.reweight+1),sep=".")
 		file.copy(paste(wd,c(filename.ext,filesN,sdnrfile),sep="/"),rundir,overwrite=TRUE)
 		file.remove(paste(wd,c(filesN,sdnrfile),sep="/"))
 	}
@@ -205,14 +209,31 @@ readAD = function(txt) {
 		else {browser();return()}
 	}
 	#writeList(vars,gsub("\\.txt",".pbs.txt",txtnam),format="P") # write to a PBS formatted text file
-	resnam = gsub("\\.txt$",".res",txtnam)
-	if (!file.exists(resnam))
-		output = list()
-	else {
-		output = importRes( res.file=resnam, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=FALSE, CLs=FALSE, CAs=TRUE, CAc=TRUE, extra=TRUE)
-		attr(output,"class")="list" }
+	#resnam = gsub("\\.txt$",".res",txtnam)
+	suffix = c("res","par","std","cor")
+	for (j in suffix) {
+		jnam = gsub("\\.txt$",paste(".",j,sep=""),txtnam)
+		#assign(paste(j,"nam",sep=""),jnam)
+		if (!file.exists(jnam)) assign(jnam, list())
+		else {
+			if (j=="res")
+				resdat = importRes( res.file=jnam, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=FALSE, CLs=FALSE, CAs=TRUE, CAc=TRUE, extra=TRUE)
+			else if (j=="par") pardat=list()
+			else if (j=="std") stddat = importStd( std.file = jnam)
+			else if (j=="cor") cordat=list()
+			eval(parse(text=paste("attr(",j,"dat,\"class\")=\"list\"",sep=""))) 
+		}
+	}
+browser();return()
+#	if (!file.exists(resnam)) {
+#		resdat = list(); pardat = list(); stddat = list(); cordat=list() }
+#	else {
+#		resdat = importRes( res.file=resnam, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=FALSE, CLs=FALSE, CAs=TRUE, CAc=TRUE, extra=TRUE)
+#		attr(resdat,"class")="list" 
+#		}
 	Data=new("AWATEAdata",txtnam=txtnam, input=ntxt, vlst=vlst, dnam=dnam, 
-		nvars=nvars, vdesc=vdesc, vars=vars, gcomm=gcomm, vcomm=vcomm, output=output,reweight=list(nrwt=0))
+		nvars=nvars, vdesc=vdesc, vars=vars, gcomm=gcomm, vcomm=vcomm, resdat=resdat,
+		pardat=pardat, stddat=stddat, cordat=cordat, reweight=list(nrwt=0))
 	return(Data) }
 #-------------------------------------------readAD
 
@@ -308,7 +329,7 @@ reweight <- function(obj, cvpro=FALSE, mean.age=TRUE, ...) return(obj)
 setMethod("reweight", signature="AWATEAdata",
     definition = function (obj, cvpro=FALSE,  mean.age=TRUE, ...) {
 
-	nrwt = obj@reweight$nrwt; dat = obj@vars; desc=obj@vdesc; res=obj@output
+	nrwt = obj@reweight$nrwt; dat = obj@vars; desc=obj@vdesc; res=obj@resdat
 	dots = list(...)
 	# Normal residual for an observation (Coleraine Excel algorithm only)
 	# (F.26 POP 2010 assessment)
