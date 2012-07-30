@@ -3,8 +3,10 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-07-27  Rowan
-  - Added new functions 'importPar' and 'importStd'; updated AWATEAdata class (not thoroughly tested yet). (RH 7/27)
+0.10  2011-07-30  Rowan
+  - Added new function 'importCor' to import the Awatea correlation file. (RH 7/30)
+  - Added new functions 'importPar' and 'importStd'  to import all and estimated parameters, respectively. (RH 7/27)
+  - Updated AWATEAdata class (not thoroughly tested yet). (RH 7/27)
   - Updated 'runSweave' to handle surveys with missing age composition data. (RH 7/26)
   - Updated 'runADMB' to find the system exectuable file 'Awatea.exe' using the 'awateaPath' argument. (RH 7/25)
   - Updated the 'runMPD' wrapper for 'runSweave'. (RH 7/25)

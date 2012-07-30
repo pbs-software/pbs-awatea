@@ -24,12 +24,13 @@
 
   \code{dat = new("AWATEAdata", txtnam=character(), input=character(), vlst=list(),} \cr
   \code{      dnam=character(), nvars=numeric(), vdesc=character(), vars=list(), } \cr
-  \code{      gcomm=character(), vcomm=character(), output=list() , reweight=list()) }
+  \code{      gcomm=character(), vcomm=character(), resdat=list() , pardat=list(), } \cr  
+  \code{      stddat=list(), cordat=list(), reweight=list()) }
 
 
   The function \code{readAD} populates the first nine slots of the S4 object by reading in an \code{Awatea} data
   file from the user's current working directory. If an \code{Awatea} results file (with the same prefix 
-  as the input file and the suffix = \code{.res}), then slot 10 \code{output} will also be populated.
+  as the input file and the suffix = \code{.res}), then slot \code{resdat} will also be populated.
 }
 \section{Slots}{
   \describe{
@@ -42,7 +43,10 @@
     \item{\code{vars}}{: variable values indexed by variable identifier. }
     \item{\code{gcomm}}{: commented lines indexed by numeric line number. }
     \item{\code{vcomm}}{: value descriptors indexed by numeric line number.}
-    \item{\code{output}}{: list of variable values from the \code{Awatea} results file using \code{importRes}.}
+    \item{\code{resdat}}{: list of variable values from the \code{Awatea} results file using \code{importRes}.}
+    \item{\code{pardat}}{: list of all parameter values from the \code{Awatea} parameter file \code{.par} using \code{importPar}.}
+    \item{\code{stddat}}{: list of estimated parameter values from the \code{Awatea} file \code{.std} using \code{importStd}.}
+    \item{\code{cordat}}{: list of correlation objects from the \code{Awatea} correlation file \code{.cor} using \code{importCor}.}
     \item{\code{reweight}}{: list of re-weighted abundance and composition data (see \code{\link[PBSawatea]{reweight}} for details).}
   }
 }

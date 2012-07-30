@@ -160,13 +160,20 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 
 \section{History of Runs}
 
-{\tt Run01}: 1 survey (WCVI Syn + US Triennial stitched just to get something running), no CPUE series, estimating $R_0$ and $q$ only, initial run with many POP QCS defaults. % \newline    %
+{\tt Run01}: 1 survey (WCVI Syn + US Triennial stitched just to get something running), no CPUE series, estimating $R_0$ and $q$ only, initial run with many POP QCS defaults. \newline  
 
 \noindent {\tt Run02}: Same as {\tt Run01}, but estimating all parameters. Tried extra reweightings to see if they made a difference (because average weights looked a worse fit for first reweighting than no reweighting). For ageing data, first reweight downweights survey effective sample size (originally 10, 8, 8, 29), first reweight is 15\% of that (so fit is worse). Commercial increases to 1.73 times, so it somewhat prefers that data. \newline
 
-\noindent {\tt Run03}: Rowan to fill in. {\tt pop-3CD-03.txt} is {\tt InputPOP wcvi 05A.txt} from Paul. 25/7/12.
+\noindent {\tt Run03}: From Paul (his {\tt InputPOP wcvi 05A.txt}), 25/7/12. Now starts from 1976, many (but not all) of the parameters estimated. Gives moderately sensible results. Contains the 17 CPUE indices and the 1996 Caledonian survey estimate. Now estimating {\tt log init devs}: deviates for initial age structure; {\tt initial R}: number 1-year olds in year 1 relative to $R_0$ (**perhaps); {\tt initial u}: exploitation for initial age structure (one for each sex); {\tt plus scale}: multiplier on the "plus" group, which recognises that the cumulative exploitation on the plus group will exceed the estimate made by the parameter 'initial u' (one parameter for each sex). Find $R_0 \simeq 1700$, {\tt uinit}$\simeq 0.01$ and the plus-scale is a very small number. I don't think these make sense.  It may be a better idea to not estimate plus-scale at this point.  And {\tt Rinit}$>1$, which also seems silly. It's still early days, but it looks like this approach will lead to an assessment, which is good news. \newline
 
+\noindent {\tt Run04}: Same as {\tt Run03}, but setting priors for natural mortality to Normal(0.067, sd$=$0.0029) for females, Normal(0.073, 0.0031) for males, based on posteriors of QCS POP assessment. May want to (i) use one prior for both sexes (Normal(0.07, 0.003)), or (ii) make priors broader. Take out 1996 synoptic survey index that was included (it was targetting POP and caught POP about twice as frequently as the later cruises - see Paul's Appendix C). Also using priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors. I noticed in the previous input file these were set as uniforms, but I've changed to normals which seems to work.
 
+\noindent {\tt Run05}: Same as {\tt Run04} with changes: (1)~log init devs changed from phase 3 to phase 2. (2)~Tried changing "Survey catch at age likelihood type" for survey1 to '0' (from 12), with dummy set of {\tt C@age} data for survey1 (this gives the same par and MPD estimates but throws the indexing off for {\tt C@age} fits; therefore reverted to one {\tt C@age} series with no dummy). (3)~Updated the WCVI synoptic survey biomass estimates to reflect some minor changes in all of them, except for 2010 survey which has changed a lot.
+
+% **NOT DONE YET: Use priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors, but in the input files they were set as uniforms. So not sure which we are going to use.
+
+Out of time to add in uinit - Rowan has written code to get it into R.
+\newline
 
 % \section{Importing Awatea output into R}
 
@@ -321,8 +328,12 @@ ut.mpd = currentRes$B$U[-length(currentRes$B$U)]
 Bt.mpd = currentRes$B$SB
 B0.mpd = Bt.mpd[1]
 Vt.mpd = currentRes$B$V
-logRecDev.mpd = currentRes$Dev$Annual
-
+logRecDev.mpd = currentRes$Dev$Annual    # epsilon_t
+            # = currentRes$extra$parameters$log_RecDev
+            # mean is 0
+logInitAgeDev.mpd = currentRes$Dev$Initial  # deviations for initial
+                                            #  age structure, ages 2+
+                                            # mean is 0
 
 # From Rowan's extra function, to give the mpd's:
 R0.mpd = currentRes$extra$parameters$R0
@@ -351,6 +362,43 @@ M1.prior = currentRes$extra$priors$M1_prior[1,]
 M2.prior = currentRes$extra$priors$M1_prior[2,]
 h.prior = currentRes$extra$priors$h_prior
 logqvec.prior = currentRes$extra$priors$log_qsurvey_prior# surveys, matrix
+
+# Extras now being estimated for POP 3CD, since starting model not
+#  at equilibrium. Using Awatea input names for now, change once
+#  decide mathematical symbols for writing up and understanding.
+#  Comments for now are from the Awatea .txt input file.
+
+# Not in currentRes$extra$priors, but is in ...$residuals:
+# deviates (log?) for initial age structure: uniform or normal only
+log.init.dev.prior = currentRes$extra$residuals$p_log_InitialDev
+
+# Also not in currentRes$extra$priors
+#log rec dev prior (uniform or normal only)	
+log.rec.dev.prior = currentRes$extra$residuals$p_log_RecDev
+sigmaR = log.rec.dev.prior[6]
+if(sigmaR != log.init.dev.prior[6]) {stop("Standard deviations for recruitment deviations and initial age structure deviations need to be the same")}
+
+# Exponentiated and bias corrected deviations (need sigmaR)
+recDev.mpd = exp(logRecDev.mpd - (sigmaR^2)/2)   
+initAgeDev.mpd = exp(logInitAgeDev.mpd - (sigmaR^2)/2 )
+                   # devitations for initial age structure, ages 2+
+
+
+
+
+
+
+#Initial R ( = # 1-yr olds in yr 1/R0; unfished = 1)
+Rinit.prior = currentRes$extra$priors$Rinit_prior
+
+#Initial u (exploitation rate for initial age structure; 0=unfished)
+uinit.prior = currentRes$extra$priors$uinit_prior  # One row each sex
+
+#Plus scale						
+plusScale.prior = currentRes$extra$priors$p_plusscale  # One row each sex
+
+
+
 
 # CPUE:
 logqCPUE.prior = currentRes$extra$priors$log_qCPUE  # q for CPUE
@@ -468,6 +516,35 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 %=======The following line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(logqvec.prior[1,])} & \Sexpr{log(qvec.mpd[1])} \\
 
+\multicolumn{6}{l}{\bf $***$, Log init dev prior, p\_log\_InitialDev is prior, results for each $a$} \\
+\Sexpr{ptab(log.init.dev.prior)} & Figure \ref{fig:initAgeDev} \\
+       % logInitAgeDev.mpd ,  one for each age2+
+
+\multicolumn{6}{l}{\bf $\epsilon_t$, log rec dev prior, p\_log\_RecDev is prior, results for each $t$}  \\
+\Sexpr{ptab(log.rec.dev.prior)} & Figure \ref{fig:recDev} \\ % logRecDev.mpd
+
+\multicolumn{5}{l}{\bf $***$, initial R, Rinit\_prior is prior} & \\
+\Sexpr{ptab(Rinit.prior)} & cannot find \\
+% Can't find this in the output anywhere. Thinking might be able
+%  to get from the ratio of R0.mpd and the sum of age-1 fish and
+%  the first year, which is:
+% # currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,]
+% # currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,"N"]
+% [1] 656.821 656.821
+% # sum(currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,"N"])                  $
+% 1313.642       so ratio of this over R0.mpd is 0.795.
+% But above we have
+% # Rt = currentRes$B$R[-length(currentRes$B$R)]   
+%                                       # Remove final NA for 2011,
+%  but Rt[1] is 3514, > R0.mpd = 1652 and >> what I calc from N in 
+%   1976 above        
+
+
+\multicolumn{5}{l}{\bf $***$, initial u, uinit\_prior (females, males) is prior} & \\
+\Sexpr{ptab(uinit.prior[1,])} & cannot find \\   % Think just a parameter
+\Sexpr{ptab(uinit.prior[2,])} & cannot find \\
+
+
 \hline
 \end{tabular}	
 \end{table}
@@ -486,7 +563,7 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 \multicolumn{5}{l}{\bf $\log \beta$, LogBetaCPUE (CPUE POW), log\_BetaCPUE} & \\
 \Sexpr{ptab(logbetaCPUE.prior)} & \Sexpr{log(betaCPUE.mpd)} \\
  & \\
-\multicolumn{6}{l}{\bf Selectivities ($g=1,...,6$, suffix 6 is commercial):} \\
+\multicolumn{6}{l}{\bf Selectivities ($g=1,...$, last is commercial):} \\
 \multicolumn{6}{l}{\bf $\mu_g$, Survey L full, (row g), surveySfull (row g)} \\
 %=======This line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(muvec.prior[1,])} & \Sexpr{muvec.mpd[1]} \\
@@ -644,6 +721,38 @@ dev.off()
 \sppfig{CPUEser}{CPUE index series, 95\% error bars are based on lognormal assumption (think about more).}
 
 \sppfig{CPUEfit}{Crude plot of CPUE index series, without error bars.}
+
+
+
+<<recdevplot, results=HIDE, echo=FALSE>>=
+# Should redo as a function in scape program, but quicker for now:
+postscript("recDev.eps", horizontal=FALSE, paper="special", height = 8, width = 6)
+par(mfrow=c(2,1))
+plot(names(logRecDev.mpd), logRecDev.mpd, xlab="Year", ylab="Log recruitment deviations, epsilon_t")
+abline(h=0, col="grey")
+plot(names(recDev.mpd), recDev.mpd, ylim=c(0, max(recDev.mpd)), xlab="Year", ylab="Recruitment deviations (bias corrected)")
+abline(h=1, col="grey")
+dev.off()
+@ 
+
+\sppfig{recDev}{Recruitment deviation for each year. Top: $\epsilon_t$ (so in log space); bottom: bias-corrected multiplicative deviation, given as $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$.}
+
+
+<<initagedevplot, results=HIDE, echo=FALSE>>=
+# Should redo as a function in scape program, but quicker for now:
+postscript("initAgeDev.eps", horizontal=FALSE, paper="special", height = 8, width = 6)
+par(mfrow=c(2,1))
+plot(names(logInitAgeDev.mpd), logInitAgeDev.mpd, xlab="Year", ylab="Log initial age deviations")
+abline(h=0, col="grey")
+plot(names(initAgeDev.mpd), initAgeDev.mpd, ylim=c(0, max(initAgeDev.mpd)), xlab="Year", ylab="Initial age deviations (bias corrected)")
+abline(h=1, col="grey")
+dev.off()
+@ 
+
+\sppfig{initAgeDev}{Initial age deviation for each age (except 1). Top: in log space, call them $\theta_a$ for now; bottom: bias-corrected multiplicative deviation, given as $\mbox{e}^{\theta_a - \sigma_R^2/2}$ where $\theta_a \sim \mbox{Normal}(0, \sigma_R^2)$. The same standard deviation $\sigma_R$ must be used as for recruitment deviations.}
+
+
+
 
 \sppfig{ageCommFemale1}{Observed and predicted proportions-at-age for females, commercial data (1977-1995) for run \Sexpr{model.name}. Note that years are not consecutive.}
 
