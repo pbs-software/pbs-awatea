@@ -58,6 +58,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
 		#file0 = gsub(paste("\\.",ext,sep=""),paste(".000.",ext,sep=""),filename.ext)
 		file0 = paste(prefix,runNoStr,"00.txt",sep=".")
+		suffix = c("par","std","cor")
 		for (i in 0:N.reweight) {
 			ii = pad0(i,2)
 			if (i==0) {
@@ -91,16 +92,14 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 			if (length(mess)<10) stop("Abnormal program termination")
 			file.copy("results.dat",gsub(paste("\\.",ext,sep=""),".res",fileN),overwrite=TRUE)
 			#file.copy("Awatea.par",gsub(paste("\\.",ext,sep=""),".par",fileN),overwrite=TRUE)
-			suffix = c("par","std","cor")
 			for (j in suffix)
 				file.copy(paste("Awatea",j,sep="."),gsub(paste("\\.",ext,sep=""),paste("\\.",j,sep=""),fileN),overwrite=TRUE)
 			eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
 			Robj@reweight = list(nrwt=i)
-#browser();return()
 			Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age, sfile=sdnrfile, fileN=fileN)
 		}
 		if (!file.exists(rundir)) dir.create(rundir)
-		filesN = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=3),rep(c(ext,"res",suffix),N.reweight+1),sep=".")
+		filesN = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=length(suffix)+2),rep(c(ext,"res",suffix),N.reweight+1),sep=".")
 		file.copy(paste(wd,c(filename.ext,filesN,sdnrfile),sep="/"),rundir,overwrite=TRUE)
 		file.remove(paste(wd,c(filesN,sdnrfile),sep="/"))
 	}
@@ -224,7 +223,6 @@ readAD = function(txt) {
 			eval(parse(text=paste("attr(",j,"dat,\"class\")=\"list\"",sep=""))) 
 		}
 	}
-browser();return()
 #	if (!file.exists(resnam)) {
 #		resdat = list(); pardat = list(); stddat = list(); cordat=list() }
 #	else {
@@ -384,7 +382,7 @@ setMethod("reweight", signature="AWATEAdata",
 	# Mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
 	MAfun = function(padata,brks=NULL)  {
 		# S = series, y = year, a = age bin, O = observed proportions, P = Predicted (fitted) proportions, N=sample size
-		S=padata$Series; y=padata$Year; a=padata$Age; O=padata$Obs; E=padata$Fit; N=padata$SS   # note: SD and NR not used
+		S=padata$Series; y=padata$Year; a=padata$Age; O=padata$Obs; E=padata$Fit; SS=padata$SS   # note: SD and NR not used
 		if (is.null(brks)) {
 			f = paste(S,y,sep="-"); J = unique(S) }
 		else {
@@ -394,7 +392,7 @@ setMethod("reweight", signature="AWATEAdata",
 		mOy  = sapply(split(Oay,f),sum,na.rm=TRUE)
 		mEy  = sapply(split(Eay,f),sum,na.rm=TRUE)
 		mEy2 = sapply(split(Eay2,f),sum,na.rm=TRUE)
-		N    = sapply(split(N,f),mean,na.rm=TRUE)
+		N    = sapply(split(SS,f),mean,na.rm=TRUE)
 		return(list(MAobs=mOy, MAexp=mEy, Vexp=mEy2-mEy^2, N=N, J=J)) # observed and expected mean ages, variance of expected ages
 	}
 	# Weighting Method TA1.8 (Francis 2011, CJFAS, p.1137)
@@ -494,6 +492,7 @@ setMethod("reweight", signature="AWATEAdata",
 	}
 	else
 		wNspa  = eNfun(spa$Series,spa$Year,spa$Obs,spa$Fit)
+#browser();return()
 	SDNR["spa"] = sd(spa$NR,na.rm=TRUE)
 
 	if (!is.null(dots$sfile)) {
@@ -523,7 +522,7 @@ setMethod("reweight", signature="AWATEAdata",
 #popin = reweight(popin)
 
 #=== POP 3CD 2012 ===
-#out=runADMB("pop29-wcvi.txt",strSpp="POP",runNo=29,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
+#out=runADMB("pop-3CD-05.txt",strSpp="POP",runNo=5,doMPD=TRUE,N.reweight=0,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
 
 #=== YMR CST 2011 ===
 #out=runADMB("input29-ymr.txt",runNo=29,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)

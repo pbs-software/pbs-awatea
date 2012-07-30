@@ -7,10 +7,44 @@
 #  tabSAR           : generate comma-del., 2-D tables from reference point objects.
 #===============================================================================
 
+#importPar------------------------------2012-07-30
+# Import all Awatea parameters.
+#-----------------------------------------------RH
+importCor = function(cor.file) {
+	cfile = readLines(cor.file)
+	out = list(par=cfile)
+	header = cfile[1]
+	cfile = cfile[-1]
+	hessian=as.numeric(strsplit(header,split=" = ")[[1]][2])
+	cfile = sub("std dev","std.dev",cfile)
+	cfile = gsub("]","",gsub("\\[",".",cfile))
+	nI = length(cfile)-1 # number of indices
+	for (i in 1:nI) {
+		ii = i + 1
+		cfile[ii] = paste(c(cfile[ii],rep("NA",nI-i)),collapse=" ")
+	}
+	writeLines(cfile,"cor.tmp")
+	cor = read.table("cor.tmp",header=TRUE,sep="")
+	iii = paste("i",pad0(1:nI,n=ceiling(log10(nI))),sep="")
+	names(cor)[grep("X",names(cor))] = iii
+	row.names(cor) = iii
+	zi = upper.tri(cor[iii,iii])
+	cor[iii,iii][zi] = t(cor[iii,iii])[zi] # populate upper right triangle with lower left values
+#browser();return()
+	cor.mat = as.matrix(cor[iii,iii])
+	cor.name = cor$name
+	cor.value = cor$value
+	cor.std.dev = cor$std.dev
+	out = list(cfile=cfile,cor=cor,cor.mat=cor.mat,index=iii,cor.name=cor.name,cor.value=cor.value,cor.std.dev=cor.std.dev,hessian_log_determinant=hessian)
+	file.remove("cor.tmp")
+	return(out) }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importCor
+#test=importCor("something.cor")
+
 #importPar------------------------------2012-07-27
 # Import all Awatea parameters.
 #-----------------------------------------------RH
-importPar = function(par.file, vnam="name") {
+importPar = function(par.file) {
 	pfile = readLines(par.file)
 	out = list(par=pfile)
 	header = pfile[1]
@@ -36,8 +70,8 @@ importPar = function(par.file, vnam="name") {
 	out=c(out,vals)
 #browser();return()
 	return(out) }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importStd
-test=importPar("something.par")
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importPar
+#test=importPar("something.par")
 
 #importRes--------------------------------------------------2011-05-03
 # Awatea res file has following structure (some elements may be      #

@@ -64,7 +64,8 @@ importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
   \emph{e.g.} \code{ll(x.cod); ll(x.cod$N); head(x.cod$N)}.
 }
 \seealso{
-  \code{\link{runADMB}}, \code{\link{readAD}}, \code{\link{reweight}}, \code{\link{importCol2}} \cr
+  \code{\link[PBSawatea]{importCor}}, \code{\link[PBSawatea]{importPar}}, \code{\link[PBSawatea]{importStd}} \cr
+  \code{\link[PBSawatea]{runADMB}}, \code{\link[PBSawatea]{readAD}}, \code{\link[PBSawatea]{reweight}}, \code{\link[PBSawatea]{importCol2}} \cr
   \code{\link[utils]{read.table}}, \code{\link[base]{readLines}}, and \code{\link[base]{scan}} to import any data. \cr
   \code{\link[scape]{scape-package}} gives an overview of the package \pkg{scape}.
 }
