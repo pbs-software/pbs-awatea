@@ -4,6 +4,7 @@
 #  compBmsy         : compare biomass posteriors relative to Bmsy.
 #  cquantile        : cumulative quantile, from cumuplot.
 #  cquantile.vec    : get one probability at a time.
+#  plotBars         : barplots of specific year age proportions
 #  plotBox          : modified boxplot with quantile whiskers.
 #  plotDensPOP      : edited scapeMCMC::plotDens function.
 #  plotDensPOPpars  : edited scapeMCMC::plotDens for parameters.
@@ -252,6 +253,77 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
   return(cquant)
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^cquantile.vec
+
+#plotBars-------------------------------2012-08-01
+# Plot barplots of specific year age proportions.
+#-----------------------------------------------RH
+plotBars = function(res, type="N", prop=TRUE, year=1976, sex=c(2,1), # sex 2 =females (gfbio) 1 = males
+    age=NULL, fill=c("orange","cyan"), eps=FALSE, pix=FALSE, ...) {
+	oldpar = par(no.readonly=TRUE)
+	on.exit(par(oldpar))
+	if (!any(type==names(res))) stop("Choose another object in the list")
+	nyear = length(year)
+	SEX = c("Male","Female")
+	Sex = SEX[sex]; nsex=length(Sex)
+	M1  = res$extra$parameters$M1
+	M   = if (length(M1)==1) M1 else rev(M1)[sex]
+	names(M) = Sex
+	fill = rep(fill,nsex)[1:nsex]; names(fill) = Sex
+	dat = res[[type]]
+	dat = dat[is.element(dat$Year,year),]
+	dat = dat[is.element(dat$Sex,Sex),]
+	if (is.null(age)) age = sort(unique(dat$Age))
+	AGE = sort(unique(dat$Age))
+	nage = length(age); Nage=length(AGE)
+	mat = array(0,dim=c(Nage,nsex,nyear), dimnames=list(age=AGE,sex=Sex,year=year))
+	for (i in year) {
+		ii = as.character(i)
+		idat = dat[is.element(dat$Year,i),]
+		for (s in Sex) {
+			sdat = idat[is.element(idat$Sex,s),]
+			x = sdat[,type]; names(x) = sdat[,"Age"]
+			if (prop) x = x/sum(x)
+			mat[names(x),s,ii] = x
+			
+		}
+	}
+	#ncol=floor(sqrt(nyear)); nrow=ceiling(nyear/ncol)
+	nrow=min(nyear,5); ncol=ceiling(nyear/nrow)
+	fnam = paste("ageBars",paste(Sex,collapse=""),sep="")
+	figs = c(eps=eps,pix=pix,con=TRUE)
+	for (k in names(figs)){
+		if (k=="eps" && figs[k]) postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", height=3*nrow, width=6.5)
+		else if (k=="pix" && figs[k]) png(paste(fnam,"png",sep="."), width=1300, height=nrow*600, units="px", pointsize=16)
+		par(mfcol=c(nrow,ncol),mgp=c(2,0.5,0),las=0,xaxs="i",mar=c(4,4,1,1))
+		for (i in year) {
+			ii = as.character(i); aa=as.character(age)
+			xy = barplot(t(mat[aa,,ii]),beside=TRUE,space=c(0,0), xaxt=ifelse(nage>10,"n","s"),
+				col=fill, xlab="Age",ylab=ifelse(prop,"Proportions",type),cex.lab=1.25)
+			xpos  = apply(xy,2,mean)
+			xdiff = diff(xpos)[1]
+			for (s in Sex) {
+				m = M[s]; f = fill[s]
+				a = 0:max(age)
+				b = exp(-m*a)
+				za=is.element(a,age)
+				ypos = (b[za]/max(b))* max(mat[,,ii])
+				lines(xpos,ypos,lwd=3,col="black")
+				lines(xpos,ypos,lwd=1,col=f)
+			}
+			if (nage>10) {
+				AGE = seq(5,200,5)
+				agelab = intersect(AGE,age)
+				agepos = xpos[is.element(age,agelab)]
+				axis(1,tick=FALSE,at=agepos,labels=agelab,mgp=c(2,0.2,0))
+			}
+			addLabel(0.95,0.95,ii,adj=c(1,1),cex=1.5,font=2)
+			if (i==year[1])
+				addLegend(0.975,0.875,legend=paste(Sex," M = ",M,sep=""),fill=fill,bty="n",yjust=1,xjust=1)
+		}
+		if (k=="eps" && figs[k] | k=="pix" && figs[k]) dev.off()
+	}
+	invisible(return(list(dat=dat,mat=mat,xpos=xpos))) }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBars
 
 #plotBox--------------------------------2011-12-15
 # Modified boxplot with quantile whiskers.

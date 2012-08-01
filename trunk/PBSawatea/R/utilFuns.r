@@ -73,7 +73,7 @@ importPar = function(par.file) {
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importPar
 #test=importPar("something.par")
 
-#importRes--------------------------------------------------2011-05-03
+#importRes--------------------------------------------------2012-07-31
 # Awatea res file has following structure (some elements may be      #
 # missing dependent on model configuration and importCol details.    #
 #                                                                    #
@@ -339,6 +339,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		return(LA)
 	}
 	getExtra = function(resvec,sep=" ") {
+		# only for variables with data on same line
 		extra = list(
 			likelihoods = c(
 			"CPUE","Survey_Index","C@A_Commercial","C@A_survey","Prior_penalties"),# Likelihoods
@@ -365,8 +366,10 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		Nsexes       = as.numeric(rev(strsplit(resvec[grep("^Nsexes",resvec)],split=sep)[[1]])[1])
 		Nsurveyindex = as.numeric(rev(strsplit(resvec[grep("^Nsurveyindex",resvec)],split=sep)[[1]])[1])
 		NCPUEindex   = as.numeric(rev(strsplit(resvec[grep("^NCPUEindex",resvec)],split=sep)[[1]])[1])
+		glist = list(general=list(Nsexes=Nsexes,Nsurveyindex=Nsurveyindex,NCPUEindex=NCPUEindex))
 		elist = sapply(extra,function(x,resvec) { 
 			ex = as.list(x); names(ex) = x
+#if (x=="Virgin_Vulnerable_Biomass") {browser();return() }
 			for (i in ex) {
 				expr=paste("index = grep(\"^",i,sep,"\",resvec)",sep="")
 				eval(parse(text=expr))
@@ -381,13 +384,34 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 					exmat = t(sapply(exvec,function(x){as.numeric(x[!is.element(x,c(i,""))])}))
 					if (nrow(exmat)==1) exres=as.vector(exmat)
 					else                exres=exmat
-#if (i=="log_qsurvey_prior") {browser();return() }
 					ex[[i]] = exres
 				}
 				else ex[[i]] = "not found"
 			}
 			return(ex) }, resvec=resvec, simplify=FALSE)
-
+		# for variables with names on single line followed by chunks of values
+		chunk = list(
+			biomass = c(
+			"Virgin_Vulnerable_Biomass","Virgin_Spawning_Biomass")
+		)
+		clist = sapply(chunk,function(x,resvec) { 
+			ex = as.list(x); names(ex) = x
+			for (i in ex) {
+				expr=paste("index = grep(\"^",i,"\",resvec)",sep="")
+				eval(parse(text=expr))
+				if (length(index)==1) {
+					if (i %in% c("Virgin_Vulnerable_Biomass","Virgin_Spawning_Biomass")) index = index + 1
+					exvec = strsplit(resvec[index],split=sep)
+					exmat = t(sapply(exvec,function(x){as.numeric(x[!is.element(x,c(i,""))])}))
+					if (nrow(exmat)==1) exres=as.vector(exmat)
+					else                exres=exmat
+					ex[[i]] = exres
+				}
+				else ex[[i]] = "not found"
+			}
+			return(ex) }, resvec=resvec, simplify=FALSE)
+#browser();return()
+	return(c(glist,elist,clist))
 	}
 	#---END SUBFUNCTIONS---------------------------
 
@@ -405,6 +429,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 	writeLines(res.vector,con=res.file)
 
 	res.vector <- gsub("\t", " ", gsub(sep, " ", res.vector))
+#browser();return()
 	if (extra)
 		extra = getExtra(res.vector,sep=sep)
 	else extra = NULL

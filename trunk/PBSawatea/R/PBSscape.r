@@ -2650,14 +2650,13 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
   #          savePlot( paste("catchAgeSurvey", i, sep=""), type="png" )
   #        }
 
+  # Survey Age Fits (modified by RH 2012-08-01)
   # Shifting the key here down slightly
   CAs.key = list(text = list(lab= c("Obs", "Pred")),
     lines = list(col= c("black", "red"),  cex= c(0.3, 0.3)),
     type=c("p", "l"), x = 0.78, y = -0.16, pch=c(20,20), lwd=1, between=0.3)
-           # pch[2] doesn't get used, as type[2]="l". Have to match
-           #  up if change options in plotCA(currentRes, ....)
+        # AME: pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
 
-  
   CAs.sex = unique(obj$CAs$Sex)
   # GIG, survey 1      # should do a loop,         only first two
   #ageSurveyFigName =c("ageSurvGIG", "ageSurvQCSsyn", "ageSurvQCSshr")
@@ -2668,23 +2667,25 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
   age.layout = list()
   age.layout[[1]] = c(2,1)
   age.layout[[2]] = c(4,1)
-  # age.layout[[3]] = c(1,1)
-  
+  #age.layout[[3]] = c(1,1)
     for ( i in 1:length(seriesList) ) {
-      ii = seriesList[i]
+      ii = seriesList[i]; zi=is.element(obj$CAs$Series,ii)
+      if (!any(zi)) next
+      iyr = unique(obj$CAs$Year[zi]); nyr = length(iyr)
+      ncol = min(nyr,4); nrow=ceiling(nyr/ncol)
       for(plot.sex in CAs.sex) {
         postscript(paste(ageSurveyFigName[i], plot.sex, "%d.eps",
-          sep=""),  height = age.height[i], width = age.width[i],
+          #sep=""),  height = age.height[i], width = age.width[i], # RH disabled
+          sep=""),  height = 3.5, width = 2*ncol,
           horizontal=FALSE,  paper="special", onefile=FALSE)
-        plotCA( obj, what="s", series = ii, ylab="Proportion",
-          xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex,
+        scape::plotCA( obj, what="s", series = ii, ylab="Proportion",
+          #xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex, # RH disabled
+          xlab="Age class", sex=plot.sex, layout=c(ncol,nrow), key=CAs.key, main=plot.sex, # RH: Stupid trellis appears to take (columns,rows) for the layout.
           pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
-                 # col.lines otherwise boys are blue
-                 # Tried using rbind to add dummy data for 1985, 1986
-                 #  and 1988, but didn't work:
-                 # add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
-                 #   xxx$CAc = rbind(xxx$CAc, add)
-                 #  
+              # AME: col.lines otherwise boys are blue
+              # AME: Tried using rbind to add dummy data for 1985, 1986, and 1988, but didn't work:
+              #      add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
+              #      xxx$CAc = rbind(xxx$CAc, add)
     dev.off()
     }    # end of plot.sex loop
   }      # end of seriesList loop
