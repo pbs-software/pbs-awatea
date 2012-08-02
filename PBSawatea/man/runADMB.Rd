@@ -12,7 +12,7 @@ runADMB(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
      doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
      doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
      doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
-     delim="-", awateaPath="E:/Projects/ADMB/Coleraine", ...)
+     delim="-", awateaPath="E:/Projects/ADMB/Coleraine", clean=FALSE, ...)
 }
 \arguments{
   \item{filename.ext}{character file name including its extension.}
@@ -40,15 +40,39 @@ runADMB(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
   \item{stepStrat}{fishing mortality step size for the MSY analysis.}
   \item{delim}{character that delimits the components of the \code{filename} prefix.}
   \item{awateaPath}{system path on which the executable file \code{Awatea.exe} exists.}
+  \item{clean}{logical: if \code{TRUE}, clean all Awatea files before running an MPD analysis.}
   \item{\dots}{additional arguments (not currently used for any purpose).}
 }
 \details{
   This function is primarily used to automate MPD reweightings and to perform 
-  the MSY calculations. The MCMCs are better run from a command line console on 
+  the MSY calculations.  MCMCs are better run from a command line console on 
   a super computer as they generally require > 12 h to complete.
-  
-  Note that once an MCMC has been created, the user can run various projections separately using \cr 
+
+  Once an MCMC has been created, the user can run various projections separately using \cr 
   \code{awatea -ind filename.ext -mceval} \cr on the command line.
+}
+\note{
+  Be careful when setting the \code{clean} argument to \code{TRUE}. Some of the patterns for 
+  matching to Awatea files might inadvertently clean non-related files. The patterns are currently set to: \cr
+  \code{"^Awatea"}, \code{"^admodel"}, \code{"\\\\.pst$"}, \code{"\\\\.out$"}, \code{"\\\\.rpt$"}, \code{"\\\\.tmp$"}, \cr
+  \code{"^variance$"}, \code{"^results.dat$"}, \code{"^likelihood.dat$"}
+}
+\section{Text Output Files Produced}{
+  \code{Results.dat} contains an exhaustive listing of the maximum likelihood estimates
+  for the model and derived parameters, a re-listing of some of the data and fixed
+  parameters, and a listing of most of the prediction made. This includes numbers at age,
+  fecundity, vulnerable biomass, survey trajectories, and so on. It is always placed in the
+  same directory as the text input file. If there is an existing \code{Results.dat} file in that
+  directory, it will be overwritten.
+
+  Other output files generated during the parameter estimation process include
+  \code{Awatea.par} (contains the maximum likelihood estimates of the free parameters),
+  \code{Awatea.cor} (shows standard deviation and correlations between the estimated
+  parameters), and \code{Awatea.std} (standard deviation of the estimated parameters).
+
+  Be aware that using argument \code{ADargs=list("-nohess")}
+  will shorten the time to perform an MPD (useful if there will be multiple re-weightings), 
+  but the output files \code{Awatea.cor} and \code{Awatea.std} will \bold{not} be produced.
 }
 \references{
   Edwards, A.M., Starr, P.J., and Haigh, R. (2010, in revision). 

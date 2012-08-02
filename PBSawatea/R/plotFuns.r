@@ -254,13 +254,12 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^cquantile.vec
 
-#plotBars-------------------------------2012-08-01
+#plotBars-------------------------------2012-08-02
 # Plot barplots of specific year age proportions.
 #-----------------------------------------------RH
 plotBars = function(res, type="N", prop=TRUE, year=1976, sex=c(2,1), # sex 2 =females (gfbio) 1 = males
-    age=NULL, fill=c("orange","cyan"), eps=FALSE, pix=FALSE, ...) {
-	oldpar = par(no.readonly=TRUE)
-	on.exit(par(oldpar))
+    age=NULL, fill=c("orange","cyan"), eps=FALSE, pix=FALSE, win=TRUE, ...) {
+
 	if (!any(type==names(res))) stop("Choose another object in the list")
 	nyear = length(year)
 	SEX = c("Male","Female")
@@ -290,10 +289,11 @@ plotBars = function(res, type="N", prop=TRUE, year=1976, sex=c(2,1), # sex 2 =fe
 	#ncol=floor(sqrt(nyear)); nrow=ceiling(nyear/ncol)
 	nrow=min(nyear,5); ncol=ceiling(nyear/nrow)
 	fnam = paste("ageBars",paste(Sex,collapse=""),sep="")
-	figs = c(eps=eps,pix=pix,con=TRUE)
+	figs = c(eps=eps,pix=pix,win=win)
 	for (k in names(figs)){
-		if (k=="eps" && figs[k]) postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", height=3*nrow, width=6.5)
-		else if (k=="pix" && figs[k]) png(paste(fnam,"png",sep="."), width=1300, height=nrow*600, units="px", pointsize=16)
+		if (!figs[k]) next
+		if (k=="eps") postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", height=3*nrow, width=6.5)
+		else if (k=="pix") png(paste(fnam,"png",sep="."), width=1300, height=nrow*600, units="px", pointsize=16)
 		par(mfcol=c(nrow,ncol),mgp=c(2,0.5,0),las=0,xaxs="i",mar=c(4,4,1,1))
 		for (i in year) {
 			ii = as.character(i); aa=as.character(age)
@@ -320,7 +320,7 @@ plotBars = function(res, type="N", prop=TRUE, year=1976, sex=c(2,1), # sex 2 =fe
 			if (i==year[1])
 				addLegend(0.975,0.875,legend=paste(Sex," M = ",M,sep=""),fill=fill,bty="n",yjust=1,xjust=1)
 		}
-		if (k=="eps" && figs[k] | k=="pix" && figs[k]) dev.off()
+		if (any(k==c("eps","pix"))) dev.off()
 	}
 	invisible(return(list(dat=dat,mat=mat,xpos=xpos))) }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBars

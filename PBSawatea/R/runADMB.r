@@ -10,14 +10,14 @@ setClass ("AWATEAdata",
 # Flush the cat down the console
 .flush.cat = function(...) { cat(...); flush.console() }
 
-#runADMB--------------------------------2012-07-27
+#runADMB--------------------------------2012-08-02
 # Run AD Model Builder code for Awatea
 #-----------------------------------------------RH
 runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
      doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
      doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
      doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
-     delim="-", awateaPath="E:/Projects/ADMB/Coleraine", ...) {
+     delim="-", awateaPath="E:/Projects/ADMB/Coleraine", clean=FALSE, ...) {
 
 	ciao = function(){setwd(cwd); Sys.setenv(PATH=syspath0); gc(verbose=FALSE)} # exit function
 	cwd  = getwd(); syspath0  = Sys.getenv()["PATH"]
@@ -25,7 +25,13 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 	awateaPath = gsub("/","\\\\",awateaPath)
 	syspath   = paste(syspath0,awateaPath,sep=";")
 	Sys.setenv(PATH=syspath)
-#browser();return()
+	# Be careful when using this that it doesn't destroy files other than those from Awatea
+	if (clean) {
+		junkpat = c("^Awatea","^admodel","\\.pst$","\\.out$","\\.rpt$","\\.tmp$","^variance$","^results.dat$","^likelihood.dat$")
+		junkit  = sapply(junkpat,function(x){list.files(pattern=x)})
+		junkit  = sapply(junkit,setdiff,"Awatea.exe")
+		junk = sapply(junkit,function(x){ if (length(x)>0) for (i in x) if (file.exists(i)) file.remove(i)})
+	}
 	runNoStr = pad0(runNo,2)
 	runname  = paste(strSpp,"run",runNoStr,sep="")
 	rundir   = paste(wd,runname,sep="/")
@@ -49,7 +55,6 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 	}
 	argsMPD  = paste(paste(" ",unlist(argsMPD),sep=""),collapse="")
 	argsMCMC = paste(paste(" ",unlist(argsMCMC),sep=""),collapse="")
-#browser();return()
 
 	if (doMPD) {
 		.flush.cat("Reweighting surveys and proportions-at-age...\n")
@@ -58,7 +63,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
 		#file0 = gsub(paste("\\.",ext,sep=""),paste(".000.",ext,sep=""),filename.ext)
 		file0 = paste(prefix,runNoStr,"00.txt",sep=".")
-		suffix = c("par","std","cor")
+		suffix = c("par","std","cor") # estra files to save
 		for (i in 0:N.reweight) {
 			ii = pad0(i,2)
 			if (i==0) {
@@ -90,16 +95,27 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 			expr=paste("mess = shell(cmd=\"awatea -ind ",fileN,argsMPD,"\", wait=TRUE, intern=TRUE)",sep=""); eval(parse(text=expr))
 			if (verbose)  .flush.cat(mess, sep="\n")
 			if (length(mess)<10) stop("Abnormal program termination")
-			file.copy("results.dat",gsub(paste("\\.",ext,sep=""),".res",fileN),overwrite=TRUE)
-			#file.copy("Awatea.par",gsub(paste("\\.",ext,sep=""),".par",fileN),overwrite=TRUE)
-			for (j in suffix)
-				file.copy(paste("Awatea",j,sep="."),gsub(paste("\\.",ext,sep=""),paste("\\.",j,sep=""),fileN),overwrite=TRUE)
+
+			fileR = gsub(paste("\\.",ext,"$",sep=""),".res",fileN)
+			if (file.exists("results.dat"))
+				file.copy("results.dat",fileR,overwrite=TRUE)
+			else
+				stop ("!!!!! No results file generated ('results.dat')")
+			filesN = c(fileN,fileR)
+			for (j in suffix){
+				jfile = paste("Awatea",j,sep=".")
+				if (file.exists(jfile)){
+					fileS = gsub(paste("\\.",ext,"$",sep=""),paste("\\.",j,sep=""),fileN)
+					file.copy(jfile,fileS,overwrite=TRUE)
+					filesN = c(filesN,fileS)
+				}
+			}
 			eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
 			Robj@reweight = list(nrwt=i)
 			Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age, sfile=sdnrfile, fileN=fileN)
 		}
 		if (!file.exists(rundir)) dir.create(rundir)
-		filesN = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=length(suffix)+2),rep(c(ext,"res",suffix),N.reweight+1),sep=".")
+		#filesN = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=length(suffix)+2),rep(c(ext,"res",suffix),N.reweight+1),sep=".")
 		file.copy(paste(wd,c(filename.ext,filesN,sdnrfile),sep="/"),rundir,overwrite=TRUE)
 		file.remove(paste(wd,c(filesN,sdnrfile),sep="/"))
 	}
@@ -161,7 +177,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 	return(Robj) }
 #------------------------------------------runADMB
 
-#readAD---------------------------------2011-05-31
+#readAD---------------------------------2012-08-02
 # Read the ADMB input file and create an AWATEA class object.
 #-----------------------------------------------RH
 readAD = function(txt) {
@@ -208,27 +224,21 @@ readAD = function(txt) {
 		else {browser();return()}
 	}
 	#writeList(vars,gsub("\\.txt",".pbs.txt",txtnam),format="P") # write to a PBS formatted text file
-	#resnam = gsub("\\.txt$",".res",txtnam)
 	suffix = c("res","par","std","cor")
 	for (j in suffix) {
 		jnam = gsub("\\.txt$",paste(".",j,sep=""),txtnam)
 		#assign(paste(j,"nam",sep=""),jnam)
-		if (!file.exists(jnam)) assign(jnam, list())
+		if (!file.exists(jnam)) assign(paste(j,"dat",sep=""), list())
 		else {
-			if (j=="res")
+			if (j=="res") {
 				resdat = importRes( res.file=jnam, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=FALSE, CLs=FALSE, CAs=TRUE, CAc=TRUE, extra=TRUE)
-			else if (j=="par") pardat=list()
-			else if (j=="std") stddat = importStd( std.file = jnam)
-			else if (j=="cor") cordat=list()
-			eval(parse(text=paste("attr(",j,"dat,\"class\")=\"list\"",sep=""))) 
+				attr(resdat,"class") = "list" }
+			else if (j=="par") pardat = importPar(par.file=jnam)
+			else if (j=="std") stddat = importStd(std.file=jnam)
+			else if (j=="cor") cordat = importCor(cor.file=jnam)
+			#eval(parse(text=paste("attr(",j,"dat,\"class\")=\"list\"",sep=""))) 
 		}
 	}
-#	if (!file.exists(resnam)) {
-#		resdat = list(); pardat = list(); stddat = list(); cordat=list() }
-#	else {
-#		resdat = importRes( res.file=resnam, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=FALSE, CLs=FALSE, CAs=TRUE, CAc=TRUE, extra=TRUE)
-#		attr(resdat,"class")="list" 
-#		}
 	Data=new("AWATEAdata",txtnam=txtnam, input=ntxt, vlst=vlst, dnam=dnam, 
 		nvars=nvars, vdesc=vdesc, vars=vars, gcomm=gcomm, vcomm=vcomm, resdat=resdat,
 		pardat=pardat, stddat=stddat, cordat=cordat, reweight=list(nrwt=0))
@@ -522,7 +532,8 @@ setMethod("reweight", signature="AWATEAdata",
 #popin = reweight(popin)
 
 #=== POP 3CD 2012 ===
-#out=runADMB("pop-3CD-05.txt",strSpp="POP",runNo=5,doMPD=TRUE,N.reweight=0,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
+#out=runADMB("pop-3CD-05.txt",strSpp="POP",runNo=5,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+#out=runADMB("pop-3CD-05.txt",strSpp="POP",runNo=5,doMPD=TRUE,N.reweight=0,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2,clean=TRUE)
 
 #=== YMR CST 2011 ===
 #out=runADMB("input29-ymr.txt",runNo=29,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)

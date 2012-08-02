@@ -2674,11 +2674,10 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
       iyr = unique(obj$CAs$Year[zi]); nyr = length(iyr)
       ncol = min(nyr,4); nrow=ceiling(nyr/ncol)
       for(plot.sex in CAs.sex) {
-        postscript(paste(ageSurveyFigName[i], plot.sex, "%d.eps",
+        postscript(paste(ageSurveyFigName[i], plot.sex,ii,".eps", sep=""),
           #sep=""),  height = age.height[i], width = age.width[i], # RH disabled
-          sep=""),  height = 3.5, width = 2*ncol,
-          horizontal=FALSE,  paper="special", onefile=FALSE)
-        scape::plotCA( obj, what="s", series = ii, ylab="Proportion",
+          height=3.5, width=2*ncol, horizontal=FALSE, paper="special", onefile=FALSE)
+        plotCA( obj, what="s", series = ii, ylab="Proportion",
           #xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex, # RH disabled
           xlab="Age class", sex=plot.sex, layout=c(ncol,nrow), key=CAs.key, main=plot.sex, # RH: Stupid trellis appears to take (columns,rows) for the layout.
           pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
@@ -2752,22 +2751,22 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
   # Here plot the mean age for catch and surveys
   postscript("meanAge.eps", height = 6, width = 6.2,
               horizontal=FALSE,  paper="special")
-  par(mfrow=c(nseries+1,1), mai=c(0.45,0.5,0.1,0.2))
+  par(mfrow=c(nseries+1,1), mai=c(0.75,0.75,0.5,0.1))
   MAc = MAfun2(obj$CAc)       # catch mean age
   MAs = MAfun2(obj$CAs)       # surveys mean age
   plot(as.numeric(substring(names(MAc$MAobs), 3)), MAc$MAobs,
        xlab="Year", ylab="Mean age",
-       ylim=c(0, max(MAc$MAobs, MAc$MAexp)))
+       ylim=c(0, max(MAc$MAobs, MAc$MAexp)),mgp=c(2,0.75,0))
       # substring takes off the 1- at the start. This is commercial.
   points(as.numeric(substring(names(MAc$MAexp), 3)), MAc$MAexp,
          pch=20, type="o")
-  mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
+  mtext( side=3, line=0.25, cex=1.2, outer=FALSE,
           "Commercial") #  outer=TRUE
 
   MAsSurvNum = as.numeric(substring(names(MAs$MAobs), 1, last=1))
          # 1 or 2 for YMR
   #surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic")
-  surveyHeadName = ssnames
+  surveyHeadName = ssnames[MAs$J]
 
   for ( i in 1:length(unique(MAsSurvNum) ))
     {
@@ -2775,14 +2774,14 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
           unique(MAsSurvNum)[i]]), 3)), MAs$MAobs[MAsSurvNum==
           unique(MAsSurvNum)[i]], xlab="Year", ylab="Mean age",
           ylim=c(0, max(MAs$MAobs[MAsSurvNum==unique(MAsSurvNum)[i]],
-          MAs$MAexp[MAsSurvNum== unique(MAsSurvNum)[i]] )))
+          MAs$MAexp[MAsSurvNum== unique(MAsSurvNum)[i]] )),mgp=c(2,0.75,0))
       # ylim=range(MAs$MAobs[MAsSurvNum==unique(MAsSurvNum)[i]],
       #     MAs$MAexp[MAsSurvNum== unique(MAsSurvNum)[i]]  ))
       points(as.numeric(substring(names(MAs$MAobs[MAsSurvNum ==
           unique(MAsSurvNum)[i]]), 3)), MAs$MAexp[MAsSurvNum==
           unique(MAsSurvNum)[i]],
           pch=20, type="o")
-      mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
+      mtext( side=3, line=0.25, cex=1.2, outer=FALSE,
           surveyHeadName[i]) #  outer=TRUE
     }
   dev.off()

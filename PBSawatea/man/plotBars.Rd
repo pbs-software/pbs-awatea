@@ -8,7 +8,7 @@
 }
 \usage{
 plotBars(res, type="N", prop=TRUE, year=1976, sex=c(2,1), age=NULL,
-   fill=c("orange","cyan"), eps=FALSE, pix=FALSE, ...)
+   fill=c("orange","cyan"), eps=FALSE, pix=FALSE, win=TRUE, ...)
 }
 \arguments{
   \item{res}{Awatea results file from a call to \code{importRes}: \cr
@@ -21,6 +21,7 @@ plotBars(res, type="N", prop=TRUE, year=1976, sex=c(2,1), age=NULL,
   \item{fill}{bar colour by sex for barplots (one colour per sex).}
   \item{eps}{logical: if \code{TRUE}, send figure to a postscript (\code{.eps}) file.}
   \item{pix}{logical: if \code{TRUE}, send figure to a portable network graphics (\code{.png}) file.}
+  \item{win}{logical: if \code{TRUE}, send figure to the R windows device.}
   \item{\dots}{extra parameters (not currently used).}
 }
 \details{

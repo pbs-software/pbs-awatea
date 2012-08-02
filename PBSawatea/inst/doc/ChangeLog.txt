@@ -3,7 +3,9 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-08-01  Rowan
+0.10  2011-08-02  Rowan
+  - Added 'input' directory for the Awatea input files used; format = spp-area-run.txt. (RH 8/2)
+  - Modified 'runADMB' to handle situations when 'Awatea.cor' and 'Awatea.std' are not available ( when -nohess is specified in MPD call). (RH 8/2)
   - Added new function 'plotBars' to illustrate how an age composition compares with an equilibrium age structure. (RH 8/1)
   - Modified 'importRes' to import virgin vulnerable and spawning biomass values. (RH 7/31)
   - Added new function 'importCor' to import the Awatea correlation file. (RH 7/30)
