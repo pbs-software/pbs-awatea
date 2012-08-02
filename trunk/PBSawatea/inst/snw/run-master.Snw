@@ -229,7 +229,7 @@ trellis.device(device="postscript", color=TRUE)   # for colour .eps
 # currentRes <- importCol2("../results.dat", Dev=T, CPUE=T,
 #                               Survey=T, CLc=T, CLs=T, CAs=T, CAc=T)
 
-source("C:/awatea/POP12/POP3CD/importParOnly.r")
+#source("C:/awatea/POP12/POP3CD/importParOnly.r")
                               # ******take out once importPar 
                               #  is in package*****
 
@@ -811,6 +811,9 @@ abline(h=0, col="grey")
 # plot(names(initAgeDev.mpd), initAgeDev.mpd, ylim=c(0, max(initAgeDev.mpd)), xlab="Year", ylab="Initial age deviations (bias corrected)")
 # abline(h=1, col="grey")
 dev.off()
+
+plotBars(currentRes,year=1976,sex=1,fill="skyblue",eps=TRUE,win=FALSE)
+plotBars(currentRes,year=1976,sex=2,fill="salmon",eps=TRUE,win=FALSE)
 @ 
 
 % \sppfig{initAgeDev}{Initial age deviation for each age (except 1). Top: in log space, call them $\theta_a$ for now; bottom: bias-corrected multiplicative deviation, given as $\mbox{e}^{\theta_a - \sigma_R^2/2}$ where $\theta_a \sim \mbox{Normal}(0, \sigma_R^2)$. The same standard deviation $\sigma_R$ must be used as for recruitment deviations.}

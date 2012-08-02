@@ -1,0 +1,22 @@
+require("PBSawatea")
+out=runADMB("ymr-qcd-29.txt",strSpp="YMR",runNo=29,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
+runMPD(strSpp="YMR",prefix=c("ymr","qcd"), runs=29, rewts=0:1, cpue=FALSE, delim="-")
+
+out=runADMB("pop-3CD-01.txt",strSpp="POP",runNo=1,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
+runSweave(strSpp="POP", filename="pop-3CD-01.txt", runNo=1, rwtNo=0, cpue=FALSE, Nsurvey=1, Snames="WCVI+Triennial", delim="-")
+runSweave(strSpp="POP", filename="pop-3CD-01.txt", runNo=1, rwtNo=1, cpue=FALSE, Nsurvey=1, Snames="WCVI+Triennial", delim="-")
+
+out=runADMB("pop-3CD-02.txt",strSpp="POP",runNo=2,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
+runSweave(strSpp="POP", filename="pop-3CD-02.txt", runNo=2, rwtNo=0, cpue=FALSE, Nsurvey=1, Snames="WCVI+Triennial", delim="-")
+runSweave(strSpp="POP", filename="pop-3CD-02.txt", runNo=2, rwtNo=1, cpue=FALSE, Nsurvey=1, Snames="WCVI+Triennial", delim="-")
+
+out=runADMB("pop-3CD-03.txt",strSpp="POP",runNo=3,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=3,rwts=0:1,cpue=TRUE,Nsurvey=2,Snames=c("NMFS.Triennial","WCVI.Synoptic"),SApos=c(F,T),delim="-")
+
+out=runADMB("pop-3CD-04.txt",strSpp="POP",runNo=4,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=4,rwts=0:1,cpue=TRUE,Nsurvey=2,Snames=c("NMFS.Triennial","WCVI.Synoptic"),SApos=c(F,T),delim="-")
+
+out=runADMB("pop-3CD-05.txt",strSpp="POP",runNo=5,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=5,rwts=0:1,cpue=TRUE,Nsurvey=2,Snames=c("NMFS.Triennial","WCVI.Synoptic"),SApos=c(F,T),delim="-")
+
+
