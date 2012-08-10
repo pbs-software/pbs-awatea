@@ -3,7 +3,8 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-08-02  Rowan
+0.10  2011-08-10  Rowan
+  - Added new function 'importLik' to import an Awatea likelihood file, usually called 'likelihood.dat'. (RH 8/10)
   - Added 'input' directory for the Awatea input files used; format = spp-area-run.txt. (RH 8/2)
   - Modified 'runADMB' to handle situations when 'Awatea.cor' and 'Awatea.std' are not available ( when -nohess is specified in MPD call). (RH 8/2)
   - Added new function 'plotBars' to illustrate how an age composition compares with an equilibrium age structure. (RH 8/1)

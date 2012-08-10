@@ -1,8 +1,8 @@
 setClass ("AWATEAdata", 
      representation( txtnam="character", input="character", vlst="list", 
      dnam="character", nvars="numeric", vdesc="character", vars="list", 
-     gcomm="character", vcomm="character", resdat="list" , pardat="list", 
-     stddat="list", cordat="list", reweight="list") )
+     gcomm="character", vcomm="character", resdat="list" , likdat="list",
+     pardat="list", stddat="list", cordat="list", reweight="list") )
 
 #require(PBSmodelling)
 #source("utilFuns.r",local=FALSE)
@@ -10,7 +10,7 @@ setClass ("AWATEAdata",
 # Flush the cat down the console
 .flush.cat = function(...) { cat(...); flush.console() }
 
-#runADMB--------------------------------2012-08-02
+#runADMB--------------------------------2012-08-08
 # Run AD Model Builder code for Awatea
 #-----------------------------------------------RH
 runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
@@ -35,7 +35,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 	runNoStr = pad0(runNo,2)
 	runname  = paste(strSpp,"run",runNoStr,sep="")
 	rundir   = paste(wd,runname,sep="/")
-	if (file.exists("results.dat")) file.remove("results.dat")
+	#if (file.exists("results.dat")) file.remove("results.dat")
 	ext      = sapply(strsplit(filename.ext,"\\."),tail,1)
 	prefix   = substring(filename.ext,1,nchar(filename.ext)-nchar(ext)-1)
 	prun     = regexpr(runNoStr,prefix)
@@ -63,7 +63,8 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
 		#file0 = gsub(paste("\\.",ext,sep=""),paste(".000.",ext,sep=""),filename.ext)
 		file0 = paste(prefix,runNoStr,"00.txt",sep=".")
-		suffix = c("par","std","cor") # estra files to save
+		fileX = c("likelihood.dat",paste("Awatea",c("par","std","cor"),sep=".")) # extra files to save
+		#suffix = c("par","std","cor") # extra files to save
 		for (i in 0:N.reweight) {
 			ii = pad0(i,2)
 			if (i==0) {
@@ -102,10 +103,14 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 			else
 				stop ("!!!!! No results file generated ('results.dat')")
 			filesN = c(fileN,fileR)
-			for (j in suffix){
-				jfile = paste("Awatea",j,sep=".")
+			for (jfile in fileX){
+				#jfile = paste("Awatea",j,sep=".")
 				if (file.exists(jfile)){
-					fileS = gsub(paste("\\.",ext,"$",sep=""),paste("\\.",j,sep=""),fileN)
+					if (substring(jfile,1,6)=="Awatea")
+						suffix  = sapply(strsplit(jfile,"\\."),tail,1)
+					else if (jfile=="likelihood.dat") suffix = "lik"
+					else suffix = "tmp"
+					fileS = gsub(paste("\\.",ext,"$",sep=""),paste("\\.",suffix,sep=""),fileN)
 					file.copy(jfile,fileS,overwrite=TRUE)
 					filesN = c(filesN,fileS)
 				}
@@ -224,7 +229,7 @@ readAD = function(txt) {
 		else {browser();return()}
 	}
 	#writeList(vars,gsub("\\.txt",".pbs.txt",txtnam),format="P") # write to a PBS formatted text file
-	suffix = c("res","par","std","cor")
+	suffix = c("res","lik","par","std","cor")
 	for (j in suffix) {
 		jnam = gsub("\\.txt$",paste(".",j,sep=""),txtnam)
 		#assign(paste(j,"nam",sep=""),jnam)
@@ -233,15 +238,18 @@ readAD = function(txt) {
 			if (j=="res") {
 				resdat = importRes( res.file=jnam, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=FALSE, CLs=FALSE, CAs=TRUE, CAc=TRUE, extra=TRUE)
 				attr(resdat,"class") = "list" }
-			else if (j=="par") pardat = importPar(par.file=jnam)
-			else if (j=="std") stddat = importStd(std.file=jnam)
-			else if (j=="cor") cordat = importCor(cor.file=jnam)
-			#eval(parse(text=paste("attr(",j,"dat,\"class\")=\"list\"",sep=""))) 
+			#else if (j=="par") pardat = importPar(par.file=jnam)
+			#else if (j=="std") stddat = importStd(std.file=jnam)
+			#else if (j=="cor") cordat = importCor(cor.file=jnam)
+			else {
+				mess = paste(j,"dat = import",toupper(substring(j,1,1)),substring(j,2,3),"(",j,".file=jnam)",sep="")
+				eval(parse(text=mess))
+			}
 		}
 	}
 	Data=new("AWATEAdata",txtnam=txtnam, input=ntxt, vlst=vlst, dnam=dnam, 
 		nvars=nvars, vdesc=vdesc, vars=vars, gcomm=gcomm, vcomm=vcomm, resdat=resdat,
-		pardat=pardat, stddat=stddat, cordat=cordat, reweight=list(nrwt=0))
+		likdat=likdat, pardat=pardat, stddat=stddat, cordat=cordat, reweight=list(nrwt=0))
 	return(Data) }
 #-------------------------------------------readAD
 
