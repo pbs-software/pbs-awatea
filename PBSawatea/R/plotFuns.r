@@ -254,10 +254,11 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^cquantile.vec
 
-#plotBars-------------------------------2012-08-02
+#plotBars-------------------------------2012-08-10
 # Plot barplots of specific year age proportions.
 #-----------------------------------------------RH
-plotBars = function(res, type="N", prop=TRUE, year=1976, sex=c(2,1), # sex 2 =females (gfbio) 1 = males
+plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]), 
+    sex=c(2,1), # sex 2 =females (gfbio) 1 = males
     age=NULL, fill=c("orange","cyan"), eps=FALSE, pix=FALSE, win=TRUE, ...) {
 
 	if (!any(type==names(res))) stop("Choose another object in the list")
@@ -322,7 +323,7 @@ plotBars = function(res, type="N", prop=TRUE, year=1976, sex=c(2,1), # sex 2 =fe
 		}
 		if (any(k==c("eps","pix"))) dev.off()
 	}
-	invisible(return(list(dat=dat,mat=mat,xpos=xpos))) }
+	invisible(list(dat=dat,mat=mat,xpos=xpos)) }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBars
 
 #plotBox--------------------------------2011-12-15

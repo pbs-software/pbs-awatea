@@ -48,6 +48,7 @@
 \newcommand\twofig[3]{    % figure #1 under #2, caption text #3
   \begin{figure}[htp]            %  label will be #1
   \centering
+  \epsfxsize=6in
   \begin{tabular}{c}
   \epsfbox{#1.eps} \\
   \epsfbox{#2.eps}
@@ -189,7 +190,7 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 
 \noindent {\tt Run05}: Same as {\tt Run04} with changes: (1) log init devs changed from phase 3 to phase 2. (2) Tried changing 'Survey catch at age likelihood type' survey1 to '0' (from 12), with dummy set of catch-at-age data for survey1 (this gives the same par and MPD estimates but throws the indexing off for catch-at-age fits; therefore reverted to one catch-at-age series with no dummy). (3) Updated the WCVI synoptic survey biomass estimates to reflect some minor changes in all of them, except for 2010 survey which has changed a lot. \newline
 
-\noindent {\tt Run06}: Upon the advise of the POP working group (meeting 2012-08-01) the age composition was shortened to 30 age bins, where 30 acts as a plus class. Also in this run, a third survey series (GB Reed: 1967-70) was added. Note that Awatea currently has an indexing bug in the output routine regarding survey (and possibly commercial) catch-at-age fits. Therefore, the last survey (WCVI Synoptic) is labelled the first (and survey 2 = NMFS Triennial, survey 3 = GB Reed). \newline
+\noindent {\tt Run06}: Upon the advice of the POP working group (meeting 2012-08-01) the age composition was shortened to 30 age bins, where 30 acts as a plus class. Also in this run, a third survey series (GB Reed: 1967-70) was added. Note that Awatea currently has an indexing bug in the output routine regarding survey (and possibly commercial) catch-at-age fits. Therefore, the last survey (WCVI Synoptic) is labelled the first (and survey 2 = NMFS Triennial, survey 3 = GB Reed). \newline
 
 % **NOT DONE YET: Use priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors, but in the input files they were set as uniforms. So not sure which we are going to use.
 
@@ -813,8 +814,8 @@ abline(h=0, col="grey")
 # abline(h=1, col="grey")
 dev.off()
 
-plotBars(currentRes,year=1976,sex=1,fill="skyblue",eps=TRUE,win=FALSE)
-plotBars(currentRes,year=1976,sex=2,fill="salmon",eps=TRUE,win=FALSE)
+plotBars(currentRes,sex=1,fill="skyblue",eps=TRUE,win=FALSE)  # function default year is first year
+plotBars(currentRes,sex=2,fill="salmon",eps=TRUE,win=FALSE)
 @ 
 
 % \sppfig{initAgeDev}{Initial age deviation for each age (except 1). Top: in log space, call them $\theta_a$ for now; bottom: bias-corrected multiplicative deviation, given as $\mbox{e}^{\theta_a - \sigma_R^2/2}$ where $\theta_a \sim \mbox{Normal}(0, \sigma_R^2)$. The same standard deviation $\sigma_R$ must be used as for recruitment deviations.}
