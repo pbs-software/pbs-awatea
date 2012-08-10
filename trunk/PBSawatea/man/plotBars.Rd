@@ -7,8 +7,9 @@
   Plot barplots of specific-year age proportions.
 }
 \usage{
-plotBars(res, type="N", prop=TRUE, year=1976, sex=c(2,1), age=NULL,
-   fill=c("orange","cyan"), eps=FALSE, pix=FALSE, win=TRUE, ...)
+plotBars(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]), 
+    sex=c(2,1), age=NULL, fill=c("orange","cyan"), 
+    eps=FALSE, pix=FALSE, win=TRUE, ...)
 }
 \arguments{
   \item{res}{Awatea results file from a call to \code{importRes}: \cr
