@@ -41,6 +41,25 @@ importCor = function(cor.file) {
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importCor
 #test=importCor("something.cor")
 
+#importLik------------------------------2012-08-08
+# Import Awatea likelihoods.
+#-----------------------------------------------RH
+importLik = function(lik.file) {
+	lfile = readLines(lik.file)
+	out = list(lik=lfile)
+	liks = lfile[!is.element(lfile,c("","**Likelihoods**"))]
+	liks = gsub("@","",gsub("  "," ",gsub("   "," ",liks)))
+	liksplit = strsplit(liks,split=" ")
+	liknams = sapply(liksplit,function(x){x[1]})
+	likvals = sapply(liksplit,function(x,nf){
+		mess=paste("assign(\"",x[1],"\",c(",paste(x[-1],collapse=","),"),envir=sys.frame(which=nf))",sep="")
+		eval(parse(text=mess))}, nf=sys.nframe())
+	for (i in liknams) out[[i]] = get(i)
+	return(out)
+}
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importLik
+#test=importLik("likelihood.dat")
+
 #importPar------------------------------2012-07-27
 # Import all Awatea parameters.
 #-----------------------------------------------RH

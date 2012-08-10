@@ -19,4 +19,7 @@ runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=4,rwts=0:1,cpue=TRUE,Nsurvey=2,Sn
 out=runADMB("pop-3CD-05.txt",strSpp="POP",runNo=5,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=5,rwts=0:1,cpue=TRUE,Nsurvey=2,Snames=c("NMFS.Triennial","WCVI.Synoptic"),SApos=c(F,T),delim="-")
 
+out=runADMB("pop-3CD-06.txt",strSpp="POP",runNo=6,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=6,rwts=0:1,cpue=TRUE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+
 
