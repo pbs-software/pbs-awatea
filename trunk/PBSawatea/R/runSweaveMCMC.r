@@ -17,7 +17,7 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	#require(scapeMCMC, quietly=TRUE)         # Arni Magnusson's support functions for Awatea MCMC.
 	#require(gdata, quietly=TRUE)             # Data manipulation functions from CRAN.
 
-	#source("ymrScape.r",local=FALSE)
+	#source("PBSscape.r",local=FALSE)
 	#source("utilFuns.r",local=FALSE)
 	#source("plotFuns.r",local=FALSE)
 	#assign("importCol2",importRes,envir=.GlobalEnv)
@@ -35,6 +35,8 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	mc.dir   = paste(run.dir,mcname,sep="/")  # Directory where all the postscript crap happens
 	msyname  = paste("MSY",runNoStr,rwtNoStr,sep=".")
 	msy.dir  = paste(mc.dir,msyname,sep="/")
+	prjname  = paste("PRJ",runNoStr,rwtNoStr,sep=".")
+	prj.dir  = paste(mc.dir,prjname,sep="/")
 	if (file.exists(mc.dir)) 
 		setwd(mc.dir)
 	else {
@@ -47,9 +49,10 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	tfile = gsub("@run.dir",run.dir,tfile)
 	tfile = gsub("@fig.dir",mc.dir,tfile)
 	tfile = gsub("@msy.dir",msy.dir,tfile)
+	tfile = gsub("@prj.dir",prj.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
-	data(gfcode)
+	data(gfcode,package="PBSawatea")
 	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
 
 	if (!estM){
@@ -66,6 +69,7 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
 	writeLines(tfile,con=localSweave)
+#browser();return()
 	Sweave(localSweave)
 	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)
 	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)      # latex twice to get labels correct

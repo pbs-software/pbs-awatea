@@ -1,14 +1,17 @@
 #===============================================================================
 # PBSawatea utility functions:
-#  importPar        : import Awatea parameters (all)
+#  importCor        : import Awatea parameter correlations.
+#  importEva        : import Awatea Hessian eigenvalues.
+#  importLik        : import Awatea likelihoods.
+#  importPar        : import Awatea parameters (all).
 #  importRes        : import Awatea results.
-#  importStd        : import Awatea table of estimated parameters.
+#  importStd        : import Awatea output parameter standard deviations.
 #  makeErrMat       : mMake simple ageing error matrix for Awatea.
 #  tabSAR           : generate comma-del., 2-D tables from reference point objects.
 #===============================================================================
 
-#importPar------------------------------2012-07-30
-# Import all Awatea parameters.
+#importCor------------------------------2012-07-30
+# Import Awatea parameter correlations.
 #-----------------------------------------------RH
 importCor = function(cor.file) {
 	cfile = readLines(cor.file)
@@ -40,6 +43,14 @@ importCor = function(cor.file) {
 	return(out) }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importCor
 #test=importCor("something.cor")
+
+#importEva------------------------------2012-08-10
+# Import Awatea Hessian eigenvlaues.
+#-----------------------------------------------RH
+importEva = function(eva.file){
+	efile=as.numeric(read.table(eva.file,header=FALSE,sep=""))
+	out = list(eva=efile)
+	return(out) }
 
 #importLik------------------------------2012-08-08
 # Import Awatea likelihoods.

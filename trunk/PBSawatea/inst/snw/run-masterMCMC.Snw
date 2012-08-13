@@ -129,6 +129,7 @@ model.name     = "@model.name"
 run.dir        = "@run.dir"
 fig.dir        = "@fig.dir"
 msy.dir        = "@msy.dir"
+prj.dir        = "@prj.dir"
 running.awatea = @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
 @ 
 <<awatea.run, results=HIDE, echo = FALSE>>=
@@ -161,36 +162,22 @@ Plotting MCMC output for model {\tt \Sexpr{model.name}}.
 
 \section{History of Runs}
 
-{\tt Run01}: 5 surveys, no CPUE series, initial run with many POP defaults. \newline
-\noindent {\tt Run02}: 5 surveys, 1 CPUE series (1977-2010), no tech parameter, dropped 1978 commercial age sample. \newline
-\noindent {\tt Run03}: 5 surveys, 1 CPUE series (1977-2010), no tech parameter. \newline
-\noindent {\tt Run04}: 5 surveys, 1 CPUE series (1977-95), no tech parameter, selectivities derived from data (naughty). \newline
-\noindent {\tt Run05}: 5 surveys, 3 CPUE series (1977-90, 1991-95, 1996-2010), no tech parameter, used Hamel's DBR selectivities to estimate those for YMR. \newline
-\noindent {\tt Run06}: 5 surveys, no CPUE series. \newline
-\noindent {\tt Run07}: 5 surveys, 1 CPUE series (1977-90), used tech parameter {\tt logBETA}. \newline
-\noindent {\tt Run08}: 5 surveys, 2 CPUE series (1977-90, 1991-95), used tech parameter {\tt logBETA}. \newline
-\noindent {\tt Run09}: 5 surveys, 1 CPUE series (1977-95), used tech parameter {\tt logBETA}. \newline
-\noindent {\tt Run10}: 5 surveys, 1 CPUE series (1983-95), used tech parameter {\tt logBETA}. \newline
-\noindent {\tt Run11}: 5 surveys, 1 CPUE series (1977-2010 rollup), used tech parameter {\tt logBETA}, revised selectivities. \newline
-\noindent {\tt Run12}: 5 surveys, no CPUE series, revised {\tt varL} to reflect logged values. \newline
-\noindent {\tt Run13}: 5 surveys, no CPUE series, made mistake in Run 12 where CPUE {\tt q} turned on. \newline
-\noindent {\tt Run14}: 5 surveys, no CPUE series, reweighted using mean ages \`{a} la Francis (2011). \newline
-\noindent {\tt Run15}: 5 surveys, no CPUE series, reweighted using mean ages, split {\tt CAc} into regimes brks=c(1979, 1985, 1997, 2004, 2009). \newline
-\noindent {\tt Run16}: 5 surveys, no CPUE series, composition reweighted using mean ages (Francis 2011),  abundance CVs w/ added process error 0.2: $c_t = \sqrt{c_o^2 + c_p^2}$.  \newline
-\noindent {\tt Run17}: 5 surveys, 1 CPUE series (1977-95 roll-up) with {\tt logBeta}, composition reweighted using mean ages (Francis 2011),  abundance CVs w/ added process error 0.2: $c_t = \sqrt{c_o^2 + c_p^2}$. \newline
-\noindent {\tt Run18}: 5 surveys, 1 CPUE series (1977-95 roll-up) with {\tt logBeta}, composition reweighted using mean ages (Francis 2011),  abundance CVs w/ added process error 0.2: $c_t = \sqrt{c_o^2 + c_p^2}$ , SD on M prior changed to 0.01. \newline
-\noindent {\tt Run19}: 5 surveys, no CPUE series, Francis reweighting, M prior (0,047, 0.01), {\tt Sfull} SD = $0.3 \mu_g$, no ageing error. \newline
-\noindent {\tt Run20}: 5 surveys, no CPUE series, Francis reweighting, M prior (0,047, 0.01), {\tt Sfull} SD = $0.3 \mu_g$, simple symmetric ageing error matrix. \newline
-\noindent {\tt Run21}: 5 surveys, no CPUE series, Francis reweighting, M prior (0,047, 0.01), {\tt Sfull} SD = $0.3 \mu_g$, simple symmetric ageing error matrix, tighter {\tt varL} priors. \newline
-\noindent {\tt Run22}: 5 surveys, no CPUE series, Francis reweighting, M prior (0,047, 0.005), {\tt Sfull} SD = $0.3 \mu_g$, simple symmetric ageing error matrix, tighter {\tt varL} priors. \newline
-\noindent {\tt Run23}: 5 surveys, no CPUE series, Francis reweighting, M fixed at 0.047, {\tt Sfull} SD = $0.3 \mu_g$, simple symmetric ageing error matrix, tighter {\tt varL} priors. \newline
-\noindent {\tt Run24}: 5 surveys, no CPUE series, Francis reweighting, M prior (0.047, 0.005), survey selectivities (except shrimp survey) -- priors for {\tt Sfull} ($\mu_g$) and {\tt varL} ($v_{gL}$) set to those for commercial, $\Delta$ for commercial corrected from uniform to normal, simple symmetric ageing error matrix. \newline
-\noindent {\tt Run25}: 5 surveys, no CPUE series, Francis reweighting, M prior (0.047, 0.005), selectivity priors as for Run24, symmetric ageing error matrix changed from (0.1, 0.8, 0.1) to (0.2, 0.6, 0.2). \newline
-\noindent {\tt Run26}: 5 surveys, no CPUE series, Francis reweighting, M prior (0.047, 0.005), selectivity priors as for Run24, no ageing error.\newline
-\noindent {\tt Run27}: 5 surveys, no CPUE series, Francis reweighting, M fixed at 0.047, selectivity priors as for Run24, no ageing error. \newline
-\noindent {\tt Run28}: 5 surveys, no CPUE series, Francis reweighting, M fixed at 0.047, selectivity priors as for Run24, symmetric ageing error matrix (0.1, 0.8, 0.1).\newline
-\noindent {\tt Run29}: Run26 with Paul's recalculated GIG indices and CVs. \newline
-\noindent {\tt Run30}: Run27 with Paul's recalculated GIG indices and CVs.
+
+{\tt Run01}: 1 survey (WCVI Syn + US Triennial stitched just to get something running), no CPUE series, estimating $R_0$ and $q$ only, initial run with many POP QCS defaults. \newline  
+
+\noindent {\tt Run02}: Same as {\tt Run01}, but estimating all parameters. Tried extra reweightings to see if they made a difference (because average weights looked a worse fit for first reweighting than no reweighting). For ageing data, first reweight downweights survey effective sample size (originally 10, 8, 8, 29), first reweight is 15\% of that (so fit is worse). Commercial increases to 1.73 times, so it somewhat prefers that data. \newline
+
+\noindent {\tt Run03}: From Paul (his {\tt InputPOP wcvi 05A.txt}), 25/7/12. Now starts from 1976, many (but not all) of the parameters estimated. Gives moderately sensible results. Contains the 17 CPUE indices and the 1996 Caledonian survey estimate. Now estimating {\tt log init devs}: deviates for initial age structure; {\tt initial R}: number 1-year olds in year 1 relative to $R_0$ (**perhaps); {\tt initial u}: exploitation for initial age structure (one for each sex); {\tt plus scale}: multiplier on the "plus" group, which recognises that the cumulative exploitation on the plus group will exceed the estimate made by the parameter 'initial u' (one parameter for each sex). Find $R_0 \simeq 1700$, {\tt uinit}$\simeq 0.01$ and the plus-scale is a very small number. I don't think these make sense.  It may be a better idea to not estimate plus-scale at this point.  And {\tt Rinit}$>1$, which also seems silly. It's still early days, but it looks like this approach will lead to an assessment, which is good news. \newline
+
+\noindent {\tt Run04}: Same as {\tt Run03}, but setting priors for natural mortality to Normal(0.067, sd$=$0.0029) for females, Normal(0.073, 0.0031) for males, based on posteriors of QCS POP assessment. May want to (i) use one prior for both sexes (Normal(0.07, 0.003)), or (ii) make priors broader. Take out 1996 synoptic survey index that was included (it was targetting POP and caught POP about twice as frequently as the later cruises - see Paul's Appendix C). Also using priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors. I noticed in the previous input file these were set as uniforms, but I've changed to normals which seems to work. \newline
+
+\noindent {\tt Run05}: Same as {\tt Run04} with changes: (1) log init devs changed from phase 3 to phase 2. (2) Tried changing 'Survey catch at age likelihood type' survey1 to '0' (from 12), with dummy set of catch-at-age data for survey1 (this gives the same par and MPD estimates but throws the indexing off for catch-at-age fits; therefore reverted to one catch-at-age series with no dummy). (3) Updated the WCVI synoptic survey biomass estimates to reflect some minor changes in all of them, except for 2010 survey which has changed a lot. \newline
+
+\noindent {\tt Run06}: Upon the advice of the POP working group (meeting 2012-08-01) the age composition was shortened to 30 age bins, where 30 acts as a plus class. Also in this run, a third survey series (GB Reed: 1967-70) was added. Note that Awatea currently has an indexing bug in the output routine regarding survey (and possibly commercial) catch-at-age fits. Therefore, the last survey (WCVI Synoptic) is labelled the first (and survey 2 = NMFS Triennial, survey 3 = GB Reed). \newline
+
+\noindent {\tt Run07}: Same as {\tt Run06} except for placing priors on natural mortality and selectivity. M is fixed to the mean of the prior. \newline
+
+\noindent {\tt Run08}: Same as {\tt Run07} except M is estimated. \newline
 
 \medskip
 
@@ -203,7 +190,7 @@ Plotting MCMC output for model {\tt \Sexpr{model.name}}.
 % @ 
 
 
-<<frompopscape, results=HIDE, echo=FALSE>>=
+<<fromscape, results=HIDE, echo=FALSE>>=
 # Commenting some out for ymr.
 #--------------------------------------------------------------------#   AME Commands that are actually run.
 
@@ -216,7 +203,7 @@ trellis.device(device="postscript", color=TRUE)   # for colour .eps
 # Load in .res file.
 setwd(fig.dir) 
 #currentRes <- importCol2(paste("../", model.name, ".res", sep=""), 
-currentRes = importCol2(paste(run.dir,"/", model.name, ".res", sep=""), 
+currentRes = importRes(paste(run.dir,"/", model.name, ".res", sep=""), 
              Dev=TRUE, CPUE=TRUE, Survey=TRUE, 
              CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
 
@@ -226,7 +213,7 @@ sigmaR = currentRes$extra$residuals$p_log_RecDev[6]
     #  multiplying by sigmaR).
 
 # Assign a generic title for use in some plots.
-mainTitle <- "Yellowmouth rockfish"
+mainTitle <- "@sppname"
 
 # Minimum data year for tuning index.
 minCpueYr <- 1940
@@ -261,46 +248,95 @@ names(currentMCMC$R) = as.integer(names(currentMCMC$R)) + 1
 #  names(currentMCMCorig$P)
 # Will have to do a switch for CPUE. ***** and add extra surveys,
 #  Extra surveys not done automatically.
-# Need this here to use as a switch for CPUE being estimated or not:
-logbetaCPUE.prior = currentRes$extra$priors$log_BetaCPUE
-if(logbetaCPUE.prior[1] > 0)       # Then estimating CPUE parameters
-  {
-    new.Pnames = c("R_0", "h", "M_1", "M_2", "mu_6", "Delta_6", "log v_6L", "log q_6", "log beta", "log q_1", "log q_2", "log q_3", "log q_4", "log q_5", "mu_1", "mu_2", "Delta_1", "Delta_2", "log v_1L", "log v_2L")
-  names(currentMCMC$P) = new.Pnames
-  # re-order to match Paul's results table 3:
-  currentMCMC$P = currentMCMC$P[, c( "R_0",  "M_1", "M_2", "h",
- "log q_1", "log q_2", "log q_3", "log q_4", "log q_5",
- "log q_6", "log beta",
- "mu_1", "mu_2", "mu_6",
- "Delta_1", "Delta_2", "Delta_6",
- "log v_1L", "log v_2L", "log v_6L")]
-  # not going to use log for q's or beta  
-  currentMCMC$P[,"log q_6"] = exp(currentMCMC$P[,"log q_6"])
-  names(currentMCMC$P)[names(currentMCMC$P) == "log q_6"] = "q_6"
-  }  else        # no beta or q_6
-  {                                
-    new.Pnames = c("R_0", "h", "M_1", "M_2", "mu_6", "Delta_6", "log v_6L", "log q_1", "log q_2", "log q_3", "log q_4", "log q_5", "mu_1", "mu_2", "Delta_1", "Delta_2", "log v_1L", "log v_2L")
-    names(currentMCMC$P) = new.Pnames
-    # re-order to match Paul's results table 3:
-    currentMCMC$P = currentMCMC$P[, c( "R_0",  "M_1", "M_2", "h",
- "log q_1", "log q_2", "log q_3", "log q_4", "log q_5",
- "mu_1", "mu_2", "mu_6",
- "Delta_1", "Delta_2", "Delta_6",
- "log v_1L", "log v_2L", "log v_6L")]
-  }
+
+# **** AME hard-wiring cannot work; RH attempt to fix: ***
+#==========================================================
+# Get the commercial and survey index series
+Cser=unique(currentRes$CPUE$Series);   NCser=length(Cser)
+Sser=unique(currentRes$Survey$Series); NSser=length(Sser)
+
+# Get the commercial and survey age series
+CAser=unique(currentRes$CAc$Series);   NCAser=length(CAser)
+SAser=unique(currentRes$CAs$Series);   NSAser=length(SAser)
+
+Ncomm = max(NCser,NCAser)
+Nsurv = max(NSser,NSAser)
+
+Pnames = names(currentMCMC$P)
+new.Pnames = gsub("M2",paste("M_",2,sep=""),sub("M1",paste("M_",1,sep=""),sub("R0","R_0",Pnames)))
+for (i in 1:Ncomm) {
+	ii = i + Nsurv
+	new.Pnames = sub(paste("Sfullest_",i,sep=""),paste("mu_",ii,sep=""),new.Pnames)
+	new.Pnames = sub(paste("log_varLest_",i,sep=""),paste("log v_",ii,"L",sep=""),new.Pnames)
+	new.Pnames = sub(paste("Sfulldelta_",i,sep=""),paste("Delta_",ii,sep=""),new.Pnames)
+	new.Pnames = sub(paste("log_qCPUE_",i,sep=""),paste("log q_",ii,sep=""),new.Pnames)
+}
+for (i in 1:Nsurv) {
+	ii = Sser[i]
+	new.Pnames = sub(paste("surveySfull_",i,sep=""),paste("mu_",ii,sep=""),new.Pnames)
+	new.Pnames = sub(paste("log_surveyvarL_",i,sep=""),paste("log v_",ii,"L",sep=""),new.Pnames)
+	new.Pnames = sub(paste("surveySfulldeltaest_",i,sep=""),paste("Delta_",ii,sep=""),new.Pnames)
+	new.Pnames = sub(paste("log_qsurvey_",i,sep=""),paste("log q_",ii,sep=""),new.Pnames)
+}
+new.Pnames = sub("log_BetaCPUE","log beta",new.Pnames)
+tab.Pnames = c("R_0","M_1","M_2","h",paste("log q_",1:(Nsurv+Ncomm),sep=""),"log beta",
+	paste("mu_",1:(Nsurv+Ncomm),sep=""),paste("Delta_",1:(Nsurv+Ncomm),sep=""),paste("log v_",1:(Nsurv+Ncomm),"L",sep=""))
+use.Pnames = tab.Pnames[is.element(tab.Pnames,new.Pnames)]
+
+# Assign new names
+names(currentMCMC$P) = new.Pnames
+# Re-order to match Paul's results table 3:
+currentMCMC$P = currentMCMC$P[,use.Pnames]
 
 # Now going to use q_1, q_2, q_3, not log q_1 etc.
-currentMCMC$P[,"log q_1"] = exp(currentMCMC$P[,"log q_1"])
-currentMCMC$P[,"log q_2"] = exp(currentMCMC$P[,"log q_2"])
-currentMCMC$P[,"log q_3"] = exp(currentMCMC$P[,"log q_3"])
-currentMCMC$P[,"log q_4"] = exp(currentMCMC$P[,"log q_4"])
-currentMCMC$P[,"log q_5"] = exp(currentMCMC$P[,"log q_5"])
+qnames = use.Pnames[grep("log q_",use.Pnames)]
+for (i in qnames) {
+	currentMCMC$P[,i] = exp(currentMCMC$P[,i])
+}
+names(currentMCMC$P)[is.element(names(currentMCMC$P),qnames)] = substring(qnames,5)
+# End RH fix
+#==========================================================
 
-names(currentMCMC$P)[names(currentMCMC$P) == "log q_1"] = "q_1"
-names(currentMCMC$P)[names(currentMCMC$P) == "log q_2"] = "q_2"
-names(currentMCMC$P)[names(currentMCMC$P) == "log q_3"] = "q_3"
-names(currentMCMC$P)[names(currentMCMC$P) == "log q_4"] = "q_4"
-names(currentMCMC$P)[names(currentMCMC$P) == "log q_5"] = "q_5"
+# Need this here to use as a switch for CPUE being estimated or not:
+#logbetaCPUE.prior = currentRes$extra$priors$log_BetaCPUE
+#if(logbetaCPUE.prior[1] > 0)       # Then estimating CPUE parameters
+#  {
+#    new.Pnames = c("R_0", "h", "M_1", "M_2", "mu_6", "Delta_6", "log v_6L", "log q_6", "log beta", "log q_1", "log q_2", "log q_3", "log q_4", "log q_5", "mu_1", "mu_2", "Delta_1", "Delta_2", "log v_1L", "log v_2L")
+#  names(currentMCMC$P) = new.Pnames
+#  # re-order to match Paul's results table 3:
+#  currentMCMC$P = currentMCMC$P[, c( "R_0",  "M_1", "M_2", "h",
+# "log q_1", "log q_2", "log q_3", "log q_4", "log q_5",
+# "log q_6", "log beta",
+# "mu_1", "mu_2", "mu_6",
+# "Delta_1", "Delta_2", "Delta_6",
+# "log v_1L", "log v_2L", "log v_6L")]
+#  # not going to use log for q's or beta  
+#  currentMCMC$P[,"log q_6"] = exp(currentMCMC$P[,"log q_6"])
+#  names(currentMCMC$P)[names(currentMCMC$P) == "log q_6"] = "q_6"
+#  }  else        # no beta or q_6
+#  {                                
+#    new.Pnames = c("R_0", "h", "M_1", "M_2", "mu_6", "Delta_6", "log v_6L", "log q_1", "log q_2", "log q_3", "log q_4", "log q_5", "mu_1", "mu_2", "Delta_1", "Delta_2", "log v_1L", "log v_2L")
+#    names(currentMCMC$P) = new.Pnames
+#    # re-order to match Paul's results table 3:
+#    currentMCMC$P = currentMCMC$P[, c( "R_0",  "M_1", "M_2", "h",
+# "log q_1", "log q_2", "log q_3", "log q_4", "log q_5",
+# "mu_1", "mu_2", "mu_6",
+# "Delta_1", "Delta_2", "Delta_6",
+# "log v_1L", "log v_2L", "log v_6L")]
+#  }
+
+# Now going to use q_1, q_2, q_3, not log q_1 etc.
+#currentMCMC$P[,"log q_1"] = exp(currentMCMC$P[,"log q_1"])
+#currentMCMC$P[,"log q_2"] = exp(currentMCMC$P[,"log q_2"])
+#currentMCMC$P[,"log q_3"] = exp(currentMCMC$P[,"log q_3"])
+#currentMCMC$P[,"log q_4"] = exp(currentMCMC$P[,"log q_4"])
+#currentMCMC$P[,"log q_5"] = exp(currentMCMC$P[,"log q_5"])
+
+#names(currentMCMC$P)[names(currentMCMC$P) == "log q_1"] = "q_1"
+#names(currentMCMC$P)[names(currentMCMC$P) == "log q_2"] = "q_2"
+#names(currentMCMC$P)[names(currentMCMC$P) == "log q_3"] = "q_3"
+#names(currentMCMC$P)[names(currentMCMC$P) == "log q_4"] = "q_4"
+#names(currentMCMC$P)[names(currentMCMC$P) == "log q_5"] = "q_5"
 
 # Also have to import vulnerable biomass from vulnBiom.pst, as it's
 #  not done in importMCMC. Can just do as a data table. Has columns
@@ -338,16 +374,15 @@ currentMCMC[["VB"]] = vbMCMC
 
 # currentProj <- importProj( dir=".", quiet=FALSE )
 
-currentProj <- importProjRec( dir="./Proj.90yrs/", 
-                           quiet=FALSE )
+currentProj <- importProjRec( dir=prj.dir, quiet=FALSE )
    # importProjRec includes epsilons for recruitments
    # Then below we calcualte the actual recruitments.
 
 assign( "currentProj", currentProj, pos=1 )
-# Take off final year: "2032" or "2102":
-currentProj$B = lapply(currentProj$B, function(x) { x[ , names(x) != "2102"] })
-currentProj$Y = lapply(currentProj$Y, function(x) { x[ , names(x) != "2102"] })
-currentProj$eps = lapply(currentProj$eps, function(x) { x[ , names(x) != "2102"] })
+# Take off final year of projection
+currentProj$B = lapply(currentProj$B, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
+currentProj$Y = lapply(currentProj$Y, function(x) { x[ ,1:(dim(x)[[2]]-1)]  })
+currentProj$eps = lapply(currentProj$eps, function(x) {  x[ ,1:(dim(x)[[2]]-1)] })
 # currentProj$R is calculated below
 # sd(unlist(currentProj$eps$'0'))
 # [1] 0.8993165
@@ -367,9 +402,14 @@ B0.MCMC = currentMCMC$B[,1]
 # BoverB0 = currentMCMC$B / B0.MCMC     # B/B0  each chain
 # BoverB0med = apply(BoverB0, 2, median)         # median each year
 
-B2011.MCMC = currentMCMC$B[,"2011"]
+Year = rev(dimnames(currentMCMC$B)[[2]])[1]      # character starting year
+Year0 = as.numeric(Year)                         # numeric starting year
+#Ypro  = dimnames(currentProj$B[[1]])[[2]]        # character available projection years
+#Ypr0  = as.numeric(Ypro)                         # numeric available projection years
+
+Bcurr.MCMC = currentMCMC$B[,Year]
 VB0.MCMC = currentMCMC$VB[,1]
-VB2011.MCMC = currentMCMC$VB[,"2011"]
+VBcurr.MCMC = currentMCMC$VB[,Year]
 Bmsy.MCMC = currentMSY$B
 VBmsy.MCMC = currentMSY$VB
 msy.MCMC = currentMSY$yield
@@ -380,6 +420,7 @@ umsy.MCMC = currentMSY$u
 currentProj$R = list()
 NN = matrix(1:1000, nrow=1)      # to use to populate each data.frame
 projYearsNames = names(currentProj$B[[1]])
+projYearsNum   = length(projYearsNames)
 
 # First calculate recruits for first projection year, which is based
 #  on penultimate MCMC year's spawners (which is 2010, final year
@@ -391,8 +432,10 @@ projYearsNames = names(currentProj$B[[1]])
 #  all catch strategies).
 Bpen.MCMC = currentMCMC$B[, rev(names(currentMCMC$B))[2]]
      # spawning biomass for penultimate year of MCMC
-RfirstProj = srFun(Bpen.MCMC, R0 = currentMCMC$P$R_0,
-    h = currentMCMC$P$h, B0=B0.MCMC)
+
+if (!is.element("h",use.Pnames))
+	currentMCMC$P$h = rep(currentRes$extra$parameters$h, dim(currentMCMC$P)[[1]])
+RfirstProj = srFun(Bpen.MCMC, R0 = currentMCMC$P$R_0, h=currentMCMC$P$h, B0=B0.MCMC)
 
 # Stochastic multiplier, will be same for all strategies as random
 #  numbers currentProj$eps[[j]] are the same for each strategy j
@@ -422,9 +465,6 @@ for(j in 1:length(currentProj$eps) )    # loop over policies
 names(currentProj$R) = names(currentProj$eps)
 
 
-
-
-
 # Bmsy Reference points (could move this to scape at some point):
 
 refPointsList = refPoints()  # ONLY set up for default 0.4, 0.8 
@@ -440,27 +480,25 @@ refProbsList = calc.refProbs() # currentMCMC$B, currentProj$B, refPointsList)
 #  "2011" "2012" .... "2032"
 
 # scenarioSubset = c("0", "500", "1000", "1500", "2000" "2250"....
-fiveYears = c("2011", "2012", "2013", "2014", "2015", "2016")
-twentyYears = c( "2011", "2016", "2021", "2026", "2031")
-ninetyYears = c( "2011", "2026", "2041", "2056", "2071", "2086",
-  "2101")
+fiveYears   = as.character(Year0+seq(0,5,1))
+twentyYears = as.character(Year0+seq(0,20,5))
+ninetyYears = as.character(Year0+seq(0,90,15))
 
 refProbs5 = list()    # Probs for 5 years
 refProbs20 = list()   # Probs for 20 years
 refProbs90 = list()   # Probs for 90 years
 for(i in 1:length(refProbsList))
   {
-    refProbs5[[i]] = refProbsList[[i]][,fiveYears]
-    refProbs20[[i]] = refProbsList[[i]][,twentyYears]
-    refProbs90[[i]] = refProbsList[[i]][,ninetyYears]
-    colnames(refProbs90[[i]]) = 
-      as.numeric(colnames(refProbs90[[i]])) - 2011
-
+    if (projYearsNum>=5)  refProbs5[[i]] = refProbsList[[i]][,fiveYears]
+    if (projYearsNum>=20) refProbs20[[i]] = refProbsList[[i]][,twentyYears]
+    if (projYearsNum>=90) {
+      refProbs90[[i]] = refProbsList[[i]][,ninetyYears]
+      colnames(refProbs90[[i]]) =  as.numeric(colnames(refProbs90[[i]])) - Year0
+    }
   }
 names(refProbs5)= names(refProbsList)
 names(refProbs20)= names(refProbsList)
 names(refProbs90)= names(refProbsList)
-
 
 # B0 Reference points, not doing moving window here yet 
 #  (could move this to scape at some point):
@@ -485,11 +523,12 @@ refProbsB020 = list()   # Probs for 20 years
 refProbsB090 = list()   # Probs for 90 years
 for(i in 1:length(refProbsB0List))
   {
-    refProbsB05[[i]] = refProbsB0List[[i]][,fiveYears]
-    refProbsB020[[i]] = refProbsB0List[[i]][,twentyYears]
-    refProbsB090[[i]] = refProbsB0List[[i]][,ninetyYears]
-    colnames(refProbsB090[[i]]) = 
-      as.numeric(colnames(refProbsB090[[i]])) - 2011
+    if (projYearsNum>=5)  refProbsB05[[i]] = refProbsB0List[[i]][,fiveYears]
+    if (projYearsNum>=20) refProbsB020[[i]] = refProbsB0List[[i]][,twentyYears]
+    if (projYearsNum>=90) {
+      refProbsB090[[i]] = refProbsB0List[[i]][,ninetyYears]
+      colnames(refProbsB090[[i]]) =  as.numeric(colnames(refProbsB090[[i]])) - Year0
+    }
          # To give 0, 15 ... as colnames for decision tables
   }
 names(refProbsB05)= names(refProbsB0List)
@@ -522,11 +561,12 @@ refProbs3Gen90 = list()   # Probs for 90 years
 
 for(i in 1:length(refProbs3GenList))
   {
-    refProbs3Gen5[[i]] = refProbs3GenList[[i]][,fiveYears]
-    refProbs3Gen90[[i]] = refProbs3GenList[[i]][,ninetyYears]
-    colnames(refProbs3Gen90[[i]]) = 
-      as.numeric(colnames(refProbs3Gen90[[i]])) - 2011
-         # To give 0, 15 ... as colnames for decision tables
+    if (projYearsNum>=5)  refProbs3Gen5[[i]] = refProbs3GenList[[i]][,fiveYears]
+    if (projYearsNum>=90) {
+      refProbs3Gen90[[i]] = refProbs3GenList[[i]][,ninetyYears]
+      colnames(refProbs3Gen90[[i]]) =  as.numeric(colnames(refProbs3Gen90[[i]])) - Year0
+    }
+    # To give 0, 15 ... as colnames for decision tables
   }
 names(refProbs3Gen5)= names(refProbs3GenList)
 names(refProbs3Gen90)= names(refProbs3GenList)
@@ -555,11 +595,10 @@ catch = currentRes$B$Y[-length(currentRes$B$Y)]   # take off 2011 NA
 
 currentMCMC$U = currentMCMC$VB[,-dim(currentMCMC$VB)[2]] # Don't want                                        # 2011, as no catch
 names.cmu = names(currentMCMC$U)
-currentMCMC$U = t(apply(currentMCMC$U, 1, function(x,y){ y/x }, 
-    y=catch))    # Need transpose to get right way round again
+currentMCMC$U = t(apply(currentMCMC$U, 1, function(x,y){ y/x }, y=catch))    # Need transpose to get right way round again
 names(currentMCMC$U) = names.cmu 
 # So currentMCMC$U is now exploitation rate for MCMC output.
-u2010.MCMC = currentMCMC$U[,"2010"]
+ucurr.MCMC = currentMCMC$U[,as.character(Year0-1)]
 umax.MCMC = apply(currentMCMC$U, 1, max)
 
 # u.MCMC.med = apply(currentMCMC$U, 2, median)  # median for each year
@@ -1029,13 +1068,13 @@ Value & \multicolumn{3}{c}{Percentile}\\
 & \multicolumn{3}{c}{From model output}\\
 $B_0$                  & \Sexpr{qtab(B0.MCMC)} \\
 $V_0$                  & \Sexpr{qtab(VB0.MCMC)} \\
-$B_{2011}$             & \Sexpr{qtab(B2011.MCMC)} \\
-$V_{2011}$             & \Sexpr{qtab(VB2011.MCMC)} \\
+$B_{\Sexpr{Year0}}$             & \Sexpr{qtab(Bcurr.MCMC)} \\
+$V_{\Sexpr{Year0}}$             & \Sexpr{qtab(VBcurr.MCMC)} \\
 
-$B_{2011} / B_0$       & \Sexpr{qtab(B2011.MCMC / B0.MCMC, dig=3)} \\
-$V_{2011} / V_0$     & \Sexpr{qtab(VB2011.MCMC / VB0.MCMC, dig=3)} \\
+$B_{\Sexpr{Year0}} / B_0$       & \Sexpr{qtab(Bcurr.MCMC / B0.MCMC, dig=3)} \\
+$V_{\Sexpr{Year0}} / V_0$     & \Sexpr{qtab(VBcurr.MCMC / VB0.MCMC, dig=3)} \\
 
-$u_{2010}$             & \Sexpr{qtab(u2010.MCMC, dig=3)} \\
+$u_{\Sexpr{Year0-1}}$             & \Sexpr{qtab(ucurr.MCMC, dig=3)} \\
 $u_\mathrm{max}$       & \Sexpr{qtab(umax.MCMC, dig=3)} \\
 \hline
  & & & \\
@@ -1044,11 +1083,11 @@ $0.4 B_\mathrm{MSY}$   &  \Sexpr{qtab(0.4*Bmsy.MCMC)} \\
 $0.8 B_\mathrm{MSY}$   &  \Sexpr{qtab(0.8*Bmsy.MCMC)} \\
 $B_\mathrm{MSY}$       &  \Sexpr{qtab(Bmsy.MCMC)} \\
 $B_\mathrm{MSY} / B_0$ &  \Sexpr{qtab(Bmsy.MCMC / B0.MCMC, dig=3)} \\
-$B_{2011} / B_\mathrm{MSY}$ & \Sexpr{qtab(B2011.MCMC / Bmsy.MCMC, dig=3)} \\
+$B_{\Sexpr{Year0}} / B_\mathrm{MSY}$ & \Sexpr{qtab(Bcurr.MCMC / Bmsy.MCMC, dig=3)} \\
 
 $\mathrm{MSY}$                    & \Sexpr{qtab(msy.MCMC)} \\
 $u_\mathrm{MSY}$       & \Sexpr{qtab(umsy.MCMC, dig=3)} \\
-$u_{2010} / u_\mathrm{MSY}$ & \Sexpr{qtab(u2010.MCMC / umsy.MCMC, dig=3)} \\
+$u_{\Sexpr{Year0-1}} / u_\mathrm{MSY}$ & \Sexpr{qtab(ucurr.MCMC / umsy.MCMC, dig=3)} \\
 
 $V_\mathrm{MSY}$       & \Sexpr{qtab(VBmsy.MCMC)} \\
 $V_\mathrm{MSY} / V_0$ & \Sexpr{qtab(VBmsy.MCMC / VB0.MCMC, dig=3)} \\
@@ -1123,3 +1162,4 @@ print(xtable(Ttab0.95, caption="Estimated time to be above each reference point 
 \end{document}
 
 % CUT HERE 
+
