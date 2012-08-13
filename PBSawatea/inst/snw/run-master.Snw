@@ -192,6 +192,10 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 
 \noindent {\tt Run06}: Upon the advice of the POP working group (meeting 2012-08-01) the age composition was shortened to 30 age bins, where 30 acts as a plus class. Also in this run, a third survey series (GB Reed: 1967-70) was added. Note that Awatea currently has an indexing bug in the output routine regarding survey (and possibly commercial) catch-at-age fits. Therefore, the last survey (WCVI Synoptic) is labelled the first (and survey 2 = NMFS Triennial, survey 3 = GB Reed). \newline
 
+\noindent {\tt Run07}: Same as {\tt Run06} except for placing priors on natural mortality and selectivity. M is fixed to the mean of the prior. \newline
+
+\noindent {\tt Run08}: Same as {\tt Run07} except M is estimated. \newline
+
 % **NOT DONE YET: Use priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors, but in the input files they were set as uniforms. So not sure which we are going to use.
 
 

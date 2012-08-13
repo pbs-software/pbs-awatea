@@ -3,7 +3,8 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-08-10  Rowan
+0.10  2011-08-13  Rowan
+  - Added new function 'importEva' to import the Hessian eiganvalues from an Awatea file, usually called 'Awatea.eva'. (RH 8/10)
   - Updated 'plotBars' to determine start year from results file. (RH 8/10)
   - Added new function 'importLik' to import an Awatea likelihood file, usually called 'likelihood.dat'. (RH 8/10)
   - Added 'input' directory for the Awatea input files used; format = spp-area-run.txt. (RH 8/2)

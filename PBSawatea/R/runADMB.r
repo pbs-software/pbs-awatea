@@ -2,7 +2,8 @@ setClass ("AWATEAdata",
      representation( txtnam="character", input="character", vlst="list", 
      dnam="character", nvars="numeric", vdesc="character", vars="list", 
      gcomm="character", vcomm="character", resdat="list" , likdat="list",
-     pardat="list", stddat="list", cordat="list", reweight="list") )
+     pardat="list", stddat="list", cordat="list", evadat="list", 
+     reweight="list") )
 
 #require(PBSmodelling)
 #source("utilFuns.r",local=FALSE)
@@ -63,7 +64,8 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
 		#file0 = gsub(paste("\\.",ext,sep=""),paste(".000.",ext,sep=""),filename.ext)
 		file0 = paste(prefix,runNoStr,"00.txt",sep=".")
-		fileX = c("likelihood.dat",paste("Awatea",c("par","std","cor"),sep=".")) # extra files to save
+		fileX = c("likelihood.dat",paste("Awatea",c("par","std","cor","eva"),sep=".")) # extra files to save
+		fileA = character(0) # All accumulated files
 		#suffix = c("par","std","cor") # extra files to save
 		for (i in 0:N.reweight) {
 			ii = pad0(i,2)
@@ -102,7 +104,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 				file.copy("results.dat",fileR,overwrite=TRUE)
 			else
 				stop ("!!!!! No results file generated ('results.dat')")
-			filesN = c(fileN,fileR)
+			fileA = c(fileA,fileN,fileR)
 			for (jfile in fileX){
 				#jfile = paste("Awatea",j,sep=".")
 				if (file.exists(jfile)){
@@ -112,7 +114,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 					else suffix = "tmp"
 					fileS = gsub(paste("\\.",ext,"$",sep=""),paste("\\.",suffix,sep=""),fileN)
 					file.copy(jfile,fileS,overwrite=TRUE)
-					filesN = c(filesN,fileS)
+					fileA = c(fileA,fileS)
 				}
 			}
 			eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
@@ -120,9 +122,9 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 			Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age, sfile=sdnrfile, fileN=fileN)
 		}
 		if (!file.exists(rundir)) dir.create(rundir)
-		#filesN = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=length(suffix)+2),rep(c(ext,"res",suffix),N.reweight+1),sep=".")
-		file.copy(paste(wd,c(filename.ext,filesN,sdnrfile),sep="/"),rundir,overwrite=TRUE)
-		file.remove(paste(wd,c(filesN,sdnrfile),sep="/"))
+		#fileA = paste(prefix,runNoStr,rep(pad0(0:N.reweight,2),each=length(suffix)+2),rep(c(ext,"res",suffix),N.reweight+1),sep=".")
+		file.copy(paste(wd,c(filename.ext,fileA,sdnrfile),sep="/"),rundir,overwrite=TRUE)
+		file.remove(paste(wd,c(fileA,sdnrfile),sep="/"))
 	}
 	if (doMCMC | doMSY) {
 		rwtNoStr = pad0(rwtNo,2)
@@ -133,8 +135,8 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		.flush.cat(paste("Running",mcmc,"MCMC iterations...\n"))
 		mcdir    = paste(wd,runname,mcname,sep="/")
 		if (!file.exists(mcdir)) dir.create(mcdir)
-		filesN = paste(prefix,runNoStr,rwtNoStr,c(ext,"res","par"),sep=".")
-		file.copy(paste(rundir,filesN,sep="/"),mcdir,overwrite=TRUE); setwd(mcdir)
+		fileA = paste(prefix,runNoStr,rwtNoStr,c(ext,"res"),sep=".")
+		file.copy(paste(rundir,fileA,sep="/"),mcdir,overwrite=TRUE); setwd(mcdir)
 		#if (!doMPD) {
 		#	eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
 		#	Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age) 
@@ -155,8 +157,10 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		msyname  = paste("MSY",runNoStr,rwtNoStr,sep=".")
 		msydir   = paste(wd,runname,mcname,msyname,sep="/")
 		if (!file.exists(msydir)) dir.create(msydir)
-		filesN = c(paste(wd,runname,fileN,sep="/"),paste(wd,runname,mcname,"Awatea.psv",sep="/"))
-		file.copy(filesN,msydir,overwrite=TRUE); setwd(msydir)
+		fileN = paste(prefix,runNoStr,rwtNoStr,ext,sep=".")
+		fileA = c(paste(wd,runname,fileN,sep="/"),paste(wd,runname,mcname,"Awatea.psv",sep="/"))
+#browser();return()
+		file.copy(fileA,msydir,overwrite=TRUE); setwd(msydir)
 		ctlfile  = paste(c("#MSY control file",
 			"#Maximum number of iterations",format(msyMaxIter,scientific=FALSE),
 			"#Tolerance for convergence",format(msyTolConv,scientific=FALSE) ), collapse="\n")
@@ -229,7 +233,7 @@ readAD = function(txt) {
 		else {browser();return()}
 	}
 	#writeList(vars,gsub("\\.txt",".pbs.txt",txtnam),format="P") # write to a PBS formatted text file
-	suffix = c("res","lik","par","std","cor")
+	suffix = c("res","lik","par","std","cor","eva")
 	for (j in suffix) {
 		jnam = gsub("\\.txt$",paste(".",j,sep=""),txtnam)
 		#assign(paste(j,"nam",sep=""),jnam)
@@ -249,7 +253,7 @@ readAD = function(txt) {
 	}
 	Data=new("AWATEAdata",txtnam=txtnam, input=ntxt, vlst=vlst, dnam=dnam, 
 		nvars=nvars, vdesc=vdesc, vars=vars, gcomm=gcomm, vcomm=vcomm, resdat=resdat,
-		likdat=likdat, pardat=pardat, stddat=stddat, cordat=cordat, reweight=list(nrwt=0))
+		likdat=likdat, pardat=pardat, stddat=stddat, cordat=cordat, evadat=evadat, reweight=list(nrwt=0))
 	return(Data) }
 #-------------------------------------------readAD
 
