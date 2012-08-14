@@ -488,17 +488,18 @@ refProbs5 = list()    # Probs for 5 years
 refProbs20 = list()   # Probs for 20 years
 refProbs90 = list()   # Probs for 90 years
 for(i in 1:length(refProbsList))
-  {
-    if (projYearsNum>=5)  refProbs5[[i]] = refProbsList[[i]][,fiveYears]
-    if (projYearsNum>=20) refProbs20[[i]] = refProbsList[[i]][,twentyYears]
-    if (projYearsNum>=90) {
-      refProbs90[[i]] = refProbsList[[i]][,ninetyYears]
-      colnames(refProbs90[[i]]) =  as.numeric(colnames(refProbs90[[i]])) - Year0
-    }
-  }
-names(refProbs5)= names(refProbsList)
-names(refProbs20)= names(refProbsList)
-names(refProbs90)= names(refProbsList)
+	{
+	if (projYearsNum>=5) {
+		refProbs5[[i]] = refProbsList[[i]][,fiveYears]
+		names(refProbs5)[i] = names(refProbsList)[i] }
+	if (projYearsNum>=20) {
+		refProbs20[[i]] = refProbsList[[i]][,twentyYears]
+		names(refProbs20)[i] = names(refProbsList)[i] }
+	if (projYearsNum>=90) {
+		refProbs90[[i]] = refProbsList[[i]][,ninetyYears]
+		colnames(refProbs90[[i]]) =  as.numeric(colnames(refProbs90[[i]])) - Year0
+		names(refProbs90)[i] = names(refProbsList)[i] }
+	}
 
 # B0 Reference points, not doing moving window here yet 
 #  (could move this to scape at some point):
@@ -522,19 +523,20 @@ refProbsB05 = list()    # Probs for 5 years
 refProbsB020 = list()   # Probs for 20 years
 refProbsB090 = list()   # Probs for 90 years
 for(i in 1:length(refProbsB0List))
-  {
-    if (projYearsNum>=5)  refProbsB05[[i]] = refProbsB0List[[i]][,fiveYears]
-    if (projYearsNum>=20) refProbsB020[[i]] = refProbsB0List[[i]][,twentyYears]
-    if (projYearsNum>=90) {
-      refProbsB090[[i]] = refProbsB0List[[i]][,ninetyYears]
-      colnames(refProbsB090[[i]]) =  as.numeric(colnames(refProbsB090[[i]])) - Year0
-    }
-         # To give 0, 15 ... as colnames for decision tables
-  }
-names(refProbsB05)= names(refProbsB0List)
-names(refProbsB020)= names(refProbsB0List)
-names(refProbsB090)= names(refProbsB0List)
-
+	{
+	if (projYearsNum>=5) {
+		refProbsB05[[i]] = refProbsB0List[[i]][,fiveYears]
+		names(refProbsB05)[i] = names(refProbsB0List)[i] }
+	if (projYearsNum>=20) {
+		refProbsB020[[i]] = refProbsB0List[[i]][,twentyYears]
+		names(refProbsB020)[i] = names(refProbsB0List)[i] }
+	if (projYearsNum>=90) {
+		refProbsB090[[i]] = refProbsB0List[[i]][,ninetyYears]
+		colnames(refProbsB090[[i]]) =  as.numeric(colnames(refProbsB090[[i]])) - Year0
+		names(refProbsB090)[i] = names(refProbsB0List)[i] }
+	}
+# To give 0, 15 ... as colnames for decision tables
+ 
 
 # Moving window reference points from Rowan's findTarget.r code,
 #  which also calculates 0.4 Bmsy and others.
@@ -560,30 +562,22 @@ refProbs3Gen5 = list()    # Probs for 5 years
 refProbs3Gen90 = list()   # Probs for 90 years
 
 for(i in 1:length(refProbs3GenList))
-  {
-    if (projYearsNum>=5)  refProbs3Gen5[[i]] = refProbs3GenList[[i]][,fiveYears]
-    if (projYearsNum>=90) {
-      refProbs3Gen90[[i]] = refProbs3GenList[[i]][,ninetyYears]
-      colnames(refProbs3Gen90[[i]]) =  as.numeric(colnames(refProbs3Gen90[[i]])) - Year0
-    }
-    # To give 0, 15 ... as colnames for decision tables
-  }
-names(refProbs3Gen5)= names(refProbs3GenList)
-names(refProbs3Gen90)= names(refProbs3GenList)
-
+	{
+	if (projYearsNum>=5) {
+		refProbs3Gen5[[i]] = refProbs3GenList[[i]][,fiveYears]
+		names(refProbs3Gen5)[i] = names(refProbs3GenList)[i] }
+	if (projYearsNum>=90) {
+		refProbs3Gen90[[i]] = refProbs3GenList[[i]][,ninetyYears]
+		colnames(refProbs3Gen90[[i]]) =  as.numeric(colnames(refProbs3Gen90[[i]])) - Year0
+		names(refProbs3Gen90)[i] = names(refProbs3GenList)[i] }
+	}
+# To give 0, 15 ... as colnames for decision tables
 
 # Also calculate number of years to reach reference target points
 #  with a specified confidence, 0.5, 0.8 and 0.95
-Ttab0.5 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,
-  ratio=x$ratio,target=x$target,conf=0.5,retVal="N")})
-Ttab0.8 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,
-  ratio=x$ratio,target=x$target,conf=0.8,retVal="N")})
-Ttab0.95 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,
-  ratio=x$ratio,target=x$target,conf=0.95,retVal="N")})
-
-
-
-
+Ttab0.5 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,ratio=x$ratio,target=x$target,conf=0.5,retVal="N")})
+Ttab0.8 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,ratio=x$ratio,target=x$target,conf=0.8,retVal="N")})
+Ttab0.95 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,ratio=x$ratio,target=x$target,conf=0.95,retVal="N")})
 
 # Need to calculate exploitation rates over time for MCMC (MPD's are
 #  included in currentRes, but nothing in currentMCMC. Going to add
@@ -611,8 +605,6 @@ UoverUmsy.med = apply(currentMCMC$UoverUmsy, 2, median)
 currentMCMC$BoverBmsy = apply(currentMCMC$B, 2, function(x,y){ x/y },  y=Bmsy.MCMC)    # No transpose, also agrees with table below
 BoverBmsy.med = apply(currentMCMC$BoverBmsy, 2, median)
 
-
-
 # Did this to check MPD's closely matched the medians, they more or 
 #  less do:
 # plot(apply(currentMCMC$U, 2, median))
@@ -632,8 +624,6 @@ BoverBmsy.med = apply(currentMCMC$BoverBmsy, 2, median)
 # Fix M, for females (males the same if fixed values the same):
 # Z1 = M1.prior[7] - log(1 - u2010.MCMC)
 # quantile(Z1, p=c(0.05, 0.50, 0.95))
-
-
 
 quantiles = c(0.05, 0.5, 0.95)      # for tables
 # Next was for saving to an .RData file to load into 
@@ -672,10 +662,7 @@ Bt.mpd = currentRes$B$SB
 B0.mpd = Bt.mpd[1]
 Vt.mpd = currentRes$B$V
 logRecDev.mpd = currentRes$Dev$Annual
-# Also equals currentRes$extra$parameters$log_RecDev   from Rowan's
-#  extra.
-
-
+# Also equals currentRes$extra$parameters$log_RecDev from Rowan's 'extra' sublist  in currentRes.
 # From Rowan's extra function, to give the mpd's:
 R0.mpd = currentRes$extra$parameters$R0
 M1.mpd = currentRes$extra$parameters$M1[1]
@@ -696,8 +683,6 @@ logvvec.mpd = currentRes$extra$parameters$log_surveyvarL
 mu6.mpd = currentRes$extra$parameters$Sfullest    # comm mu
 delta6.mpd = currentRes$extra$parameters$SfullDelta
 logv6.mpd = currentRes$extra$parameters$log_varLest
-
-
 
 # From Rowan's extra function, to give the priors, not all are _prior
 R0.prior = currentRes$extra$priors$R0_prior
@@ -721,6 +706,8 @@ logvvec.prior = currentRes$extra$priors$log_surveyvarL_prior
 mu6.prior = currentRes$extra$priors$p_Sfullest    # comm mu
 delta6.prior = currentRes$extra$priors$p_Sfulldelta
 logv6.prior = currentRes$extra$priors$log_varLest_prior
+
+##### Debugged to here (RH) #####
 
 
 # To make a list of priors to use in plotDensPOPParsPrior().
@@ -768,13 +755,12 @@ priorBoundsList = list()      # panel.curve
     # [1] 0.674526
     # sd(rbeta(100000, 4.574, 2.212))
     # 0.1680018
-  priorDistList[[i]] = function(x) 
-      { dbeta(x, h.prior[5], h.prior[6])
-      }
-  priorBoundsList[[i]] = c( h.prior[2], h.prior[3])
-  i = i+1
-
-    # q1
+	if(length(currentMCMC$P$h)>0 && unique(currentMCMC$P$h)>1) {   # Then estimating h: (RH note: temp. patch above = artificially populated h when h is fixed)
+		priorDistList[[i]] = function(x) { dbeta(x, h.prior[5], h.prior[6]) }
+		priorBoundsList[[i]] = c( h.prior[2], h.prior[3])
+		i = i+1
+	}
+  # q1
   priorDistList[[i]] = function(q)
        { (q*( logqvec.prior[1,3] - logqvec.prior[1,2]))^(-1)
        }
@@ -889,10 +875,6 @@ i = i+1
       { dnorm(x, mean=logv6.prior[5], sd=logv6.prior[6])
       }
   priorBoundsList[[i]]= c(logv6.prior[2],logv6.prior[3])
-
-
-
-
 
 # Moved from above, as now have currentMCMC$U calcs
 # mainMenu() # don't want menu, just choose which:
