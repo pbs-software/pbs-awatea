@@ -4056,7 +4056,8 @@ plotDensPOPparsPrior =
     }
 }
 
-# findTarget.r to do decision tables for moving windows and find
+#findTarget-----------------------------2012-08-14
+#  To derive decision tables for moving windows and find
 #  the times to achieve recovery with given confidence.
 #   Vmat   = matrix of projected B-values (MCMC projections x Year)
 #   yrP    = user-specified projection years
@@ -4074,7 +4075,6 @@ plotDensPOPparsPrior =
 #    retVal="p.hi" gives global object "Ptab", a list of decision
 #     tables where row is the catch option and column is the year
 #     Values are probabilities of acheiving target.
-
 #-----------------------------------------------RH
 findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0.5, target=B0.MCMC,
     conf=0.95, plotit=FALSE, retVal="N") {
@@ -4088,15 +4088,18 @@ findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0
 	if (is.data.frame(target) || is.matrix(target)) {
 		yrM   = yrP - yrG                                                        # moving target years
 		yrM1  = intersect(as.numeric(dimnames(target)[[2]]),yrM)                 # available target years from MCMC
+		if (length(yrM1)==0) {                                                   # projection not long enough for any overlap with 3 generations
+			if (retVal=="N") return(NA)
+			else {p.hi = rep(NA,length(yrP)); names(p.hi)=yrP }; return(p.hi) }
 		yrMr  = range(yrM1)                                                      # range of years to use from MCMC
 		targM = target[,as.character(yrM1)]                                      # target data from MCMC
 		yrM2  = setdiff(yrM,yrM1)                                                # missing target years (can occur before and after the MCMC years)
+#browser(); return()
 		if (length(yrM2)>0) {
 			nrow = dim(target)[1]
 			if (any(yrM2<yrMr[1])) {
 				yrMo  = yrM2[yrM2<yrMr[1]]                                         # years of data older than MCMCs
 				ncol  = length(yrMo)
-# browser(); return()
 				targ0 = matrix(rep(target[,as.character(yrM1[1])],ncol),
 					nrow=nrow, ncol=ncol, dimnames=list(1:nrow,yrMo))               # repeat B0 (first column)
 				targM = cbind(as.data.frame(targ0),targM)                          # moving target
@@ -4116,7 +4119,7 @@ findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0
 	# p.hi can become each row of a decision table (AME checked
 	#  the numbers for 0.4 Bmsy match my existing
 	#  independent calculations). Need to save this for moving window.
-# browser(); return()
+#browser(); return()
 	z.hi = p.hi >= conf                                                         # logical: is p.hi >= confidence limit specified
 
 	if (all(z.hi))       yrT = yr0                      # all p.hi exceed the confidence level
@@ -4143,8 +4146,8 @@ findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0
 	}
 #browser(); return()
 	#return(N)
-	eval(parse(text=paste("return(",retVal,")",sep="")))
-}
+	eval(parse(text=paste("return(",retVal,")",sep=""))) }
+#---------------------------------------findTarget
 
 
 # importProjRec - importing the projected recruitments (actually

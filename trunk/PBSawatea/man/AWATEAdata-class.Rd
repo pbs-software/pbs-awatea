@@ -25,13 +25,12 @@
   \code{dat = new("AWATEAdata", txtnam=character(), input=character(), vlst=list(),} \cr
   \code{      dnam=character(), nvars=numeric(), vdesc=character(), vars=list(), } \cr
   \code{      gcomm=character(), vcomm=character(), resdat=list() , likdat=list(), } \cr
-  \code{      pardat=list(), stddat=list(), cordat=list(), reweight=list()) }
-
+  \code{      pardat=list(), stddat=list(), cordat=list(), evadat=list(), reweight=list()) } \cr
 
   The function \code{readAD} populates the first nine slots of the S4 object by reading in an \code{Awatea} data
   file from the user's current working directory. If \code{Awatea} output files exist (with the same prefix 
-  as the input file and suffixes = \{\code{.res}, \code{.lik}, \code{.par}, \code{.std}, \code{.cor}\}),
-  then slots \code{resdat}, \code{likdat}, \code{pardat}, \code{stddat}, and \code{cordat}, respectively,
+  as the input file and suffixes = \{\code{.res}, \code{.lik}, \code{.par}, \code{.std}, \code{.cor}, \code{.eva}\}),
+  then slots \code{resdat}, \code{likdat}, \code{pardat}, \code{stddat}, \code{cordat}, and \code{evadat}, respectively,
   will also be populated.
 }
 \section{Slots}{
@@ -50,6 +49,7 @@
     \item{\code{pardat}}{list of parameter values from the file \code{Awatea.par} after calling \code{importPar}.}
     \item{\code{stddat}}{list of estimated parameter values from the file \code{Awatea.std} after calling \code{importStd}.}
     \item{\code{cordat}}{list of correlation objects from the file \code{Awatea.cor} after calling \code{importCor}.}
+    \item{\code{evadat}}{eigenvalues of the Hessian from the file \code{Awatea.eva} after calling \code{importEva}.}
     \item{\code{reweight}}{list of re-weighted abundance and composition data (see \code{\link[PBSawatea]{reweight}} for details).}
   }
 }
@@ -89,6 +89,8 @@
   \code{\link[PBSawatea]{importStd}} for reading in the file \code{Awatea.std}
 
   \code{\link[PBSawatea]{importCor}} for reading in the file \code{Awatea.cor}
+
+  \code{\link[PBSawatea]{importEva}} for reading in the file \code{Awatea.eva}
 
   \code{\link[PBSawatea]{reweight}} for re-weighting abundance and composition data
 

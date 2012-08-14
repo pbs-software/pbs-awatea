@@ -29,6 +29,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"B0.MCMC","B0.mpd","B0refLevels","B0refNames","boxwidth",
 	"cordat","currentMCMC","currentMSY","currentProj","currentRes",
 	"delim",
+	"evadat",
 	"fval",
 	"gfcode","global",
 	"h.mpd",
