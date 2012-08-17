@@ -3,7 +3,12 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-08-14  Rowan
+0.10  2011-08-17  Rowan
+  - Updated functions 'plt.mcmcGraphs' and 'plotSnail' to work more generally. (AME 8/17)
+  - Cleaned and debugged 'run-masterMCMC.Snw' further; still not finished for fixed M & H options. (AME 8/17)
+  - Updated 'panel.curve' in  function 'plotDensPOPparsPrior'. (AME 8/16)
+  - Re-wrote the function that selects and generates prior distributions using 'switch'. (AME 8/15)
+  - Fixed bug in function 'plotVBcatch'. (AME 8/15)
   - Debugged 'run-masterMCMC.Snw' up to prior functions section (AME will take it from there). (RH 8/14)
   - Resolved a minor bug in the function 'findTarget' which crashed when number of projection years were too short to calculate generation-time reference criteria. (8/14)
   - Added new function 'importEva' to import the Hessian eiganvalues from an Awatea file, usually called 'Awatea.eva'. (RH 8/10)

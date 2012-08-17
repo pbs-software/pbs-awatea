@@ -891,7 +891,8 @@ plotVBcatch = function(obj, currentRes1 = currentRes,
   # yLegPos = yLeg*diff(yLim)+yLim[1]
 
   plt.qB( result1,xLim=xLim,yLim=yLim, xyType=xyType )
-  points(obj$B$Year, currentRes1$B$Y, type="h", lwd=3)   # catch
+  points(currentRes1$B$Year, currentRes1$B$Y, type="h", lwd=3)   # catch
+
   # points(obj$B$Year, currentRes1$B$VB, type="p")
                           # was vuln biom MPD
   # text( xLab, yLab, textLab, pos=4, offset=0)   # Taking out
@@ -2272,197 +2273,146 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
 }
 
 
+#plt.mcmcGraphs-------------------------2012-08-17
+#  AME editing (with *AME*) to give a policy option 
+#  to be specified in run-master.Snw. 16th August 2012.
+#-------------------------------------------AME/AM
+plt.mcmcGraphs =
+function (mcmcObj, projObj, save = FALSE, 
+          ylim.recruitsMCMC = NULL, ylim.exploitMCMC = NULL,
+          ylim.VBcatch = NULL, ylim.BVBnorm = NULL,
+          xlim.snail = NULL, ylim.snail = NULL,
+          plotPolicies = names(projObj$Y[1:6]), # *AME*
+          onePolicy=names(projObj$Y[2]))        # *AME*
 
-
-plt.mcmcGraphs <- function( mcmcObj, projObj, save=FALSE, xlimrec=c(0,200000) )   # xlimrec is range for recruitments
-{
-  # Does all MCMC graphs below.  If save=TRUE then PNG file saved.
-  # closeAllWin(). Note that I've used currentMCMC below,not mcmcObj
-
-  # Plot the biomass quantiles and projections by policy.
-  # plt.quantBio( mcmcObj$B,projObj$B, policy=policy, xyType=rpType,
-  #  userPrompt=FALSE, save=TRUE )
-
-  # recruitment, was in plt.mpdGraphs for popScape2.r
-  postscript("recruitsMCMC.eps", height = 5, width = 6.2,
-              horizontal=FALSE,  paper="special")
-    plotRmcmcPOP(currentMCMC$R, yLim = c(0, 130000))
-                          # yLim fixed for YMR11 submission
-  dev.off()
-
-  # exploitation rate
-  postscript("exploitMCMC.eps", height = 5, width = 6.2,
-              horizontal=FALSE,  paper="special")
-    plotRmcmcPOP(currentMCMC$U, yLab="Exploitation rate",
-                 yLim=c(0, 0.16), yaxis.by=0.01)
-                          # yLim fixed for YMR11 submission
-  dev.off()
-
-
-  
-  # Plot the posterior densities of the biomass (selected years).
-  #  Commenting this out and doing every year in three postscript
-  #   files, as for recruitment (which is discussed below in a bit
-  #   more detail as I did that first)
-
-  postscript("pdfBiomass%d.eps", height = 7, width = 6.2,
-              horizontal=FALSE,  paper="special", onefile=FALSE)
-                        # from levy12loglog.r, onefile makes 3 files
-  plotDensPOP(currentMCMC$B/1000, xlab="Female spawning biomass, Bt (1000 t)",
-              between = list(x=0.2, y=0.2), ylab="Density",
-              lwd.density=2, same.limits=TRUE, layout=c(4,6),
-              lty.outer=2)
-     # AME: between is gaps between panels, same.limits makes
-     #  axes same for all panels , layout=c(4,6)
-  dev.off()
-
-  # AME: default was to do every 5 years, but that misses big
-  #  recruitment years. So doing all years, has to span over 3
-  #  pages, and edited the plotDens function (to be plotDensPOP)
-  #  to close up whitespace and not label every x axis. Original
-  #  versions in popScape.r, but deleted here.
-  #    savePlot( "pdfRecruitment1",type="png" )
-  #AME Going to save automatically all three figures to cover all
-  #  years, as can do in two lines,
-  #  so not saving from the screen:
-  # gave up with .png - resolution poor when change sizes, have to
-  #  change dpi etc. but confusing. did have:
-  #  ...height = 600)  # default is 480,
-  # %d increments filename
-  # xlimrec = c(0, 200000)
-  postscript("pdfRecruitment%d.eps", height = 7, width = 6.2,
-     horizontal=FALSE,  paper="special", onefile=FALSE)
-                        # from levy12loglog.r, onefile makes 3 files
-  plotDensPOP(currentMCMC$R/1000, xlab="Recruitment, Rt (1000s)",
-              between = list(x=0.2, y=0.2), ylab="Density",
-              lwd.density=2, same.limits=TRUE, layout=c(4,6),
-              lty.median=2, lty.outer=2)    # xlim=xlimrec/1000,
-     # AME: between is gaps between panels, same.limits makes
-     #  axes same for all panels , layout=c(4,6), lty for lines
-  dev.off()
-  
-  # Plot the posterior densities of active parameters.
-  # idx <- apply( mcmcObj$P,2,allEqual )   # not sure what this does
-  postscript("pdfParameters.eps", 
-     horizontal=FALSE,  paper="special", height = 7, width = 6.2)
-  # scapeMCMC::plotDens( mcmcObj$P[,!idx], lty.outer=2 )
-  plotDensPOPparsPrior( mcmcObj$P, lty.outer=2,
-                       between = list(x=0.3, y=0.2) )
-  dev.off()
-
-
-  # Dummy selectivity plot, as not calculated yet:
-    # exploitation rate
-  postscript("selectivityMCMC.eps", height = 5, width = 6.2,
-              horizontal=FALSE,  paper="special")
-    plot(1:10, main="This will be selectivities from MCMC")
-  dev.off()
-
-  
-  # AME: converge plots taken out, as now have running medians and
-  #  quantiles on traces plots:
-
-  postscript("traceRecruits.eps", 
-     horizontal=FALSE,  paper="special", height = 7, width = 6.2)
-  plotTracePOP( mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000,
-    axes=TRUE,
-    between = list(x=0.2, y=0.2),  xlab = "Sample",
-    ylab="Recruitment, Rt (1000s)" )
-       #AME - between, xlab, ylab, plotTracePOP to add MPD
-       #   and running median and take off overall median and lowess
-  dev.off()
-
-  postscript("traceBiomass.eps", 
-     horizontal=FALSE,  paper="special", height = 7, width = 6.2)  
-  plotTracePOP( mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000,
-             axes=TRUE,
-    between = list(x=0.2, y=0.2),  xlab = "Sample",
-    ylab="Female spawning biomass, Bt (1000 t)" )
-  dev.off()
-
-  postscript("traceParams.eps", 
-     horizontal=FALSE,  paper="special", height = 7, width = 6.2)  
-  idx <- apply( mcmcObj$P,2,allEqual )   # checks if repeated.
-  plotTracePOP( mcmcObj$P[,!idx],axes=TRUE,
-    between = list(x=0.2, y=0.2),  xlab = "Sample",
-    ylab="Parameter estimate" )
-                #AME - between, xlab, ylab, plotTracePOP to add MPD
-  dev.off()
-
-
-  # Rowan's plot - divides chain (after 1st 100) into 3x300
-  postscript("splitChain.eps", 
-     horizontal=FALSE,  paper="special", height = 7, width = 6.2)  
-  plotChains(mcmc=currentMCMC$P,axes=TRUE,between=list(x=0.15,y=0.2),
-     col.trace=c("green","red","blue"),xlab="Sample",
-     ylab="Cumulative Frequency", pdisc=0.001)
-                     # pdisc = prop to discard
-  dev.off()
-  
-  postscript("VBcatch.eps", 
-     horizontal=FALSE,  paper="special", height = 5, width = 6.2)  
-  plotVBcatch( currentMCMC$VB, currentRes, yLim = c(0, 220000))
-                          # yLim fixed for YMR11 submission
-  dev.off()
-
-  # B and VB normalised to B0 and VB0
-  postscript("BVBnorm.eps",
-     horizontal=FALSE,  paper="special", height = 5, width = 6.2)  
-  plotBVBnorm(currentMCMC, xLeg=0.02, yLeg=0.2, yLim = c(0, 1.1))
-                          # yLim fixed for YMR11 submission  
-  dev.off()
-
-  
-  # Projection plot (from popScapeRuns2.r)
-  options(scipen=10)     # to force not-scientific notation .
-  postscript("Bproj.eps", 
-     horizontal=FALSE,  paper="special", height = 7, width = 6.2)
-  plt.quantBio(currentMCMC$B, currentProj$B, xyType="quantBox",
-              policy=c("0", "500", "1000", "1500", "2000", "2500"),
-              save=FALSE) # , yLim=c(0, 50000))
-            # save needed to stop .png. No option for picking years.
-  dev.off()
-
-  # Recruitment projections plot
-  postscript("Rproj.eps", 
-     horizontal=FALSE,  paper="special", height = 7, width = 6.2)
-  plt.quantBio(currentMCMC$R, currentProj$R, xyType="quantBox",
-              policy=c("0", "500", "1000", "1500", "2000", "2500"),
-              save=FALSE, yaxis.lab="Recruitment (1000s)") # , yLim=c(0, 50000))
-            # save needed to stop .png. No option for picking years.
-  dev.off()
-
-  # Recruitment just for policy 1500 (for YMR SAR)
-  postscript("Rproj1500.eps", 
-     horizontal=FALSE,  paper="special", height = 5, width = 6.2)
-    plt.quantBioBB0(currentMCMC$R, currentProj$R, xyType="quantBox",
-             policy=c("1500"), save=FALSE, xaxis.by=10,
-             yaxis.lab="Recruitment (1000s)")
-  dev.off()
-  
-  postscript("snail.eps", height = 5, width = 6.2,
-              horizontal=FALSE,  paper="special")
-  plotSnail(currentMCMC$BoverBmsy, currentMCMC$UoverUmsy,p=c(0.1,0.9),
-            xLim=c(0, 4.6), yLim = c(0,1.4))     # Values to use for YMR11 Fix and Est M
-  dev.off()
-
-  postscript("pairs1.eps", height = 7, width = 7,
-              horizontal=FALSE,  paper="special")
-  pairs(currentMCMC$P[,1:6], pch=20, cex=0.2, gap=0)
-  dev.off()
-
-  postscript("pairs2.eps", height = 7, width = 7,
-              horizontal=FALSE,  paper="special")
-  pairs(currentMCMC$P[,7:12], pch=20, cex=0.2, gap=0)
-  dev.off()
-
-  postscript("pairs3.eps", height = 7, width = 7,
-              horizontal=FALSE,  paper="special")
-  pairs(currentMCMC$P[,13:dim(currentMCMC$P)[2]], pch=20, cex=0.2,
-        gap=0)
-  dev.off()             # up to 18 for estM, 16 for fixM, for YMR11.
-
+          # plotPolicies is 6 policies projections to plot *AME*
+          # onePolicy is one to use for some figures *AME*
+          #*AME*xlim.pdfrec was =c(0, 200000). Put options for others
+          #  that will be useful if want to scale two model runs
+          #  to the same ylim. If NULL then fits ylim automatically.
+  {     
+    postscript("recruitsMCMC.eps", height = 5, width = 6.2, horizontal = FALSE, 
+        paper = "special")
+    plotRmcmcPOP(currentMCMC$R, yLim = ylim.recruitsMCMC) # *AME*
+    dev.off()
+    postscript("exploitMCMC.eps", height = 5, width = 6.2, horizontal = FALSE, 
+        paper = "special")
+    plotRmcmcPOP(currentMCMC$U, yLab = "Exploitation rate",
+                 yLim = ylim.exploitMCMC, yaxis.by = 0.01)
+    dev.off()
+    postscript("pdfBiomass%d.eps", height = 7, width = 6.2, horizontal = FALSE, 
+        paper = "special", onefile = FALSE)
+    plotDensPOP(currentMCMC$B/1000, xlab = "Female spawning biomass, Bt (1000 t)", 
+        between = list(x = 0.2, y = 0.2), ylab = "Density", lwd.density = 2, 
+        same.limits = TRUE, layout = c(4, 6), lty.outer = 2)
+    dev.off()
+    postscript("pdfRecruitment%d.eps", height = 7, width = 6.2, 
+        horizontal = FALSE, paper = "special", onefile = FALSE)
+    plotDensPOP(currentMCMC$R/1000, xlab = "Recruitment, Rt (1000s)", 
+        between = list(x = 0.2, y = 0.2), ylab = "Density", lwd.density = 2, 
+        same.limits = TRUE, layout = c(4, 6), lty.median = 2, 
+        lty.outer = 2)
+    dev.off()
+    postscript("pdfParameters.eps", horizontal = FALSE, paper = "special", 
+        height = 7, width = 6.2)
+    plotDensPOPparsPrior(mcmcObj$P, lty.outer = 2, between = list(x = 0.3, 
+        y = 0.2))
+    dev.off()
+    postscript("selectivityMCMC.eps", height = 5, width = 6.2, 
+        horizontal = FALSE, paper = "special")
+    plot(1:10, main = "This will be selectivities from MCMC")
+    dev.off()
+    postscript("traceRecruits.eps", horizontal = FALSE, paper = "special", 
+        height = 7, width = 6.2)
+    plotTracePOP(mcmcObj$R[, getYrIdx(names(mcmcObj$R))]/1000, 
+        axes = TRUE, between = list(x = 0.2, y = 0.2), xlab = "Sample", 
+        ylab = "Recruitment, Rt (1000s)")
+    dev.off()
+    postscript("traceBiomass.eps", horizontal = FALSE, paper = "special", 
+        height = 7, width = 6.2)
+    plotTracePOP(mcmcObj$B[, getYrIdx(names(mcmcObj$B))]/1000, 
+        axes = TRUE, between = list(x = 0.2, y = 0.2), xlab = "Sample", 
+        ylab = "Female spawning biomass, Bt (1000 t)")
+    dev.off()
+    postscript("traceParams.eps", horizontal = FALSE, paper = "special", 
+        height = 7, width = 6.2)
+    idx <- apply(mcmcObj$P, 2, allEqual)
+    plotTracePOP(mcmcObj$P[, !idx], axes = TRUE, between = list(x = 0.2, 
+        y = 0.2), xlab = "Sample", ylab = "Parameter estimate")
+    dev.off()
+    postscript("splitChain.eps", horizontal = FALSE, paper = "special", 
+        height = 7, width = 6.2)
+    plotChains(mcmc = currentMCMC$P, axes = TRUE, between = list(x = 0.15, 
+        y = 0.2), col.trace = c("green", "red", "blue"), xlab = "Sample", 
+        ylab = "Cumulative Frequency", pdisc = 0.001)
+    dev.off()
+    postscript("VBcatch.eps", horizontal = FALSE, paper = "special", 
+        height = 5, width = 6.2)
+    plotVBcatch(currentMCMC$VB, currentRes, yLim = ylim.VBcatch)
+    dev.off()
+    postscript("BVBnorm.eps", horizontal = FALSE, paper = "special", 
+        height = 5, width = 6.2)
+    plotBVBnorm(currentMCMC, xLeg = 0.02, yLeg = 0.2,
+                yLim = ylim.BVBnorm)
+    dev.off()
+    options(scipen = 10)
+    postscript("Bproj.eps", horizontal = FALSE, paper = "special", 
+        height = 7, width = 6.2)
+    plt.quantBio(currentMCMC$B, currentProj$B, xyType = "quantBox", 
+        policy = plotPolicies,    # *AME*
+        save = FALSE)
+    dev.off()
+    postscript("Rproj.eps", horizontal = FALSE, paper = "special", 
+        height = 7, width = 6.2)
+    plt.quantBio(currentMCMC$R, currentProj$R, xyType = "quantBox", 
+        policy = plotPolicies,    # *AME*
+        save = FALSE, yaxis.lab = "Recruitment (1000s)")
+    dev.off()
+    postscript("RprojOnePolicy.eps", horizontal = FALSE, paper = "special",                             # *AME* (filename)
+        height = 5, width = 6.2)
+    plt.quantBioBB0(currentMCMC$R, currentProj$R, xyType = "quantBox", 
+        policy = onePolicy, save = FALSE, xaxis.by = 10, yaxis.lab = "Recruitment (1000s)")            # *AME* (onePolicy)
+    dev.off()
+    postscript("snail.eps", height = 5, width = 6.2, horizontal = FALSE, 
+        paper = "special")
+    plotSnail(currentMCMC$BoverBmsy, currentMCMC$UoverUmsy, p = c(0.1, 
+        0.9), xLim = xlim.snail, yLim = ylim.snail)
+    dev.off()
+    # Doing 6 on a page:
+    postscript("pairs1.eps", height = 7, width = 7, horizontal = FALSE, 
+        paper = "special")
+    pairs(currentMCMC$P[, 1:6], pch = 20, cex = 0.2, gap = 0)
+    dev.off()
+    if(length(use.Pnames) > 6) {      # = dim(currentMCMC$P)[2]
+    postscript("pairs2.eps", height = 7, width = 7, horizontal = FALSE, 
+        paper = "special")
+    pairs(currentMCMC$P[, 7:min(length(use.Pnames), 12)], pch = 20, cex = 0.2, gap = 0)
+    dev.off()
+    }
+    if(length(use.Pnames) > 12) {
+    postscript("pairs3.eps", height = 7, width = 7, horizontal = FALSE, 
+        paper = "special")
+    pairs(currentMCMC$P[, 13:min(length(use.Pnames), 18)], pch = 20, 
+        cex = 0.2, gap = 0)
+    dev.off()
+    }
+    if(length(use.Pnames) > 18) {
+    postscript("pairs4.eps", height = 7, width = 7, horizontal = FALSE, 
+        paper = "special")
+    pairs(currentMCMC$P[, 19:min(length(use.Pnames), 24)], pch = 20, 
+        cex = 0.2, gap = 0)
+    dev.off()
+    }
+   if(length(use.Pnames) > 24) {
+     postscript("pairs5.eps", height = 7, width = 7, horizontal = FALSE, 
+        paper = "special")
+    pairs(currentMCMC$P[, 25:min(length(use.Pnames), 30)], pch = 20, 
+        cex = 0.2, gap = 0)
+    dev.off()
+   }
+    if(length(use.Pnames) > 30) { stop("Need extra pairs plots as estimating >30 parameters")}
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mcmcGraphs
 
 
 plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
@@ -3918,51 +3868,44 @@ refPointsB0 <- function( mcmcObj=currentMCMC, projObj=currentProj,
   return(refPlist)
 }
 
-
-plotSnail = function(BoverBmsy, UoverUmsy, 
-                  p=c(0.1, 0.9), xLim=NULL, yLim=NULL, Lwd=2)
-                              # Specify xLim yLim to have same
-  {                                   # axes for different runs
-  # took out plt.qB
-  # calculate here as well as in main prog
-  BoverBmsy.med = apply(BoverBmsy, 2, median)
-  UoverUmsy.med = apply(UoverUmsy, 2, median)
-
-  BoverBmsy.med = BoverBmsy.med[-length(BoverBmsy.med)]
-
-  colPal = colorRampPalette(c("grey95", "grey30"))
-                                        #grey90 lighter than 80
-  # colPal = colorRampPalette(c("blue", "red"))
-  n = length(BoverBmsy.med)
-  if(is.null(xLim))            
-     { xLim = c(0, max(c(BoverBmsy.med, quantile(
-        currentMCMC$BoverBmsy[,"2010"], p[2]), 1 ) ) )
-     }
-  if(is.null(yLim))
-     {
-  yLim = c(0, max(c(UoverUmsy.med, quantile(
-      currentMCMC$UoverUmsy[,"2010"], p[2]), 1 ) ) )  # 1 to have line
-     }
-  plot(BoverBmsy.med, UoverUmsy.med, type="l", xlim=xLim,
-       ylim=yLim, xlab=expression(paste(B[t] / B[msy])),
-       ylab=expression(paste(u[t] / u[msy])), col="grey", lwd=Lwd)
-  points(BoverBmsy.med, UoverUmsy.med, type="p", pch=19, col=colPal(n))
-       # cex= (0.5 + (0:(n-1))*(2-0.5)/(n-1))) - expanding cirlces
-  points(BoverBmsy.med[1], UoverUmsy.med[1], pch=19, col="blue")
-  points(BoverBmsy.med["2010"], UoverUmsy.med["2010"], pch=19,
-         col="red")
-  segments(quantile(BoverBmsy[,"2010"], p[1]),
-    UoverUmsy.med["2010"],
-    quantile(BoverBmsy[,"2010"], p[2]),
-    UoverUmsy.med["2010"], col="red") 
-  segments(BoverBmsy.med["2010"],
-    quantile(UoverUmsy[,"2010"], p[1]),
-    BoverBmsy.med["2010"],
-    quantile(UoverUmsy[,"2010"], p[2]), col="red")
-  abline(h=1, col="grey", lwd=Lwd)
-  abline(v=0.4, col="grey", lwd=Lwd)
-  abline(v=0.8, col="grey", lwd=Lwd)
+#plotSnail------------------------------2012-08-17
+# Plot snail-trail plots for MCMC analysis.
+#   AME: replacing "2010" with as.character(currYear - 1)
+#----------------------------------------------AME
+plotSnail = function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lwd=2)
+{
+    BoverBmsy.med = apply(BoverBmsy, 2, median)
+    UoverUmsy.med = apply(UoverUmsy, 2, median)
+    BoverBmsy.med = BoverBmsy.med[-length(BoverBmsy.med)]
+    colPal = colorRampPalette(c("grey95", "grey30"))
+    n = length(BoverBmsy.med)
+    if (is.null(xLim)) {
+        xLim = c(0, max(c(BoverBmsy.med, quantile(currentMCMC$BoverBmsy[, 
+            as.character(currYear - 1)], p[2]), 1)))
+    }
+    if (is.null(yLim)) {
+        yLim = c(0, max(c(UoverUmsy.med, quantile(currentMCMC$UoverUmsy[, 
+            as.character(currYear - 1)], p[2]), 1)))
+    }
+    plot(BoverBmsy.med, UoverUmsy.med, type = "l", xlim = xLim, 
+        ylim = yLim, xlab = expression(paste(B[t]/B[msy])), ylab = expression(paste(u[t]/u[msy])), 
+        col = "grey", lwd = Lwd)
+    points(BoverBmsy.med, UoverUmsy.med, type = "p", pch = 19, 
+        col = colPal(n))
+    points(BoverBmsy.med[1], UoverUmsy.med[1], pch = 19, col = "blue")
+    points(BoverBmsy.med[as.character(currYear - 1)], UoverUmsy.med[as.character(currYear - 1)], pch = 19, 
+        col = "red")
+    segments(quantile(BoverBmsy[, as.character(currYear - 1)], p[1]), UoverUmsy.med[as.character(currYear - 1)], 
+        quantile(BoverBmsy[, as.character(currYear - 1)], p[2]), UoverUmsy.med[as.character(currYear - 1)], 
+        col = "red")
+    segments(BoverBmsy.med[as.character(currYear - 1)], quantile(UoverUmsy[, as.character(currYear - 1)], 
+        p[1]), BoverBmsy.med[as.character(currYear - 1)], quantile(UoverUmsy[, as.character(currYear - 1)], 
+        p[2]), col = "red")
+    abline(h = 1, col = "grey", lwd = Lwd)
+    abline(v = 0.4, col = "grey", lwd = Lwd)
+    abline(v = 0.8, col = "grey", lwd = Lwd)
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotSnail
 
 # Adding the prior automatically.
 plotDensPOPparsPrior =
@@ -3996,14 +3939,16 @@ plotDensPOPparsPrior =
             pch=1, col="black") #AME
         # panel.curve(priorDistList[[panel.number()]], min=-1, current.panel.limits()$xlim[1], current.panel.limits()$xlim[2], col="blue")
         # panel.curve(priorDistList[[1]], col="blue")
-        panel.curve(priorDistList[[panel.number()]](x),
-          from = max( priorBoundsList[[panel.number()]][1],
-            current.panel.limits()$xlim[1] ),
-          to = min( priorBoundsList[[panel.number()]][2],
-            current.panel.limits()$xlim[2] ),
-          col="blue")    # need the bounds, from max of lower bound
-                         #  and panel xlim[1], to min of upper bound
-                         #  and panel xlim[2]
+        #   panel.curve(priorDistList[[panel.number()]](x), from = max(priorBoundsList[[panel.number()]][1],
+        #      current.panel.limits()$xlim[1]), to = min(priorBoundsList[[panel.number()]][2], 
+        #      current.panel.limits()$xlim[2]), col = "blue") # need the bounds, from max of lower bound and panel xlim[1], to min of upper bound and panel xlim[2]
+        panel.curve(priorDistList[[panel.number()]]
+            (x, priorInput[panel.number(), ] ),
+            from = max(priorInput[panel.number(), 2] , 
+              current.panel.limits()$xlim[1]),
+            to = min(priorInput[panel.number(), 3],
+              current.panel.limits()$xlim[2]),
+            col = "blue")
     }
     relation <- if (same.limits) 
         "same"

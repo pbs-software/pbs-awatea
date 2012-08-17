@@ -10,18 +10,30 @@
 }
 \usage{
 plt.mpdGraphs(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
-plt.mcmcGraphs(mcmcObj, projObj, save=FALSE, xlimrec=c(0, 2e+05))
+plt.mcmcGraphs(mcmcObj, projObj, save=FALSE, 
+          ylim.recruitsMCMC = NULL, ylim.exploitMCMC = NULL,
+          ylim.VBcatch = NULL, ylim.BVBnorm = NULL,
+          xlim.snail = NULL, ylim.snail = NULL,
+          plotPolicies = names(projObj$Y[1:6]),
+          onePolicy=names(projObj$Y[2]))
 }
 \arguments{
-  \item{obj}{an Awatea results object (\emph{e.g.}, \code{currentRes}).}
-  \item{mcmcObj}{an Awatea MCMC object (\emph{e.g.}, \code{currentMCMC}).}
-  \item{projObj}{an Awatea projected biomass object (\emph{e.g.}, \code{currentProj}).}
+  \item{obj}{an Awatea results object (\emph{e.g.}, \code{currentRes})}
+  \item{mcmcObj}{an Awatea MCMC object (\emph{e.g.}, \code{currentMCMC})}
+  \item{projObj}{an Awatea projected biomass object (\emph{e.g.}, \code{currentProj})}
   \item{save}{\bold{not used}}
-  \item{ssnames}{survey series names for figure labelling and image creation.}
-  \item{xlimrec}{range for recruitments (\bold{not used}).}
+  \item{ssnames}{survey series names for figure labelling and image creation}
+  \item{ylim.recruitsMCMC}{y-limits for the recruitsMCMC plot}
+  \item{ylim.exploitMCMC}{y-limits for the recruitsMCMC plot}
+  \item{ylim.VBcatch}{y-limits for the VBcatch plot}
+  \item{ylim.BVBnorm}{y-limits for the BVBnorm plot}
+  \item{xlim.snail}{x-limits for the snail-trail plot}
+  \item{ylim.snail}{y-limits for the snail-trail plot}
+  \item{plotPolicies}{six-policies projections to plot}
+  \item{onePolicy}{the one policy from the above six to use for some figures}
 }
 \details{
-  Creates a whole heap o postscript files.
+  Creates a whole heap o' postscript files.
 }
 \value{
   \bold{plt.mpdGraphs} creates the following postscript files: \cr
@@ -57,10 +69,9 @@ plt.mcmcGraphs(mcmcObj, projObj, save=FALSE, xlimrec=c(0, 2e+05))
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \note{
-  The function \code{plt.mpdGraphs} needs some cleaning up. 
-  For example, there appears to be extensive reliance on the object 
-  \code{currentRes} whereas the function should be using \code{obj},
-  which is the actual results object within the function.
+  The function \code{plt.mpdGraphs} was recently cleaned up by AME. 
+  Be wary not to use \code{currentRes} (globally available when the function 
+  should be using \code{obj}, which is the results object passed to the function.
 
   The same is true for \code{plt.mcmcGraphs} where the global objects 
   \code{currentMCMC} and \code{currentProj} are use within the function
