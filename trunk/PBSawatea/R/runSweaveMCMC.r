@@ -1,4 +1,4 @@
-#runSweave------------------------------2012-07-18
+#runSweave------------------------------2012-08-15
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
@@ -55,9 +55,10 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	data(gfcode,package="PBSawatea")
 	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
 
-	if (!estM){
-		tfile = gsub("\"M_1\",","",tfile)
-		tfile = gsub("\"M_2\",","",tfile) }
+# Smarter Sweave will now deal with non-estimated parameters
+#	if (!estM){
+#		tfile = gsub("\"M_1\",","",tfile)
+#		tfile = gsub("\"M_2\",","",tfile) }
 	if (!cpue) {
 		rmcpue = sapply(c("CPUEser","CPUEfit"),function(x,y){
 			x=paste("ymrfig\\{",x,sep="")
