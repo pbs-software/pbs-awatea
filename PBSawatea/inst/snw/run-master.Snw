@@ -190,22 +190,16 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 
 \noindent {\tt Run05}: Same as {\tt Run04} with changes: (1) log init devs changed from phase 3 to phase 2. (2) Tried changing 'Survey catch at age likelihood type' survey1 to '0' (from 12), with dummy set of catch-at-age data for survey1 (this gives the same par and MPD estimates but throws the indexing off for catch-at-age fits; therefore reverted to one catch-at-age series with no dummy). (3) Updated the WCVI synoptic survey biomass estimates to reflect some minor changes in all of them, except for 2010 survey which has changed a lot. \newline
 
+
 \noindent {\tt Run06}: Upon the advice of the POP working group (meeting 2012-08-01) the age composition was shortened to 30 age bins, where 30 acts as a plus class. Also in this run, a third survey series (GB Reed: 1967-70) was added. Note that Awatea currently has an indexing bug in the output routine regarding survey (and possibly commercial) catch-at-age fits. Therefore, the last survey (WCVI Synoptic) is labelled the first (and survey 2 = NMFS Triennial, survey 3 = GB Reed). \newline
 
-\noindent {\tt Run07}: Same as {\tt Run06} except for placing priors on natural mortality and selectivity. M is fixed to the mean of the prior. \newline
+\noindent {\tt Run07}: Same as {\tt Run06} except for placing priors on natural mortality and selectivity. $M_1$ and $M_2$ are fixed to the mean of the prior, steepness $h$ is fixed.  \newline
 
-\noindent {\tt Run08}: Same as {\tt Run07} except M is estimated. \newline
+\noindent {\tt Run08}: Same as {\tt Run07} except $M_1, M_2$ and $h$ are estimated. \newline
+
 
 % **NOT DONE YET: Use priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors, but in the input files they were set as uniforms. So not sure which we are going to use.
 
-
-% \section{Importing Awatea output into R}
-
-% Have to check whether the standard deviation of standardised residuals that get output below are the same as SDNRs that get used for reweighting.
-
-% <<importADMBoutput, results=hide, echo=FALSE>>=
-% # .getrep.andy(model.name)    # compiles the list PBSfish from .rep
-% @ 
 
 
 <<frompopscape, results=hide, echo=FALSE>>=
@@ -235,15 +229,16 @@ trellis.device(device="postscript", color=TRUE)   # for colour .eps
 # currentRes <- importCol2("../results.dat", Dev=T, CPUE=T,
 #                               Survey=T, CLc=T, CLs=T, CAs=T, CAc=T)
 
-#source("C:/awatea/POP12/POP3CD/importParOnly.r")
-                              # ******take out once importPar 
-                              #  is in package*****
 
 setwd(fig.dir) 
-#currentRes <- importCol2(paste("../", model.name, ".res", sep=""), 
-currentRes = importRes(paste(run.dir,"/", model.name, ".res", sep=""), 
+
+# Had been using importCol2, but Rowan updates importRes in the
+#  package so switch to that. CSDiff on the functions gives only
+#  minor modifications, and summary of outputs is the same.
+currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
              Dev=TRUE, CPUE=TRUE, Survey=TRUE, 
              CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
+
 currentPar = importPar(paste(run.dir,"/", model.name, ".par", sep=""))
 # Assign a generic title for use in some plots.
 mainTitle <- "@sppname"
@@ -252,77 +247,26 @@ mainTitle <- "@sppname"
 minCpueYr <- 1940
 #ACH: I'm not sure exactly what this is for but I set it to the start year
 
-# Get the commercial and survey index series (RH)
+
+# Get the commercial and survey index series
 Cser=unique(currentRes$CPUE$Series);   NCser=length(Cser)
+# There has to be a dummy CPUE series in the input, but the 
+#  likelihood switch says whether it is being fitted. Seems
+#  that the calculated likelihood is 0 if not fitted:
+if(currentRes$extra$likelihoods$CPUE == 0) { NCser = 0 }
+if(NCser > 1) stop("priorInput construction assumes one CPUE 
+  series so needs updating in run-masterMCMC.Snw")
+
 Sser=unique(currentRes$Survey$Series); NSser=length(Sser)
 
-# Get the commercial and survey age series (RH)
+# Get the commercial and survey age series
+# These might also need fixing if there are dummy data that
+#  aren't being fitted.
 CAser=unique(currentRes$CAc$Series);   NCAser=length(CAser)
 SAser=unique(currentRes$CAs$Series);   NSAser=length(SAser)
 
-# Set the policy list for projection plots here.
-#policy <- c( "0","400","800","1200","1600","2000" )
-# Don't think I used for POP
-# policy <- c( "0","100","200","300","400","500","600","700",
-#              "800","900","1000","1100","1200" )
-
-# Set the reference years and functions for performance measures.
-# refs <- list(
-#          refYrs=matrix( c( 1966,2005, 1971,1980, 1985,1985, 2007,2007 ),
-#            ncol=2, byrow=T,
-#            dimnames=list(c("PM1","PM2","PM3","PM4"),c("t1","t2")) ),
-#          funVec=c( "min","mean","mean","mean" )
-#        )
-
-# AME loading in automatically the MCMC and projection file, to
-#  save having to do the menus (good for debugging, but presumably
-#  will give error if file not there, so need to remove for non-MCMC)
-
-# Awatea MCMC.
-# Not doing yet for YMR as not running MCMC yet.
-# currentMCMC <- importMCMC( dir=".", quiet=FALSE )
-# assign( "currentMCMC", currentMCMC, pos=1 )
-# importMCMC (a scape function) seems to get years wrong on the recruitment, see popScape2.r for details, here is the fix (commented out 
-#  for now)
-# names(currentMCMC$R) = as.integer(names(currentMCMC$R)) + 1
-                                        #currentRes$B$R seems one off
-# Also change names of estimated parameters to those matching my
-#  write up, and change to the same order. See POPscape2.r .
-# new.Pnames = c("R_0", "h", "M_1", "M_2", "mu_4", "Delta_4", "log v_4L", "log q_1", "log q_2", "log q_3", "mu_1", "mu_2", "Delta_1", "Delta_2", "log v_1L", "log v_2L")
-# assess8 had to take out mu_3, Delta_3, log_v3L as not estimating sel for surv
-# Realised that v_gL, g=1..4 etc are NOT actually logged, even though
-#  the Awatea output has log in it's name.
-
-# names(currentMCMC$P) = new.Pnames
-# currentMCMC$P = currentMCMC$P[, c( "R_0",  "M_1", "M_2", "h",
-#  "log q_1", "log q_2", "log q_3",
-#  "mu_1", "mu_2", "mu_4",
-#  "Delta_1", "Delta_2", "Delta_4",
-#  "log v_1L", "log v_2L", "log v_4L")]
-  # re-order to match Paul's results table 3
-# Now going to use q_1, q_2, q_3, not log q_1 etc.
-#currentMCMC$P[,"log q_1"] = exp(currentMCMC$P[,"log q_1"])
-#currentMCMC$P[,"log q_2"] = exp(currentMCMC$P[,"log q_2"])
-#currentMCMC$P[,"log q_3"] = exp(currentMCMC$P[,"log q_3"])
-
-#names(currentMCMC$P)[names(currentMCMC$P) == "log q_1"] = "q_1"
-#names(currentMCMC$P)[names(currentMCMC$P) == "log q_2"] = "q_2"
-#names(currentMCMC$P)[names(currentMCMC$P) == "log q_3"] = "q_3"
-
-# Also have to import vulnerable biomass from vulnBiom.pst, as it's
-#  not done in importMCMC. Can just do as a data table. Has columns
-#  representing years, and each of 1000 rows is an MCMC sample. Same
-#  size as currentMCMC$B. It is
-#  calculated as denominator of (D.11) in POP model appendix.
-
-# vbMCMC = read.table("vulnBiom.pst", header=TRUE)
-# names(vbMCMC) = names(currentMCMC$B)      # to make them simply years
-# currentMCMC[["VB"]] = vbMCMC
-       # Add to currentMCMC so that it gets called into functions.
-# Awatea projection.
-# currentProj <- importProj( dir=".", quiet=FALSE )
-# assign( "currentProj", currentProj, pos=1 )
-
+Ncomm = max(NCser,NCAser) # number of commercial series w/ data/ages
+Nsurv = max(NSser,NSAser) # number of survey series with data/ages
 
 # This was for saving to an .RData file to load into 
 #  ../../../POPdeterminR/POPdeterminR.r   to run deterministic model.
@@ -355,11 +299,11 @@ Rt = currentRes$B$R[-length(currentRes$B$R)]
 Nats.mpd = currentRes$N
 ut.mpd = currentRes$B$U[-length(currentRes$B$U)]  
                                   # remove final NA for 2011
+if(currentRes$extra$priors$Rinit_prior[1] > 0 & currentRes$extra$priors$Rinit_prior[7] != 1) stop("Not starting from unfished equilibrium, so need to fix B0 values")
 Bt.mpd = currentRes$B$SB
-B0.mpd = 12689.3           # Virgin_Spawning_Biomass from 05.01.res
-                         # was  Bt.mpd[1] - check in other programs
-                         # **** NEED TO HARDWIRE THAT ****
-
+B0.mpd = Bt.mpd[1]    # = currentRes$extra$biomass$
+                      #    Virgin_Spawning_Biomass  Change if get
+                      #    above error message
 Vt.mpd = currentRes$B$V
                        # 05.01.res: Virgin_Vulnerable_Biomass= 22287
 
@@ -463,10 +407,9 @@ logvC.prior = currentRes$extra$priors$log_varLest_prior
 # calls function (defined in ymrScape.r) that does most of the plots
 plt.mpdGraphs( obj=currentRes, save=TRUE, ssnames=c("@surveys") )
              #some now more correctly use MCMC results
-plt.idx( currentRes$Survey,main="Survey Indices") # wasn't called 
+plt.idx( currentRes$Survey,main="Survey Indices",ssnames=c("@surveys")) # wasn't called 
 #  in plt.mpdGraphs. Doing it here spits out SD of standardised 
 #  residuals also. May be useful for iterative reweighting?
-# plt.mcmcGraphs( currentMCMC, currentProj, save=TRUE )
 # close.allWin()
 
 
@@ -549,9 +492,9 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 \hline 
 \multicolumn{5}{l}{{\bf ${\bf R_0}$, R0 (recruitment in virgin condition), R0}} & \\
 \Sexpr{ptab(R0.prior)} & \Sexpr{R0.mpd} \\
-\multicolumn{5}{l}{{\bf $M_1$, M (natural mortality row 1), M1 row 1}} & \\
+\multicolumn{5}{l}{{\bf $M_s (s=1,2)$, M (natural mortality), M1}} & \\
 \Sexpr{ptab(M1.prior)} & \Sexpr{M1.mpd} \\
-\multicolumn{5}{l}{{\bf $M_2$, M (natural mortality row 2), M1 row 2}} & \\
+% \multicolumn{5}{l}{{\bf $M_2$, M (natural mortality row 2), M1 row 2}} & \\
 \Sexpr{ptab(M2.prior)} & \Sexpr{M2.mpd} \\
 \multicolumn{5}{l}{{\bf $h$,  h (steepness of spawner-recruit curve), h}} & \\
 \Sexpr{ptab(h.prior)} & \Sexpr{h.mpd} \\
@@ -605,35 +548,37 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 \multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
 Phase & Range & Prior & Parameters & Initial & MPD \\
 \hline 
-\multicolumn{6}{l}{\bf Survey catchabilities, $g=1,2,...$:} \\
+\multicolumn{6}{l}{\bf Survey catchabilities, $g=1,...,\Sexpr{Nsurv}$:} \\
 \multicolumn{5}{l}{\bf $\log q_g$, Log q survey (row g), log\_qsurvey (row g)} & \\
 %=======The following line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(logqvec.prior[1,])} & \Sexpr{log(qvec.mpd[1])} \\
 
-\multicolumn{6}{l}{\bf CPUE parameters:} \\
+\multicolumn{6}{l}{\bf CPUE catchability, $g=\Sexpr{Nsurv+1}$:} \\
 \multicolumn{5}{l}{\bf $\log q_{3}$, Log q CPUE, log\_qCPUE} & \\
 \Sexpr{ptab(logqCPUE.prior)} & \Sexpr{log(qCPUE.mpd)} \\
 
-\multicolumn{5}{l}{\bf ???, Log q CPUE error, qCPUEerr\_prior is prior} & \\
-\Sexpr{ptab(logqCPUEerr.prior)} & ??? \\  % currentPar$qCPUEerr.1
-                                  % has length 16 (all 0's for run05)
+% \multicolumn{5}{l}{\bf ???, Log q CPUE error, qCPUEerr\_prior is prior} & \\
+% \Sexpr{ptab(logqCPUEerr.prior)} & ??? \\  % currentPar$qCPUEerr.1
+                                  % has length 16 (all 0 for run05)
 
 % -1	-5	5	0	0	0.6	0
 
 
-\multicolumn{5}{l}{\bf $\log \gamma$, LogBetaCPUE (CPUE POW), log\_BetaCPUE} & \\
-\Sexpr{ptab(logbetaCPUE.prior)} & \Sexpr{log(betaCPUE.mpd)} \\
+% \multicolumn{5}{l}{\bf $\log \gamma$, LogBetaCPUE (CPUE POW), log\_BetaCPUE} & \\
+% \Sexpr{ptab(logbetaCPUE.prior)} & \Sexpr{log(betaCPUE.mpd)} \\
  & \\
-\multicolumn{6}{l}{\bf Selectivities ($g=1,...$, last is commercial):} \\
-\multicolumn{6}{l}{\bf $\mu_g$, Survey L full, (row g), surveySfull (row g)} \\
+\multicolumn{6}{l}{\bf Selectivities ($g=1,...$, last is commercial with details after '/' ):} \\
+\multicolumn{6}{l}{\bf $\mu_g$, Survey L full (row g), surveySfull (row g) / S fullest (commercial), Sfullest} \\
 %=======This line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(muvec.prior[1,])} & \Sexpr{muvec.mpd[1]} \\
 \Sexpr{ptab(muC.prior)} & \Sexpr{muC.mpd} \\
-\multicolumn{6}{l}{\bf $\log v_{gL}$, Survey variance L (row g), log\_surveyvarL (row g)} \\ 
+\multicolumn{6}{l}{\bf $\log v_{gL}$, Survey variance L (row g), log\_surveyvarL (row g) / Log variance of left side}\\
+ & \multicolumn{5}{l}{\bf  of selectivity curve (for both sexes) (commercial), log\_varLest} \\ 
 %=======This line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(logvvec.prior[1,])} & \Sexpr{logvvec.mpd[1]} \\
 \Sexpr{ptab(logvC.prior)} & \Sexpr{logvC.mpd} \\
-\multicolumn{6}{l}{\bf $\Delta_g$, Survey L full delta (row g) surveySfulldeltaest (row g)} \\
+\multicolumn{6}{l}{\bf $\Delta_g$, Survey L full delta (row g) surveySfulldeltaest (row g) / } \\
+ & \multicolumn{5}{l}{\bf S full delta ... (commercial), SfullDelta} \\
 %=======This line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(deltavec.prior[1,])} & \Sexpr{deltavec.mpd[1]} \\
 \Sexpr{ptab(deltaC.prior)} & \Sexpr{deltaC.mpd} \\
@@ -648,7 +593,7 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 
 
 
-% \section{Some of the input data}
+% Making figures, some are in plt.mpdGraphs() .
 
 <<catch, results=hide, echo=FALSE>>=
 # Should redo as a function in scape program, but quicker for now:
@@ -684,13 +629,62 @@ plot(years, Bt.mpd/B0.mpd, ylim=c(0, 1.1*max(Bt.mpd/B0.mpd)), xlab="Year", ylab=
 dev.off()
 @ 
 
+<<CPUEfig, results=hide, echo=FALSE>>=    # Crude for now
+postscript("CPUEfit.eps", horizontal=FALSE, paper="special", height = 7, width = 6)
+zobs = !is.na(currentRes$CPUE$Obs)
+xlim = range(currentRes$CPUE$Year[zobs]); ylim = range(c(currentRes$CPUE$Obs[zobs],currentRes$CPUE$Fit[zobs]))
+plot(currentRes$CPUE$Year, currentRes$CPUE$Obs, xlim=xlim, ylim=ylim, type="n", xlab="Year",ylab="CPUE: Observed & Fit")
+	series = unique(currentRes$CPUE$Series); nseries = length(series)
+	for (i in 1:nseries) {
+		ii = series[i]; z = is.element(currentRes$CPUE$Series,ii)
+		points(currentRes$CPUE$Year[z], currentRes$CPUE$Obs[z], pch=21, bg=i+1, cex=1.2)
+		lines(currentRes$CPUE$Year[z], currentRes$CPUE$Fit[z], col=i+1, lwd=2) }
+dev.off()
+@ 
 
-% \sppfig{catch}{Commercial catch data.}   % No need to repeat for
-%  every model run, and it shows up later.
+<<recdevplot, results=hide, echo=FALSE>>=
+# Should redo as a function in scape program, but quicker for now:
+postscript("recDev.eps", horizontal=FALSE, paper="special", height = 4, width = 6.5)
+# par(mfrow=c(2,1))
+plot(names(logRecDev.mpd), logRecDev.mpd, xlab="Year", ylab="Log recruitment deviations, epsilon_t")
+abline(h=0, col="grey")
+# plot(names(recDev.mpd), recDev.mpd, ylim=c(0, max(recDev.mpd)), xlab="Year", ylab="Recruitment deviations (bias corrected)")
+# abline(h=1, col="grey")
+dev.off()
+@ 
 
-% \sppfig{survIndSer3}{Crude plot of time series of the five surveys, plus CPUE index (dashed line, unless it's not used), all normalised to their respective means. To see if they give conflicting signals. (Note that CPUE isn't necessarily being used in the model fitting).}
+<<recdevacf, results=hide, echo=FALSE>>=
+# Auto-correlation function of the log recruitment deviations.
+postscript("recDevAcf.eps", horizontal=FALSE, paper="special", height = 4, width = 6.5)
+# par(mfrow=c(2,1))
+acf(logRecDev.mpd, lag.max=30, main="", ylab="Auto-correlation function of epsilon_t")
+dev.off()
+@ 
 
-% \sppfig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
+<<initagedevplot, results=hide, echo=FALSE>>=
+# Should redo as a function in scape program, but quicker for now:
+postscript("initAgeDev.eps", horizontal=FALSE, paper="special", height = 4, width = 6)
+# par(mfrow=c(2,1))
+plot(names(logInitAgeDev.mpd), logInitAgeDev.mpd, xlab="Age", ylab="Log initial age deviations")
+abline(h=0, col="grey")
+# plot(names(initAgeDev.mpd), initAgeDev.mpd, ylim=c(0, max(initAgeDev.mpd)), xlab="Year", ylab="Initial age deviations (bias corrected)")
+# abline(h=1, col="grey")
+dev.off()
+@ 
+
+<<plotBarsFigs, results=hide, echo=FALSE>>=
+
+# Second two are not made automatically - got from Rowan for 05.01. 
+#  Use this when get updated package:
+# Note - 1 is males in plotBars.
+# out=plotBars(res,year=1976,sex=2,fill="salmon",eps=TRUE,win=FALSE) # ,age=c(1:60))
+# out=plotBars(res,year=1976,sex=1,fill="skyblue",eps=TRUE,win=FALSE)
+
+# Latest from Rowan, I may want to switch to have females first
+plotBars(currentRes,sex=1,fill="skyblue",eps=TRUE,win=FALSE)  # function default year is first year
+plotBars(currentRes,sex=2,fill="salmon",eps=TRUE,win=FALSE)
+@ 
+
 
 <<bubbleplots, results=hide, echo=FALSE>>=
 # Should redo as a function in scape program, but quicker for now:
@@ -749,99 +743,64 @@ dev.off()
 
 @
 
+% \sppfig{catch}{Commercial catch data.}   % No need to repeat for
+%  every model run, and it shows up later.
+
+
+% \sppfig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}    % Not on same year axis.
+
+\sppfig{survIndSer2}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, same year axis for all time series.}
+
+% Individual surveys:
+%=======This line will be expanded to accomodate multiple surveys=======
+% \sppfig{survIndSer4-1}{Fit to fishery-independent survey 1 for run \Sexpr{model.name}.}
+
+% Andy tried replacing survey 1 with *at*surveys - seemed to work okay for survey index fits, but got warnings.
+
+% \sppfig{survIndSer3}{Crude plot of time series of the five surveys, plus CPUE index (dashed line, unless it's not used), all normalised to their respective means. To see if they give conflicting signals. (Note that CPUE isn't necessarily being used in the model fitting).}
+
+% \sppfig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
+
+\sppfig{CPUEser}{CPUE index series, 95\% error bars are based on lognormal assumption (double check error bars).}
+
+% \sppfig{CPUEfit}{Crude plot of CPUE index series, without error bars.}
+
 \sppfig{CAcObsFem}{Commercial catch-at-age data for females.}
 
 \sppfig{CAcFitFem}{Commercial catch-at-age model output for females  for run \Sexpr{model.name}.}
+
+\clearpage   % otherwise too many unprocessed floats
 
 \sppfig{CAcObsMale}{Commercial catch-at-age data for males.}
 
 \sppfig{CAcFitMale}{Commercial catch-at-age model output for males for run \Sexpr{model.name}.}
 
-% \section{Figures for MPD values}
-%=======This line will be expanded to accomodate multiple surveys=======
-\sppfig{survIndSer4-1}{Fit to fishery-independent survey 1 for run \Sexpr{model.name}.}
+\sppfig{ageCommFemale1}{Observed and predicted proportions-at-age for females, commercial data for run \Sexpr{model.name}. Note that years are not consecutive.}
 
-\clearpage   % otherwise too many unprocessed floats
-
-% \sppfig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}
-
-\sppfig{survIndSer2}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, same year axis for all time series.}
-
-<<CPUEfig, results=hide, echo=FALSE>>=    # Crude for now
-postscript("CPUEfit.eps", horizontal=FALSE, paper="special", height = 7, width = 6)
-zobs = !is.na(currentRes$CPUE$Obs)
-xlim = range(currentRes$CPUE$Year[zobs]); ylim = range(c(currentRes$CPUE$Obs[zobs],currentRes$CPUE$Fit[zobs]))
-plot(currentRes$CPUE$Year, currentRes$CPUE$Obs, xlim=xlim, ylim=ylim, type="n", xlab="Year",ylab="CPUE: Observed & Fit")
-	series = unique(currentRes$CPUE$Series); nseries = length(series)
-	for (i in 1:nseries) {
-		ii = series[i]; z = is.element(currentRes$CPUE$Series,ii)
-		points(currentRes$CPUE$Year[z], currentRes$CPUE$Obs[z], pch=21, bg=i+1, cex=1.2)
-		lines(currentRes$CPUE$Year[z], currentRes$CPUE$Fit[z], col=i+1, lwd=2) }
-dev.off()
-@ 
-
-\sppfig{CPUEser}{CPUE index series, 95\% error bars are based on lognormal assumption (think about more).}
-
-% \sppfig{CPUEfit}{Crude plot of CPUE index series, without error bars.}
-
-
-
-<<recdevplot, results=hide, echo=FALSE>>=
-# Should redo as a function in scape program, but quicker for now:
-postscript("recDev.eps", horizontal=FALSE, paper="special", height = 4, width = 6.5)
-# par(mfrow=c(2,1))
-plot(names(logRecDev.mpd), logRecDev.mpd, xlab="Year", ylab="Log recruitment deviations, epsilon_t")
-abline(h=0, col="grey")
-# plot(names(recDev.mpd), recDev.mpd, ylim=c(0, max(recDev.mpd)), xlab="Year", ylab="Recruitment deviations (bias corrected)")
-# abline(h=1, col="grey")
-dev.off()
-@ 
-
-% \sppfig{recDev}{Recruitment deviation for each year. Top: $\epsilon_t$ (so in log space); bottom: bias-corrected multiplicative deviation, given as $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$.}
-
-% \sppfig{recDev}{Recruitment deviation for each year, $\epsilon_t$ (so in log space), where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$.}
-
-% \sppfig{recruits}{Recruitment rate (MPD) over time for run \Sexpr{model.name}, in 1000's of age 1 fish.}
-
-\twofig{recDev}{recruits}{Mean recruitment is \Sexpr{signif(mean(Rt), sigdig)}. Top: recruitment deviation for each year, $\epsilon_t$ (so in log space), where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1000's of age 1 fish.}
-
-% \sppfig{recruits}{Recruitment rate (MPD) over time for run \Sexpr{model.name}, in 1000's of age 1 fish.}
-
-
-<<initagedevplot, results=hide, echo=FALSE>>=
-# Should redo as a function in scape program, but quicker for now:
-postscript("initAgeDev.eps", horizontal=FALSE, paper="special", height = 4, width = 6)
-# par(mfrow=c(2,1))
-plot(names(logInitAgeDev.mpd), logInitAgeDev.mpd, xlab="Age", ylab="Log initial age deviations")
-abline(h=0, col="grey")
-# plot(names(initAgeDev.mpd), initAgeDev.mpd, ylim=c(0, max(initAgeDev.mpd)), xlab="Year", ylab="Initial age deviations (bias corrected)")
-# abline(h=1, col="grey")
-dev.off()
-
-plotBars(currentRes,sex=1,fill="skyblue",eps=TRUE,win=FALSE)  # function default year is first year
-plotBars(currentRes,sex=2,fill="salmon",eps=TRUE,win=FALSE)
-@ 
-
-% \sppfig{initAgeDev}{Initial age deviation for each age (except 1). Top: in log space, call them $\theta_a$ for now; bottom: bias-corrected multiplicative deviation, given as $\mbox{e}^{\theta_a - \sigma_R^2/2}$ where $\theta_a \sim \mbox{Normal}(0, \sigma_R^2)$. The same standard deviation $\sigma_R$ must be used as for recruitment deviations.}
-
-% \sppfig{initAgeDev}{Initial age deviation, $\eta_a$, for each age $a = 2, 3, ..., A-1$). In log space, where the bias-corrected multiplicative deviation is $\mbox{e}^{\theta_a - \sigma^2/2}$ where $\theta_a \sim \mbox{Normal}(0, \sigma)$. The standard deviation $\sigma$ must equal $\sigma_R$ that is used for recruitment deviations.}
-
-% Second two are not made automatically - got from Rowan for 05.01
-\threefig{initAgeDev}{ageBarsFemale}{ageBarsMale}{Top: initial age deviation, $\eta_a$, for each age $a = 2, 3, ..., A-1$). In log space, where the bias-corrected multiplicative deviation is $\mbox{e}^{\eta_a - \sigma_R^2/2}$ where $\eta_a \sim \mbox{Normal}(0, \sigma_R)$. Middle: initial age structure for females. Bottom: initial age structure for males. Lines are a steady-state initial age structure (yes?).}
-
-
-\sppfig{ageCommFemale1}{Observed and predicted proportions-at-age for females, commercial data (1977-1995) for run \Sexpr{model.name}. Note that years are not consecutive.}
-
-\sppfig{ageCommMale1}{Observed and predicted proportions-at-age for males, commercial data (1977-1995) for run \Sexpr{model.name}. Note that years are not consecutive.}
+\sppfig{ageCommMale1}{Observed and predicted proportions-at-age for males, commercial data for run \Sexpr{model.name}. Note that years are not consecutive.}
 
 \clearpage 
 
+% Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
 %=======This line will be expanded to accomodate multiple surveys=======
 \twofig{ageSurv@survey1Female1}{ageSurv@survey1Male1}{Observed and predicted proportions-at-age for @survey1 survey for run \Sexpr{model.name}.}
 
+
 \sppfig{meanAge}{Mean ages for the data and model output for run \Sexpr{model.name}, for commercial and survey data (open circles are data, joined filled circles are model estimates).}
 
-\sppfig{Bt}{Spawning biomass (mature females) over time for run \Sexpr{model.name} (MPD values).}
+
+\twofig{recDev}{recruits}{Top: recruitment deviation for each year, $\epsilon_t$ (so in log space), where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1000's of age 1 fish; mean recruitment is \Sexpr{signif(mean(Rt), sigdig)}.}
+
+\sppfig{recDevAcf}{Auto-correlation function of the logged recruitment deviations ($\epsilon_t$).}
+
+\sppfig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
+
+\sppfig{selectivity}{Selectivities for commercial catch and surveys  for run \Sexpr{model.name}, with maturity ogive for females indicated by 'm'.}
+
+% \threefig{initAgeDev}{ageBarsFemale}{ageBarsMale}{*NOT AUTOMATED YET*. Top: initial age deviation, $\eta_a$, for each age $a = 2, 3, ..., A-1$). In log space, where the bias-corrected multiplicative deviation is $\mbox{e}^{\eta_a - \sigma_R^2/2}$ where $\eta_a \sim \mbox{Normal}(0, \sigma_R)$. Middle: initial age structure for females. Bottom: initial age structure for males. Lines are a steady-state initial age structure (yes?).}
+
+
+% \sppfig{Bt}{Spawning biomass (mature females) over time for run \Sexpr{model.name} (MPD values).}
 
 \begin{figure}[htp]
 \centering
@@ -857,19 +816,19 @@ plotBars(currentRes,sex=2,fill="salmon",eps=TRUE,win=FALSE)
 \sppfig{exploit}{Exploitation rate (MPD) over time  for run \Sexpr{model.name}.}
 
 
-\sppfig{selectivity}{Selectivities for commercial catch and surveys  for run \Sexpr{model.name}, with maturity ogive for females indicated by 'm'.}
+
 
 % \section{Residuals associated with MPD fits  for run \Sexpr{model.name}.}
 
 %=======This line will be expanded to accomodate multiple surveys=======
-\sppfig{survResSer1}{Residuals for fit to @survey1 survey series for run \Sexpr{model.name}.}
+\sppfig{survRes@survey1}{Residuals for fit to @survey1 survey series for run \Sexpr{model.name}.}
 
 \sppfig{commAgeResids}{Residuals for fit to commercial age data for run \Sexpr{model.name}.}
 
 %=======This line will be expanded to accomodate multiple surveys=======
 \sppfig{survAgeResSer1}{Residuals for fit to @survey1 survey series age data for run \Sexpr{model.name}.}
 
-\sppfig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
+
 
 
 \end{document}
@@ -881,957 +840,3 @@ plotBars(currentRes,sex=2,fill="salmon",eps=TRUE,win=FALSE)
 #setwd(cwd)
 #stop("---GOT TO HERE---",call. = FALSE)
 @ 
-
-
-\section{Age-structure data}
-
-First we look at the age-structure data that are going into the model. Tables \ref{tab:pat1}--\ref{tab:pat4} (later) show the full matrix of proportions at age ({\tt pat.named}). The values allow verification of the data with the figures. The data are the observed proportions in each age class in the catch from each year, $p_{at}$ in the 2001 assessment notation.
-
-The matrix of catch-age data is converted to a data-frame table for plotting using {\tt xyplot}. The table {\tt pat.dft} then gives the proportions at age (with {\tt year} as a factor and {\tt year.num} as numeric for plotting purposes):
-
-<<make.dft, echo=FALSE>>=   
-
-# Set the two artifically generated years to NA
-pat[, 1986 - yr[1] + 1] = NA
-pat[, 1988 - yr[1] + 1] = NA
-
-
-pat.named = matrix(pat, ncol=length(yr),
-  dimnames = list(age, yr))
-  # pat.named has row and col names
-
-pat.dft = as.data.frame.table(pat.named)
-  # it repeats ages and years as factors, with the
-  # the third column being the proportions
-
-# R doesn't know what to call the columns, so need:
-names(pat.dft) = c("age", "year", "prop")
-
-# Need numeric ages for axes labels
-pat.dft$age.num = as.numeric(levels(pat.dft$age))[pat.dft$age]
-
-# Don't think that the age column (factors) gets used again, so
-#  remove it here:
-pat.dft = pat.dft[,-1]
-
-# And numeric years for subsetting (can't subset factors)
-pat.dft$year.num = as.numeric(levels(pat.dft$year))[pat.dft$year]  
-
-# head(pat.dft)
-
-# pat.dft.to.1981 = subset(pat.dft, year.num < 1982)
-# pat.dft.from.1982 = subset(pat.dft, year.num > 1981)
-# Want to automate that, so set:
-
-end.first.fig = 1981
-pat.dft.first.fig = subset(pat.dft, year.num < end.first.fig + 1)
-pat.dft.second.fig = subset(pat.dft, year.num > end.first.fig)
-
-# put uat later:
-
-# Do uat.dft here also, to then obtain yrange for all
-#  figures
-uat.named = matrix(uat, ncol=length(yr),
-  dimnames = list(age, yr))
-uat.dft = as.data.frame.table(uat.named)
-names(uat.dft) = c("age", "year", "prop")
-uat.dft$age.num = as.numeric(levels(uat.dft$age))[uat.dft$age]
-uat.dft = uat.dft[,-1]     # remove the age factor column
-uat.dft$year.num = as.numeric(levels(uat.dft$year))[uat.dft$year]  
-
-# uat.dft.to.1981 = subset(uat.dft, year.num < 1982)
-# uat.dft.from.1982 = subset(uat.dft, year.num > 1981)
-
-uat.dft.first.fig = subset(uat.dft, year.num < end.first.fig + 1)
-uat.dft.second.fig = subset(uat.dft, year.num > end.first.fig)
-
-
-# Check that pat and uat each sum to 1 for each year
-eps=10^-5
-if(
-  min(tapply(pat.dft$prop, pat.dft$year, sum), na.rm=TRUE) < 1-eps |
-  max(tapply(pat.dft$prop, pat.dft$year, sum), na.rm=TRUE) > 1+eps )
-    stop("pat's do not sum to 1 for each year")
-if(
-  min(tapply(uat.dft$prop, uat.dft$year, sum), na.rm=TRUE) < 1-eps |
-  max(tapply(uat.dft$prop, uat.dft$year, sum), na.rm=TRUE) > 1+eps )
-    stop("uat's do not sum to 1 for each year")
-
-
-
-# yrange for y axis range for all figures
-yrange = c(-0.02, max(c(pat, uat), na.rm=TRUE)*1.1)
-@ 
-
-<<head.dft, results=verbatim>>=
-head(pat.dft)
-
-head(uat.dft)
-@ 
-
-<<plotpat1, echo=FALSE>>=
-fig.name = "agedata1"
-tp1 = xyplotCA(dataset1 = pat.dft.first.fig, fig.name=fig.name)     
-@ 
-
-\popfig{\Sexpr{fig.name}}{Catch-at-age data up to \Sexpr{end.first.fig}. Age classes range from \Sexpr{age[1]} to a plus-age class of \Sexpr{age[length(age)]}.}
-
-Figure \ref{fig:\Sexpr{fig.name}} shows the catch-at-age proportions up to \Sexpr{end.first.fig}. All panels (separate plots) in this figure and all similar future figures are plotted using the same y-axis range. The break-and-burn data start in 1977, allowing for proportions for older age classes (plus more accurate age classifications for the younger age classes). In the new assessment we will not use the pre-1976 surface ageing data, because we have an extra 8 years' worth of data available at the end of the times series.
-
-<<plotpat2, echo=FALSE>>=
-fig.name = "agedata2"
-tp2 = xyplotCA(dataset1 = pat.dft.second.fig, fig.name=fig.name)     
-@ 
-
-\popfig{\Sexpr{fig.name}}{Catch-at-age data from \Sexpr{end.first.fig+1}.}
-
-Figure \ref{fig:\Sexpr{fig.name}} shows the catch-at-age proportions from \Sexpr{end.first.fig+1} onwards. There are no data from 1986 and 1988 ***may change with new data????. 
-
-<<bubbleplot, results=hide, echo=FALSE>>=
-fig.name = paste(model.name, "bubble", sep="")
-postscript(paste(fig.name, ".eps", sep=""), horizontal=FALSE, paper="special", height = 6, width = 6)  # Couldn't properly change figure
-                                  #  size without doing this
-.plotrep("AA")
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{This reproduces Fig.~4.5a in the 2001 assessment, showing a bubble plot of observed ages in the historical GIG fishery, with red line as the annual mean age. Data from 1986 and 1988 are artificially generated as the average of adjacent years. }
-
-Figure \ref{fig:\Sexpr{fig.name}} shows the actual catches for the data set. It should be identical to Fig 4.5a from the 2001 assessment, however that one has no data for 1986 and 1988. Reason is that artificial data for 1986 and 1988 were included in the 2001 data set, but do not contribute to the residuals in the {\tt pop2001.tpl} file. See {\tt POP2001admb.ps} for some verification of this.
-
-\subsection{Plotting one year's data and the next on the same graph}
-
-% The bubble plot is useful for following cohorts through time, and together with Figures \ref{fig:agedata1} and \ref{fig:agedata2} reveal some interesting features. In 1970 there appear to be a far higher proportion of 9 year-olds then there were 8 year-olds in 1969. Looking at the full age structure for both years, it appears that this isn't a consequence of the data being proportions (i.e. selectively removing other age classes), though this are surface ageing values and so aren't as precise as the later data. There is also a similar 1995 increase in 9 year-olds.
-
-% To more carefully compare one year's age composition with the next, it useful to overlay each pair of consecutive years' data on the same graph.
-
-<<datanext, results=hide, echo=FALSE>>=
-
-pat.dft.next = pat.dft
-pat.dft.next$age.num = pat.dft.next$age.num - 1
-pat.dft.next$year.num = pat.dft.next$year.num - 1
-pat.dft.next$year = as.factor(pat.dft.next$year.num)
-# subscripts didn't work correctly as still plotted 1962 data
-#  as 1963 (thinks of it as being factor number 1 - so need
-#  the same factors for the second plot - age.num values get
-#  put in the right place as they are numerics). So do:
-pat.dft.next = subset(pat.dft.next, year.num > yr[1]-1)
-
-# For next$year < 1976       # < 1976 as really < 1977
-plus.age = 17    # *****This will need to get changed ****
-# Don't redefine rows, just values (got in a mess with rows)
-# So sets the plus.age number to be what is currently plus.age-1,
-#  because next year's 17+ class is made up of mainly this year's
-#  17+ class, not this year's 16. So this year's 16 class are
-#  not compared to anything (as not sure how many of next year's
-#  17+ are this year's 16).
-# Note that currently the LHS of what follows are 
-#  currently all 0:
-pat.dft.next[pat.dft.next$age.num == plus.age & 
-    pat.dft.next$year.num < 1976, ]$prop
-pat.dft.next[pat.dft.next$age.num == plus.age & 
-    pat.dft.next$year.num < 1976, ]$prop = 
-  pat.dft.next[pat.dft.next$age.num == plus.age-1 &
-    pat.dft.next$year.num < 1976, ]$prop 
-
-# Have just shifted these, so now set to NA (can't
-#  predict the plus.age - 1 class
-pat.dft.next[pat.dft.next$age.num == plus.age-1 & 
-  pat.dft.next$year.num < 1976, ]$prop = NA
-
-# For 1976, have to add the old ones up:
-pat.dft.next[pat.dft.next$age.num == plus.age & 
-    pat.dft.next$year.num == 1976, ]$prop = 
-  sum( pat.dft.next[pat.dft.next$age.num >= plus.age - 1 & 
-    pat.dft.next$year.num == 1976, ]$prop)
-# Then set higher ones to 0, as just counted them
-pat.dft.next[pat.dft.next$age.num > plus.age & 
-  pat.dft.next$year.num == 1976, ]$prop  = 0
-# And can't predict the plus.age - 1 class (this got
-#  counted above also)
-pat.dft.next[pat.dft.next$age.num == plus.age-1 & 
-  pat.dft.next$year.num == 1976, ]$prop = NA    
-
-# For > 1976
-plus.age = 29
-# But there is nothing with that age number yet in pat.dft.next
-#  Since don't want any age 28, easiest just to replace the 28's
-#  by 29 (I couldn't figure out how to add the extra row without
-#  doubling up and then being unable to delete one)
-
-pat.dft.next[pat.dft.next$age.num == plus.age -1 &
-    pat.dft.next$year.num > 1976, ]$age.num = 
-  pat.dft.next[pat.dft.next$age.num == plus.age-1 &
-    pat.dft.next$year.num > 1976, ]$age.num + 1   
-
-pat.dft.next.first.fig = subset(pat.dft.next, year.num < end.first.fig + 1)
-pat.dft.next.second.fig = subset(pat.dft.next, year.num > end.first.fig)
-
-fig.name = "datanext1"
-tp3 = xyplotCA2(dataset1 = pat.dft.first.fig,
-         dataset2 = pat.dft.next.first.fig,
-         fig.name = fig.name,
-         pch.vals = c(20, 1), key.labs = c("current", "next") )
-@ 
-
-\popfig{\Sexpr{fig.name}}{Plotting age data for each year (solid blue circles), with the next year's age structure overlaid and shifted appropriately (red open circles). See text for details.}
-
-<<results=hide, echo=FALSE>>=
-fig.name = "datanext2"
-tp4 = xyplotCA2(dataset1 = pat.dft.second.fig,
-         dataset2 = pat.dft.next.second.fig,
-         fig.name = fig.name,
-         pch.vals = c(20, 1), key.labs = c("current", "next") )
-@ 
-
-\popfig{\Sexpr{fig.name}}{Figure \ref{fig:datanext1} continued.}
-
-**** Some of this will change/simplify when surface ageing years aren't used ***
-
-Figures \ref{fig:datanext1} and \ref{fig:datanext2} show the original data from Figures \ref{fig:agedata1} and \ref{fig:agedata2} as blue filled circles. The following year's age structure, appropriately shifted, is then plotted on the same panel as red open circles. 'Appropriately shifted' means that we have the original year's age structure (e.g. 1973) plotted, and then the next year's (1974) age structure on the same plot at the ages the fish would have been in the original year. So there's a blue filled circle representing the proportion of 10 year-olds in 1973, and at the same x-value is plotted a red open circle representing the 11 year-olds from 1974.
-
-Remember for interpretation that these are proportions, not absolute numbers. Thus we can have a higher proportion of, for example, 9 year-olds from 1972 than we were 8 year-olds in 1971, as seen in the 1971 panel. 
-
-For the plus-age classes it gets tricky, especially as the plus-age class changes in 1977. For 1976 and before, the plus-age class in the data is 17+. On the 1973 plot we have 16 year-olds and the 17+ class. But we can't say that the 1974 17+ class came from the 1973 16 class. Given the 17+ class tends to be much larger than the 16 class in general (maybe not for some cohorts), it seems simplest just to plot the 1974 17+ class on the 1973 17+ class location, and plot nothing extra on the 1973 16 class location. It could estimated as a proportion, but simplest to leave as is.
-
-For 1976 itself (for which 1977 has 29+ plus class), we have to convert the 1977 data to have a 17+ class (so sum up the values $\geq$17).
-
-We do get an estimate for proportions of 6 year-olds each year, based on the proportion of 7 year-olds the following year. But we don't actually have data for the 6 year-olds. 
-
-The absence of data for 1986 and 1988 mean that we have four years (1985-1988) for which we can't compare the consecutive years.
-
-And since 2000 is the final year of data here, we obviously don't have a comparison age structure from the following year.
-
-Overall, the figures show that one year's age structure is fairly consistent with the following year's. The pre-1977 data pattern looks good, despite the inaccuracies in the surface ageing technique. From 1977 onwards the patterns is also generally good, though erratic in places. Notable discrepencies include: where did the 1985 9 year-olds come from, and where did the 1984 15 year-olds go -- that latter cohort had been progressing along quite nicely, as seen in earlier years and in the bubble plot. Though that cohort can still be seen as a small peak all the way through to being 24 year-olds in 1993. 
-
-There seems to be a large plus-age class in 1990, that clearly wasn't there in 1989. 
-
-But overall, the data show discernible patterns, and allowing for observation error on the proportions hopefully gives the model enough flexibility to perform well. 
-
-Paul had asked whether the data are somewhat self-consistent -- these figures should help him to offer some thoughts.
-
-\subsection{Plotting residuals of consecutive years' age structure}
-
-*** This can also be simplified when removing early years ***
-
-Rowan suggested plotting the residuals, namely the difference between the blue and red circles in Figures \ref{fig:datanext1} and \ref{fig:datanext2}.
-
-So plot this year's minus the following year's proportions in each age class. Presumably can't just subtract the two tables, as {\tt pat.dft.next} has age 6 values for all years, no row for age 29 up to 1976, and no row for age 28 after 1976. Age 16's are NA's up to 1976, but there is still a row for age 16's so just leave alone. And no values for year 2000 (remember it did have 1962 but they've already been deleted).
-
-Want to end up with a table with same structure, for ease of plotting. 
-
-So remove age 29 from {\tt pat.dft} up to 1976, then age 28 for 1977 onwards. Also remove year the 23 year-2000 values from {\tt pat.dft}.
-
-And age 6 from {\tt pat.dft.next}. 
-
-<<>>=
-dim(pat.dft)
-dim(pat.dft.next)
-@ 
-
-
-
-
-<<>>=
-# remove age 29 up to 1976
-pat.dft.for.resid.to.1976 = subset(pat.dft, year.num < 1977 &
-  age.num < 29)
-
-# remove age 28 after 1977, and remove year 2000
-pat.dft.for.resid.from.1977 = subset(pat.dft, year.num > 1976 
-  & year.num < 2000 & age.num != 28)
-
-pat.dft.for.resid = rbind(pat.dft.for.resid.to.1976, 
-  pat.dft.for.resid.from.1977)
-
-# remove age 6
-pat.dft.next.for.resid = subset(pat.dft.next, age.num > 6)
-
-dim(pat.dft.for.resid)
-dim(pat.dft.next.for.resid)
-
-# subtract them to check (but not first column which is
-#  year as a factor)
-pat.dft.resid.full = pat.dft.for.resid[,-1] - 
-  pat.dft.next.for.resid[,-1]
-
-if( sum( pat.dft.resid.full$year.num != 0) > 0)
-  stop("pat.dft.resid.full incorrectly constructed")
-if( sum( pat.dft.resid.full$age.num != 0) > 0)
-  stop("pat.dft.resid.full incorrectly constructed")
-
-# So want the residual data frame to be of the same format
-#  as the originals, with the proportion value representing
-#  the residuals, being the current proportion minus next
-#  year's (blue-red in figures):
-pat.dft.resid = pat.dft.for.resid
-pat.dft.resid$prop = pat.dft.for.resid$prop - 
-  pat.dft.next.for.resid$prop
-
-max.abs.resid = max(abs(pat.dft.resid$prop), na.rm=TRUE)
-y.resid.range = 1.1* c(-max.abs.resid, max.abs.resid)
-# so that 0 is in the middle
-
-pat.dft.resid.first.fig = subset(pat.dft.resid, year.num < end.first.fig + 1)
-pat.dft.resid.second.fig = subset(pat.dft.resid, year.num > end.first.fig)
-@ 
-
-<<plotresid1, echo=FALSE>>=
-fig.name = "resid1"
-tp5 = xyplotCA(dataset1 = pat.dft.resid.first.fig, fig.name=fig.name,
-  type = "h", col.line="black", ylim=y.resid.range,
-  ylab = "Residual of proportions (current year - next)", 
-  key.labs="", cex.vals=0, col.symbols="white", key.xy=c(0.9, 0.1))  
-# Last bit still plots a key, but only a small white dot.
-@ 
-
-\popfig{\Sexpr{fig.name}}{Residuals (proportions in a given year minus those in the next year).}
-
-<<plotresid2, echo=FALSE>>=
-fig.name = "resid2"
-tp6 = xyplotCA(dataset1 = pat.dft.resid.second.fig, fig.name=fig.name,
-  type = "h", col.line="black", ylim=y.resid.range,
-  ylab = "Residual of proportions (current year - next)", 
-  key.labs="", cex.vals=0, col.symbols="white", key.xy=c(0.9, 0.1))  
-@ 
-
-\popfig{\Sexpr{fig.name}}{Figure \ref{fig:resid1} continued, for \Sexpr{end.first.fig + 1} onwards.}
-
-Figures \ref{fig:resid1} and \ref{fig:resid2} show the residuals. Largest residual is between the 1984 8-year olds and the 1985 9-year olds. The proportion of 1985 9-year olds is much larger than the 1984 8-year olds. The large cohort can still be seen in the absolute data, Figure \ref{fig:datanext2}, and in 1989 the cohort is now 13 and can be seen as a large cohort. The residual has decreased, though in proceeding years the residual for that cohort is still around 0.1, and seems to be oscillating in sign. That can also be seen more clearly in Figure \ref{fig:datanext2}.
-
-So is there a trend in the largest residual per year, over time? The last few years look good -- which could be better techniques, better sampling methods (more consistent from year-to-year), or larger sample sizes.
-
-Might have thought that the residuals should sum to 0 for each year, but that's not the case because the 7 year-olds from the next year don't get counted (because no data on 6 year-olds from each current year). Also, the plus-age minus 1 class for current year doesn't get used in the residual calculations, and so that affedcts the sum also. The sums of residuals are mainly negative, with a few positives, but no real need to look into in detail (see commented coded in next chunk if required). Now plotting the ranges of residuals for each year.
-
-
-<<residualcals, results=hide, echo=FALSE>>=
-# tapply(pat.dft.resid$prop, pat.dft.resid$year, sum, na.rm=TRUE)
-
-# tapply(pat.dft.resid$prop, pat.dft.resid$year,
-#  range, na.rm=TRUE, finite=TRUE)
-# This gives warnings as have NA's. Best to just replace NA's
-#  by 0 before doing this calc (as gives range of 0 for NA years):
-# Also not use range as it produces a list with tapply. Easier
-#  to do min and max. Can't do finite=TRUE as returns 1's for 
-#  years that are all NA's.
-
-# pat.dft.resid.na.eq.0 = pat.dft.resid
-# pat.dft.resid.na.eq.0$prop[ is.na( pat.dft.resid.na.eq.0$prop ) ] = 0
-
-pat.dft.resid.min = tapply(pat.dft.resid$prop, 
-  pat.dft.resid$year, min, na.rm=TRUE, warn=9999)
-# That gives Inf for years that were all NA's, and
-#  gives warnings to that effect (which I tried to 
-#  turn off, ended up setting value to 9999), so:
-#  [can't do simpler as for pat.min.uat.min later as
-#  some years have just one NA here]
-pat.dft.resid.min[ pat.dft.resid.min == 9999] = NA
-
-pat.dft.resid.max = tapply(pat.dft.resid$prop, 
-  pat.dft.resid$year, max, na.rm=TRUE, warn=-9999)
-pat.dft.resid.max[ pat.dft.resid.max == -9999] = NA
-
-# need this, which gives a matrix with named columns (years)
-#  and rows (pat.dft.resid.min and ...max)
-resid.min.max.mat = rbind(pat.dft.resid.min, pat.dft.resid.max)
-@ 
-
-<<residrangeplot, results=hide, echo=FALSE>>=
-fig.name = "residrange"
-postscript(paste(fig.name, ".eps", sep=""), horizontal=FALSE, paper="special", height = 6, width = 6)  
-# Want to plot the range for each year, as a vertical line.
-#  Doing two lines here but they join up fine.
-# plot(dimnames(resid.min.max.mat)[[2]], resid.min.max.mat[1,], type="h", ylim=y.resid.range,
-#     xlab = "Year", ylab = "Range of residuals")
-# points(dimnames(resid.min.max.mat)[[2]], resid.min.max.mat[2,], type="h")
-# Just do boxplot:
-boxplot(prop ~ year, data=pat.dft.resid, ylim=y.resid.range, cex=0.5)
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{Boxplot of residuals of the difference between consecutive years' age structure (shifted by a year). Horizontal lines are medians, boxes span interquartlie range (25\% to 75\%), whiskers are 1.5 times the interquartile range (or the min or max of the data if within the interquartile range, I think) and points are outliers. While the last few years have a smaller range, there isn't really a clear trend. The boxes are fairly small, and the whiskers don't seem to extend beyond $\pm$0.05, such that the data are fairly consistent with themselves.}
-
-Figure \ref{fig:residrange} shows that there isn't really a clear trend, despite the last few years having a smaller range. Linear regression on the max and mins confirms that (can't reject slope being 0), using {\tt y = lm( resid.min.max.mat[1,] ~ as.numeric(dimnames(resid.min.max.mat)[[2]])) }.2
-
-\section{Non-age data that are inputs for the model}
-
-Not worrying about things like the changing accumulator age class here, as we won't need to worry about the surface ageing complications. Have just (18/05/10) noticed that, in R, {\tt wgtat[,38]} and {\tt wgta} differ in their final value ({\tt wgtat[,38] - wgta = 0,0,0....,0.04902}), but I would have thought they should be the same. In the {\tt .rep} file {\tt wgtat=w$\_$at} for age $A$ is slightly different from {\tt wgta[A]} -- basically {\tt wgta[A]} is calculated from the equation with $a=A$, then the average with $w_\infty$ is done to give {\tt wgtat[A][]}. Was going to just correct {\tt .tpl} code, now {\tt pop2001c.tpl} to change that, but wait until get rid of surface ageing as I think it will be simpler once the accumulator age class does not change. 
-
-\begin{table}[htp]       
-\centering
-\begin{tabular}{lcc}
-\hline
-Parameter & Value & Dimensions\\
-\hline
-First year of data & \Sexpr{yr[1]} & \\
-Last year of data & \Sexpr{yr[length(yr)]} & \\
-Number of years with data & \Sexpr{nyr} & \\
-$t$, year, starting with $t=1$ & 1, 2, 3, ..., \Sexpr{nyr} & \\
-$k$, youngest age in model & \Sexpr{k} & \\
-~~(age of recruitment to fishery) & & \\
-$a$, index for age class & 1, 2, 3, ...., \Sexpr{length(age)} & \\
-$A$, accumulator age class & \Sexpr{length(age)}, true age \Sexpr{age[length(age)]} & \\
-True ages & \Sexpr{paste(age[1], age[2], age[3], "...", age[length(age)], sep=", ")} & \\
-% Show sets of years with surveys? & & \\
-$D_t$, observed fishery catch biomass & Fig.~\ref{fig:catch} & kilotonnes \\
-$w_1$, weight of first age class individual & \Sexpr{signif(wgta[1], 3)} & kg\\
-$w_\infty$, asymptotic weight & \Sexpr{signif(winf,4)} & kg\\
-$\lambda_w$, weight-age parameter & \Sexpr{signif(lambdaw, 3)} & \\
-$\lambda_m$, maturity parameter & \Sexpr{signif(lambdam, 3)} & \\
-$b$, maturity parameter & \Sexpr{signif(bmaturity, 3)} & \\
-$\rho$, variance ratio $\rho=\sigma_1^2 / (\sigma_1^2 + \tau_1^2)$
-  & \Sexpr{PBSfish$rho} & \\   % $ (for XEmacs colouring)
-%  MAY NEED MORE HERE, SEE .tpl code
-\hline
-\end{tabular}
-\caption{\label{tab:data} Data and parameter values input to the model, all automatically obtained from {\tt .rep} file.  These are not estimated by the model, but provided as inputs, and will automatically change when changed in the input files. Weight-at-age and maturity-at-age parameters are estimated from data and then fixed for the model.}
-\end{table}
-
-Table \ref{tab:data} shows some of the data, or parameters that are directly estimated from data and so are fixed in the model. These come under the 'Data' subheading in Table B.1 of the 2001 assessment, and are in the DATA\_SECTION of the {\tt \Sexpr{model.name}.tpl} ADMB file.
-
-
-<<catch, results=hide, echo=FALSE>>=
-fig.name = "catch"
-postscript(paste(fig.name, ".eps", sep=""), horizontal=FALSE, paper="special", height = 6, width = 6)  
-plot(yr, catch, type="o", xlab="Year", ylab="Catch biomass, kt")
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{Annual catches (kilotonnes) observed. Plot starts at start of model, though there was catch prior to that (but that's not used to determine earlier biomass estimates, I don't think). ***Will need changing.}
-
-Figure \ref{fig:catch} shows the catch data over time, showing the huge catch in 1966 (mainly by Russian and US boats).
-
-
-<<select, results=hide, echo=FALSE>>=
-fig.name = "select"
-postscript(paste(fig.name, ".eps", sep=""), horizontal=FALSE, paper="special", height = 6, width = 6)  
-.plotrep.andy(c("WA", "SM"))
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{(a) Estimated selectivity (points) compared with maturity (red curve). (b) Weight (kg) versus age.}
-
-Figure \ref{fig:select} shows selectivity, maturity and weight as functions of age. Maturity and weight are parameterised from ageing data and used as inputs to the model; the selectivity curve is estimated.
-
-Tables \ref{tab:cdata} and \ref{tab:cdata2} show the annual catches, plus the survey indices.
-
-% Put these tables at the end, so other tables stay in correct order
-% \clearpage
-% \thispagestyle{empty}
-<<results=tex, echo=FALSE>>=
-print(xtable(pat.named[, 1:10], caption="First 10 years of data 
-  ---- rows are ages, columns are years.", label="tab:pat1"), 
-  NA.string="-") # , table.placement="p")
-print(xtable(pat.named[, 11:20], caption="Next 10 years of data 
-  ---- rows are ages, columns are years.", label="tab:pat2"),
-  NA.string="-") # , table.placement="p")
-print(xtable(pat.named[, 21:30], caption="Next 10 years of data 
-  ---- rows are ages, columns are years.", label="tab:pat3"),
-  NA.string="-") # , table.placement="p")
-print(xtable(pat.named[, 31:length(yr)], caption="Next 10 years of data 
-  ---- rows are ages, columns are years.", label="tab:pat4"), 
-  NA.string="-") #, table.placement="p")
-# **** That needs changing if length(yr) changes ***
-# **** So will the following tables
-cdata2 = cdata
-names(cdata2)[1] = "Year"
-names(cdata2)[2] = "Commercial catch"
-names(cdata2)[3] = "Research"
-names(cdata2)[4] = "Charter"
-names(cdata2)[5] = "Catch fraction"
-print(xtable(cdata2[1:19,], caption="Commerical catch (kt), 
-  research survey estimates, charter survey estimates 
-  and fraction of catch taken prior to survey. Used as input to
-  the model. Note one of each survey type in 1984, and for
-  1995 both were charter surveys (no research), which is 
-  accounted for in the .tpl code. Continued in Table 
-  \\ref{tab:cdata2}.",
-  label="tab:cdata", 
-  digits=c(0, 0, 4, 3, 3, 3)),
-  include.rownames=FALSE)
-  # tabular.enbironment="longtable",   didn't work
-print(xtable(cdata2[20:38,], caption="Table \\ref{tab:cdata}
-  continued.", label="tab:cdata2", 
-  digits=c(0, 0, 4, 3, 3, 3)),
-  include.rownames=FALSE)
-sf = 6               # Number of sig figs for the next table
-@ 
-
-\clearpage
-
-\section{Results}
-
-Some of the {\tt PBSfish} values are shown in Table \ref{tab:param}, which reproduces Table 4.1 from the 2001 assessment for this model run. Table \ref{tab:paramcompare} then compares the new values with the original one from the 2001 assessment.
-
-\begin{table}[htp]       
-\centering
-\begin{tabular}{ccc}
-\hline
-Parameter & Estimate & Dimensions\\
-\hline
-$\sigma_1$ & \Sexpr{signif(sqrt(PBSfish$sig12), sf)} & \\
-%& & ~~I'm using {\tt sqrt(PBSfish\$sig12)}\\
-$\tau_1$ & \Sexpr{signif(sqrt(tau12), sf)} & \\
-$\tau_2$ & \Sexpr{signif(sqrt(tau22), sf)} & \\
-$M$ & \Sexpr{signif(mmor, sf)} & \\
-$\alpha$ & \Sexpr{signif(al, sf)} & \\
-$\beta_1$ & \Sexpr{signif(bta[1], sf)} & \\
-$q_1$ & \Sexpr{signif(qq[1], sf)} & \\
-$q_2$ & \Sexpr{signif(q2, sf)} & \\   % Seems that qq[2] = q2
-$\gamma$ & \Sexpr{signif(gma, sf)} & \\
-$R$ & \Sexpr{signif(rmean, sf)} & $10^6$ fish\\
-$R_1 = N_{1,1}$ & \Sexpr{signif(Nat[1,1], sf)} & $10^6$ fish\\
-$R_{38} = N_{1,38}$ & \Sexpr{signif(Nat[1,38], sf)} & $10^6$ fish\\
-$B_1$ & \Sexpr{signif(Bt[1], sf)} & $10^6$ kg\\
-$B_{38}$ & \Sexpr{signif(Bt[38], sf)} & $10^6$ kg\\
-\hline
-Obj. fun. & \Sexpr{objfn} & \\
-Penalty & \Sexpr{pnlty} & \\
-\hline
-\end{tabular}
-\caption{\label{tab:param} Parameter estimates from model here, which should be same as Table 4.1 in 2001 assessment (except omitting $\rho$ here as its fixed). For exact reproducing runs, most differed in the last 2 (occasionally 3) digits, but that's pretty insignificant and most likely due to numerical rounding in the calculations. Also showing the objective function value and penalty value.}
-\end{table}
-
-<<origres, results=hide, echo=FALSE>>=
-orig = readList("../POP2001admb3/pop2001a.rep")
-  # So read in results from original 2001 assessment, to then
-  #  put in the following table to compare with new values
-sf = 4  # just do 4 sig figs for comparisons.
-@ 
-
-\begin{table}[htp]       
-\centering
-\begin{tabular}{ccc}
-\hline
-Parameter & Value in this run & Original from 2001\\
-\hline
-$\sigma_1$ & \Sexpr{signif(sqrt(sig12), sf)} & \Sexpr{signif(sqrt(orig$sig12), sf)}\\
-$\tau_1$ & \Sexpr{signif(sqrt(tau12), sf)} & \Sexpr{signif(sqrt(orig$tau12), sf)} \\
-$\tau_2$ & \Sexpr{signif(sqrt(tau22), sf)} & \Sexpr{signif(sqrt(orig$tau22), sf)} \\
-$M$ & \Sexpr{signif(mmor, sf)} & \Sexpr{signif(orig$mmor, sf)} \\
-$\alpha$ & \Sexpr{signif(al, sf)} & \Sexpr{signif(orig$al, sf)} \\
-$\beta_1$ & \Sexpr{signif(bta[1], sf)} & \Sexpr{signif(orig$bta[1], sf)} \\
-$q_1$ & \Sexpr{signif(qq[1], sf)} & \Sexpr{signif(orig$qq[1], sf)} \\
-$q_2$ & \Sexpr{signif(q2, sf)} & \Sexpr{signif(orig$q2, sf)} \\
-     % Seems that qq[2] = q2, or can just use q2. qq is q1 in .rep
-     %  file, but in .getrep.andy it gets changed to qq=c(qq,q2).
-     % For orig$ I'm just loading in .rep, so need to refer to that.
-$\gamma$ & \Sexpr{signif(gma, sf)} & \Sexpr{signif(orig$gma, sf)} \\
-$R$ & \Sexpr{signif(rmean, sf)} & \Sexpr{signif(orig$rmean, sf)} \\
-$R_1 = N_{1,1}$ & \Sexpr{signif(Nat[1,1], sf)} & \Sexpr{signif(orig$Nat[1,1], sf)} \\
-$R_{38} = N_{1,38}$ & \Sexpr{signif(Nat[1,38], sf)} & \Sexpr{signif(orig$Nat[1,38], sf)} \\
-$B_1$ & \Sexpr{signif(Bt[1], sf)} & \Sexpr{signif(orig$Bt[1], sf)} \\
-$B_{38}$ & \Sexpr{signif(Bt[38], sf)} & \Sexpr{signif(orig$Bt[38], sf)} \\
-\hline
-Obj. fun. & \Sexpr{objfn} & \Sexpr{orig$objfn} \\
-Penalty & \Sexpr{pnlty} & \Sexpr{orig$pnlty} \\
-\hline
-\end{tabular}
-\caption{\label{tab:paramcompare} Parameter estimates from model here compared to the original from 2001, all to \Sexpr{sf} significant figures (except objective function). Objective function is higher than original (whereas for just removing 1976 data it was lower), so maximum likelihood lower, for new run (excluding pre-1976 data) compared to original. Don't think you can really infer anything, as now have taken out so much data. Figures look like the later years are fitted slightly better though.}
-\end{table}
-
-
-
-
-<<results=hide, echo=FALSE>>=
-fig.name = "agedatamodel1"
-tp7 = xyplotCA2(dataset1 = pat.dft.first.fig,
-         dataset2 = uat.dft.first.fig,
-         fig.name = fig.name)
-@ 
-
-\popfig{\Sexpr{fig.name}}{Proportions-at-age from the data (blue cirles), and estimated by the model (red circles). I haven't matched up the plus-age class for when model and data are different (up to 1976 when the plus-age class for the model changes each year).}
-
-<<results=hide, echo=FALSE>>=
-fig.name = "agedatamodel2"
-tp8 = xyplotCA2(dataset1 = pat.dft.second.fig,
-         dataset2 = uat.dft.second.fig,
-         fig.name = fig.name)
-@ 
-
-\popfig{\Sexpr{fig.name}}{Data and model from \Sexpr{end.first.fig+1} onwards, with same axes ranges as Figure \ref{fig:agedatamodel1}.}
-
-
-
-Figures \ref{fig:agedatamodel1} and \ref{fig:agedatamodel2} show the proportions-at-age from the data, with the corresponding age structures estimated by the model. The overall agreement is generally quite good (ignore differences up to 1976 for the plus-age classes, which are different for the model and the data).  
-
-Helpful to also see the residual differences between the data and the model. These are shown in Figures \ref{fig:patminuat1} and \ref{fig:patminuat2}.
-
-<<patminuat, echo=FALSE>>=
-pat.min.uat = pat.dft         # as need same format for plotting
-pat.min.uat$prop = pat.dft$prop - uat.dft$prop
-
-max.abs.pat.min.uat = max(abs(pat.min.uat$prop), na.rm=TRUE)
-
-y.pat.min.uat.range = 1.1* c(-max.abs.pat.min.uat, 
-  max.abs.pat.min.uat)
-# so that 0 is in the middle
-
-# Check each year sums to 0 (if not then coding error near here)
-#  as checked earlier that each of pat and uat sum to 1 each year
-if(
-  min(tapply(pat.min.uat$prop, pat.min.uat$year, sum), na.rm=TRUE)
-   < -eps |
-  max(tapply(pat.min.uat$prop, pat.min.uat$year, sum), na.rm=TRUE)
-   > +eps )
-    stop("pat.min.uat$prop 's do not sum to 1 for each year")
-
-pat.min.uat.first.fig = subset(pat.min.uat, year.num < end.first.fig + 1)
-pat.min.uat.second.fig = subset(pat.min.uat, year.num > end.first.fig)
-@ 
-
-<<patminuat1, echo=FALSE>>=
-fig.name = "patminuat1"
-tp9 = xyplotCA(dataset1 = pat.min.uat.first.fig, fig.name=fig.name,
-  type = "h", col.line="black", ylim=y.pat.min.uat.range,
-  ylab = "Residual of proportions (data - model)", 
-  key.labs="", cex.vals=0, col.symbols="white", key.xy=c(0.9, 0.1))  
-# Last bit still plots a key, but only a small white dot.
-@ 
-
-\popfig{\Sexpr{fig.name}}{Residuals of proportions, those for the data minus those estimated from the model.}
-
-<<patminuat2, echo=FALSE>>=
-fig.name = "patminuat2"
-tp10 = xyplotCA(dataset1 = pat.min.uat.second.fig, fig.name=fig.name,
-  type = "h", col.line="black", ylim=y.pat.min.uat.range,
-  ylab = "Residual of proportions (data - model)", 
-  key.labs="", cex.vals=0, col.symbols="white", key.xy=c(0.9, 0.1))  
-# Last bit still plots a key, but only a small white dot.
-@ 
-
-\popfig{\Sexpr{fig.name}}{Figure \ref{fig:patminuat1} continued, for \Sexpr{end.first.fig+1} onwards.}
-
-<<patminuat3, echo=FALSE>>=
-# Plotting range of differences over time
-pat.min.uat.min = tapply(pat.min.uat$prop, 
-  pat.min.uat$year, min)   # , na.rm=TRUE, warn=9999)
-     # Need last bit (as for pat.dft.resid above) if some
-     # years just have one NA, which shouldn't be the case
-pat.min.uat.max = tapply(pat.min.uat$prop, 
-  pat.min.uat$year, max)
-
-# This gives a matrix with named columns (years)
-#  and rows (pat.min.uat.min and ...max)
-pat.min.uat.min.max = rbind(pat.min.uat.min, pat.min.uat.max)
-@ 
-
-<<patminuat4, results=hide, echo=FALSE>>=
-fig.name = "patminuatrange"
-postscript(paste(fig.name, ".eps", sep=""), horizontal=FALSE, paper="special", height = 6, width = 6)  
-# Want to plot the range for each year, as a vertical line.
-#  Doing two lines here but they join up fine.
-# plot(dimnames(pat.min.uat.min.max)[[2]], pat.min.uat.min.max[1,],
-#     type="h", ylim=y.pat.min.uat.range,
-#     xlab = "Year", ylab = "Range of data-model")
-# points(dimnames(pat.min.uat.min.max)[[2]], pat.min.uat.min.max[2,],
-#     type="h")
-# Just do boxplot:
-boxplot(prop ~ year, data=pat.min.uat, ylim=y.pat.min.uat.range, cex=0.5)
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{Boxplot of  residuals of data minus model for each year, showing a fairly small range for final years. Up to 1976 the residuals will be larger because the plus-age classes haven't been correctly matched up (won't need to do for new assessment, so not bothering here), and these years now don't contribute to likelihood function. Compared with same figure for {\tt POP2001admb3.Snw} (which has larger axes), the later boxes are smaller.}
-
-Figure \ref{fig:patminuatrange} shows that the range of residuals between the data and the model is not greater than about 0.15 (**not automated).
-
-<<patminuat5, results=hide, echo=FALSE>>=
-fig.name = "patminuatrange2"
-postscript(paste(fig.name, ".eps", sep=""), 
-  horizontal=FALSE, paper="special", height = 6, width = 6)  
-# Want to plot the range for each year, as a vertical line.
-#  Doing two lines here but they join up fine.
-plot(dimnames(pat.min.uat.min.max)[[2]], pat.min.uat.min.max[1,],
-     type="h", ylim=y.pat.min.uat.range,
-     xlab = "Year", ylab = "Range of data-model")
-points(dimnames(pat.min.uat.min.max)[[2]], pat.min.uat.min.max[2,],
-     type="h")
-points(dimnames(resid.min.max.mat)[[2]], resid.min.max.mat[1,], 
-     pch=3)
-points(dimnames(resid.min.max.mat)[[2]], resid.min.max.mat[2,],
-     pch=3)
-lines(dimnames(resid.min.max.mat)[[2]], resid.min.max.mat[1,], 
-     lty=3)
-lines(dimnames(resid.min.max.mat)[[2]], resid.min.max.mat[2,],
-     lty=3)
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{As for Figure \ref{fig:patminuatrange}, but just lines showing the total ranges, with the addition of the $+$ symbols which are the max and min residuals from Figure \ref{fig:residrange} earlier, namely the range of differences between each year's age proportions and the 'next' year's. }
-
-% there isn't really a clear trend, despite the last few years having a smaller range. Linear regression on the max and mins confirms that (can't reject slope being 0), using {\tt y = lm( resid.min.max.mat[1,] ~ as.numeric(dimnames(resid.min.max.mat)[[2]])) }.
-
-Figure \ref{fig:patminuatrange2} adds the ranges from Figure \ref{fig:residrange} earlier, so we can compare the residuals from the model with the residuals inherent in the raw data from one year to the next (ignore 1976 and before). Generally, we can see that the residuals from the model are smaller than those from one year to the next in the data -- so can we say that the model is doing a better job of fitting the data than the next year's data do?
-
-Can't quite say that as we wouldn't expect the 'next' values to be perfect (and is it a fair comparison) but interesting nevertheless.
-
-<<results=hide, echo=FALSE>>=
-fig.name = "biomassest"
-postscript(paste(fig.name, ".eps", sep=""), 
-  horizontal=FALSE, paper="special", height = 6, width = 6)  
-.plotrep("BE")
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{Annual biomass estimates: available to the fishery (black line), mature (dashed red line), total (dotted blue line). Circles are the first set of survey estimates, which are research surveys, scaled to available biomass by $q_1$. Triangles are the second set of surveys, namely the charter surveys, scaled by $q_2$. The blue histogram gives the annual catches, as earlier. This matches Figure 4.4 from the 2001 assessment.}
-
-Figure \ref{fig:biomassest} shows the biomass estimates, with survey estimates scaled by their respective catchability estimates. 
-
-<<results=hide, echo=FALSE>>=
-fig.name = "bubble2"
-postscript(paste(fig.name, ".eps", sep=""), 
-  horizontal=FALSE, paper="special", height = 6, width = 6)  
-.plotrep.andy(c("AP", "AA"))
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{(a) Bubble plot of data, as earlier, and (b) bubble plot of predicted ages from the model, with annual mean age.}
-
-Figure \ref{fig:bubble2} shows the bubble plots for the data plus and the predicted ages.
-
-Was then going to do the recruitment figures, but the 2001 figure says units are numbers, whereas code says tonnes. Also realised that we have $N_{at}$ as an output, the actual number of age-class $a$ fish at the start of year $t$, so this should be shown. Best way would be the age structure by year. Presumably the shapes should look the same as the earlier age {\it proportion} plots, but they can move up and down on the y-axis depending on absolute numbers.
-
-<<make.Nat.dft, echo=FALSE>>=   
-# First need to convert the Nat matrix into a named data frame,
-#  as earlier in make.dft chunk.
-
-Nat.named = matrix(Nat, ncol=length(yr),
-  dimnames = list(age, yr))
-Nat.dft = as.data.frame.table(Nat.named)
-names(Nat.dft) = c("age", "year", "number")
-Nat.dft$age.num = as.numeric(levels(Nat.dft$age))[Nat.dft$age]
-Nat.dft = Nat.dft[,-1]
-Nat.dft$year.num = as.numeric(levels(Nat.dft$year))[Nat.dft$year]  
-names(Nat.dft)[2] = "prop"       # Just so can still use xyplotCA
-
-# head(Nat.dft)
-
-Nat.dft.first.fig = subset(Nat.dft, year.num < end.first.fig + 1)
-Nat.dft.second.fig = subset(Nat.dft, year.num > end.first.fig)
-
-# yrange for y axis range for all figures
-y.Nat.range = c(-0.6, max(Nat)*1.1)
-@ 
-
-% <<head.dft, results=verbatim>>=
-% head(Nat.dft)
-% @ 
-
-<<plotNat1, echo=FALSE>>=
-fig.name = "Nat1"
-tp11 = xyplotCA(dataset1 = Nat.dft.first.fig, fig.name=fig.name,
-  col.symbols="red", key.labs=expression(N[at]), ylab=expression(
-  paste("Estimated number, ", N[at])), ylim=y.Nat.range)     
-@ 
-
-\popfig{\Sexpr{fig.name}}{Numbers in each age class for each year estimated by the model, i.e. $N_{at}$, up to \Sexpr{end.first.fig}.}
-
-<<plotNat2, echo=FALSE>>=
-fig.name = "Nat2"
-tp12 = xyplotCA(dataset1 = Nat.dft.second.fig, fig.name=fig.name,     
-  col.symbols="red", key.labs=expression(N[at]), ylab=expression(
-  paste("Estimated number, ", N[at])), ylim=y.Nat.range)     
-@ 
-
-\popfig{\Sexpr{fig.name}}{Figure \ref{fig:Nat1} continued: Numbers $N_{at}$ from \Sexpr{end.first.fig+1} onwards.}
-
-Figures \ref{fig:Nat1} and \ref{fig:Nat2} show the age structure for numbers of fish estimated by the model for each year, i.e. $N_{at}$.
-
-I had an earlier question (to Jon) about the 2001 figure Fig.~4.6 having more 9 year olds than 7 year olds. The units of 'Recruitment' in that figure are actually kilotonnes, not $10^6$ fish as it says in the caption. The code says tonnes (not kilotonnes), but that's because Rowan had changed it for a different species. So I'm changing to kilotonnes (and for other plots) in {\tt .plotrep.andy} in {\tt func.andy.r}.
-
-Have worked out units of everything (see table in 2001). Basically, numbers $N_{at}$ etc. are $10^6$ fish, observed catch $D_t$ etc. are in kt, and average weight of single fish is in kg.
-
-So consider an equation like (M.12):
-\eb
-B_t = \Sigma_{a=1}^{A_t} \beta_a w_a N_{at}.
-\ee
-In words it essentially says that the exploitable biomass equals
-the sum, over each age class, of the selectivity of that age times
-the average weight of that age-class times the number of fish
-in that age class. Units are then kg$\times 10^6$, which handily equals kt. So you don't need extra awkward $10^3$ or $10^6$ factors appearing anywhere.
-
-<<results=hide, echo=FALSE>>=
-Roff = 2      # offset for RN figure
-fig.name = "recruit"
-postscript(paste(fig.name, ".eps", sep=""), 
-  horizontal=FALSE, paper="special", height = 6, width = 6)  
-.plotrep.andy(c("RP", "RN"))    # RP at bottom - lattice hangover?
-dev.off()
-@
-
-\popfig{\Sexpr{fig.name}}{(a) Recruitment at ages 7 (solid black line) and 9 (dotted blue line). (b) Recruitment productivity, estimated as $r_t = w_1 N_{1, t+7} / S_t$ (see text). Regime shifts are indicated by vertical lines.}
-% Or  $r_t = w_1 R_{t+7} / \Sigma m_a w_a N_{at}$, where 
-
-
-Figure \ref{fig:recruit} shows the recruitment of ages 7 and 9 and the recruitment productivity, given by
-\eb
-r_t = \frac{w_1 N_{1, t+7}}{S_t},
-\ee
-where $S_t = \Sigma m_a w_a N_{at}$, the sum is from $a=1$ to $A_t$, and $t$ is the spawning year. So the equation is ratio of age-7 recruitment biomass to the spawning stock biomass 7 years earlier. We don't need to worry about mortality up to age 7, because the question concerns the recruits {\it to the fishery}, so the numbers of age 7. $N_{at}$ is the number of fish age $a$ at the start of year $t$.
-
-NOT FIXED YET in code, as not sure what the answer is (sent email on 20/11/2009, then discussed with Jon on phone. Think we agreed that what I said was correct). 
-
-Looking at Fig. 4.7 for fishing mortality against biomass. So what is 'fishing mortality' -- HSfun uses Ft against Bt. But Ft seems to be defined differently in {\tt .tpl} and {\tt .getrep.andy()} -- email to Jon and Rowan:
-
-Hi again Jon and Rowan,
-
-I have another minor query about the 2001 figures. Fig. 4.7 shows 'Fishing mortality' against 'Biomass'. It is plotted by function HSfun in .plotrep(), specifically: 
-
-plot(Bt, Ft, .....)
-
-Bt is the estimated exploitable biomass (from .tpl), and Ft is defined in the .tpl file as log($P_t / (P_t - C_t) )$, where $P_t$ is estimated total exploitable number of fish and $C_t$ is estimated total number of fish caught. However, Ft is not saved from the .tpl file and never gets used.
-
-Rather, in .getrep(), we have
-
-Ft $=$ -log(1 - catch/Btot)
-
-where catch is the biomass of catch, and Btot is the total estimated biomass of fish (not the exploitable biomass). This does seem a better formulation than the first one, as 'catch' is data rather than an estimate.
-
-So my question is shouldn't we really have
-
-plot(Btot, Ft, ....)
-
-for the figure rather than 
-
-plot(Bt, Ft, ....)
-
-i.e. plot Ft as just defined in terms of total biomass, against the total biomass, Btot. At the moment it is against the exploitable biomass, Bt. 
-
-It wouldn't make a huge difference, though would stretch the x-axis out further -- and looking at the start of Fig 4.4, there is a fair difference between the exploitable biomass (black line) and total biomass (blue dotted). Interestingly, the exploitable biomass is estimated to increase at the start, while the total biomass is actually decreasing.
-
-Anyway, just wanted to clarify that I'm understanding it all. And this might be important at some point concerning target harvest rates.
-
-
-NOT SENDING, as maybe not an issue:
-
-And while I'm here -- a minor thing: Table B.1 has the definition of $u_at$ as 
-
-'exploitable proportion of age-class a fish in year t'. 
-
-Strictly speaking, isn't it better to say 
-
-'proportion of the exploitable fish in year t that are in age class a'
-
-(which I'm sure everyone understands $u_at$ to be). This makes it more intuitive that the proportions across all age classes for a particular year will sum to 1.
-
-\subsection{Stock-recruit relationship}
-
-Useful to look at the estimated recruitment against the estimated spawning stock biomass. Using some code from {\tt RPfun} to get the indices correct, we have
-
-<<SR, results=hide, echo=FALSE>>=
-srng = 1:(nyr - k)
-rbio = wgta[1] * Nat[1, ]
-       rprod <- rbio[k + srng]/SSB[srng]
-fig.name = "SR"
-postscript(paste(fig.name, ".eps", sep=""), 
-  horizontal=FALSE, paper="special", height = 6, width = 6)  
-plot(SSB[srng], rbio[k+srng], xlab="SSB (kt)", 
-     ylab="Recruits (kt)", xlim=c(0, max(SSB[srng])*1.1), 
-     ylim=c(0, max(rbio[k+srng])*1.1))
-lm = lm(rbio[k+srng] ~ SSB[srng])
-abline(lm, lty=2)
-dev.off()
-@ 
-
-\popfig{\Sexpr{fig.name}}{Recruitment at age 7 against spawning stock biomass 7 years earlier. Dashed line is a simple linear regression, which is indistinguishable from a horizontal line.}
-
-<<results=TEX, echo=FALSE>>=
-print(xtable(lm, caption=paste("Summary of linear regression fit,
-    for which $R^2 =$", signif(summary(lm)$r.squared, 3)),
-    label="tab:srlm"))
-@ 
-
-
-% This didn't work:
-% <<print=TRUE>>=        # print this out in R
-% print(paste("We did ", if(!running.admb) paste("NOT "), "re-run ADMB this time", sep=""))
-
-% GOT TO HERE ending for Sweave, now says if re-running ADMB or not
-\end{document}
-<<stopping>>=
-stop(paste("Note: we did ", if(!running.admb) paste("NOT "), "re-run ADMB this time", sep="")) #"GOT TO HERE")
-@ 
-
-
-% Maybe used this, though I think my table above is better. Can
-%  run new ADMB code without having to do .getrep.andy(..). See 
-%  above.
-<<>>=
-PBSfishdef = PBSfish      # default run,
-rm(PBSfish)               # new one will get created
-model.name = "POP2001a"   # Name of .tpl model to run.
-running.admb = 0         # 1 if redoing admb here, 
-                         # 0 if just loading previous .rep
-@ 
-<<admbrun2, results=hide, echo = FALSE>>=
-if(running.admb) {
-  makeAD(model.name)
-  runAD(model.name)
-  } .getrep.andy(model.name)
-@ 
-Model being examined here is from {\tt \Sexpr{model.name}.tpl}, and we {\bf are}~{\bf \Sexpr{if(!running.admb) paste("not")}} re-running ADMB here. The {\tt .getrep.andy()} function extracts the data into the list {\tt PBSfish}, which I {\bf won't} unpack here so that the previous {\tt pat} etc. still refer to the default.
-
-**PROBABLY HAVE TO CHANGE THAT, and change table to use PBSfishdef
-
-Think I've now done above a better way, by loading in original.
-\begin{table}[htp]       
-\centering
-\begin{tabular}{ccc}
-\hline
-Parameter & Default estimate & Modified data estimate\\
-\hline
-$\rho$ & \Sexpr{signif(rho, sf)} & \Sexpr{signif(PBSfish$rho, sf)} \\
-$\sigma_1$ & \Sexpr{signif(sqrt(sig12), sf)} & \Sexpr{signif(sqrt(PBSfish$sig12), sf)}\\
-%& & ~~I'm using {\tt sqrt(PBSfish\$sig12)}\\
-$\tau_1$ & \Sexpr{signif(sqrt(tau12), sf)} & \Sexpr{signif(sqrt(PBSfish$tau12), sf)} \\
-$\tau_2$ & \Sexpr{signif(sqrt(tau22), sf)} & \Sexpr{signif(sqrt(PBSfish$tau22), sf)} \\
-$M$ & \Sexpr{signif(mmor, sf)} & \Sexpr{signif(PBSfish$mmor, sf)} \\
-$\alpha$ & \Sexpr{signif(al, sf)} & \Sexpr{signif(PBSfish$al, sf)} \\
-$\beta_1$ & \Sexpr{signif(bta[1], sf)} & \Sexpr{signif(PBSfish$bta[1], sf)} \\
-$q_1$ & \Sexpr{signif(qq[1], sf)} & \Sexpr{signif(PBSfish$qq[1], sf)} \\
-$q_2$ & \Sexpr{signif(qq[2], sf)} & \Sexpr{signif(PBSfish$qq[2], sf)}\\
-$\gamma$ & \Sexpr{signif(gma, sf)} & \Sexpr{signif(PBSfish$gma, sf)}\\
-$R$ & \Sexpr{signif(rmean, sf)} & \Sexpr{signif(PBSfish$rmean, sf)}\\
-$R_1 = N_{1,1}$ & \Sexpr{signif(Nat[1,1], sf)} & \Sexpr{signif(PBSfish$Nat[1,1], sf)}\\
-$R_{38} = N_{1,38}$ & \Sexpr{signif(Nat[1,38], sf)} & \Sexpr{signif(PBSfish$Nat[1,38], sf)}\\
-$B_1$ & \Sexpr{signif(Bt[1], sf)} & \Sexpr{signif(PBSfish$Bt[1], sf)}\\
-$B_{38}$ & \Sexpr{signif(Bt[38], sf)} & \Sexpr{signif(PBSfish$Bt[38], sf)}\\
-\hline
-\end{tabular}
-\caption{\label{tab:parama} Parameter estimates from the default model, plus the model with the 1986 and 1988 data modified. Can see that they are identical.}
-\end{table}
-
-Table \ref{tab:parama} shows that the estimates are identical. 
-
-Again, we will have {\tt PBSfish\$..} for new results.
-\begin{table}[htp]       
-\centering
-\begin{tabular}{ccc}
-\hline
-Parameter & Default estimate & Modified data estimate\\
-\hline
-$\rho$ & \Sexpr{signif(rho, sf)} & \Sexpr{signif(PBSfish$rho, sf)} \\
-$\sigma_1$ & \Sexpr{signif(sqrt(sig12), sf)} & \Sexpr{signif(sqrt(PBSfish$sig12), sf)}\\
-%& & ~~I'm using {\tt sqrt(PBSfish\$sig12)}\\
-$\tau_1$ & \Sexpr{signif(sqrt(tau12), sf)} & \Sexpr{signif(sqrt(PBSfish$tau12), sf)} \\
-$\tau_2$ & \Sexpr{signif(sqrt(tau22), sf)} & \Sexpr{signif(sqrt(PBSfish$tau22), sf)} \\
-$M$ & \Sexpr{signif(mmor, sf)} & \Sexpr{signif(PBSfish$mmor, sf)} \\
-$\alpha$ & \Sexpr{signif(al, sf)} & \Sexpr{signif(PBSfish$al, sf)} \\
-$\beta_1$ & \Sexpr{signif(bta[1], sf)} & \Sexpr{signif(PBSfish$bta[1], sf)} \\
-$q_1$ & \Sexpr{signif(qq[1], sf)} & \Sexpr{signif(PBSfish$qq[1], sf)} \\
-$q_2$ & \Sexpr{signif(qq[2], sf)} & \Sexpr{signif(PBSfish$qq[2], sf)}\\
-$\gamma$ & \Sexpr{signif(gma, sf)} & \Sexpr{signif(PBSfish$gma, sf)}\\
-$R$ & \Sexpr{signif(rmean, sf)} & \Sexpr{signif(PBSfish$rmean, sf)}\\
-$R_1 = N_{1,1}$ & \Sexpr{signif(Nat[1,1], sf)} & \Sexpr{signif(PBSfish$Nat[1,1], sf)}\\
-$R_{38} = N_{1,38}$ & \Sexpr{signif(Nat[1,38], sf)} & \Sexpr{signif(PBSfish$Nat[1,38], sf)}\\
-$B_1$ & \Sexpr{signif(Bt[1], sf)} & \Sexpr{signif(PBSfish$Bt[1], sf)}\\
-$B_{38}$ & \Sexpr{signif(Bt[38], sf)} & \Sexpr{signif(PBSfish$Bt[38], sf)}\\
-\hline
-\end{tabular}
-\caption{\label{tab:paramb} Parameter estimates from the default model, plus the model with the 1992 data modified. Expect some differences, and find that some values do indeed change, even in the second significant digit.}
-\end{table}
-
-
-\end{document}
-
-

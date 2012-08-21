@@ -3,7 +3,10 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-08-17  Rowan
+0.10  2011-08-21  Rowan
+  - Updated functions in R files 'runSweave.r', 'runSweaveMCMC.r', and 'PBSscape.r';
+	separated menu functions from 'PBSscape.r' to 'menuFuns.r'. (RH 8/21)
+  - Updated Sweave files 'run-master.Snw' and 'run-masterMCMC.Snw'. (8/21)
   - Updated functions 'plt.mcmcGraphs' and 'plotSnail' to work more generally. (AME 8/17)
   - Cleaned and debugged 'run-masterMCMC.Snw' further; still not finished for fixed M & H options. (AME 8/17)
   - Updated 'panel.curve' in  function 'plotDensPOPparsPrior'. (AME 8/16)

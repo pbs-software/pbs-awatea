@@ -41,6 +41,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"R0.mpd","refPointsList","refs","resFileList","rpType",
 	"Series","sigmaR","stddat",
 	"use.Pnames",
-	"variable"),
+	"variable",
+	"years"),
 	package="PBSawatea")
 

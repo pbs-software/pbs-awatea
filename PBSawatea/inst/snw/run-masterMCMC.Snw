@@ -105,24 +105,8 @@ Latest is \today, with \Sexpr{print(version$version.string)}.
 
 % First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
-# '@variables' replaced by runSweave.
 cwd = "@cwd"            # Top level directory; all models occur below this one. 
-#rm(list=ls())  
-# require(PBSfishery)   # also loads mapping, modelling, data, RODBC
-# require(PBSadmb)      # 1st run of these will show package numbers etc.
-#require(PBSmodelling)
-#require(xtable) 
-#require(lattice)
-# readADopts()
-# Arni Magnusson's support functions for Awatea.
-#library(scape)
-# Arni Magnusson's support functions for Awatea MCMC.
-#library(scapeMCMC)
-# Data manipulation functions from CRAN.
-#library(gdata)
 
-# Function Definitions 
-#source("../../ymrScape.r")
 @ 
 
 % '@variables' replaced by function 'runSweave' to create individual Sweaves for runs and reweightings.
@@ -132,16 +116,10 @@ run.dir        = "@run.dir"
 fig.dir        = "@fig.dir"
 msy.dir        = "@msy.dir"
 prj.dir        = "@prj.dir"
-running.awatea = @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+running.awatea = @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea. 
 @ 
 <<awatea.run, results=hide, echo = FALSE>>=
 if(running.awatea) {
-  # makeAD(model.name)
-  # runAD(model.name)
-  # need to go up a directory, as running Awatea there and doing 
-  #  figures here
-  #wd = getwd()
-  #setwd("..")
   setwd(run.dir)
   shell( paste("awatea -ind ", model.name,".txt -nohess", sep=""))
   #  HAVE to do hess for MCMC
@@ -177,19 +155,21 @@ Plotting MCMC output for model {\tt \Sexpr{model.name}}.
 
 \noindent {\tt Run06}: Upon the advice of the POP working group (meeting 2012-08-01) the age composition was shortened to 30 age bins, where 30 acts as a plus class. Also in this run, a third survey series (GB Reed: 1967-70) was added. Note that Awatea currently has an indexing bug in the output routine regarding survey (and possibly commercial) catch-at-age fits. Therefore, the last survey (WCVI Synoptic) is labelled the first (and survey 2 = NMFS Triennial, survey 3 = GB Reed). \newline
 
-\noindent {\tt Run07}: Same as {\tt Run06} except for placing priors on natural mortality and selectivity. M is fixed to the mean of the prior. \newline
+\noindent {\tt Run07}: Same as {\tt Run06} except for placing priors on natural mortality and selectivity. $M_1$ and $M_2$ are fixed to the mean of the prior, steepness $h$ is fixed.  \newline
 
-\noindent {\tt Run08}: Same as {\tt Run07} except M is estimated. \newline
+\noindent {\tt Run08}: Same as {\tt Run07} except $M_1, M_2$ and $h$ are estimated. \newline
+
+Not fully automated: 
+
+- Table of summary statistics (switches fine if $M_s$ and/or $h$ are fixed/estimated, but won't add extra parameters in (fine for 3CD, will have to tweak for 5DE). 
+
+- pairs plots, need to comment in/out inclusion of figures depending on numbers of parameters.
+
+- ignore the final few tables, which I haven't checked yet (it just blanks them, presumably as the values are not calculated).
 
 \medskip
 
 % \noindent Using Run29 and Run30 as 'Estimate $M$' and 'Fix $M$' main runs in YMR write-up, with Run24 and Run28 mentioned in as sensitivites to including simple ageing error.
-
-% GOT TO HERE ending for Sweave
-% \end{document}
-% <<stopping>>=
-% stop("GOT TO HERE")
-% @ 
 
 
 <<fromscape, results=hide, echo=FALSE>>=
@@ -205,7 +185,7 @@ trellis.device(device="postscript", color=TRUE)   # for colour .eps
 # Load in .res file.
 setwd(fig.dir) 
 #currentRes <- importCol2(paste("../", model.name, ".res", sep=""), 
-currentRes = importRes(paste(run.dir,"/", model.name, ".res", sep=""), 
+currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
              Dev=TRUE, CPUE=TRUE, Survey=TRUE, 
              CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
 # maybe should be CPUE=cpue
@@ -220,39 +200,21 @@ sigmaR = currentRes$extra$residuals$p_log_RecDev[6]
 mainTitle <- "@sppname"
 
 # Minimum data year for tuning index.
-minCpueYr <- 1940
+# minCpueYr <- 1940
 #ACH: I'm not sure exactly what this is for but I set it to the start year
-
-# Set the policy list for projection plots here.
-#policy <- c( "0","400","800","1200","1600","2000" )
-# Don't think I used for POP
-# policy <- c( "0","100","200","300","400","500","600","700",
-#              "800","900","1000","1100","1200" )
-
-# Set the reference years and functions for performance measures.
-# <deleted - see popScape2.r>
-
-# AME loading in automatically the MCMC and projection file, to
-#  save having to do the menus (good for debugging, but presumably
-#  will give error if file not there, so need to remove for non-MCMC)
 
 # Awatea MCMC.
 currentMCMC <- importMCMC( dir=".", quiet=FALSE )
 assign( "currentMCMC", currentMCMC, pos=1 )
 
 num.MCMC = dim(currentMCMC$P)[1]     # number of MCMC samples
-currentMCMCorig = currentMCMC  
+# currentMCMCorig = currentMCMC  
        # to use below
 # importMCMC (a scape function) seems to get years wrong on the recruitment, see popScape2.r for details, here is the fix
 names(currentMCMC$R) = as.integer(names(currentMCMC$R)) + 1
                                         #currentRes$B$R seems one off
 # Also change names of estimated parameters to those matching my
 #  write up, and change to the same order. See POPscape2.r .
-# To see defauls given by Awatea do:
-#  names(currentMCMCorig$P)
-# Will have to do a switch for CPUE. ***** and add extra surveys,
-#  Extra surveys not done automatically.
-
 # **** AME hard-wiring cannot work; RH attempt to fix: ***
 #==========================================================
 # Get the commercial and survey index series
@@ -422,7 +384,8 @@ for(i in 1:length(use.Pnames))
 row.names(priorInput) = use.Pnames       
 names(priorDistList) = use.Pnames
 
-    
+# confused that after running, those two have q_1 etc. but use.Pnames
+#  does not.
 
 # Now going to use q_1, q_2, q_3, not log q_1 etc. So rename
 #  and then change values:
@@ -464,46 +427,7 @@ names(priorDistList)[is.element(names(priorDistList),qnames)] = substring(qnames
 # End RH fix
 #==========================================================
 
-# Need this here to use as a switch for CPUE being estimated or not:
-#logbetaCPUE.prior = currentRes$extra$priors$log_BetaCPUE
-#if(logbetaCPUE.prior[1] > 0)       # Then estimating CPUE parameters
-#  {
-#    new.Pnames = c("R_0", "h", "M_1", "M_2", "mu_6", "Delta_6", "log v_6L", "log q_6", "log beta", "log q_1", "log q_2", "log q_3", "log q_4", "log q_5", "mu_1", "mu_2", "Delta_1", "Delta_2", "log v_1L", "log v_2L")
-#  names(currentMCMC$P) = new.Pnames
-#  # re-order to match Paul's results table 3:
-#  currentMCMC$P = currentMCMC$P[, c( "R_0",  "M_1", "M_2", "h",
-# "log q_1", "log q_2", "log q_3", "log q_4", "log q_5",
-# "log q_6", "log beta",
-# "mu_1", "mu_2", "mu_6",
-# "Delta_1", "Delta_2", "Delta_6",
-# "log v_1L", "log v_2L", "log v_6L")]
-#  # not going to use log for q's or beta  
-#  currentMCMC$P[,"log q_6"] = exp(currentMCMC$P[,"log q_6"])
-#  names(currentMCMC$P)[names(currentMCMC$P) == "log q_6"] = "q_6"
-#  }  else        # no beta or q_6
-#  {                                
-#    new.Pnames = c("R_0", "h", "M_1", "M_2", "mu_6", "Delta_6", "log v_6L", "log q_1", "log q_2", "log q_3", "log q_4", "log q_5", "mu_1", "mu_2", "Delta_1", "Delta_2", "log v_1L", "log v_2L")
-#    names(currentMCMC$P) = new.Pnames
-#    # re-order to match Paul's results table 3:
-#    currentMCMC$P = currentMCMC$P[, c( "R_0",  "M_1", "M_2", "h",
-# "log q_1", "log q_2", "log q_3", "log q_4", "log q_5",
-# "mu_1", "mu_2", "mu_6",
-# "Delta_1", "Delta_2", "Delta_6",
-# "log v_1L", "log v_2L", "log v_6L")]
-#  }
-
-# Now going to use q_1, q_2, q_3, not log q_1 etc.
-#currentMCMC$P[,"log q_1"] = exp(currentMCMC$P[,"log q_1"])
-#currentMCMC$P[,"log q_2"] = exp(currentMCMC$P[,"log q_2"])
-#currentMCMC$P[,"log q_3"] = exp(currentMCMC$P[,"log q_3"])
-#currentMCMC$P[,"log q_4"] = exp(currentMCMC$P[,"log q_4"])
-#currentMCMC$P[,"log q_5"] = exp(currentMCMC$P[,"log q_5"])
-
-#names(currentMCMC$P)[names(currentMCMC$P) == "log q_1"] = "q_1"
-#names(currentMCMC$P)[names(currentMCMC$P) == "log q_2"] = "q_2"
-#names(currentMCMC$P)[names(currentMCMC$P) == "log q_3"] = "q_3"
-#names(currentMCMC$P)[names(currentMCMC$P) == "log q_4"] = "q_4"
-#names(currentMCMC$P)[names(currentMCMC$P) == "log q_5"] = "q_5"
+# Deleting lots of commented out code, 20th August 2012.
 
 # Also have to import vulnerable biomass from vulnBiom.pst, as it's
 #  not done in importMCMC. Can just do as a data table. Has columns
@@ -608,17 +532,15 @@ projYearsNum   = length(projYearsNames)
 Bpen.MCMC = currentMCMC$B[, rev(names(currentMCMC$B))[2]]
      # spawning biomass for penultimate year of MCMC
 
-# Rowan's fiddle, I think for RfirstProj. Not sure how it matters
-#  elsewhere. Think it's needed for decision tables if h fixed,
-#  but might mess up elsewhere (as currentMCMC$P will have h at the
-#  end but that won't be in use.Pnames
+
+# Need a vector of h for projections, so if h not estimated
+#  make hForProj just replicate the mpd value:
 
 if (!is.element("h",use.Pnames))
-   {
-	currentMCMC$P$h = rep(currentRes$extra$parameters$h, dim(currentMCMC$P)[[1]])
-        stop("Note that h is fixed but being replicated - comment this out but be aware the rest might mess up")
-   }     
-RfirstProj = srFun(Bpen.MCMC, R0 = currentMCMC$P$R_0, h=currentMCMC$P$h, B0=B0.MCMC)
+  {hForProj = rep(currentRes$extra$parameters$h, num.MCMC) } else 
+  { hForProj = currentMCMC$P$h }
+  
+RfirstProj = srFun(Bpen.MCMC, R0 = currentMCMC$P$R_0, h=hForProj, B0=B0.MCMC)
 
 # Stochastic multiplier, will be same for all strategies as random
 #  numbers currentProj$eps[[j]] are the same for each strategy j
@@ -629,7 +551,7 @@ for(j in 1:length(currentProj$eps) )    # loop over policies
   junk = apply(NN, 2, function(i, B, R0, h, B0) {
    srFun(as.numeric(B[i,]), h = h[i], R0=R0[i], B0=B0[i] ) },
    B = currentProj$B[[j]],
-   R0 = currentMCMC$P$R_0, h = currentMCMC$P$h, B0=B0.MCMC)
+   R0 = currentMCMC$P$R_0, h = hForProj, B0=B0.MCMC)
        # Rowan's trick for using apply on each row.
   junk = t(junk)
   junk = as.data.frame(junk)
@@ -858,245 +780,24 @@ B0.mpd = Bt.mpd[1]       #****CHANGE*** if change init cdts.
 Vt.mpd = currentRes$B$V
 logRecDev.mpd = currentRes$Dev$Annual
 # Also equals currentRes$extra$parameters$log_RecDev from Rowan's 'extra' sublist  in currentRes.
-# From Rowan's extra function, to give the mpd's:
-# **CAN probably delete as will be the first point of the MCMC 
-#  runs. And so will have general. The above ones will always be 
-#  calculated
-# R0.mpd = currentRes$extra$parameters$R0
-# M1.mpd = currentRes$extra$parameters$M1[1]
-# M2.mpd = currentRes$extra$parameters$M1[2]
-# h.mpd = currentRes$extra$parameters$h
-# qvec.mpd = exp(currentRes$extra$parameters$log_qsurvey) # surveys
 
-# CPUE:
-# qCPUE.mpd = exp(currentRes$extra$parameters$log_qCPUE)  # q for CPUE
-# betaCPUE.mpd = exp(currentRes$extra$parameters$log_BetaCPUE)
-
-# survey selectivities:
-# muvec.mpd = currentRes$extra$parameters$surveySfull    
-# deltavec.mpd = currentRes$extra$parameters$survey_SfullDelta 
-# logvvec.mpd = currentRes$extra$parameters$log_surveyvarL
-
-# commercial selectivities:
-# mu6.mpd = currentRes$extra$parameters$Sfullest    # comm mu
-# delta6.mpd = currentRes$extra$parameters$SfullDelta
-# logv6.mpd = currentRes$extra$parameters$log_varLest
-
-# Keep these for now, but hopefully won't need (R0.prior is referred to in a caption)
-# From Rowan's extra function, to give the priors, not all are _prior
-# R0.prior = currentRes$extra$priors$R0_prior
-# M1.prior = currentRes$extra$priors$M1_prior[1,] 
-# M2.prior = currentRes$extra$priors$M1_prior[2,]
-# h.prior = currentRes$extra$priors$h_prior
-# logqvec.prior = currentRes$extra$priors$log_qsurvey_prior# surveys, matrix
-
-# CPUE:
-# logqCPUE.prior = currentRes$extra$priors$log_qCPUE  # q for CPUE
-#    moved next one to above to use as switch when changing names
-#    of MCMC posteriors.
-# logbetaCPUE.prior = currentRes$extra$priors$log_BetaCPUE
-
-# survey selectivities (all matrices):
-# muvec.prior = currentRes$extra$priors$surveySfull_prior
-# deltavec.prior = currentRes$extra$priors$p_surveySfulldelta 
-# logvvec.prior = currentRes$extra$priors$log_surveyvarL_prior
-
-# commercial selectivities:
-# mu6.prior = currentRes$extra$priors$p_Sfullest    # comm mu
-# delta6.prior = currentRes$extra$priors$p_Sfulldelta
-# logv6.prior = currentRes$extra$priors$log_varLest_prior
-
-##### Debugged to here (RH). AME continued above and below. #####
-
-
-# To make a list of priors to use in plotDensPOPParsPrior(). 
-#  Commenting these out, should be able to delete (will be kept 
-#  in PBSawatea before 15th August 2012.
-
-# Might need this to do automatically:
-# sapply(currentRes$extra$priors, function(x) {if(is.array(x)) return(x[,1]) else return(x[1])})
-
-#priorDistList = list()     # Need a list to be functions to go into
-#priorBoundsList = list()      # panel.curve
-                           # And need bounds for panel.curve, which
-                           #  are a bit fiddly from Rowan's
-                           #  currentRes$extra$priors  as order is
-                           #  different and q's are grouped, so
-                           #  panel.number() can't be used. Should
-                           #  tidy all this up afterwards.
-#  i = 1    # i to increment so get List of correct length to use
-         #  panel.number() in panel.curve
-
-#  priorDistList[[i]] = function(x) 
-#      { dunif(x, min = R0.prior[2], max = R0.prior[3])
-#      }
-#  priorBoundsList[[i]] = c( R0.prior[2], R0.prior[3])
-#  i = i+1
-#
-#  if(length(currentMCMC$P$M_1) > 0)    # Then estimating M:
-#    {
-#      priorDistList[[i]] = function(x) 
-#        { dnorm(x, mean=M1.prior[5], sd=M1.prior[6])
-#        }
-#      priorBoundsList[[i]] = c( M1.prior[2], M1.prior[3])
-#      i = i+1
-#    
-#      priorDistList[[i]] = function(x) 
-#        { dnorm(x, mean=M2.prior[5], sd=M2.prior[6])
-#        }
-#      priorBoundsList[[i]] = c( M2.prior[2], M2.prior[3])
-#      i = i+1
-#    }
-
-    # For h, pars in Awatea input are 4.574, 2.212, checking these
-    #  are the shape1, shape2 parameters, which they are because
-    #  these give the same prior for h as we had for POP:
-    # mean(rbeta(100000, 4.574, 2.212))
-    # [1] 0.674526
-    # sd(rbeta(100000, 4.574, 2.212))
-    # 0.1680018                # AME added length(  to unique 16/2/12
-#	if(length(currentMCMC$P$h)>0 && length(unique(currentMCMC$P$h))>1) {   # Then estimating h: (RH note: temp. patch above = artificially populated h when h is fixed)
-#		priorDistList[[i]] = function(x) { dbeta(x, h.prior[5], h.prior[6]) }
-#		priorBoundsList[[i]] = c( h.prior[2], h.prior[3])
-		i = i+1
-#	}
-  # q1
-#  priorDistList[[i]] = function(q)
-#       { (q*( logqvec.prior[1,3] - logqvec.prior[1,2]))^(-1)
-#       }
-        # log q uniform between a and b, then pdf for q is
-        #  1/(q (b-a)) between exp(a) and exp(b)
-        #  assuming don't need to plot outside of bounds. This
-        #  didn't work as just returned single NA for a vector
-        #  which is what panel.curve sends. (should've used & not &&)
-      #if(x > exp(logqvec.prior[1,2]) && x < exp(logqvec.prior[1,3]))
-      #    {
-      #      y = (x*( logqvec.prior[1,3] - logqvec.prior[1,2]))^(-1)
-      #    } else
-      #    { y = NA
-      #    }
-      #  return(y)  
-#  priorBoundsList[[i]] = c( exp(logqvec.prior[1,2]),
-#      exp(logqvec.prior[1,3]))   # Need to exp as not plotting on log
-#  i = i+1
-
-    # q2     Have to increment the [[]], and the logqvec.prior[*,]
-#  priorDistList[[i]] = function(x)
-#       { (x*( logqvec.prior[2,3] - logqvec.prior[2,2]))^(-1)
-#       }
-#  priorBoundsList[[i]] = c( exp(logqvec.prior[2,2]),
-#      exp(logqvec.prior[2,3]))   # Need to exp as not plotting on log
-#  i = i+1
-
-    # q3     Have to increment the [[]], and the logqvec.prior[*,]
-#  priorDistList[[i]] = function(x)
-#       { (x*( logqvec.prior[3,3] - logqvec.prior[3,2]))^(-1)
-#       }
-#  priorBoundsList[[i]] = c( exp(logqvec.prior[3,2]),
-#      exp(logqvec.prior[3,3]))   # Need to exp as not plotting on log
-#  i = i+1
-
-    # q4     Have to increment the [[]], and the logqvec.prior[*,]
-#  priorDistList[[i]] = function(x)
-#       { (x*( logqvec.prior[4,3] - logqvec.prior[4,2]))^(-1)
-#       }
-#  priorBoundsList[[i]] = c( exp(logqvec.prior[4,2]),
-#      exp(logqvec.prior[4,3]))   # Need to exp as not plotting on log
-#  i = i+1
-
-    # q5     Have to increment the [[]], and the logqvec.prior[*,]
-#  priorDistList[[i]] = function(x)
-#       { (x*( logqvec.prior[5,3] - logqvec.prior[5,2]))^(-1)
-#       }
-#  priorBoundsList[[i]] = c( exp(logqvec.prior[5,2]),
-#      exp(logqvec.prior[5,3]))   # Need to exp as not plotting on log
-#  i = i+1
-
-    # mu1, row 1 of muvec.prior
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=muvec.prior[1,5], sd=muvec.prior[1,6])
-#      }
-#  priorBoundsList[[i]] = c( muvec.prior[1,2], muvec.prior[1,3])
-#i = i+1
-
-    # mu2, row 2 of muvec.prior
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=muvec.prior[2,5], sd=muvec.prior[2,6])
-#      }
-#  priorBoundsList[[i]] = c( muvec.prior[2,2], muvec.prior[2,3])
-#  i = i+1
-
-    # mu3, mu4, mu5 fixed.
-
-    # mu6
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=mu6.prior[5], sd=mu6.prior[6])
-#      }
-#  priorBoundsList[[i]] = c( mu6.prior[2], mu6.prior[3])
-#  i = i+1
-
-    # Delta1, row1 of deltavec.prior
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=deltavec.prior[1,5], sd=deltavec.prior[1,6])
-#      }
-#  priorBoundsList[[i]]= c(deltavec.prior[1,2],deltavec.prior[1,3])
-#  i = i+1
-
-    # Delta2, row2 of deltavec.prior
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=deltavec.prior[2,5], sd=deltavec.prior[2,6])
-#      }
-#  priorBoundsList[[i]]= c(deltavec.prior[2,2],deltavec.prior[2,3])
-#  i = i+1
-
-    # Delta6, delta6.prior
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=delta6.prior[5], sd=delta6.prior[6])
-#      }
-#  priorBoundsList[[i]]= c(delta6.prior[2],delta6.prior[3])
-#  i = i+1
-
-    # log var1L, row1 of logvvec.prior
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=logvvec.prior[1,5], sd=logvvec.prior[1,6])
-#      }
-#  priorBoundsList[[i]]= c(logvvec.prior[1,2],logvvec.prior[1,3])
-#  i = i+1
-
-    # log var2L, row2 of logvvec.prior
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=logvvec.prior[2,5], sd=logvvec.prior[2,6])
-#      }
-#  priorBoundsList[[i]]= c(logvvec.prior[2,2],logvvec.prior[2,3])
-#  i = i+1
-
-    # log var6L, logv6.prior
-#  priorDistList[[i]] = function(x) 
-#      { dnorm(x, mean=logv6.prior[5], sd=logv6.prior[6])
-#      }
-#  priorBoundsList[[i]]= c(logv6.prior[2],logv6.prior[3])
-
+# AME deleted lots of commented out code. 20th August 2012.
 
 @ 
 
 <<plottingFigs, results=hide, echo=FALSE>>=
 # Moved from above, as now have currentMCMC$U calcs
-# mainMenu() # don't want menu, just choose which:
-# plt.mpdGraphs( currentRes, save=TRUE )
-      #some now more correctly use MCMC results [don't think so now]
 # plt.idx( currentRes$Survey,main="Survey Indices") # wasn't called 
 #  in plt.mpdGraphs. Doing it here spits out SD of standardised 
 #  residuals also. May be useful for iterative reweighting?
 
 
-# plt.mcmcGraphs( currentMCMC, currentProj, save=TRUE, 
-#                 # xlim.rec=c(0,50000) , 
-#                 plotPolicies = names(projObj$Y[1:6]),
-#                 onePolicy=names(projObj$Y[2]) )
+plt.mcmcGraphs( currentMCMC, currentProj, save=TRUE, 
+                 plotPolicies = names(currentProj$Y[1:6]),
+                 onePolicy = names(currentProj$Y[2]) )
               # Change policy options if want other catch policies 
               #  shown. Set up for length(plotPolicies)=6
-              # xlimrec is x axis for recruitment posteriors, setting
-              #  here for YMR.
+              # See help for other options.
 # close.allWin()
 
 
@@ -1108,12 +809,29 @@ ptab = function(xx)
           sep="", collapse="")) 
   }
 qtab = function(xx.MCMC, dig=0)     # dig is number of dec places
-  { print(paste( c( round(quantile(xx.MCMC, 0.05), digits=dig), 
-         " & ", round(quantile(xx.MCMC, 0.50), digits=dig), 
-         " & ", round(quantile(xx.MCMC, 0.95), digits=dig)), 
+  { print(paste( c( prettyNum(round(quantile(xx.MCMC, 0.05), 
+                                  digits=dig), big.mark=","), 
+         " & ", prettyNum(round(quantile(xx.MCMC, 0.50), digits=dig),
+                                  big.mark=","),
+         " & ", prettyNum(round(quantile(xx.MCMC, 0.95), digits=dig),
+                                  big.mark=",")), 
          sep="", collapse=""))
   }  
 
+# For q_i in table, values can vary between runs, so set to number
+#  of significant digits. NOT USED, just doing 4 decimal places
+#  for all. 
+# sapply(signif(x,3), sprintf, fmt="%#.3g")   # try that for 
+#  1.3001  to be 1.300.   Haven't played with yet.
+qqtab = function(xx.MCMC, dig=3)     # dig is number sig digits
+  { print(paste( c( prettyNum(signif(quantile(xx.MCMC, 0.05), 
+                                  digits=dig), big.mark=","), 
+        " & ", prettyNum(signif(quantile(xx.MCMC, 0.50), digits=dig),
+                                  big.mark=","),
+        " & ", prettyNum(signif(quantile(xx.MCMC, 0.95), digits=dig),
+                                  big.mark=",")), 
+         sep="", collapse=""))
+  }  
 
 
 
@@ -1127,15 +845,6 @@ qtab = function(xx.MCMC, dig=0)     # dig is number of dec places
 # Copy and run this for pairs plots        to
 # text(currentRes$B$SB, currentRes$B$U, 1:72)
 
-# For fits:
-#> windows(); plotBubbles(yy, dnam=TRUE, size=0.08, hide0=TRUE)
-#>
-
-# Also want to do catches and biomass predictions
-# plot(years[-length(years)], Ct)
-# > plot(years, Bt.mpd, ylim=c(0,200000))
-# > plot(years, Bt.mpd, ylim=c(0,120000))
-# > plot(years[-length(years)], Ct)
 
 # Want to report the mean of the median recruitments for past and
 #  projections.
@@ -1167,11 +876,15 @@ meanRecMed = mean(recMed)
 %  as plt.mcmcGraphs won't produce pairs2 or pairs3 (and will go
 %  up to pairs5). May not be easily generalisable, given
 %  Latex will depend on R - but can just comment out or add more in.
+% This didn't work, so just do manually.
+% <<pairsPlots, results=tex, echo=FALSE>>=
+% if(length(use.Pnames) > 6 )
+%   { print(paste(" \\ymrfig{pairs2}{Pairs plot for second six parameters.}")) }
+% @ 
 
-\ymrfig{pairs2}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for second six parameters for run \Sexpr{model.name}.}
+\ymrfig{pairs2}{Pairs plot for second six parameters.}
 
-
-\ymrfig{pairs3}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for third set of parameters for run \Sexpr{model.name}.}
+% \ymrfig{pairs3}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for third set of parameters for run \Sexpr{model.name}.}
 
 % \ymrfig{pairs4}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for ** parameters for run \Sexpr{model.name}.}
 
@@ -1202,13 +915,15 @@ meanRecMed = mean(recMed)
 
 \ymrfig{pdfRecruitment3}{As for Figure \ref{fig:pdfRecruitment1} for years 1988-2011.}
 
-\ymrfig{pdfRecruitment4}{As for Figure \ref{fig:pdfRecruitment1} for years 2012-\Sexpr{currYear}.}
+\ymrfig{pdfRecruitment4}{As for Figure \ref{fig:pdfRecruitment1} for years 2012-\Sexpr{currYear-1}.}
 
 \ymrfig{recruitsMCMC}{Marginal posterior distribution of recruitment in 1000's of age 1 fish plotted over time for run \Sexpr{model.name}. The boxes give the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results.}
 
+\ymrfig{VBcatch}{Vulnerable biomass (boxplots) and commercial catch (vertical bars) over time for run \Sexpr{model.name}. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. Catch is shown to compare its magnitude to the estimated vulnerable biomass.}
+
 \ymrfig{exploitMCMC}{Marginal posterior distribution of exploitation rate plotted over time for run \Sexpr{model.name}. The boxes give the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results.}
 
-\ymrfig{VBcatch}{Vulnerable biomass (boxplots) and commercial catch (vertical bars) over time for run \Sexpr{model.name}. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. Catch is shown to compare its magnitude to the estimated vulnerable biomass.}
+
 
 \ymrfig{BVBnorm}{Changes in $B_t / B_0$ and $V_t / V_0$ (spawning and vulnerable biomass relative to virgin levels) over time for run \Sexpr{model.name}, shown as the medians of the MCMC posteriors.}
 
@@ -1232,10 +947,16 @@ meanRecMed = mean(recMed)
 
 \clearpage     % to get tables at end
 
+% To get , in for 1,000s do   big.mark='','' in the following
+%      print(xtable(refProbs5$URP), format.args=list(big.mark=","))
+% Would have to make the table in R to then use xtable, but then
+%  might be tricky to fix the number of sigdigs. Just put in commas
+%  for final version.
+
 \begin{table}[tp]
 \centering
 \caption{\label{tab:MCMCpar} 
-Summary statistics of MCMC results for estimated parameters for run \Sexpr{model.name}. Parameters are defined in Appendix F. Except for $M_1$ and $M_2$, subscripts 1 to \Sexpr{Nsurv} correspond to the fishery-independent surveys, and subscript \Sexpr{Nsurv+1} to the commercial fishery.***NOT FULLY AUTOMATED TABLE YET***.}
+Summary statistics of MCMC results for estimated parameters for run \Sexpr{model.name}. Parameters are defined in Appendix F. Except for $M_1$ and $M_2$, subscripts 1 to \Sexpr{Nsurv} correspond to the fishery-independent surveys, and subscript \Sexpr{Nsurv+1} to the commercial fishery.}
 % Fiddling for now, need to generalise. ***
 \begin{tabular}{lrrr} 
 \hline
@@ -1246,11 +967,11 @@ Parameter & \multicolumn{3}{c}{Percentile}\\
 $R_0$    & \Sexpr{qtab(currentMCMC$P$R_0)} \\
 $M _ 1$  & \Sexpr{ if(length(currentMCMC$P$M_1) > 0) qtab(currentMCMC$P$M_1,dig=4) else  print(paste( "- & - & -", collapse = "")) } \\
 $M _ 2$  & \Sexpr{ if(length(currentMCMC$P$M_2) > 0) qtab(currentMCMC$P$M_2,dig=4)  else  print(paste( "- & - & -", collapse = "")) } \\
-$h$        & \Sexpr{qtab(currentMCMC$P$h, dig=3)} \\
-$q_1$      & \Sexpr{qtab(currentMCMC$P$q_1, dig=5)} \\
-$q_2$      & \Sexpr{qtab(currentMCMC$P$q_2, dig=5)} \\
-$q_3$      & \Sexpr{qtab(currentMCMC$P$q_3, dig=5)} \\
-$q_4$      & \Sexpr{qtab(currentMCMC$P$q_4, dig=5)} \\
+$h$      & \Sexpr{ if(length(currentMCMC$P$h) > 0) qtab(currentMCMC$P$h, dig=3)  else  print(paste( "- & - & -", collapse = "")) } \\
+$q_1$      & \Sexpr{qtab(currentMCMC$P$q_1, dig=4)} \\
+$q_2$      & \Sexpr{qtab(currentMCMC$P$q_2, dig=4)} \\
+$q_3$      & \Sexpr{qtab(currentMCMC$P$q_3, dig=4)} \\
+$q_4$      & \Sexpr{qtab(currentMCMC$P$q_4, dig=4)} \\
 % $q_5$      & \Sexpr{qtab(currentMCMC$P$q_5, dig=5)} \\
 $\mu_1$    & \Sexpr{qtab(currentMCMC$P$mu_1, dig=1)} \\
 % $\mu_2$    & \Sexpr{qtab(currentMCMC$P$mu_2, dig=1)} \\
@@ -1313,20 +1034,20 @@ $V_\mathrm{MSY} / V_0$ & \Sexpr{qtab(VBmsy.MCMC / VB0.MCMC, dig=3)} \\
 # xtable(matrix( c( hbigeye100$counts), ncol=4, byrow=TRUE), digits = 0, caption="Counts for 1-100, showing every 4th seems to be higher, with every 8th being way higher.")
 
 tabdigits = 2      # number of decimal places to give
-print(xtable(refProbs5$LRP, caption="Decision table concerning the limit reference point $0.4 \\Bmsy$ for 1-5 year projections for run MODEL.NAME for a range of constant catch strategies (in tonnes). Values are P$(B_t > 0.4 \\Bmsy)$, i.e.~the probability of the spawning biomass at the start of year $t$ being greater than the limit reference point. The probabilities are based on the MCMC posterior distributions of $B_t$ and $\\Bmsy$, and are rounded to two decimal places. For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.", label="tab:LRP5", digits=tabdigits), caption.placement="top") 
-# it didn't like \Sexpr in caption=""
+print(xtable(refProbs5$LRP, caption=eval(paste("Decision table concerning the limit reference point $0.4 \\Bmsy$ for 1-5 year projections for run ", model.name, " for a range of constant catch strategies (in tonnes). Values are P$(B_t > 0.4 \\Bmsy)$, i.e.~the probability of the spawning biomass at the start of year $t$ being greater than the limit reference point. The probabilities are based on the MCMC posterior distributions of $B_t$ and $\\Bmsy$, and are rounded to two decimal places. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:LRP5", digits=tabdigits), caption.placement="top") 
+# it didn't like \Sexpr in caption="" - need eval(paste
 
-print(xtable(refProbs5$URP, caption="Decision table for the upper reference point $0.8 \\Bmsy$ for 1-5 year projections for run MODEL.NAME, such that values are P$(B_t > 0.8 \\Bmsy)$. For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.", label="tab:URP5", digits=tabdigits), caption.placement="top")
+print(xtable(refProbs5$URP, caption=eval(paste("Decision table for the upper reference point $0.8 \\Bmsy$ for 1-5 year projections for run ", model.name, ", such that values are P$(B_t > 0.8 \\Bmsy)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:URP5", digits=tabdigits), caption.placement="top")
 
 # print(xtable(refProbs5$Bmsy, caption="Decision table for MSY for 1-5 year projections for run MODEL.NAME, such that values are P$(B_t > \\Bmsy)$.", label="tab:Bmsy5", digits=tabdigits), caption.placement="top")
 
-print(xtable(refProbsB05$B00.2, caption="Decision table for the alternative limit reference point $0.2 B_0$ for 1-5 year projections for run MODEL.NAME, such that values are P$(B_t > 0.2 B_0)$. For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.", label="tab:B00.2.5yr", digits=tabdigits), caption.placement="top")
+print(xtable(refProbsB05$B00.2, caption=eval(paste("Decision table for the alternative limit reference point $0.2 B_0$ for 1-5 year projections for run ", model.name, ", such that values are P$(B_t > 0.2 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:B00.2.5yr", digits=tabdigits), caption.placement="top")
 
-print(xtable(refProbsB05$B00.4, caption="Decision table for the alternative upper reference point $0.4 B_0$ for 1-5 year projections for run MODEL.NAME, such that values are P$(B_t > 0.4 B_0)$. For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.", label="tab:B00.4.5yr", digits=tabdigits), caption.placement="top")
+print(xtable(refProbsB05$B00.4, caption=eval(paste("Decision table for the alternative upper reference point $0.4 B_0$ for 1-5 year projections for run ", model.name, " such that values are P$(B_t > 0.4 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:B00.4.5yr", digits=tabdigits), caption.placement="top")
 
-print(xtable(refProbs3Gen5$'0.5Gen3', caption="NOT CHECKED FROM HERE ONWARDS** Decision table for probabilities of satisfying the criterion of $\\leq 50 \\%$ decline over three generations, for 1-5 year projections for run MODEL.NAME. Three generations is 90 years, and since $B_0$ is the estimated spawning biomass in 1940 and projections here are only up to 5 years, the probabilites here are simply equal to P$(B_t > 0.5 B_0)$. For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.", label="tab:0.5Gen3.5yr", digits=tabdigits), caption.placement="top")
+print(xtable(refProbs3Gen5$'0.5Gen3', caption=eval(paste("NOT CHECKED FROM HERE ONWARDS** Decision table for probabilities of satisfying the criterion of $\\leq 50 \\%$ decline over three generations, for 1-5 year projections for run MODEL.NAME. Three generations is 90 years, and since $B_0$ is the estimated spawning biomass in 1940 and projections here are only up to 5 years, the probabilites here are simply equal to P$(B_t > 0.5 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:0.5Gen3.5yr", digits=tabdigits), caption.placement="top")
 
-print(xtable(refProbs3Gen5$'0.7Gen3', caption="Decision table for probabilities of satisfying the criterion of $\\leq 30 \\%$ decline over three generations, for 1-5 year projections for run MODEL.NAME. Three generations is 90 years, and since $B_0$ is the estimated spawning biomass in 1940 and projections here are only up to 5 years, the probabilites here are simply equal to P$(B_t > 0.7 B_0)$. For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.", label="tab:0.7Gen3.5yr", digits=tabdigits), caption.placement="top")
+print(xtable(refProbs3Gen5$'0.7Gen3', caption=eval(paste("Decision table for probabilities of satisfying the criterion of $\\leq 30 \\%$ decline over three generations, for 1-5 year projections for run MODEL.NAME. Three generations is 90 years, and since $B_0$ is the estimated spawning biomass in 1940 and projections here are only up to 5 years, the probabilites here are simply equal to P$(B_t > 0.7 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:0.7Gen3.5yr", digits=tabdigits), caption.placement="top")
              
            
 

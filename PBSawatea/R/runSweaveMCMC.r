@@ -1,4 +1,4 @@
-#runSweave------------------------------2012-08-15
+#runSweave------------------------------2012-08-21
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
@@ -40,7 +40,8 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	if (file.exists(mc.dir)) 
 		setwd(mc.dir)
 	else {
-		dir.create(mc.dir); setwd(mc.dir) }
+		stop(paste("MCMC directory << ",mc.dir," >> does not exist.\n",sep="")) }
+		#dir.create(mc.dir); setwd(mc.dir) }
 	if (!file.exists("run-masterMCMC.Snw"))
 		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-masterMCMC.Snw",sep=""),wd)
 	masterSweave = readLines(paste(wd,"run-masterMCMC.Snw",sep="/"))
@@ -77,7 +78,7 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	shell(cmd=paste("dvips -q ",gsub("\\.Snw$",".dvi",localName),sep=""),wait=TRUE)
 	shell(cmd=paste("ps2pdf ",gsub("\\.Snw$",".ps",localName),sep=""),wait=TRUE)
 	invisible() }
-#------------------------------------runSweaveMCMC
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^runSweaveMCMC
 
 #runMCMC------------------------------ -2012-07-18
 # Wrapper to function 'runSweaveMCMC' for MCMCs.
