@@ -1,4 +1,4 @@
-#runSweave------------------------------2012-07-26
+#runSweave------------------------------2012-08-21
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
@@ -15,6 +15,7 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 		) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave")),pos=1)
+	#getFile("gfcode")
 	#require(PBSmodelling, quietly=TRUE)
 	#require(xtable, quietly=TRUE) 
 	#require(lattice, quietly=TRUE)
@@ -64,9 +65,10 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 		tfile=tfile[!is.element(1:length(tfile),rmcpue)] }
 	priorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]",
 		"logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
-	figBites =c("survIndSer4-1","ageSurv","survResSer1","survAgeResSer1")
+	figBites =c("survIndSer4-1","ageSurv","survRes","survAgeRes")
 	for (b in c(priorBites,figBites)) {
 		Nline = grep(b,tfile)
+		if (length(Nline)==0) next
 		aline = tfile[ Nline ]
 		alines=NULL
 		for ( i in 1:Nsurvey) {
@@ -90,7 +92,7 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 	shell(cmd=paste("dvips -q ",gsub("\\.Snw$",".dvi",localName),sep=""),wait=TRUE)
 	shell(cmd=paste("ps2pdf ",gsub("\\.Snw$",".ps",localName),sep=""),wait=TRUE)
 	invisible() }
-#----------------------------------------runSweave
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^runSweave
 
 #runMPD---------------------------------2012-07-25
 # Wrapper to function 'runSweave' for MPDs.

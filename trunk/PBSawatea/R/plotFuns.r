@@ -473,7 +473,7 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
     myscales <- list(y = list(draw = FALSE, relation = "free"), 
         x = list(draw = axes, relation = "same", cex = cex.axis, 
             tck = tck,  rot = myrot,
-            alternating = TRUE), at=c(0, 50, 100, 150, 200))
+            alternating = TRUE))
             # AME: for y, relation = "same" -> relation = "free"
             # AME: for x, draw = axes -> draw = FALSE, but then no
             #       marks, so back to axes (which =TRUE)

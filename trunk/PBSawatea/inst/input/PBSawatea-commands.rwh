@@ -30,10 +30,15 @@ runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=7,rwts=0:1,cpue=TRUE,Nsurvey=3,Sn
 # The latter creates projections specified by the input file.
 # Copy MCMC results to both POPrun07/MCMC.07.01 and ./POPrun07/MCMC.07.01/Proj.07.01 (the latter preserves the projections as the MSY calculation will overwrite)
 out=runADMB("pop-3CD-07.txt",strSpp="POP",runNo=7,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
-runSweaveMCMC(strSpp="POP",filename="pop-3CD-07.txt",runNo=7,rwtNo=1,cpue=TRUE,estM=FALSE)
+runSweaveMCMC(strSpp="POP",filename="pop-3CD-07.txt",runNo=7,rwtNo=1,cpue=TRUE)  # estM parameter no longer used
 
-out=runADMB("pop-3CD-08.txt",strSpp="POP",runNo=8,doMPD=TRUE,N.reweight=0,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+out=runADMB("pop-3CD-08.txt",strSpp="POP",runNo=8,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=8,rwts=0:1,cpue=TRUE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+out=runADMB("pop-3CD-08.txt",strSpp="POP",runNo=8,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-3CD-08.txt",runNo=8,rwtNo=1,cpue=TRUE)  # estM parameter no longer used
+
+out=runADMB("pop-3CD-09.txt",strSpp="POP",runNo=9,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=9,rwts=0:1,cpue=TRUE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
 
 #--testing--
 out=runADMB("pop-3CD-99.txt",strSpp="POP",runNo=99,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)

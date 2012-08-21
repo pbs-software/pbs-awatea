@@ -1,3 +1,9 @@
+#PBSscape-------------------------------2012-08-21
+#  Modified functions from Arni Magnussen's 
+#  packages 'scape' and 'scapeMCMC'
+#-------------------------------------------AME/RH
+
+#---History---------------------------------------
 # ymrScape.r - for ymr, just the function definitions here. Calls to
 #  them will go into .Snw. Call this from .Snw. 23rd February 2011
 # SEE popScapeRuns2.r for figures to do for both runs at once, as
@@ -182,7 +188,10 @@
 # source("plotBVBnorm.r") # B/B0 and V/V0, as lattice so can use for
                         #  multiple runs. NOT as lattice now.
 
-# Adding in extra to get parameter values, from Rowan's importRes.r.
+#importCol2---------------------------- DEPRECATED
+# Modified 'importCol' with RH's 'extra' section.
+# Use function 'importRes' which is maintained.
+#----------------------------------------------AME
 importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey = FALSE,
     CAc = FALSE, CAs = FALSE, CLc = FALSE, CLs = FALSE, LA = FALSE, quiet = TRUE, extra = TRUE)
 {
@@ -615,8 +624,8 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         "Version"]
     attr(model, "info") <- info
     class(model) <- "scape"
-    return(model)
-}
+    return(model) }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importCol2
 
 
 load.allResFiles <- function( resList=NULL )  
@@ -639,9 +648,10 @@ load.allResFiles <- function( resList=NULL )
 }
 
 
+#plotB2---------------------------------2011-08-31
 # This is an alteration of Arni Magnussons "plotB" function to accommodate
 # PJS request not to show biomass prior to fishery and survey indices period.
-
+#----------------------------------------------AME
 plotB2 <- function (model, what = "d", series = NULL, years = NULL, axes = TRUE,
     div = 1, legend = "bottom", main = "", xlab = "", ylab = "",
     cex.main = 1.2, cex.legend = 1, cex.lab = 1, cex.axis = 0.8,
@@ -754,17 +764,21 @@ plotB2 <- function (model, what = "d", series = NULL, years = NULL, axes = TRUE,
         invisible(graph)
     }
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotB2
 
+
+#plotBmcmcPOP---------------------------2011-08-31
 # AME writing plotBmcmcPOP(), to plot spawning biomass and vulnerable biomass
 #  from posterior, so do as boxplot, and also the catch on same graph. So
 #  combining some of plt.quantBio and plotB2. Don't need lattice, just one
 #  figure, no panels..     Vulnerable biomass has no posterior saved, which
 #  must be why it's not been done before. Hmmm.... still worth seeing spawning
 #  though?
-  # Taking what's needed from plt.quantBio, this basically works:
-  #        plt.quantBio( currentMCMC$B, xyType=rpType ), though does 2x3 plots
-  # obj should be the specficic MCMC posterior by year (so just a data.frame),
-  #  e.g. currentMCMC$B.  currentRes1 is local currentRes.
+# Taking what's needed from plt.quantBio, this basically works:
+#        plt.quantBio( currentMCMC$B, xyType=rpType ), though does 2x3 plots
+# obj should be the specficic MCMC posterior by year (so just a data.frame),
+#  e.g. currentMCMC$B.  currentRes1 is local currentRes.
+#----------------------------------------------AME
 plotBmcmcPOP = function(obj, currentRes1 = currentRes,
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="quantBox",
@@ -814,7 +828,6 @@ plotBmcmcPOP = function(obj, currentRes1 = currentRes,
       yLim <- c(0, max(c(max(result1), max(currentRes1$B$VB)))) #range(result1)
       xLim=range(yrs1)
     }
-
   # xLegPos = xLeg*diff(xLim)+xLim[1]    # position of xLeg
   # yLegPos = yLeg*diff(yLim)+yLim[1]
 
@@ -831,9 +844,13 @@ plotBmcmcPOP = function(obj, currentRes1 = currentRes,
     # mtext( side=2, line=2, cex=1.0, "Biomass" )
   # }
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBmcmcPOP
 
+
+#plotVBcatch----------------------------2011-08-31
 # AME adding, based on plotBmcmcPOP (tweaking some)
-  #  currentMCMC$B.  currentRes1 is local currentRes.
+#  currentMCMC$B.  currentRes1 is local currentRes.
+#----------------------------------------------AME
 plotVBcatch = function(obj, currentRes1 = currentRes,
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="quantBox",
@@ -906,13 +923,16 @@ plotVBcatch = function(obj, currentRes1 = currentRes,
     # mtext( side=2, line=2, cex=1.0, "Biomass" )
   # }
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotVBcatch
 
 
+#plotBVBnorm----------------------------2011-08-31
 # AME doing, tried in separate file, but then changed that to
 #  lattice and wouldn't be good format for Arni's boxplots.
 #  Based on plotVBcatch (tweaking some)
 #  currentMCMC$B.  currentRes1 is local currentRes.
-                               # xLab - x position for label, etc.
+#  xLab - x position for label, etc.
+#----------------------------------------------AME
 plotBVBnorm = function(mcmcObj,
                    p=c(0.025,0.25,0.5,0.75,0.975),
                    xyType="quantBox",
@@ -970,15 +990,16 @@ plotBVBnorm = function(mcmcObj,
      # mtext( side=2, line=2, cex=1.0, "Biomass" )
    # }
  }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBVBnorm
 
 
-
-
+#plotRmcmcPOP---------------------------2011-08-31
 # AME adding, plotting recruitment posteriors quantiles as one graph over time.
 #  Already have the full posterior densities done.
 #  Using plotBmcmcPOP as template, but will be simpler as no extra stuff. Prob
 #   not simplifying down as much as could due to time constraints.
 # Adding yLab and then using for exploitation plot also
+#----------------------------------------------AME
 plotRmcmcPOP = function(obj, 
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="quantBox",
@@ -1032,11 +1053,12 @@ plotRmcmcPOP = function(obj,
   axis(1, at=xLim[1]:xLim[2], tcl=tcl.val, labels=FALSE)
   axis(2, at = seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotRmcmcPOP
 
 
-
-
+#plotIndex2-----------------------------2011-08-31
 # Revised version of Arni's function to confine plotting to data region.
+#----------------------------------------------AME
 plotIndex2 <- function (model, what = "c", series = NULL, axes = TRUE, same.limits = FALSE,
     between = list(x = axes, y = axes), ylim = NULL, q = 1, bar = 1,
     log = FALSE, base = 10, main = "", xlab = "", ylab = "",
@@ -1163,22 +1185,17 @@ plotIndex2 <- function (model, what = "c", series = NULL, axes = TRUE, same.limi
         invisible(graph)
     }
 }
-#plotIndex2(currentRes)
-
-
-
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotIndex2
 
 
 #--------------------------------------------------------------------#
 #                        Utility Functions                           #
 #--------------------------------------------------------------------#
-
 allEqual <- function(x)
 {
   result <- all( x==x[1] )
   result
 }
-
 
 closeAllWin <- function()
 {
@@ -1188,7 +1205,6 @@ closeAllWin <- function()
       dev.off()
 }
 
-
 graphics <- function( view="portrait" )
 {
   if ( view=="portrait" )
@@ -1196,7 +1212,6 @@ graphics <- function( view="portrait" )
   if ( view=="landscape" )
     windows( width=11, height=8.5 )
 }
-
 
 panLab <- function( x, y, txt, ... )
 {
@@ -1208,7 +1223,6 @@ panLab <- function( x, y, txt, ... )
 #  par( orig.par )
   return( NULL )
 }
-
 
 panLegend <- function( x, y, legTxt, ... )
 {
@@ -1225,11 +1239,12 @@ panLegend <- function( x, y, legTxt, ... )
 #                        Calculation Functions                       #
 #--------------------------------------------------------------------#
 
+#calc.projExpect------------------------2011-08-31
+# Calculate the expectation of projection to reference.
+# Compare refYears to projection years.
+#----------------------------------------------AME
 calc.projExpect <- function( obj, projObj, refYrs )
 {
-  # Calculate the expectation of projection to reference.
-  # Compare refYears to projection years.
-
   policyList <- names(projObj)
   projYrs <- dimnames( projObj[[1]] )[[2]]
   refYears <- as.character(refYrs)
@@ -1268,12 +1283,14 @@ calc.projExpect <- function( obj, projObj, refYrs )
   print( result )
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.projExpect
 
 
+#calc.projExpect2-----------------------2011-08-31
+# Calculate expectation (projection biomass / reference biomass).
+#----------------------------------------------AME
 calc.projExpect2 <- function( obj, projObj, refList )
 {
-  # Calculate expectation (projection biomass / reference biomass).
-
   policyList <- names(projObj)
   nPolicies <- length(policyList)
 
@@ -1323,13 +1340,15 @@ calc.projExpect2 <- function( obj, projObj, refList )
   result$refs <- refList
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.projExpect2
 
 
+#calc.projProbs-------------------------2011-08-31
+# Calculate the probability of being greater than refYears.
+# Compare refYears to projection years.
+#----------------------------------------------AME
 calc.projProbs <- function( obj, projObj, refYrs )
 {
-  # Calculate the probability of being greater than refYears.
-  # Compare refYears to projection years.
-
   policyList <- names(projObj)
   projYrs <- dimnames( projObj[[1]] )[[2]]
   refYears <- as.character(refYrs)
@@ -1368,13 +1387,15 @@ calc.projProbs <- function( obj, projObj, refYrs )
   print( result )
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.projProbs
 
 
+#calc.projProbs2------------------------2011-08-31
+# Calculate the probability of being greater than refYears.
+# Compare refYears to projection years.
+#----------------------------------------------AME
 calc.projProbs2 <- function( obj, projObj, refList )
 {
-  # Calculate the probability of being greater than refYears.
-  # Compare refYears to projection years.
-
   policyList <- names(projObj)
   nPolicies <- length(policyList)
 
@@ -1424,12 +1445,15 @@ calc.projProbs2 <- function( obj, projObj, refList )
   result$refs <- refList
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.projProbs2
 
-# AME: basing on calc.projProbs2. Calculate the reference
-#  probabilities      
+
+#calc.refProbs--------------------------2011-08-31
+# Calculate the reference probabilities (basing on calc.projProbs2)
+#----------------------------------------------AME
 calc.refProbs <- function( projObj=currentProj$B, refPlist=refPointsList )  
-{           # refPlist will be a list, LRP, URP and Bmsy are defaults
-            #  with values for each draw
+{
+  # refPlist will be a list, LRP, URP and Bmsy are defaults with values for each draw
   policyList <- names(projObj)
   nPolicies <- length(policyList)
 
@@ -1481,14 +1505,15 @@ calc.refProbs <- function( projObj=currentProj$B, refPlist=refPointsList )
   # result$refs <- refPlist
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.refProbs
 
 
-
+#calc.refVal----------------------------2011-08-31
+# Calculates the reference value for performance measures.
+# Returns a vector of length nrow(obj) reference values.
+#----------------------------------------------AME
 calc.refVal <- function( obj, refYrs, fun=mean )
 {
-  # Calculates the reference value for performance measures.
-  # Returns a vector of length nrow(obj) reference values.
-
   # Input:
   # obj: scape Biomass matrix with n rows and nYr columns.
   # refYrs: numeric years in reference period.
@@ -1507,13 +1532,15 @@ calc.refVal <- function( obj, refYrs, fun=mean )
   result <- apply( tmp,1,fun )
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.refVal
 
 
+#getYrIdx-------------------------------2011-08-31
+# Purpose is to return selected years for plotting.
+# Default is to select 5 year increments.
+#----------------------------------------------AME
 getYrIdx <- function( yrNames,mod=5 )
 {
-  # Purpose is to return selected years for plotting.
-  # Default is to select 5 year increments.
-
   # Coerce to numerice and select the years modulo "mod".
   yrVals <- as.numeric( yrNames )
   idx <- yrVals %% mod==0
@@ -1522,11 +1549,14 @@ getYrIdx <- function( yrNames,mod=5 )
   result <- yrNames[ idx ]
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^getYrIdx
 
 
+#out.pmTables---------------------------2011-08-31
+# Write the decision tables to a comma delimited file.
+#----------------------------------------------AME
 out.pmTables <- function( obj, fileName="pm", dec=3 )
 {
-  # Write the decision tables to a comma delimited file.
   nPM <- length( obj )
   for ( i in 1:(nPM-1) )
   {
@@ -1543,16 +1573,17 @@ out.pmTables <- function( obj, fileName="pm", dec=3 )
       file=paste( fileName,i,".csv",sep=""),sep="," )
   }
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^out.pmTables
 
 
+#stdRes.CA------------------------------2011-08-31
+# This implements standardised residuals for the Awatea
+# implementation of the Fournier robustified normal likelihood
+# for proportions at length. Based on PJS summary of CASAL doc and ACH change to length.
+#----------------------------------------------AME
 stdRes.CA <- function( obj, trunc=3, myLab="Age Residuals", prt=TRUE )
 {
-  # This implements standardised residuals for the Awatea
-  # implementation of the Fournier robustified normal likelihood
-  # for proportions at length. Based on PJS summary of CASAL doc and ACH change to length.
-
   # Make a column for the standardised residuals.
-  # browser()
   result <- cbind( obj,stdRes=rep(NA,nrow(obj)) )
 
   # Raw residuals.
@@ -1587,11 +1618,14 @@ stdRes.CA <- function( obj, trunc=3, myLab="Age Residuals", prt=TRUE )
   }
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^stdRes.CA
 
 
+#stdRes.index---------------------------2011-08-31
+# Compute the standardised residuals.
+#----------------------------------------------AME
 stdRes.index <- function( obj, label=NULL, prt=TRUE )
 {
-  # Compute the standardised residuals.
   res <- log(obj$Obs) - log(obj$Fit)
   stdRes <- res / obj$CV
   result <- cbind( obj,stdRes )
@@ -1604,11 +1638,14 @@ stdRes.index <- function( obj, label=NULL, prt=TRUE )
   }
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^stdRes.index
 
-# MAfun2 to work out mean ages, from Rowan's MAfun from runADMB.r.
+
+#MAfun2---------------------------------2011-05-04
+# to work out mean ages, from Rowan's MAfun from runADMB.r.
 #  4th May 2011. Don't think much changed from MAfun.
-# Call will be MAfun2(obj$CAc)
-# f is regime, don't worry for here.
+# Call will be MAfun2(obj$CAc); f is regime, don't worry for here.
+#-------------------------------------------RH/AME
 MAfun2 = function(padata,brks=NULL)  {
        # Mean age function (Chris Francis, 2011, submitted to CJFAS))
        # S = series, y = year, a = age bin, O = observed proportions,
@@ -1629,6 +1666,7 @@ MAfun2 = function(padata,brks=NULL)  {
        return(list(MAobs=mOy, MAexp=mEy, Vexp=mEy2-mEy^2, N=N, J=J))
         # observed and expected mean ages, variance of expected ages
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^MAfun2
 
 
 #--------------------------------------------------------------------#
@@ -1636,20 +1674,19 @@ MAfun2 = function(padata,brks=NULL)  {
 #--------------------------------------------------------------------#
 
 # AME introducing for YMR. Bubble plots of data:
-
 # plt.bubbles = function( obj,
 # For now just do in Sweave as quicker.
 
+#plt.ageResidsPOP-----------------------2011-08-31
 # AME changing for POP, just plotting age class resids
 #  here, not qq-plot. Moving that to new function (so can do 4 on
 #  page). See popScape.r for original.
+#----------------------------------------------AME
 plt.ageResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95)
                              ,  main=NULL )
 {
   # Input is the output from stdRes.CA
-
   # par( oma=c(2,1,1,1), mar=c(2,2,2,1), mfrow=c(2,1) )
-
   # Subset to required ages.
   obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
   if( max(diff(sort(unique(obj$Age)))) > 1)
@@ -1669,8 +1706,12 @@ plt.ageResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95)
   # text( par("usr")[1] + 0.95*diff(par("usr")[1:2]),
   #     par("usr")[3] + 0.05*diff(par("usr")[3:4]), "(a)") 
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.ageResidsPOP
 
-# AME doing for POP, just plotting qq plot here for age class resids
+
+#plt.ageResidsqqPOP---------------------2011-08-31
+# Plotting qq plot for age class resids.
+#----------------------------------------------AME
 plt.ageResidsqqPOP <- function( obj, ages=c(2,60),
                 pct=c(5,25,50,75,95),  main=NULL )
 {
@@ -1687,11 +1728,14 @@ plt.ageResidsqqPOP <- function( obj, ages=c(2,60),
   if ( !is.null(main) )
     mtext( side=3, line=-0.5, cex=1.0, outer=TRUE, main )
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.ageResidsqqPOP
 
 
+#plt.yearResidsPOP----------------------2011-08-31
 # AME adding to plot age residuals by year. Is called for comm and survs.
 #  fill.in = TRUE is to add the missing years for boxplot
 #  ..POP does not do qq plot. See popScape.r for previous.
+#----------------------------------------------AME
 plt.yearResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95),
                            main=NULL, fill.in = TRUE, ... )
 {
@@ -1712,13 +1756,16 @@ plt.yearResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95),
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, "Year" )
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.yearResidsPOP
 
-# AME adding to plot age residuals by cohort
+
+#plt.cohortResids-----------------------2011-08-31
+# Plot age residuals by cohort.
+#----------------------------------------------AME
 plt.cohortResids <- function( obj, ages=c(2,59), pct=c(5,25,50,75,95),                     main=NULL )
 {
   # Input is the CAc object from a Awatea res file. Ages to 59 as
-  #  plus-age class will mess up year-of-birth calculation. Not
-  #  automated.
+  #  plus-age class will mess up year-of-birth calculation. Not automated.
 
   # par( oma=c(2,1,1,1), mar=c(2,2,2,1), mfrow=c(2,1) )
 
@@ -1754,9 +1801,12 @@ plt.cohortResids <- function( obj, ages=c(2,59), pct=c(5,25,50,75,95),          
 
   # par( mfrow=c(1,1) )
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.cohortResids
 
 
-
+#plt.allTraces--------------------------2011-08-31
+# Plot all MCMC traces
+#----------------------------------------------AME
 plt.allTraces <- function( obj, bioYrList=NULL, recYrList=NULL, save=TRUE )
 {
   # Input a Awatea MCMC object.
@@ -1849,13 +1899,15 @@ plt.allTraces <- function( obj, bioYrList=NULL, recYrList=NULL, save=TRUE )
 
   par( mfrow=c(1,1) )
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.allTraces
 
 
+#plt.expRate----------------------------2011-08-31
+# Input an object from "load.allResFiles".
+# Plot exploitation rate against year.
+#----------------------------------------------AME
 plt.expRate <- function( obj, yLim=c(0,0.5), xLim=c(1954,2005) )
 {
-  # Input an object from "load.allResFiles".
-  # Plot exploitation rate against year.
-
   nPanels <- length(obj)
 
   par( oma=c(2,2,1,1), mar=c(2,2,1,1), mfrow=c(2,round(nPanels/2)) )
@@ -1888,9 +1940,12 @@ plt.expRate <- function( obj, yLim=c(0,0.5), xLim=c(1954,2005) )
 
   par( mfrow=c(1,1) )
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.expRate
 
 
+#plt.idx--------------------------------2011-08-31
 # AME doing postscript for POP. Adapting to five surveys for YMR
+#----------------------------------------------AME
 plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=""),...)
 {
   seriesList <- sort( unique( obj$Series ) )
@@ -1905,7 +1960,7 @@ plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=
     result <- stdRes.index( obj[idx,],
                 label=paste(main,"Series",i) )
     # windows()
-     postscript(surveyFigName[i],  height = 4, width = 3.2,
+     postscript(surveyFigName[i],  height = 6, width = 5,
          horizontal=FALSE,  paper="special")  # was 7.5, 6.0
     # png(surveyFigName[i],  height = 4, width = 3.2,
     #     horizontal=FALSE,  paper="special")
@@ -1919,12 +1974,17 @@ plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=
     #   savePlot( paste(save,i,sep=""), type="png" )
   }
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.idx
 
+
+#plotIndexNotLattice--------------------2011-08-31
 # Taking some of plt.idx, but doing plot.Index NOT as lattice
 # YMR - have five survey series, so adapting as required.
+#----------------------------------------------AME
 plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
     ssnames=paste("Ser",1:9,sep=""), ...)
-{             # obj=obj$Survey, objCPUE=obj$CPUE
+{
+  # obj=obj$Survey, objCPUE=obj$CPUE
   seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
   nseries = length(seriesList)
   # surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps",
@@ -2012,7 +2072,7 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
     mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
           surveyHeadName[i]) #  outer=TRUE
     if(i==3)
-       mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
+       mtext( side=2, line=0, cex=1, outer=TRUE,"Relative biomass")
     if(i==5)
        mtext(side=1, line=0, cex=1, outer=TRUE, "Year")      
   }                         # cex was 0.8 for POP
@@ -2133,8 +2193,8 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
     #   mtext(side=1, line=0.5, cex=1, outer=TRUE, "Year")
     dev.off()
   }                         # cex was 0.8 for POP
-
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotIndexNotLattice
 
 
 #plotChains-----------------------------2011-05-11
@@ -2217,10 +2277,8 @@ plotChains = function (mcmc, nchains=3, pdisc=0.1,
 		invisible(graph)
 	}
 }
-
 #P=currentMCMC$P
 #plotChains(mcmc=P,axes=TRUE,between=list(x=0.15,y=0.2),col.trace=c("green","red","blue"),xlab="Sample",ylab="Cumulative Frequency")
-
 
 
 # Plotting CPUE and fit with error bars, copying plotIndexNotLattice
@@ -2277,7 +2335,7 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
 #  AME editing (with *AME*) to give a policy option 
 #  to be specified in run-master.Snw. 16th August 2012.
 #-------------------------------------------AME/AM
-plt.mcmcGraphs =
+plt.mcmcGraphs <-
 function (mcmcObj, projObj, save = FALSE, 
           ylim.recruitsMCMC = NULL, ylim.exploitMCMC = NULL,
           ylim.VBcatch = NULL, ylim.BVBnorm = NULL,
@@ -2415,7 +2473,11 @@ function (mcmcObj, projObj, save = FALSE,
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mcmcGraphs
 
 
-plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
+#plt.mpdGraphs--------------------------2012-08-21
+# Plot the MPD graphs to encapsulated postscript files.
+#----------------------------------------------AME
+plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
+{
 	#AME some actually MCMC. # Doing as postscript now. # Taking some out for ymr.
 	# Does all MPD graphs below.  If save=TRUE then PNG file saved.
 	closeAllWin()
@@ -2428,8 +2490,6 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
                                         # axis isn't really sensible
                                         # Doing plotVBcatch in
                                         #  plt.mcmcGraphs above
-
-  
 
   # AME adding, plot exploitation rate, not writing new function:
   postscript("exploit.eps", height = 5, width = 6.2, horizontal=FALSE,  paper="special")
@@ -2452,7 +2512,7 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
   postscript("recruits.eps", height = 5, width = 6.2,
               horizontal=FALSE,  paper="special")
   plot(obj$B$Year, obj$B$R, type="o", xlab="Year",
-       ylab="Recruitment, Rt (1000s)")
+       ylab="Recruitment, Rt (1000s)", ylim=c(0, max(obj$B$R, na.rm=TRUE)))
   dev.off()
 
   
@@ -2755,7 +2815,8 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
            italic(t), "-1, ", italic(B)[t-1], " (t)", sep="")),
        ylab=expression(paste("Recruitment in year ",
            italic(t), ",", italic(R)[t], " (1000s)"), sep="") )
-  points(obj$B$SB, obj$B$R)
+  #points(obj$B$SB, obj$B$R)
+  text(obj$B$SB, obj$B$R, labels=substring(as.character(years), 3), cex=0.5)
   dev.off()
   
   #windows()
@@ -2767,72 +2828,63 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep="")) {
   # plt.idx( obj$Survey,main="Survey",save="surveyResids" )
   closeAllWin()
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mpdGraphs
 
 
+#plt.numR-------------------------------2011-08-31
+# Input an object from "load.allResFiles".
+# Plot numbers at age at equilibrium.
+# Plot recruitment age 1's.
+#----------------------------------------------AME
 plt.numR <- function( obj, minYr=NULL )
 {
-  # Input an object from "load.allResFiles".
-  # Plot numbers at age at equilibrium.
-  # Plot recruitment age 1's.
-
   nPanels <- length(obj)
-
   par( oma=c(2,2,1,1), mar=c(2,2,1,1), mfcol=c(2,2) )
-
   for ( i in 1:nPanels )
   {
     res <- obj[[i]]
-
     # Plot numbers at age for initial conditions.
-
     x <- res$N
     x <- x[ x$Year==min(x$Year), ]
     plot( x$Age, x$N, type="n", xlab="Age", ylab="", ylim=c(0,max(x$N)) )
-
     delta <- 0.4
     rect( x$Age-delta, 0, x$Age+delta, x$N, density=-1, col="gray" )
-
     axis( side=4, labels=FALSE )
     box()
-
     panLab( 0.5,0.95, names(obj)[i] )
-
     mfg <- par( "mfg" )
     if ( mfg[1]==1 & mfg[2]==1 )
       mtext( side=2, line=2.5, cex=1.0, "Initial numbers (000s)" )
-
     if ( is.null( minYr ) )
       minYr <- min(x$Year)
-
     # Age-1 recruits against year.
     x <- res$N
     x <- x[ x$Year<max(x$Year),]
     x <- x[ x$Age==min(x$Age), ]
-
     plot( x$Year, x$N, type="n", xlab="", ylab="", ylim=c(0,max(x$N)) )
     abline( v=seq(1955,2005,5 ), lty=3 )
     abline( v=seq(1950,2010,10), lty=2 )
-
     x <- x[ x$Year >= minYr, ]
     delta <- 0.35
     rect( x$Year-delta, 0, x$Year+delta, x$N, density=-1, col="gray" )
-
     mfg <- par( "mfg" )
     if ( mfg[1]==2 & mfg[2]==1 )
       mtext( side=2, line=2.5, cex=1.0, "Age 1's (000s)" )
-
     if ( mfg[1]==mfg[3] & mfg[2]==mfg[4] )
     {
       mtext( side=1, line=0, cex=1.0, outer=TRUE, "Year" )
     }
   }
-
   par( mfrow=c(1,1) )
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.numR
 
+
+#plt.quantBio---------------------------2011-08-31
 # From popScapeRuns2.r  - AME now replaced yLim to force 0.
 # This prints out tables (if run from command line), so be good to
 #  use as template for decisions tables once we have MSY.
+#----------------------------------------------AME
 plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="lines",
@@ -2949,7 +3001,7 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
       if ( is.null(xLim) )
         xLim <- range( yrs1,yrs2 )
       # yLim <- range( result1,result2[[j]] )  # AME to get same axes
-#      yLim <- c(0,yLim[2])
+      # yLim <- c(0,yLim[2])
 
       # Plot the quantiles of the biomass.
       if ( xyType=="quantBox" )
@@ -3003,12 +3055,15 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
   val <- list( recon=result1, proj=result2 )
   val
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.quantBio
 
 
+#plt.quantBioBB0------------------------2011-08-31
 # This is for B/B0 for each run, with just one projection. Doing one
 #  plot here instead of multiple, so taking some from plotBVBnorm
 #  which did one for each run. Don't think used for biomasses.
-# Now using for single recruitment projection plot
+#  Now using for single recruitment projection plot
+#----------------------------------------------AME
 plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="lines",
@@ -3117,7 +3172,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
       if ( is.null(xLim) )
         xLim <- range( yrs1,yrs2 )
       # yLim <- range( result1,result2[[j]] )  # AME to get same axes
-#      yLim <- c(0,yLim[2])
+      # yLim <- c(0,yLim[2])
 
       # Plot the quantiles of the biomass.
       if ( xyType=="quantBox" )
@@ -3175,8 +3230,12 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
   val <- list( recon=result1, proj=result2 )
   val
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.quantBioBB0
 
 
+#plt.ssbVbCatch-------------------------2011-08-31
+# Plot the spawning stock and vulnerable biomass.
+#----------------------------------------------AME
 plt.ssbVbCatch <- function( obj, x1=1966, xLim=c(1954,2005), yLim=c(0,25000) )
 {
   # Input an object from "load.allResFiles".
@@ -3220,54 +3279,58 @@ plt.ssbVbCatch <- function( obj, x1=1966, xLim=c(1954,2005), yLim=c(0,25000) )
   }
   par( mfrow=c(1,1) )
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.ssbVbCatch
 
 
-# AME adding xlim's for POP.
+#plt.stdResids--------------------------2011-08-31
+# Plot standardised residuals (AME adding xlim's for POP).
+#----------------------------------------------AME
 plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
                            main=NULL, yLim=NULL, xLim=xLim )
 {
-  # Input is a dataframe with columns "Year", "stdRes", "Fit".
+  # Input is a data.frame with columns "Year", "stdRes", "Fit".
   # cex.val = 1.2       # size of text, if want to shrink down
   par( oma=c(1,1,2,1), mar=c(3,3,1,1), mfrow=c(3,1) )
 
   if ( is.null(yLim) )
     yLim <- range( obj$stdRes, na.rm=TRUE )
+	ptcex=1; ptpch=19
 
   # Plot the standardised residuals against time.
   plot( obj$Year, obj$stdRes, type="n", xlab="", ylab="", ylim=yLim,
        xlim = xLim)
   abline( h=0, lty=2 )
-  points( obj$Year, obj$stdRes, cex=1.5, pch=19) #, bg="orange" )
+  points( obj$Year, obj$stdRes, cex=ptcex, pch=ptpch) #, bg="orange" )
   mtext( side=1, line=2, cex=0.8, "Year" )
 
   # Plot the standardised residuals against predicted values.
   plot( log(obj$Fit), obj$stdRes, type="n", xlab="", ylab="", ylim=yLim )
   abline( h=0, lty=2 )
-  points( log(obj$Fit), obj$stdRes, cex=1.5, pch=19) #, bg="orange" )
+  points( log(obj$Fit), obj$stdRes, cex=ptcex, pch=ptpch) #, bg="orange" )
   mtext( side=1, line=2, cex=0.8, "Predicted" )
 
   # Plot the q-normal plot of the standardised residuals.
-  wiggle=qqnorm( obj$stdRes,xlab="",ylab="",main="" , pch=19, cex=1.5)
+  wiggle=qqnorm( obj$stdRes,xlab="",ylab="",main="" , pch=ptpch, cex=ptcex)
   abline( a=0,b=1 )
   abline( h=quantile(obj$stdRes,p=pct/100,na.rm=TRUE),lty=2 )
-  points(wiggle, pch=19, cex=1.5) #, bg="orange")
+  points(wiggle, pch=ptpch, cex=ptcex) #, bg="orange")
   mtext( side=1, line=2, cex=0.8, "Theoretical quantiles" )
 
   mtext( side=2, line=-0.5, cex=0.8, outer=TRUE, "Standardised residuals" )
   if ( !is.null(main) )
     mtext( side=3, line=0, cex=1.0, outer=TRUE, main )
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.stdResids
 
-#--------------------------------------------------------------------#
-#         Import Functions for PJS Delay Difference Model            #
-#--------------------------------------------------------------------#
 
+#importMCMC.ddiff-----------------------2011-08-31
+#  Import Functions for PJS Delay Difference Model
+# Purpose is to make an scapeMCMC object identical in format to
+# the result of importMCMC from PJS delay difference model output.
+# The difference is that B is biomass defined by ddiff model.
+#----------------------------------------------AME
 importMCMC.ddiff <- function()
 {
-  # Purpose is to make an scapeMCMC object identical in format to
-  # the result of importMCMC from PJS delay difference model output.
-  # The difference is that B is biomass defined by ddiff model.
-
   # Get the likelihood MCMCs. PJS includes other derived parameters here.
   L <- read.table( "mcmclike.csv", header=TRUE, sep="," )
 
@@ -3290,19 +3353,19 @@ importMCMC.ddiff <- function()
   result <- list( L=L, P=P, B=B, R=R )
   result
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importMCMC.ddiff
 
 
+#importProj.ddiff-----------------------2011-08-31
+# Purpose is to make an scapeMCMC object identical in format to
+# the result of importProj from PJS delay difference model output.
+# The difference is that B is biomass defined by ddiff model.
+#----------------------------------------------AME
 importProj.ddiff <- function( yrVal="2006" )
 {
-  # Purpose is to make an scapeMCMC object identical in format to
-  # the result of importProj from PJS delay difference model output.
-  # The difference is that B is biomass defined by ddiff model.
-
   # Get the biomass projection - PJS does 1 year ahead projection.
-  # The column "X" appears as the last column because trailing ","
-  # exist in the mcmcprojbiom.csv file.
+  # The column "X" appears as the last column because trailing "," exist in the mcmcprojbiom.csv file.
   # Note also that "cat=" in csv file becomes "cat." in read.table.
-
   projbiom <- read.table( "mcmcprojbiom.csv",header=TRUE,sep="," )
   projNames <- gsub( "cat.","",names( projbiom ) )
   names( projbiom ) <- projNames
@@ -3319,13 +3382,11 @@ importProj.ddiff <- function( yrVal="2006" )
     B[[j]] <- matrix( projbiom[,j],ncol=1 )
     dimnames( B[[j]] ) <- list( NULL,yrVal )
   }
-
   # Get the harvest rate projection - PJS does 1 year ahead projection.
   # These appear to be F's rather than annual harvest rates?
   # The column "X" appears as the last column because trailing ","
   # exist in the mcmcprojbiom.csv file.
   # Note also that "cat=" in csv file becomes "cat." in read.table.
-
   projhr <- read.table( "mcmcprojhr.csv",header=TRUE,sep="," )
   projNames <- gsub( "cat.","",names( projhr ) )
   names( projhr ) <- projNames
@@ -3352,427 +3413,17 @@ importProj.ddiff <- function( yrVal="2006" )
   result <- list( B=B, Y=Y )
   result
 }
-
-#--------------------------------------------------------------------#
-#                            Menu Functions                          #
-#--------------------------------------------------------------------#
-
-get.resFile <- function( resFile=NULL )
-{
-  resList <- dir( path=".", pattern=".res$" )
-
-  choice <- 1
-  while ( choice > 0 )
-  {
-    cat( "\nCurrent res file:",resFile," Select new file (0 to exit):\n" )
-    choice <- menu( resList )
-    if ( choice > 0 )
-    {
-      resFile <- resList[choice]
-      choice <- 0
-    }
-  }
-
-   #  newRes <- importCol2( res.file=resFile, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CAc=TRUE)
-   #  AME changed to the following, for which the options agree
-   #  with those in load.allResFiles, which works. Now it loads
-   #  in okay, previously had trouble when overwriting.
-   #  load.allResFiles does load in them all at the beginning, but
-   #  the reloading here was probably done so an updated .res file
-   #  can be loaded in. Also added CAc=TRUE, CAs=TRUE
-   newRes <- importCol2( res.file=resFile, Dev=TRUE, CPUE=TRUE,
-                               Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE)
-  assign( "currentRes", newRes, pos=1 )
-  assign( "resFile",resFile )
-  cat( "\nLoaded Awatea res file: ",resFile,"\n\n" )
-  print( ll( currentRes ) )
-
-  resFile
-}
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importProj.ddiff
 
 
-mainMenu <- function()
-{
-  menuItems <- c( "Import files",
-                  "MPD plots",
-                  "Plot all MPD graphs",
-                  "Save all MPD plots to PNG",
-                  "MCMC plots",
-                  "Plot all MCMC plots",
-                  "Save all MCMC plots to PNG",
-                  "Close all graphics windows",
-                  "Help & Utilities" )
-
-  choice <- 1
-  while ( choice > 0 )
-  {
-    # cat( "\nCanary rockfish assessment 2007\n" )
-    cat( "\nPacific ocean perch assessment 2010\n" )  # AME
-    cat( "Select menu item by number (0 to exit):\n" )
-    choice <- menu( menuItems )
-    switch( choice,
-      {
-         loadMenu()
-#        resFile <- get.resFile( resFile )
-#        assign( "resFile",resFile,pos=1 )
-#        currentRes <- importCol( res.file=resFile, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CAc=TRUE )
-#        assign( "currentRes", currentRes, pos=1 )
-#        cat( "\nLoaded Awatea res file: \n\n" )
-#        print( ll( currentRes ) )
-      },
-      mpdMenu(),
-      {
-        plt.mpdGraphs( currentRes, save=FALSE )
-      },
-      plt.mpdGraphs( currentRes, save=TRUE ),
-      mcmcMenu(),
-      plt.mcmcGraphs( currentMCMC, currentProj, save=FALSE ),
-      plt.mcmcGraphs( currentMCMC, currentProj, save=TRUE ),
-      closeAllWin(),
-      utilMenu()
-    )
-  }
-  choice
-}
-
-
-loadMenu <- function()
-{
-  menuItems <- c( "Get Awatea res file",
-                  "Get Awatea MCMC file",
-                  "Get Awatea projection file",
-                  "Load all res files in working directory",
-                  "Get PJS Delay Difference MCMC+Projection" )
-
-  choice <- 1
-  while ( choice > 0 )
-  {
-    cat( "\nSelect file for import\n" )
-    cat( "Select menu item by number (0 to exit):\n" )
-    choice <- menu( menuItems )
-    switch( choice,
-      {
-        # Awatea res file.
-        resFile <- get.resFile( resFile )
-        assign( "resFile",resFile,pos=1 )
-      },
-      {
-        # Awatea MCMC.
-        currentMCMC <- importMCMC( dir=".", quiet=FALSE )
-        assign( "currentMCMC", currentMCMC, pos=1 )
-      },
-      {
-        # Awatea projection.
-        currentProj <- importProj( dir=".", quiet=FALSE )
-        assign( "currentProj", currentProj, pos=1 )
-      },
-      {
-        tmp <- load.allResFiles()
-        assign( "resFileList",tmp,pos=1 )
-        cat( "\nAll Awatea res files in working directory loaded...\n" )
-      },
-      {
-        # Delay difference.
-        currentMCMC <- importMCMC.ddiff()
-        assign( "currentMCMC", currentMCMC, pos=1 )
-        currentProj <- importProj.ddiff()
-        assign( "currentProj", currentProj, pos=1 )
-      }
-    )
-  }
-  choice
-}
-
-
-mpdMenu <- function()
-{
-  menuItems <- c( "Plot biomass, recruitment, catch",
-                  "Plot numbers at age",
-                  "Plot selectivity and maturity",
-                  "Plot commercial catch-at-age results",
-                  "Plot survey catch-at-age results",
-                  #"Plot survey catch-at-length results",
-                  "Plot abundance index",
-                  "All residual plots",
-                  "Plot multi-panel biomass, recruitment, catch",
-                  "Plot multi-panel exploitation rate",
-                  "Plot alternative numbers at age" )
-
-
-  choice <- 1
-  while ( choice > 0 )
-  {
-    cat( "\nModel fit plots (0 to exit):\n" )
-    # cat( "\n*** WARNING: NOT AVAILABLE FOR PJS DDIFF *** \n" )#AME
-    choice <- menu( menuItems )
-    switch( choice,
-      {
-        if ( exists( "currentRes" ) )
-          plotB2( currentRes,main=mainTitle )   # Doesn't actually agree with
-                                                #  menu
-      },
-      {
-        if ( exists( "currentRes" ) )
-          plotN( currentRes, main=mainTitle, ages=c(2:60) )
-          #plotN( currentRes, main=mainTitle)
-      },
-      {
-        if ( exists( "currentRes" ) )
-           currentResRed = currentRes
-            # Reduced currentRes, just plotting Selectivity to 20
-           currentResRed$Sel = currentResRed$Sel[currentResRed$Sel$Age < 21,]
-          plotSel( currentResRed, main=mainTitle, xlim=c(0,20) )
-      },
-      {
-        if ( exists( "currentRes" ) )
-        {
-          # NOTE: There is a bug in plotCA that prevents plotting multiple
-          #       series given a list of character vectors in series. AME: ?
-          seriesList <- sort( unique( obj$CAc$Series) )
-          for ( i in 1:length(seriesList) )   # for catch data. AME - POP=1
-          {
-            # AME dividing years into 4 groups - note no 1985, 86,
-            #  or 88 data
-            windows()
-            # plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i), what="c" )
-            plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-            windows()
-            plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i, "(no 1985, 86 or 88)"), what="c", years=1985:1994 )  # no 85, 86 or 88
-            windows()
-            plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1995:2001 )
-            windows()
-            plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=2002:2009 )
-          }
-        }
-
-      },
-      # AME adding - plotting the CA survey data for all three series
-      {
-        if ( exists( "currentRes" ) )
-        {
-          seriesList <- sort( unique( obj$CAs$Series) )
-          for ( i in 1:length(seriesList) )
-          {
-            windows()
-            plotCA( currentRes, series=i, main=paste("Survey",mainTitle,"Series",i), what="s" )
-          }
-        }
-      },
-      #{
-      #  if ( exists( "currentRes" ) )
-      #  {
-          # NOTE: There is a bug in plotCA that prevents plotting multiple
-          #       series given a list of character vectors in series.
-
-      #    seriesList <- sort( unique( obj$CLs$Series) )
-      #    for ( i in 1:length(seriesList) )
-      #    {
-      #      windows()
-      #      plotCL( currentRes, series=i, main=paste("Surv",mainTitle,"Series",i), what="c" )
-      #    }
-      #  }
-
-      #},         
-      {
-        if ( exists( "currentRes" ) )
-        {
-        #ACH: I couldn't get plotIndex2 function to work in the limited time I had. AME changed these two to plotIndex
-          plotIndex( currentRes, main=mainTitle, what="c", bar=1.96 )
-          # Think that plots the CPUE, which we're not using (?)
-          windows()
-          plotIndex( currentRes, main=mainTitle, what="s", bar=1.96 )
-        }
-      },
-      {
-        if ( exists( "currentRes" ) )
-        {
-          plt.ageResids( stdRes.CA( obj$CAc ),main=paste(mainTitle,"Comm Ages"))
-      # AME adding - plotting the CA residuals for all three surveys:
-          seriesList <- sort( unique( obj$CAs$Series) )
-          for ( i in 1:length(seriesList) )
-          {
-            windows()
-            plt.ageResids( stdRes.CA( obj$CAs[
-                obj$CAs$Series == i,] ),
-                main=paste(mainTitle,"Survey",i))
-          }
-          # windows()
-          #plt.lengthResids( stdRes.CL( obj$CLs ),main=paste(mainTitle,"Survey lengths"))
-          #plt.idx( obj$CPUE,  main="Commercial Fishery CPUE")
-               # AME - not for POP
-          plt.idx( obj$Survey,main="Survey Indices")
-        }
-      },
-      {
-        plt.ssbVbCatch( resFileList )
-      },
-      {
-        plt.expRate( resFileList )
-      },
-      {
-        plt.numR( resFileList[1:2],minYr=minCpueYr )
-      }
-    )
-  }
-  choice
-}
-
-
-mcmcMenu <- function()
-{
-  menuItems <- c( "Plot biomass and projections by policy",
-                  "Probability of projection biomass > reference",
-                  "Expectation of projection biomass / reference",
-                  "Plot biomass posterior densities (plotDens)",
-                  "Plot recruitment posterior densities (plotDens)",
-                  "Plot parameter posterior densities (plotDens)",
-                  "Plot cumulative quantiles (plotCumu)",
-                  "Plot traces (plotTrace)",
-                  "Plot PJS traces (plt.allTraces)" )
-#plt.ssbVbCatch( junk )
-#windows()
-#plt.expRate( junk )
-#plt.numR( junk[1:2] )
-
-  choice <- 1
-  while ( choice > 0 )
-  {
-    cat( "\nMCMC Results (0 to exit):\n" )
-    choice <- menu( menuItems )
-    switch( choice,
-#      {
-#        currentMCMC <- importMCMC( dir=".", quiet=FALSE )
-#        assign( "currentMCMC", currentMCMC, pos=1 )
-#      },
-#      {
-#        currentProj <- importProj( dir=".", quiet=FALSE )
-#        assign( "currentProj", currentProj, pos=1 )
-#      },
-      {
-        plt.quantBio( currentMCMC$B,currentProj$B, policy=policy,
-                      userPrompt=FALSE, xyType=rpType )
-      },
-      {
-        currentProbs <- calc.projProbs2( currentMCMC$B, currentProj$B, refs )
-        assign( "currentProbs",currentProbs, pos=1 )
-        out.pmTables( currentProbs,fileName="pmProbs" )
-        # AME: This works:
-        # test = calc.projProbs( currentMCMC$B, currentProj$B,
-        #        refYrs=c(1972,1985) )
-      },
-      {
-#        calc.projExpect( currentMCMC$B, currentProj$B,
-#                         refYrs=c(1972,1985) )
-
-        currentExpt <- calc.projExpect2( currentMCMC$B, currentProj$B, refs )
-        assign( "currentExpt",currentExpt, pos=1 )
-        out.pmTables( currentExpt,fileName="pmExpt",dec=2 )
-        # AME: after runSweaveMCMC, this works:   ...
-        # currentExpt <- calc.projExpect( currentMCMC$B, currentProj$B, c(1940, 1990) )
-      },
-      {
-        scapeMCMC::plotDens( currentMCMC$B[,getYrIdx(
-          names(currentMCMC$B))],
-          tick.number=5,
-          xlab="Biomass", xlim=c(range(currentMCMC$B)),
-          ylab="Posterior density" )
-      },
-      {
-       #  scapeMCMC::plotDens( currentMCMC$R[,getYrIdx(
-       #    names(currentMCMC$R))],
-       #    xlab="Recruitment", xlim=c(range(currentMCMC$R)) )
-       # AME replacing with:
-       plotDensPOP( currentMCMC$R[,getYrIdx(names(currentMCMC$R))] ,          xlab="Recruitment", xlim=c(0, 150000),
-         between = list(x=0.2, y=0.2), ylab="Density",
-         lwd.density=2, same.limits=TRUE)
-       # AME: between is gaps between panels,
-       #  same.limits makes axes same for all panels
-      },
-      {
-        idx <- apply( currentMCMC$P,2,allEqual )
-        scapeMCMC::plotDens( currentMCMC$P[,!idx] )
-      }, 
-      {
-        if ( length( getYrIdx(names(currentMCMC$B)) ) <= 9 )
-          mfRow <- c(3,3)
-        else
-          #ACH 9/20/07: I'm changing the mfRow becasue the canary model has 68 years
-          mfRow <- c(5,3)
-        windows(record=TRUE)
-        par( oma=c(2,2,1,1), mar=c(2,2,2,1), mfrow=mfRow )
-        plotCumu( currentMCMC$B[,getYrIdx(names(currentMCMC$B))],
-          auto.layout=FALSE, xlab="", ylab="", main="" )
-        mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
-        mtext( side=2, line=1, cex=1.0, outer=TRUE, "Biomass" )
-
-        windows()
-        par(mfrow=c(3,4), oma=c(2,2,1,1), mar=c(2,2,2,1) )
-        idx <- apply( currentMCMC$P,2,allEqual )
-        #ACH: Added the next few lines as a quick fix. Awatea now only outputs estimated parameters, thus the allEqual stuff is not necessary
-        #plotCumu( (currentMCMC$P[,!idx])[,1:12] , auto.layout=FALSE)
-        npars <- length(idx)
-        plotCumu( (currentMCMC$P[,!idx])[,1:(min(npars,12))] , auto.layout=FALSE)
-        mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
-        mtext( side=2, line=1, cex=1.0, outer=TRUE, "Value" )
-        if(npars > 12) {
-            windows()
-            par(mfrow=c(3,4), oma=c(2,2,1,1), mar=c(2,2,2,1) )
-            plotCumu( (currentMCMC$P[,!idx])[,13:22], auto.layout=FALSE )
-            mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
-            mtext( side=2, line=1, cex=1.0, outer=TRUE, "Value" )
-        }
-      },
-      {
-        scapeMCMC::plotTrace( currentMCMC$R[,getYrIdx(
-          names(currentMCMC$R))],axes=TRUE,
-          xlab="Recruitment" )
-        windows()
-        par( oma=c(2,2,1,1), mar=c(2,2,2,1), mfrow=mfRow )
-        scapeMCMC::plotTrace( currentMCMC$B[,getYrIdx(
-          names(currentMCMC$B))],axes=TRUE,
-          xlab="Biomass" )
-        windows()
-        idx <- apply( currentMCMC$P,2,allEqual )
-        scapeMCMC::plotTrace( currentMCMC$P[,!idx], axes=TRUE )
-      },
-      {
-        plt.allTraces( currentMCMC )
-      }
-    )
-  }
-  choice
-}
-
-
-utilMenu <- function()
-{
-  menuItems <- c( "scape Help",
-                  "scapeMCMC Help",
-                  "Portrait graphsheet",
-                  "Landscape graphsheet" )
-
-  choice <- 1
-  while ( choice > 0 )
-  {
-    cat( "\nUtilities:\n" )
-    choice <- menu( menuItems )
-    switch( choice,
-      print( help( "scape", help_type="html" ) ),
-      print( help( "scapeMCMC", help_type="html" ) ),
-      graphics( view="portrait" ),
-      graphics( view="landscape" )
-    )
-  }
-  choice
-}
-
-
+#msyCalc--------------------------------2011-08-31
 # To load in MSY.out and calculated the MSY.
 # Call this function with msy = msyCalc().
+#----------------------------------------------AME
 msyCalc = function(dir=getwd(), error.rep=1)
-                                 # See msyTestCreating.r for full
-  {                              #  details when figuring this out
-       # error.rep = 1 to report errors (reaching bounds), 0 to not
+{
+# See msyTestCreating.r for full details when figuring this out
+# error.rep = 1 to report errors (reaching bounds), 0 to not
   control = readLines(paste(dir, "/Yields.ctl", sep=""))
   maxProj = as.numeric(control[3])
   tolerance = as.numeric(control[5])
@@ -3838,10 +3489,13 @@ msyCalc = function(dir=getwd(), error.rep=1)
   # call this function with msy = msyCalc()
   return(list(yield=msy, u=umsy, VB=VBmsy, B=Bmsy, nProj=nProj))
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^msyCalc
 
+
+#refPoints------------------------------2011-08-31
 # Call from Sweave as  refPoints() or, in full:
 # refPoints(currentMCMC, currentProj, currentMSY, refLevels=c(0.4, 0.8, 1))
-
+#----------------------------------------------AME
 refPoints <- function( mcmcObj=currentMCMC, projObj=currentProj,
                      msyObj=currentMSY, refLevels=c(0.4, 0.8, 1))
                      # refLevels are %age of msyObj
@@ -3867,6 +3521,8 @@ refPointsB0 <- function( mcmcObj=currentMCMC, projObj=currentProj,
     }
   return(refPlist)
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^refPoints
+
 
 #plotSnail------------------------------2012-08-17
 # Plot snail-trail plots for MCMC analysis.
@@ -3907,8 +3563,11 @@ plotSnail = function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, 
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotSnail
 
+
+#plotDensPOPparsPrior-------------------2011-08-31
 # Adding the prior automatically.
-plotDensPOPparsPrior =
+#----------------------------------------------AME
+plotDensPOPparsPrior <-
     function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TRUE, 
     same.limits = FALSE, between = list(x = axes, y = axes), 
     div = 1, log = FALSE, base = 10, main = NULL, xlab = NULL, 
@@ -4000,6 +3659,8 @@ plotDensPOPparsPrior =
         invisible(graph)
     }
 }
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotDensPOPparsPrior
+
 
 #findTarget-----------------------------2012-08-14
 #  To derive decision tables for moving windows and find
@@ -4089,151 +3750,126 @@ findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0
 		mtext(text=expression(p~~frac(B[t],B[Target]) ), side=2, line=1.5, cex=1.5)
 		abline(h=conf,v=yrT,col="dodgerblue")
 	}
-#browser(); return()
-	#return(N)
-	eval(parse(text=paste("return(",retVal,")",sep=""))) }
-#---------------------------------------findTarget
+	eval(parse(text=paste("return(",retVal,")",sep=""))) 
+}
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^findTarget
 
 
-# importProjRec - importing the projected recruitments (actually
-#  what's saved is the N(0,1) random numbers, which for a particular
-#  MCMC sample are the same for all the catch strategies), which
-#  importProj does not do. Need this for YMR. 4th July 2011
+#importProjRec--------------------------2011-08-31
+# Imports the projected recruitments
+#  (actually what's saved is the N(0,1) random numbers,
+#   which for a particular MCMC sample are the same for all the catch strategies),
+#   which 'importProj' does not do. Need this for YMR. 4th July 2011.
+#----------------------------------------------AME
 importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE) 
 {
-    get.Policies <- function() {
-        if (!quiet) 
-            cat("Policies  ")
-        Policies <- read.table(paste(dir, "strategy.out", sep = "/"), 
-            skip = 1)
-        if (!quiet) 
-            cat("file...")
-        Policies <- unique(as.vector(as.matrix(Policies)))
-        if (!quiet) 
-            cat("unique...OK\n")
-        return(Policies)
-    }
-    get.Years <- function() {
-        if (!quiet) 
-            cat("Years     ")
-        Years <- read.table(paste(dir, "strategy.out", sep = "/"), 
-            nrows = 1)
-        if (!quiet) 
-            cat("file...")
-        Years <- unlist(strsplit(as.matrix(Years), "_"))
-        if (!quiet) 
-            cat("labels...")
-        Years <- unique(matrix(Years, nrow = 3)[2, ])
-        if (!quiet) 
-            cat("unique...OK\n")
-        return(Years)
-    }
-    get.B <- function(Policies, Years) {
-        if (!quiet) 
-            cat("Biomass   ")
-        B <- read.table(paste(dir, "projspbm.out", sep = "/"), 
-            header = TRUE)[, -c(1, 2)]
-        if (!quiet) 
-            cat("file...")
-        Blist <- list()
-        for (p in 1:length(Policies)) {
-            from <- (p - 1) * length(Years) + 1
-            to <- p * length(Years)
-            Blist[[p]] <- B[, from:to]
-            names(Blist[[p]]) <- Years
-        }
-        names(Blist) <- Policies
-        B <- Blist
-        if (!quiet) 
-            cat("list...OK\n")
-        return(B)
-    }
-    get.Y <- function(Policies, Years) {
-        if (!quiet) 
-            cat("Landings  ")
-        Y <- read.table(paste(dir, "procatch.out", sep = "/"), 
-            header = TRUE)
-        if (!quiet) 
-            cat("file...")
-        Ylist <- list()
-        for (p in 1:length(Policies)) {
-            from <- (p - 1) * length(Years) + 1
-            to <- p * length(Years)
-            Ylist[[p]] <- Y[, from:to]
-            names(Ylist[[p]]) <- Years
-        }
-        names(Ylist) <- Policies
-        Y <- Ylist
-        if (!quiet) 
-            cat("list...OK\n")
-        return(Y)
-    }
-        # AME adding to load in projected recruitment residuals.
-        #  Bit different to the others as the file is saved
-        #  differently. NOTE that this returns the 'tempdev' values
-        #  from Awatea, which are just N(0,1) values, without
-        #  multiplying by the sigma_R. Call this epsilon_t
-        #  and maybe multiply here by sigmaR, which is
-        #    obj$extra$residuals$p_log_RecDev[6]
-        get.eps <- function(Policies, Years) {
-        if (!quiet) 
-            cat("Recruitment")
-        eps <- read.table(paste(dir, "RecRes.out", sep = "/"), 
-            header = FALSE, skip=1)
-        if (!quiet) 
-            cat("file...")
-        nRow = dim(eps)[1] / length(Policies)
-        epslist <- list()
-        for (p in 1:length(Policies)) {
-            rows <- (0:(nRow-1)) * length(Policies) + p 
-            epslist[[p]] <- sigmaR * eps[rows, ]
-            names(epslist[[p]]) <- Years
-        }
-        names(epslist) <- Policies
-        eps <- epslist
-        if (!quiet) 
-            cat("list...OK\n")
-        return(eps)
-    }
-
-    files <- paste(dir, c("strategy.out", "projspbm.out",
-                          "procatch.out", "recres.out"), sep = "/")
-    sapply(files, function(f) if (!file.exists(f)) 
-        stop("File ", f, " does not exist. Please check the 'dir' argument.", 
-            call. = FALSE))
-    if (!quiet) 
-        cat("\nParsing files in directory ", dir, ":\n\n", sep = "")
-    Policies <- get.Policies()
-    Years <- get.Years()
-    B <- get.B(Policies, Years)
-    Y <- get.Y(Policies, Years)
-    eps <- get.eps(Policies, Years)
-    if (!quiet) 
-        cat("\n")
-    output <- list(B = B, Y = Y, eps = eps)
-    if (coda) {
-        require(coda, quietly = TRUE, warn.conflicts = FALSE)
-        output <- lapply(output, function(x) lapply(x, mcmc))
-    }
-    attr(output, "call") <- match.call()
-    attr(output, "info") <- info
-    return(output)
-} 
+	get.Policies <- function() {
+		if (!quiet) cat("Policies  ")
+		Policies <- read.table(paste(dir, "strategy.out", sep = "/"), skip = 1)
+		if (!quiet) cat("file...")
+		Policies <- unique(as.vector(as.matrix(Policies)))
+		if (!quiet) cat("unique...OK\n")
+		return(Policies)
+	}
+	get.Years <- function() {
+		if (!quiet) cat("Years...")
+		Years <- read.table(paste(dir, "strategy.out", sep = "/"), nrows = 1)
+		if (!quiet) cat("file...")
+		Years <- unlist(strsplit(as.matrix(Years), "_"))
+		if (!quiet) cat("labels...")
+		Years <- unique(matrix(Years, nrow = 3)[2, ])
+		if (!quiet) cat("unique...OK\n")
+		return(Years)
+	}
+	get.B <- function(Policies, Years) {
+		if (!quiet) cat("Biomass   ")
+		B <- read.table(paste(dir, "projspbm.out", sep = "/"), header = TRUE)[, -c(1, 2)]
+		if (!quiet) cat("file...")
+		Blist <- list()
+		for (p in 1:length(Policies)) {
+			from <- (p - 1) * length(Years) + 1
+			to <- p * length(Years)
+			Blist[[p]] <- B[, from:to]
+			names(Blist[[p]]) <- Years
+		}
+		names(Blist) <- Policies
+		B <- Blist
+		if (!quiet) cat("list...OK\n")
+		return(B)
+	}
+	get.Y <- function(Policies, Years) {
+		if (!quiet) cat("Landings...")
+		Y <- read.table(paste(dir, "procatch.out", sep = "/"), header = TRUE)
+		if (!quiet) cat("file...")
+		Ylist <- list()
+		for (p in 1:length(Policies)) {
+			from <- (p - 1) * length(Years) + 1
+			to <- p * length(Years)
+			Ylist[[p]] <- Y[, from:to]
+			names(Ylist[[p]]) <- Years
+		}
+		names(Ylist) <- Policies
+		Y <- Ylist
+		if (!quiet) cat("list...OK\n")
+		return(Y)
+	}
+	# AME adding to load in projected recruitment residuals.
+	#  Bit different to the others as the file is saved
+	#  differently. NOTE that this returns the 'tempdev' values
+	#  from Awatea, which are just N(0,1) values, without
+	#  multiplying by the sigma_R. Call this epsilon_t
+	#  and maybe multiply here by sigmaR, which is
+	#	obj$extra$residuals$p_log_RecDev[6]
+	get.eps <- function(Policies, Years) {
+		if (!quiet) cat("Recruitment...")
+		eps <- read.table(paste(dir, "RecRes.out", sep = "/"), header = FALSE, skip=1)
+		if (!quiet) cat("file...")
+		nRow = dim(eps)[1] / length(Policies)
+		epslist <- list()
+		for (p in 1:length(Policies)) {
+			rows <- (0:(nRow-1)) * length(Policies) + p 
+			epslist[[p]] <- sigmaR * eps[rows, ]
+			names(epslist[[p]]) <- Years
+		}
+		names(epslist) <- Policies
+		eps <- epslist
+		if (!quiet) cat("list...OK\n")
+		return(eps)
+	}
+	files <- paste(dir, c("strategy.out", "projspbm.out", "procatch.out", "recres.out"), sep = "/")
+	sapply(files, function(f) if (!file.exists(f)) 
+		stop("File ", f, " does not exist. Please check the 'dir' argument.", call. = FALSE))
+	if (!quiet) cat("\nParsing files in directory ", dir, ":\n\n", sep = "")
+	Policies <- get.Policies()
+	Years <- get.Years()
+	B <- get.B(Policies, Years)
+	Y <- get.Y(Policies, Years)
+	eps <- get.eps(Policies, Years)
+	if (!quiet) cat("\n")
+	output <- list(B = B, Y = Y, eps = eps)
+	if (coda) {
+		require(coda, quietly = TRUE, warn.conflicts = FALSE)
+		output <- lapply(output, function(x) lapply(x, mcmc))
+	}
+	attr(output, "call") <- match.call()
+	attr(output, "info") <- info
+	return(output)
+}
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importProjRec
 
 
-# srFun - stock recruit function. From ProjRecCalcs.r
-           # To input a vector of spawners in year t-1
-           #  and calculate recruits in year t. Output for recruits
-           #  is vector, each element corresponds to spawners the
-           #  the year before, so will usually want to shift the
-           #  output by 1 so that recruits in year t are based on
-           #  spawners in year t-1.
-           # Can also have each input as a vector (used when
-           #  calculating a single year but multiple MCMCs, as in
-           #  first year of projections is based on penultimate year
-           #  of MCMC calcualtions.
-srFun = function(spawners, h=h.mpd, R0=R0.mpd, B0=B0.mpd)
-                    # to input a vector of spawners in year t-1
-    {               #  and calculate recruits in year t 
-    4 * h * R0 * spawners / ( ( 1 - h) * B0 + (5 * h - 1) * spawners)
-    }
+#srFun----------------------------------2011-08-31
+# Stock-recruitment function. From ProjRecCalcs.r
+#  To input a vector of spawners in year t-1 and calculate recruits in year t.
+#  Output for recruits is vector, each element corresponds to spawners the
+#  the year before, so will usually want to shift the output by 1 so that 
+#  recruits in year t are based on spawners in year t-1.
+#  Can also have each input as a vector (used when calculating a single 
+#  year but multiple MCMCs, as in first year of projections is based on 
+#  penultimate year of MCMC calcualtions.
+#----------------------------------------------AME
+srFun = function(spawners, h=h.mpd, R0=R0.mpd, B0=B0.mpd) {
+# to input a vector of spawners in year t-1 and calculate recruits in year t 
+	4 * h * R0 * spawners / ( ( 1 - h) * B0 + (5 * h - 1) * spawners)
+}
+
