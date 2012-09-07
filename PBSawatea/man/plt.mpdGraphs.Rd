@@ -15,7 +15,7 @@ plt.mcmcGraphs(mcmcObj, projObj, save=FALSE,
           ylim.VBcatch = NULL, ylim.BVBnorm = NULL,
           xlim.snail = NULL, ylim.snail = NULL,
           plotPolicies = names(projObj$Y[1:6]),
-          onePolicy=names(projObj$Y[2]))
+          onePolicy=names(projObj$Y[2]), mpd = list())
 }
 \arguments{
   \item{obj}{an Awatea results object (\emph{e.g.}, \code{currentRes})}
@@ -31,6 +31,7 @@ plt.mcmcGraphs(mcmcObj, projObj, save=FALSE,
   \item{ylim.snail}{y-limits for the snail-trail plot}
   \item{plotPolicies}{six-policies projections to plot}
   \item{onePolicy}{the one policy from the above six to use for some figures}
+  \item{mpd}{list of MPD values for parameters, biomass, and recruitment.}
 }
 \details{
   Creates a whole heap o' postscript files.

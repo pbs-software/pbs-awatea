@@ -9,7 +9,8 @@
 }
 \usage{
 runMCMC(strSpp="XYZ", prefix=c("spp","area"), 
-    runs=7, rewts=0:6, cpue=FALSE, estM=TRUE, delim="-")
+    runs=7, rewts=0:6, cpue=FALSE, estM=TRUE, 
+    delim="-", mcsub=1:1000)
 }
 \arguments{
   \item{strSpp}{three-letter code that identifies the species.}
@@ -21,6 +22,7 @@ runMCMC(strSpp="XYZ", prefix=c("spp","area"),
     was estimated in the run, and the Sweave code uses the parameters \code{"M_1"} and 
     \code{"M_2"}; if \code{FALSE}, the function removes these parameters from the Sweave file.}
   \item{delim}{character that delimits the components of the \code{filename} prefix.}
+  \item{mcsub}{vector of subsamples to select from the MCMC sample chain.}
 }
 \details{
 	Essentially loops through \code{\link{runSweaveMCMC}} using \code{(i in runs)} and \code{(j in rewts)}.

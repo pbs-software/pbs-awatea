@@ -16,7 +16,8 @@ plotDensPOP(mcmc, probs=c(0.025,0.975), points=FALSE, axes=TRUE,
      lty.density=1, lwd.density=3, col.density="black",
      lty.median=2, lwd.median=1, col.median="darkgrey", 
      lty.outer=3, lwd.outer=1, col.outer="darkgrey", pch="|", 
-     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,...)
+     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,
+     mpd = mcmc[1, ], ...)
 
 plotDensPOPpars(mcmc, probs=c(0.025,0.975), points=FALSE, 
      axes=TRUE, same.limits=FALSE, between=list(x=axes,y=axes), 
@@ -26,7 +27,8 @@ plotDensPOPpars(mcmc, probs=c(0.025,0.975), points=FALSE,
      lty.density=1, lwd.density=3, col.density="black", 
      lty.median=2, lwd.median=1, col.median="darkgrey", 
      lty.outer=3, lwd.outer=1, col.outer="darkgrey", pch="|", 
-     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,...) 
+     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,
+     mpd = mcmc[1, ], ...) 
 
 plotDensPOPparsPrior(mcmc, probs=c(0.025,0.975), points=FALSE, 
      axes=TRUE, same.limits=FALSE, between=list(x=axes,y=axes), 
@@ -36,7 +38,8 @@ plotDensPOPparsPrior(mcmc, probs=c(0.025,0.975), points=FALSE,
      lty.density=1, lwd.density=3, col.density="black", 
      lty.median=2, lwd.median=1, col.median="darkgrey", 
      lty.outer=3, lwd.outer=1, col.outer="darkgrey", pch="|", 
-     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,...)
+     cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,
+     mpd = mcmc[1, ], ...)
 }
 \arguments{
   \item{mcmc}{MCMC chain(s) as a vector, data frame or \code{mcmc} object.}
@@ -72,6 +75,7 @@ plotDensPOPparsPrior(mcmc, probs=c(0.025,0.975), points=FALSE,
   \item{col.points}{colour of data points.}
   \item{plot}{whether to draw plot.}
   \item{MPD.height}{how far up to put MPD.}
+  \item{mpd}{vector of MPD values (from which MCMC search starts).}
   \item{\dots}{passed to \code{densityplot} and \code{panel.densityplot}.}
 }
 \details{
