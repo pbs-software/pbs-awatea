@@ -419,7 +419,7 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
     lwd.density = 3, col.density = "black", lty.median = 2, lwd.median = 1, 
     col.median = "darkgrey", lty.outer = 3, lwd.outer = 1, col.outer = "darkgrey", 
     pch = "|", cex.points = 1, col.points = "black", plot = TRUE,
-    MPD.height = 0.04,  ...)     #MPD.height, how far up to put MPD
+    MPD.height = 0.04, mpd=mcmc[1,], ...)     #MPD.height, how far up to put MPD
 {
     panel.dens <- function(x, ...) {     # x here seems to a vector
         if (any(is.finite(x)) && var(x) > 0)        # for each panel
@@ -435,10 +435,10 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
             col = col.median)
          # scan(); print(current.panel.limits()$ylim[2])  - max of y
          # print(graph$y.limits) is list of all panels
-        panel.xyplot(x[1], current.panel.limits()$ylim[2]*MPD.height,
+        panel.xyplot(mpd[panel.number()], current.panel.limits()$ylim[2]*MPD.height,
                      pch=19, col="red") # AME, MPD. 0.04 of way up
                                         #  assumes ..ylim[1]=0
-        panel.xyplot(x[1], current.panel.limits()$ylim[2]*MPD.height,
+        panel.xyplot(mpd[panel.number()], current.panel.limits()$ylim[2]*MPD.height,
                      pch=1, col="black") #AME
         # scan(); print(summary(x))    # Yes, here x is just vector
         
@@ -517,7 +517,7 @@ plotDensPOPpars =
     lwd.density = 3, col.density = "black", lty.median = 2, lwd.median = 1, 
     col.median = "darkgrey", lty.outer = 3, lwd.outer = 1, col.outer = "darkgrey", 
     pch = "|", cex.points = 1, col.points = "black", plot = TRUE,
-    MPD.height = 0.04,  ...)    # MPD.height, how far up to put MPD
+    MPD.height = 0.04, mpd=mcmc[1,],  ...)    # MPD.height, how far up to put MPD
 {
     panel.dens <- function(x, ...) {
         if (any(is.finite(x)) && var(x) > 0) 
@@ -531,10 +531,10 @@ plotDensPOPpars =
             lwd = lwd.outer, col = col.outer)
         panel.abline(v = median(x), lty = lty.median, lwd = lwd.median, 
             col = col.median)
-                panel.xyplot(x[1], current.panel.limits()$ylim[2]*MPD.height,
+                panel.xyplot(mpd[panel.number()], current.panel.limits()$ylim[2]*MPD.height,
                      pch=19, col="red") # AME, MPD. 0.04 of way up
                                         #  assumes ..ylim[1]=0
-        panel.xyplot(x[1], current.panel.limits()$ylim[2]*MPD.height,
+        panel.xyplot(mpd[panel.number()], current.panel.limits()$ylim[2]*MPD.height,
                      pch=1, col="black") #AME
     }
     relation <- if (same.limits) 
@@ -589,7 +589,7 @@ plotDensPOPpars =
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotDensPOPpars
 
-#plotTracePOP---------------------------2010-10-20
+#plotTracePOP---------------------------2012-08-23
 # Now adding running median, and taking off overall
 # median and lowess line. Using cquantile from cumuplot.
 # Trying to add in the MPD as a big circle for
@@ -602,7 +602,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
     cex.axis = 0.8, las = 0, tck = 0.5, tick.number = 5, lty.trace = 1, 
     lwd.trace = 1, col.trace = "grey", lty.median = 1, lwd.median = 1, 
     col.median = "black", lty.quant = 2, lwd.quant = 1, col.quant = "black", 
-    plot = TRUE, probs=c(0.025, 0.5, 0.975) ,...)  # AME probs
+    plot = TRUE, probs=c(0.025, 0.5, 0.975) , mpd=mcmc[1,], ...)  # AME probs
 {
     panel.trace <- function(x, y, ...) {
         panel.xyplot(x, y, type = "l", lty = lty.trace, lwd = lwd.trace, 
@@ -620,8 +620,8 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
             panel.xyplot(x, cquantile.vec(y, prob=0.975),
               type = "l", lty = lty.quant, lwd = lwd.quant,
               col = col.quant)
-            panel.xyplot(x[1], y[1], pch=19, col="red") # AME
-            panel.xyplot(x[1], y[1], pch=1, col="black") 
+            panel.xyplot(x[1], mpd[panel.number()], pch=19, col="red") # AME
+            panel.xyplot(x[1], mpd[panel.number()], pch=1, col="black") 
                      # AME, based on plt.trace, assume x[1]=1
             # suppressWarnings(panel.loess(x, y, span = span,
             #  lty = lty.loess, lwd = lwd.loess, col =col.loess,...))
@@ -657,6 +657,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
         relation = relation, cex = cex.axis, tck = tck, tick.number = tick.number, 
         rot = myrot))
     mystrip <- list(cex = cex.strip)
+
     graph <- xyplot(Value ~ Draw | Factor, panel = panel.trace, 
         data = x, as.table = TRUE, between = between, main = mymain, 
         xlab = myxlab, ylab = myylab, par.strip.text = mystrip, 

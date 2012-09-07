@@ -3,7 +3,8 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
-0.10  2011-08-21  Rowan
+0.10  2011-09-07  Rowan
+  - Tweaked margins for figures in function 'plotIndexNotLattice'; updated Rd files. (RH 9/6)
   - Updated functions in R files 'runSweave.r', 'runSweaveMCMC.r', and 'PBSscape.r';
 	separated menu functions from 'PBSscape.r' to 'menuFuns.r'. (RH 8/21)
   - Updated Sweave files 'run-master.Snw' and 'run-masterMCMC.Snw'. (8/21)

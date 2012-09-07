@@ -9,7 +9,7 @@
 \usage{
 runSweaveMCMC(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
     filename="spp-area-00.txt", runNo=1, rwtNo=0, running.awatea=0,
-    delim="-")
+    delim="-", mcsub=1:1000)
 }
 \arguments{
   \item{wd}{working directory in which Awatea input and master Sweave files occur.}
@@ -24,6 +24,7 @@ runSweaveMCMC(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
   \item{rwtNo}{the reweight number of the MPD run to build and collate figures.}
   \item{running.awatea}{numeric: if \code{0} load a previous \code{.rep} file, if \code{1} re-run \code{Awatea}}
   \item{delim}{character that delimits the components of the \code{filename} prefix.}
+  \item{mcsub}{vector of subsamples to select from the MCMC sample chain.}
 }
 \details{
   The values specified by the arguments (or derived variables) are directly 

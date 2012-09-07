@@ -38,7 +38,15 @@ out=runADMB("pop-3CD-08.txt",strSpp="POP",runNo=8,rwtNo=1,doMSY=TRUE,msyMaxIter=
 runSweaveMCMC(strSpp="POP",filename="pop-3CD-08.txt",runNo=8,rwtNo=1,cpue=TRUE)  # estM parameter no longer used
 
 out=runADMB("pop-3CD-09.txt",strSpp="POP",runNo=9,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
-runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=9,rwts=0:1,cpue=TRUE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=9,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+out=runADMB("pop-3CD-09.txt",strSpp="POP",runNo=9,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-3CD-09.txt",runNo=9,rwtNo=1,cpue=FALSE,mcsub=201:1000)  # estM parameter no longer used
+
+
+out=runADMB("pop-3CD-10.txt",strSpp="POP",runNo=10,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=10,rwts=0:1,cpue=TRUE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+out=runADMB("pop-3CD-10.txt",strSpp="POP",runNo=10,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-3CD-10.txt",runNo=10,rwtNo=1,cpue=TRUE)  # estM parameter no longer used
 
 #--testing--
 out=runADMB("pop-3CD-99.txt",strSpp="POP",runNo=99,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)

@@ -1977,7 +1977,7 @@ plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.idx
 
 
-#plotIndexNotLattice--------------------2011-08-31
+#plotIndexNotLattice--------------------2012-00-06
 # Taking some of plt.idx, but doing plot.Index NOT as lattice
 # YMR - have five survey series, so adapting as required.
 #----------------------------------------------AME
@@ -1994,8 +1994,8 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
   postscript("survIndSer.eps",
     height = 8.0, width = 6.0,
     horizontal=FALSE,  paper="special")   # height was 6 for POP
-  par(mfrow=c(nseries,1),mgp=c(2,0.75,0))       # Do c(3,2) for 6 surveys
-  par(mai = c(0.25,0.25, 0.25, 0.1))      # JAE changed  for each figure # was for POP 0.45, 0.5, 0.3, 0.2
+  par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) # Do c(3,2) for 6 surveys
+  par(mai = c(0.3,0.25, 0.4,0.1))         # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
   par(omi = c(0.25,0.25,0,0.1))           # Outer margins of whole thing, inch
   yrTicks = as.numeric( obj$Year)
    
@@ -2037,8 +2037,8 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
   postscript("survIndSer2.eps",
     height = 8.0, width = 6.0,
     horizontal=FALSE,  paper="special")   # height was 6 for POP
-  par(mfrow=c(nseries,1),mgp=c(2,0.75,0))       #  do c(3,2) for 6 series, and change axes labelling
-  par(mai = c(0.25,0.25, 0.25, 0.1))      # JAE changed  for each figure # was for POP 0.45, 0.5, 0.3, 0.2
+  par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) #  do c(3,2) for 6 series, and change axes labelling
+  par(mai = c(0.3,0.25, 0.4,0.1))         # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
   par(omi = c(0.25,0.25,0,0.1))           # Outer margins of whole thing, inch
   yrTicks = as.numeric( obj$Year)
   ymaxsurvIndSer3 = 0           # For ymaxsurvIndSer3.eps
@@ -2331,7 +2331,7 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
 }
 
 
-#plt.mcmcGraphs-------------------------2012-08-17
+#plt.mcmcGraphs-------------------------2012-08-23
 #  AME editing (with *AME*) to give a policy option 
 #  to be specified in run-master.Snw. 16th August 2012.
 #-------------------------------------------AME/AM
@@ -2341,7 +2341,8 @@ function (mcmcObj, projObj, save = FALSE,
           ylim.VBcatch = NULL, ylim.BVBnorm = NULL,
           xlim.snail = NULL, ylim.snail = NULL,
           plotPolicies = names(projObj$Y[1:6]), # *AME*
-          onePolicy=names(projObj$Y[2]))        # *AME*
+          onePolicy=names(projObj$Y[2]),
+          mpd=list() )        # *AME*
 
           # plotPolicies is 6 policies projections to plot *AME*
           # onePolicy is one to use for some figures *AME*
@@ -2362,19 +2363,19 @@ function (mcmcObj, projObj, save = FALSE,
         paper = "special", onefile = FALSE)
     plotDensPOP(currentMCMC$B/1000, xlab = "Female spawning biomass, Bt (1000 t)", 
         between = list(x = 0.2, y = 0.2), ylab = "Density", lwd.density = 2, 
-        same.limits = TRUE, layout = c(4, 6), lty.outer = 2)
+        same.limits = TRUE, layout = c(4, 6), lty.outer = 2, mpd=mpd[["mpd.B"]]/1000)
     dev.off()
     postscript("pdfRecruitment%d.eps", height = 7, width = 6.2, 
         horizontal = FALSE, paper = "special", onefile = FALSE)
     plotDensPOP(currentMCMC$R/1000, xlab = "Recruitment, Rt (1000s)", 
         between = list(x = 0.2, y = 0.2), ylab = "Density", lwd.density = 2, 
         same.limits = TRUE, layout = c(4, 6), lty.median = 2, 
-        lty.outer = 2)
+        lty.outer = 2, mpd=mpd[["mpd.R"]]/1000)
     dev.off()
     postscript("pdfParameters.eps", horizontal = FALSE, paper = "special", 
         height = 7, width = 6.2)
     plotDensPOPparsPrior(mcmcObj$P, lty.outer = 2, between = list(x = 0.3, 
-        y = 0.2))
+        y = 0.2),mpd=mpd[["mpd.P"]])
     dev.off()
     postscript("selectivityMCMC.eps", height = 5, width = 6.2, 
         horizontal = FALSE, paper = "special")
@@ -2384,19 +2385,19 @@ function (mcmcObj, projObj, save = FALSE,
         height = 7, width = 6.2)
     plotTracePOP(mcmcObj$R[, getYrIdx(names(mcmcObj$R))]/1000, 
         axes = TRUE, between = list(x = 0.2, y = 0.2), xlab = "Sample", 
-        ylab = "Recruitment, Rt (1000s)")
+        ylab = "Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000)
     dev.off()
     postscript("traceBiomass.eps", horizontal = FALSE, paper = "special", 
         height = 7, width = 6.2)
     plotTracePOP(mcmcObj$B[, getYrIdx(names(mcmcObj$B))]/1000, 
         axes = TRUE, between = list(x = 0.2, y = 0.2), xlab = "Sample", 
-        ylab = "Female spawning biomass, Bt (1000 t)")
+        ylab = "Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000)
     dev.off()
     postscript("traceParams.eps", horizontal = FALSE, paper = "special", 
         height = 7, width = 6.2)
     idx <- apply(mcmcObj$P, 2, allEqual)
     plotTracePOP(mcmcObj$P[, !idx], axes = TRUE, between = list(x = 0.2, 
-        y = 0.2), xlab = "Sample", ylab = "Parameter estimate")
+        y = 0.2), xlab = "Sample", ylab = "Parameter estimate", mpd=mpd[["mpd.P"]][!idx])
     dev.off()
     postscript("splitChain.eps", horizontal = FALSE, paper = "special", 
         height = 7, width = 6.2)
@@ -2437,38 +2438,16 @@ function (mcmcObj, projObj, save = FALSE,
         0.9), xLim = xlim.snail, yLim = ylim.snail)
     dev.off()
     # Doing 6 on a page:
-    postscript("pairs1.eps", height = 7, width = 7, horizontal = FALSE, 
-        paper = "special")
-    pairs(currentMCMC$P[, 1:6], pch = 20, cex = 0.2, gap = 0)
-    dev.off()
-    if(length(use.Pnames) > 6) {      # = dim(currentMCMC$P)[2]
-    postscript("pairs2.eps", height = 7, width = 7, horizontal = FALSE, 
-        paper = "special")
-    pairs(currentMCMC$P[, 7:min(length(use.Pnames), 12)], pch = 20, cex = 0.2, gap = 0)
-    dev.off()
+    npr = 6
+    nuP = length(use.Pnames)
+    npp = ceiling(nuP/npr) # number of pairs plots
+    for (i in 1:npp) {
+      if (i<npp) ii = (1:npr)+(i-1)*npr
+      else ii = (nuP-npr+1):nuP 
+      postscript(paste("pairs",i,".eps",sep=""),height=7,width=7,horizontal=FALSE,paper="special")
+      pairs(currentMCMC$P[, ii], pch=20, cex=0.2, gap=0)
+      dev.off()
     }
-    if(length(use.Pnames) > 12) {
-    postscript("pairs3.eps", height = 7, width = 7, horizontal = FALSE, 
-        paper = "special")
-    pairs(currentMCMC$P[, 13:min(length(use.Pnames), 18)], pch = 20, 
-        cex = 0.2, gap = 0)
-    dev.off()
-    }
-    if(length(use.Pnames) > 18) {
-    postscript("pairs4.eps", height = 7, width = 7, horizontal = FALSE, 
-        paper = "special")
-    pairs(currentMCMC$P[, 19:min(length(use.Pnames), 24)], pch = 20, 
-        cex = 0.2, gap = 0)
-    dev.off()
-    }
-   if(length(use.Pnames) > 24) {
-     postscript("pairs5.eps", height = 7, width = 7, horizontal = FALSE, 
-        paper = "special")
-    pairs(currentMCMC$P[, 25:min(length(use.Pnames), 30)], pch = 20, 
-        cex = 0.2, gap = 0)
-    dev.off()
-   }
-    if(length(use.Pnames) > 30) { stop("Need extra pairs plots as estimating >30 parameters")}
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mcmcGraphs
 
@@ -3576,13 +3555,13 @@ plotDensPOPparsPrior <-
     lwd.density = 3, col.density = "black", lty.median = 2, lwd.median = 1, 
     col.median = "darkgrey", lty.outer = 3, lwd.outer = 1, col.outer = "darkgrey", 
     pch = "|", cex.points = 1, col.points = "black", plot = TRUE,
-    MPD.height = 0.04,  ...)    # MPD.height, how far up to put MPD
+    MPD.height = 0.04, mpd=mcmc[1,], ...)    # MPD.height, how far up to put MPD
 {
     panel.dens <- function(x, ...) {
       if (any(is.finite(x)) && var(x) > 0) 
           panel.densityplot(x, lty = lty.density, lwd = lwd.density, 
                 col.line = col.density, plot.points = points, 
-                pch = pch, cex = cex.points, col = col.points, 
+                pch = pch, cex = cex.points, col = col.points,
                 ...)
       else panel.densityplot(x, type = "n", ...)
 
@@ -3591,10 +3570,10 @@ plotDensPOPparsPrior <-
         panel.abline(v = median(x), lty = lty.median,
             lwd = lwd.median, 
             col = col.median)
-        panel.xyplot(x[1], current.panel.limits()$ylim[2]*MPD.height,
+        panel.xyplot(mpd[panel.number()], current.panel.limits()$ylim[2]*MPD.height,
             pch=19, col="red") # AME, MPD. 0.04 of way up
                                         #  assumes ..ylim[1]=0
-        panel.xyplot(x[1], current.panel.limits()$ylim[2]*MPD.height,
+        panel.xyplot(mpd[panel.number()], current.panel.limits()$ylim[2]*MPD.height,
             pch=1, col="black") #AME
         # panel.curve(priorDistList[[panel.number()]], min=-1, current.panel.limits()$xlim[1], current.panel.limits()$xlim[2], col="blue")
         # panel.curve(priorDistList[[1]], col="blue")

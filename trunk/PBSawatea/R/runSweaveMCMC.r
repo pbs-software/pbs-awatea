@@ -1,4 +1,4 @@
-#runSweave------------------------------2012-08-21
+#runSweave------------------------------2012-08-23
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
@@ -6,7 +6,7 @@
 runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
     filename="spp-area-00.txt",           # Name of Awatea .txt file in 'run.dir' to run
     runNo=1, rwtNo=0, running.awatea=0,   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
-    delim="-"
+    delim="-", mcsub=1:1000
 	) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC")),pos=1)
@@ -52,6 +52,7 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	tfile = gsub("@msy.dir",msy.dir,tfile)
 	tfile = gsub("@prj.dir",prj.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
+	tfile = gsub("@mcsub",deparse(mcsub),tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
 	data(gfcode,package="PBSawatea")
 	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
@@ -80,14 +81,14 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 	invisible() }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^runSweaveMCMC
 
-#runMCMC------------------------------ -2012-07-18
+#runMCMC------------------------------ -2012-08-23
 # Wrapper to function 'runSweaveMCMC' for MCMCs.
 #-----------------------------------------------RH
-runMCMC = function(strSpp="XYZ", prefix=c("spp","area"), runs=7, rewts=0:6, cpue=FALSE, estM=TRUE, delim="-") {
+runMCMC = function(strSpp="XYZ", prefix=c("spp","area"), runs=7, rewts=0:6, cpue=FALSE, estM=TRUE, delim="-", mcsub=1:1000) {
 	for (i in runs) {
 		for (j in rewts) {
 			#runSweaveMCMC(filename=paste("input",pad0(i,2),"-ymr.txt",sep=""), runNo=i,rwtNo=j, cpue=cpue, estM=estM)
-			runSweaveMCMC(strSpp=strSpp,filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep=""),runNo=i,rwtNo=j,cpue=cpue,estM=estM)
+			runSweaveMCMC(strSpp=strSpp,filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep=""),runNo=i,rwtNo=j,cpue=cpue,estM=estM,mcsub=mcsub)
 }	}	}
 
 #runMCMC(strSpp="POP",prefix=c("pop","wcvi"),runs=29,rewts=1,cpue=FALSE,estM=TRUE)
