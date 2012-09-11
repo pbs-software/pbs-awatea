@@ -184,6 +184,19 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 
 \noindent {\tt Run02}: Like {\tt Run01} but $M_s$ and $h$ estimated. \newline
 
+\noindent {\tt Run03}: Like {\tt Run02} but without the 54$^\circ$N Historical survey and changing the 1997 Ocean Selector doorspread from 76.3m to 61.6m. \newline
+
+\noindent {\tt Run04}: Like {\tt Run03} but sensitivity run S1: increasing catches 87-90 ($+10\%$), 91-92 ($+40\%$) and 93-95 ($+60\%$). \newline
+
+\noindent {\tt Run05}: Like {\tt Run03} but sensitivity run S2: decreasing catches 84-90 ($-50\%$). \newline
+
+\noindent {\tt Run06}: Like {\tt Run03} but sensitivity run S3: including CPUE series. \newline
+
+\noindent {\tt Run07}: Like {\tt Run03} but using only WCHG Synoptic surveys. \newline
+
+\noindent {\tt Run08}: Like {\tt Run03} but with 1997 Ocean Selector doorspread changed from 61.6m to 54.4m. \newline
+
+
 % \noindent {\tt Run**}           \newline
 
 % \noindent {\tt Run**}           \newline

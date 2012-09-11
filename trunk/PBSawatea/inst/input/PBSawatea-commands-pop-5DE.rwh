@@ -7,10 +7,47 @@ runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=1,rwts=0:1,cpue=FALSE,Nsurvey=1,S
 # The latter creates projections specified by the input file.
 # Copy MCMC results to both POPrun01/MCMC.01.01 and ./POPrun01/MCMC.01.01/Proj.01.01 (the latter preserves the projections as the MSY calculation will overwrite)
 out=runADMB("pop-5DE-01.txt",strSpp="POP",runNo=1,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
-runSweaveMCMC(strSpp="POP",filename="pop-5DE-01.txt",runNo=1,rwtNo=1,cpue=TRUE)  # estM parameter no longer used
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-01.txt",runNo=1,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
 
 out=runADMB("pop-5DE-02.txt",strSpp="POP",runNo=2,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=2,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
+out=runADMB("pop-5DE-02.txt",strSpp="POP",runNo=2,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-02.txt",runNo=2,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+out=runADMB("pop-5DE-03.txt",strSpp="POP",runNo=3,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=3,rwts=0:1,cpue=FALSE,Nsurvey=2,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
+out=runADMB("pop-5DE-03.txt",strSpp="POP",runNo=3,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-03.txt",runNo=3,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Sensitivity 1 -- Increase catches from 1987-1995 (87-90 +10%, 91-92 +40%, 93-95 +60%)
+out=runADMB("pop-5DE-04.txt",strSpp="POP",runNo=4,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=4,rwts=0:1,cpue=FALSE,Nsurvey=2,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
+out=runADMB("pop-5DE-04.txt",strSpp="POP",runNo=4,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-04.txt",runNo=4,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Sensitivity 2 -- Decrease catches 50% during experimental fishery (1984-90)
+out=runADMB("pop-5DE-05.txt",strSpp="POP",runNo=5,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=5,rwts=0:1,cpue=FALSE,Nsurvey=2,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
+out=runADMB("pop-5DE-05.txt",strSpp="POP",runNo=5,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-05.txt",runNo=5,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Sensitivity 3 -- Include CPUE series
+out=runADMB("pop-5DE-06.txt",strSpp="POP",runNo=6,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=6,rwts=0:1,cpue=TRUE,Nsurvey=2,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
+out=runADMB("pop-5DE-06.txt",strSpp="POP",runNo=6,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-06.txt",runNo=6,rwtNo=1,cpue=TRUE)  # estM parameter no longer used
+
+# Run07 -- WCHG Synoptic only
+out=runADMB("pop-5DE-07.txt",strSpp="POP",runNo=7,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=7,rwts=0:1,cpue=FALSE,Nsurvey=2,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
+out=runADMB("pop-5DE-07.txt",strSpp="POP",runNo=7,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-07.txt",runNo=7,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Run08 -- WCHG Synoptic + 1997 Ocean Selector using doorspread = 54.4m
+out=runADMB("pop-5DE-08.txt",strSpp="POP",runNo=8,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=8,rwts=0:1,cpue=FALSE,Nsurvey=2,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
+out=runADMB("pop-5DE-08.txt",strSpp="POP",runNo=8,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-08.txt",runNo=8,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
 
 
 #--testing--
