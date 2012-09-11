@@ -145,7 +145,6 @@ Plotting MCMC output for model {\tt \Sexpr{model.name}}.
 
 \section{History of Runs}
 
-
 {\tt Run01}: 1 survey (WCVI Syn + US Triennial stitched just to get something running), no CPUE series, estimating $R_0$ and $q$ only, initial run with many POP QCS defaults. \newline  
 
 \noindent {\tt Run02}: Same as {\tt Run01}, but estimating all parameters. Tried extra reweightings to see if they made a difference (because average weights looked a worse fit for first reweighting than no reweighting). For ageing data, first reweight downweights survey effective sample size (originally 10, 8, 8, 29), first reweight is 15\% of that (so fit is worse). Commercial increases to 1.73 times, so it somewhat prefers that data. \newline
@@ -162,9 +161,15 @@ Plotting MCMC output for model {\tt \Sexpr{model.name}}.
 
 \noindent {\tt Run08}: Same as {\tt Run07} except $M_1, M_2$ and $h$ are estimated. \newline
 
-\noindent {\tt Run09}: Same as {\tt Run08} except (after Working Group meeting 22nd August 2012 and some minor things we spotted): (i) Use the US Triennial Canada Vancouver survey series (rather than the Total US plus Canada), (ii) take out the CPUE series, (iii) correct the WCVI synoptic survey series (from the incorrect earlier one), (iv) take out 1996 commercial catch-at-age data as from only one trip (but three samples) -- criteria is then that three trips are required. Discarding the first 200 of the 1000 MCMC samples. \newline
+\noindent {\tt Run09}: BASELINE RUN. Same as {\tt Run08} except (after Working Group meeting 22nd August 2012 and some minor things we spotted): (i) Use the US Triennial Canada Vancouver survey series (rather than the Total US plus Canada), (ii) take out the CPUE series, (iii) correct the WCVI synoptic survey series (from the incorrect earlier one), (iv) take out 1996 commercial catch-at-age data as from only one trip (but three samples) -- criteria is then that three trips are required. \newline
 
-\noindent {\tt Run10} As for Run09, but adding CPUE series back in (as for Run08) to see if it makes a difference.    \newline
+\noindent {\tt Run10} As for Run09, but sensitivity S3: adding CPUE series back in (as for Run08) to see if it makes a difference.    \newline
+
+\noindent {\tt Run11} As for Run09, but sensitivity S1: incrementing catches: 87-90 ($+20\%$), 91-92 ($+40\%$), 93-95 ($+60\%$).  \newline
+
+\noindent {\tt Run12} As for Run09, but sensitivity S2: dropping early historical survey.  \newline
+
+% \noindent {\tt Run**}           \newline
 
 Not fully automated: 
 
@@ -237,7 +242,9 @@ if(currentRes$extra$likelihoods$CPUE == 0) { NCser = 0 }
 if(NCser > 1) stop("priorInput construction assumes one CPUE 
   series so needs updating in run-masterMCMC.Snw")
 
-Sser=unique(currentRes$Survey$Series); NSser=length(Sser)
+Sser = unique(currentRes$Survey$Series)
+Sser = Sser[currentRes$extra$likelihoods$Survey_Index!=0]
+NSser= length(Sser)
 
 # Get the commercial and survey age series
 # These might also need fixing if there are dummy data that
@@ -728,9 +735,9 @@ upenult.MCMC = currentMCMC$U[,as.character(currYear-1)]
 umax.MCMC = apply(currentMCMC$U, 1, max)
 
 # Catch for last five years of data:
-if( diff(range(rev(catch)[1:2])) > 0 ) 
-   { stop("lastFiveCatch in run-masterMCMC.Snw assumes final year 
-       equals penultimate, but this isn't the case here so fix it") }
+#if( diff(range(rev(catch)[1:2])) > 0 ) 
+#   { stop("lastFiveCatch in run-masterMCMC.Snw assumes final year 
+#       equals penultimate, but this isn't the case here so fix it") }
 num.recentCatchYears = 5
 recentCatch = rev(rev(catch)[2:(2+num.recentCatchYears-1)])
               # The last num.recentCatchYears without the final year
@@ -881,7 +888,6 @@ meanRecMed = mean(recMed)
 # recProjMed1500 = apply(currentProj$R$'1500', 2, median)
 # meanRecProjMed1500 = mean(recProjMed1500)
 
-
 @ 
 
 % Comment out table parest for now (Priors and MPD estimates - see
@@ -896,7 +902,8 @@ meanRecMed = mean(recMed)
 \ymrfig{splitChain}{Diagnostic plot for run \Sexpr{model.name}, obtained by dividing the MCMC chain of \Sexpr{num.MCMC} MCMC samples into three segments, and overplotting the cumulative distributions of the first segment (green), second segment (red) and final segment (blue).}
 % overplotting the cumulative distributions, removing the first 100, then plotting the cumulative distributions for samples 101-400 (green), 301-700 (red) and 701-1000 (blue). }
 
-\ymrfig{pairs1}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for first six parameters for run \Sexpr{model.name}.}
+%=======This line will be expanded to accomodate multiple pairs plots=======
+\ymrfig{pairs1}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for 1$^\text{st}$ six parameters for run \Sexpr{model.name}.}
 
 % Need a switch here along the lines of
 %  # if(length(use.Pnames) > xx)     if not having 3 figures,
@@ -909,8 +916,8 @@ meanRecMed = mean(recMed)
 %   { print(paste(" \\ymrfig{pairs2}{Pairs plot for second six parameters.}")) }
 % @ 
 
-\ymrfig{pairs2}{Pairs plot for second set of six parameters.}
-\ymrfig{pairs3}{Pairs plot for third set of six parameters.}
+%\ymrfig{pairs2}{Pairs plot for second set of six parameters.}
+%\ymrfig{pairs3}{Pairs plot for third set of six parameters.}
 
 %\ymrfig{pairs3}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for third set of parameters for run \Sexpr{model.name}.}
 

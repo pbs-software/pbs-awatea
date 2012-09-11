@@ -190,27 +190,23 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 
 \noindent {\tt Run05}: Same as {\tt Run04} with changes: (1) log init devs changed from phase 3 to phase 2. (2) Tried changing 'Survey catch at age likelihood type' survey1 to '0' (from 12), with dummy set of catch-at-age data for survey1 (this gives the same par and MPD estimates but throws the indexing off for catch-at-age fits; therefore reverted to one catch-at-age series with no dummy). (3) Updated the WCVI synoptic survey biomass estimates to reflect some minor changes in all of them, except for 2010 survey which has changed a lot. \newline
 
-
 \noindent {\tt Run06}: Upon the advice of the POP working group (meeting 2012-08-01) the age composition was shortened to 30 age bins, where 30 acts as a plus class. Also in this run, a third survey series (GB Reed: 1967-70) was added. Note that Awatea currently has an indexing bug in the output routine regarding survey (and possibly commercial) catch-at-age fits. Therefore, the last survey (WCVI Synoptic) is labelled the first (and survey 2 = NMFS Triennial, survey 3 = GB Reed). \newline
 
 \noindent {\tt Run07}: Same as {\tt Run06} except for placing priors on natural mortality and selectivity. $M_1$ and $M_2$ are fixed to the mean of the prior, steepness $h$ is fixed.  \newline
 
 \noindent {\tt Run08}: Same as {\tt Run07} except $M_1, M_2$ and $h$ are estimated. \newline
 
-\noindent {\tt Run09}: Same as {\tt Run08} except (after Working Group meeting 22nd August 2012 and some minor things we spotted): (i) Use the US Triennial Canada Vancouver survey series (rather than the Total US plus Canada), (ii) take out the CPUE series, (iii) correct the WCVI synoptic survey series (from the incorrect earlier one), (iv) take out 1996 commercial catch-at-age data as from only one trip (but three samples) -- criteria is then that three trips are required. \newline
+\noindent {\tt Run09}: BASELINE RUN. Same as {\tt Run08} except (after Working Group meeting 22nd August 2012 and some minor things we spotted): (i) Use the US Triennial Canada Vancouver survey series (rather than the Total US plus Canada), (ii) take out the CPUE series, (iii) correct the WCVI synoptic survey series (from the incorrect earlier one), (iv) take out 1996 commercial catch-at-age data as from only one trip (but three samples) -- criteria is then that three trips are required. \newline
 
-\noindent {\tt Run10} As for Run09, but adding CPUE series back in (as for Run08) to see if it makes a difference.    \newline
+\noindent {\tt Run10} As for Run09, but sensitivity S3: adding CPUE series back in (as for Run08) to see if it makes a difference.    \newline
 
-% \noindent {\tt Run**}           \newline
+\noindent {\tt Run11} As for Run09, but sensitivity S1: incrementing catches: 87-90 ($+20\%$), 91-92 ($+40\%$), 93-95 ($+60\%$).  \newline
 
-% \noindent {\tt Run**}           \newline
-
-% \noindent {\tt Run**}           \newline
+\noindent {\tt Run12} As for Run09, but sensitivity S2: dropping early historical survey.  \newline
 
 % \noindent {\tt Run**}           \newline
 
 % **NOT DONE YET: Use priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors, but in the input files they were set as uniforms. So not sure which we are going to use.
-
 
 
 <<frompopscape, results=hide, echo=FALSE>>=

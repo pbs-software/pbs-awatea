@@ -145,10 +145,21 @@ Plotting MCMC output for model {\tt \Sexpr{model.name}}.
 
 \section{History of Runs}
 
-
 {\tt Run01}: 2 surveys (west coast Haida Gwaii (WCHG) synoptic and 54$^\circ$N Historical), fit to WCHG only. No CPUE series, fix $M_s$ and $h$, estimate commercial and survey1 selectivities. \newline  
 
 \noindent {\tt Run02}: Like {\tt Run01} but $M_s$ and $h$ estimated. \newline
+
+\noindent {\tt Run03}: Like {\tt Run02} but without the 54$^\circ$N Historical survey and changing the 1997 Ocean Selector doorspread from 76.3m to 61.6m. \newline
+
+\noindent {\tt Run04}: Like {\tt Run03} but sensitivity run S1: increasing catches 87-90 ($+10\%$), 91-92 ($+40\%$) and 93-95 ($+60\%$). \newline
+
+\noindent {\tt Run05}: Like {\tt Run03} but sensitivity run S2: decreasing catches 84-90 ($-50\%$). \newline
+
+\noindent {\tt Run06}: Like {\tt Run03} but sensitivity run S3: including CPUE series. \newline
+
+\noindent {\tt Run07}: Like {\tt Run03} but using only WCHG Synoptic surveys. \newline
+
+\noindent {\tt Run08}: Like {\tt Run03} but with 1997 Ocean Selector doorspread changed from 61.6m to 54.4m. \newline
 
 % \noindent {\tt Run**}           \newline
 
@@ -227,7 +238,9 @@ if(currentRes$extra$likelihoods$CPUE == 0) { NCser = 0 }
 if(NCser > 1) stop("priorInput construction assumes one CPUE 
   series so needs updating in run-masterMCMC.Snw")
 
-Sser=unique(currentRes$Survey$Series); NSser=length(Sser)
+Sser = unique(currentRes$Survey$Series)
+Sser = Sser[currentRes$extra$likelihoods$Survey_Index!=0]
+NSser= length(Sser)
 
 # Get the commercial and survey age series
 # These might also need fixing if there are dummy data that
@@ -718,9 +731,9 @@ upenult.MCMC = currentMCMC$U[,as.character(currYear-1)]
 umax.MCMC = apply(currentMCMC$U, 1, max)
 
 # Catch for last five years of data:
-if( diff(range(rev(catch)[1:2])) > 0 ) 
-   { stop("lastFiveCatch in run-masterMCMC.Snw assumes final year 
-       equals penultimate, but this isn't the case here so fix it") }
+#if( diff(range(rev(catch)[1:2])) > 0 ) 
+#   { stop("lastFiveCatch in run-masterMCMC.Snw assumes final year 
+#       equals penultimate, but this isn't the case here so fix it") }
 num.recentCatchYears = 5
 recentCatch = rev(rev(catch)[2:(2+num.recentCatchYears-1)])
               # The last num.recentCatchYears without the final year
@@ -886,7 +899,10 @@ meanRecMed = mean(recMed)
 \ymrfig{splitChain}{Diagnostic plot for run \Sexpr{model.name}, obtained by dividing the MCMC chain of \Sexpr{num.MCMC} MCMC samples into three segments, and overplotting the cumulative distributions of the first segment (green), second segment (red) and final segment (blue).}
 % overplotting the cumulative distributions, removing the first 100, then plotting the cumulative distributions for samples 101-400 (green), 301-700 (red) and 701-1000 (blue). }
 
-\ymrfig{pairs1}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for first six parameters for run \Sexpr{model.name}.}
+%=======This line will be expanded to accomodate multiple pairs plots=======
+\ymrfig{pairs1}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for 1$^\text{st}$ six parameters for run \Sexpr{model.name}.}
+
+%\ymrfig{pairs1}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for first six parameters for run \Sexpr{model.name}.}
 
 % Need a switch here along the lines of
 %  # if(length(use.Pnames) > xx)     if not having 3 figures,
@@ -899,8 +915,8 @@ meanRecMed = mean(recMed)
 %   { print(paste(" \\ymrfig{pairs2}{Pairs plot for second six parameters.}")) }
 % @ 
 
-\ymrfig{pairs2}{Pairs plot for second set of six parameters.}
-\ymrfig{pairs3}{Pairs plot for third set of six parameters.}
+%\ymrfig{pairs2}{Pairs plot for second set of six parameters.}
+%\ymrfig{pairs3}{Pairs plot for third set of six parameters.}
 
 %\ymrfig{pairs3}{Pairs plot of \Sexpr{num.MCMC} MCMC samples for third set of parameters for run \Sexpr{model.name}.}
 
