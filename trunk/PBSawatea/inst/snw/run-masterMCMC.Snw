@@ -526,9 +526,13 @@ currentProj$eps = lapply(currentProj$eps, function(x) {  x[ ,1:(dim(x)[[2]]-1)] 
 
 
 # Awatea MSY.
-currentMSY <- msyCalc( dir=msy.dir, error.rep = 1 )  # reports if
+currentMSY = msyCalc( dir=msy.dir, error.rep = 0 )  # reports if
     # MSY not converged
-currentMSY <- sapply(currentMSY,function(x,s){x[s]},s=mcsub,simplify=FALSE)
+# Next line now doesn't work with the scalars in the list, so 
+#  replacing with an error for now as we're using all mcsub values
+#  for POP 3CD and 5DE.
+currentMSY = sapply(currentMSY,function(x,s){x[s]},s=mcsub,simplify=FALSE)       # mcsub subsets the MCMC samples
+
 assign( "currentMSY", currentMSY, pos=1 )      # Forces it global (or something)
 
 # Do these for ease of showing statistics in tables. Each should be a vector with value 
@@ -1250,11 +1254,16 @@ Marginal posterior distributions and corresponding priors for the estimated para
 
 %*** natural mortality bit - change for 5DE.
 
+% Doing selectivity in MPD part now.
 ***TO DO ONCE FIGURE DONE*** The selectivity curves (\ref{fig:selectivityMCMC}) show that......ADAPT from this, which was for YMR: , when estimated, the estimated age at full selectivity for females ($\mu_1$, $\mu_2$ and $\mu_6$ in Figure \ref{fig:selectivityMCMC}) is over 11 years, whereas the prior for these parameters had a mean of 7.2 years (Table F4).  Initial model exploration used informed priors but in the end we used a prior derived from the US commercial fishery on Darkblotched Rockfish for all surveys (or fixed it at such values if selectivity was not estimated) except the QCS shrimp survey (see Appendix D)  The latter used selectivity estimates from a US shelf survey as the fixed parameter values.  
 
 % Marginal posterior densities are also shown for run 'Estimate M' for the annual spawning biomass (Figures G30-G32) and the annual age-1 recruitments (Figures G33-G35).  Some of these show appropriately wide distributions, resulting from the wide distributions shown for some of the estimated parameters (Figure G27).  However, in most instances, the mode of the posterior distribution is very close to the MPD estimates, indicating that the posterior distributions do not appear to be skewed by data outliers.  
 
 Plots of marginal posterior distributions of vulnerable biomass, spawning biomass, annual recruitment and exploitation rate are presented in the main text, because of their interest to management.  Phase plots showing the time-evolution of spawning biomass and exploitation rate relative to reference points are also shown in the main text, together with projections and resulting decision tables.
+
+For the maximum sustainable yield (MSY) calculations, projections were run for \Sexpr{currentMSY$maxUind[1]} values of constant exploitation rate $u_t$ between \Sexpr{currentMSY$uMin[1]} and \Sexpr{currentMSY$uMax[1]}, until an equilibrium yield was reached within a tolerance of \Sexpr{currentMSY$tolerance[1]}~t (or until \Sexpr{prettyNum(currentMSY$maxProj[1], big.mark=",")} years had been reached). This was done for each of the \numMCMC~samples.  % $ 
+
+The lower bound of $u_t$ was reached for \Sexpr{sum(currentMSY$imsy == 1)} of the MCMC samples, and the upper bound for \Sexpr{sum(currentMSY$imsy == currentMSY$maxUind[1])} of the samples. Of the total of \Sexpr{prettyNum(currentMSY$maxUind[1] * num.MCMC, big.mark=",")} projection calculations, \Sexpr{sum(currentMSY$nProjMatTF)} did not convergence by \Sexpr{prettyNum(currentMSY$maxProj[1], big.mark=",")} years.
 
 % End of Appendix G
 
@@ -1275,7 +1284,7 @@ The aforementioned stock trajectory is further explained by the estimated recrui
 
 The estimated exploitation rates (ratio of total catch to the vulnerable biomass in the middle of the year), Figure \ref{fig:exploitMCMC}, peak in the mid-1960s due to the large catches, and peak again (though not as high) in the early 1990s. Exploitation rates have remained relatively low since the mid-1990s, with $u_{\Sexpr{currYear-1}}$, the exploitation rate for \Sexpr{currYear-1}, estimated as \Sexpr{med5.95(upenult.MCMC, dig=3)}.
 
-Estimates of further quantities of interest, such as absolute values of biomass, are also given in Table \ref{tab:MCMCderived}, as well as quantities based on maximum sustainable yield (MSY), discussed below.
+Estimates of further quantities of interest, such as absolute values of biomass, are also given in Table \ref{tab:MCMCderived}, as well as quantities based on maximum sustainable yield (MSY), discussed below. 
 
 \section{ADVICE FOR MANAGERS}
 

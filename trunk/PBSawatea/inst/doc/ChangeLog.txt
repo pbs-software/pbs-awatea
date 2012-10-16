@@ -4,6 +4,7 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
 0.10  2012-10-16  Rowan
+  - Revised function 'msyCalc' to report the convergence numbers. (AME 10/16)
   - Updated function 'readAD' to handle inactive data identified by "###" as opposed to comments identified by "#". (RH 10/16)
   - Updated functions 'pltmpdGraphs' and 'plt.mcmcGraphs' (e.g., lower panel of pairs plot reports the correlation coefficient). (AME 10/15)
   - Updated function 'runSweaveMCMC' and 'run-masterMCMC.Snw' to accommodate variable numbers of pairs plots. (RH 9/10)
