@@ -186,13 +186,14 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 	return(Robj) }
 #------------------------------------------runADMB
 
-#readAD---------------------------------2012-08-02
+#readAD---------------------------------2012-10-16
 # Read the ADMB input file and create an AWATEA class object.
 #-----------------------------------------------RH
 readAD = function(txt) {
 	txtnam = as.character(substitute(txt))
 	otxt = readLines(txt) # original text
-	xlst = strsplit(otxt,"")
+	utxt = otxt[!is.element(substring(otxt,1,3),"###")] # use text (remove data not comments)
+	xlst = strsplit(utxt,"")
 	xlst = xlst[sapply(xlst,length)>0]
 	ntxt = sapply(xlst,function(x){paste(clipVector(x,clip="\t",end=2),collapse="")})
 	ntxt = gsub("\\\t\\\t","\t",ntxt)   # internal cleanup

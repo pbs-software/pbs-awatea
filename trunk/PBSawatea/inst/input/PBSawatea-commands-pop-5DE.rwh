@@ -1,8 +1,16 @@
+# MCMC Stuff--------------------------------------
+# Run MCMCs on Supercomputer, issue commands:
+#   awatea -ind pop-5DE.14.01.txt -mcmc 10000000 -mcsave 10000
+#   awatea -ind pop-5DE.14.01.txt -mceval
+# The latter creates projections specified by the input file.
+# Copy MCMC results to both POPrun07/MCMC.07.01 and ./POPrun07/MCMC.07.01/Proj.07.01 (the latter preserves the projections as the MSY calculation will overwrite)
+#-------------------------------------------------
+
 require("PBSawatea")
 out=runADMB("pop-5DE-01.txt",strSpp="POP",runNo=1,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=1,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
 # Run MCMCs on Supercomputer, issue commands:
-#   awatea -ind pop-5DE.01.01.txt -mcmc 5000000 -mcsave 5000
+#   awatea -ind pop-5DE.01.01.txt -mcmc 10000000 -mcsave 10000
 #   awatea -ind pop-5DE.01.01.txt -mceval
 # The latter creates projections specified by the input file.
 # Copy MCMC results to both POPrun01/MCMC.01.01 and ./POPrun01/MCMC.01.01/Proj.01.01 (the latter preserves the projections as the MSY calculation will overwrite)
@@ -48,6 +56,38 @@ out=runADMB("pop-5DE-08.txt",strSpp="POP",runNo=8,doMPD=TRUE,N.reweight=1,mean.a
 runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=8,rwts=0:1,cpue=FALSE,Nsurvey=2,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
 out=runADMB("pop-5DE-08.txt",strSpp="POP",runNo=8,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
 runSweaveMCMC(strSpp="POP",filename="pop-5DE-08.txt",runNo=8,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Run09 -- WCHG Synoptic + 1997 Ocean Selector using doorspread = 76.6m
+out=runADMB("pop-5DE-09.txt",strSpp="POP",runNo=9,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=9,rwts=0:1,cpue=FALSE,Nsurvey=2,Snames=c("WCHG.Synoptic","54N.Historical"),SApos=c(T,F),delim="-")
+out=runADMB("pop-5DE-09.txt",strSpp="POP",runNo=9,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-09.txt",runNo=9,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Note: No Runs 10-13
+
+# Run14 -- Base case: WCHG Synoptic
+out=runADMB("pop-5DE-14.txt",strSpp="POP",runNo=14,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=14,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
+out=runADMB("pop-5DE-14.txt",strSpp="POP",runNo=14,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-5DE-14.txt",runNo=14,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+#Run15 -- Run 14 with Leaman's maximum estimates of foreign catch from 1965 to 1977
+out=runADMB("pop-5DE-15.txt",strSpp="POP",runNo=15,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=15,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
+
+#Run16 -- Run 14 using Leaman's foreign (USSR, Japanese) catches from 1965 to 1977
+out=runADMB("pop-5DE-16.txt",strSpp="POP",runNo=16,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=16,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
+
+# Note: No Runs 17-19
+
+# Run20 -- New base case, as for Run14 but using USSR catch from Ketchen (1980a) and Japanese catch from Ketchen (1980b).
+out=runADMB("pop-5DE-20.txt",strSpp="POP",runNo=20,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=20,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
+
+# Run22 -- Sensitivity 2 decreasing catches: 1984 (-19%), 1985 (-18%), 1986 (-27%), 1987 (-10%), 1988 (-11%), 1989 (-15%)
+out=runADMB("pop-5DE-22.txt",strSpp="POP",runNo=22,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=22,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
 
 
 #--testing--
