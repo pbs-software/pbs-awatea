@@ -1,3 +1,11 @@
+# MCMC Stuff--------------------------------------
+# Run MCMCs on Supercomputer, issue commands:
+#   awatea -ind pop-3CD.20.01.txt -mcmc 10000000 -mcsave 10000
+#   awatea -ind pop-3CD.20.01.txt -mceval
+# The latter creates projections specified by the input file.
+# Copy MCMC results to both POPrun20/MCMC.20.01 and ./POPrun20/MCMC.20.01/Proj.20.01 (the latter preserves the projections as the MSY calculation will overwrite)
+#-------------------------------------------------
+
 require("PBSawatea")
 out=runADMB("ymr-qcd-29.txt",strSpp="YMR",runNo=29,doMPD=TRUE,N.reweight=1,ADargs=list("-nohess"),mean.age=TRUE,cvpro=0.2)
 runMPD(strSpp="YMR",prefix=c("ymr","qcd"), runs=29, rewts=0:1, cpue=FALSE, delim="-")
@@ -37,29 +45,51 @@ runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=8,rwts=0:1,cpue=TRUE,Nsurvey=3,Sn
 out=runADMB("pop-3CD-08.txt",strSpp="POP",runNo=8,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
 runSweaveMCMC(strSpp="POP",filename="pop-3CD-08.txt",runNo=8,rwtNo=1,cpue=TRUE)  # estM parameter no longer used
 
-# Base case for 3CD
+# Run09 -- Base case for 3CD
 out=runADMB("pop-3CD-09.txt",strSpp="POP",runNo=9,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=9,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
 out=runADMB("pop-3CD-09.txt",strSpp="POP",runNo=9,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
 runSweaveMCMC(strSpp="POP",filename="pop-3CD-09.txt",runNo=9,rwtNo=1,cpue=FALSE,mcsub=201:1000)  # estM parameter no longer used
 
-# Sensitivity 3 -- Include CPUE series
+# Run10 -- Sensitivity 3: Include CPUE series
 out=runADMB("pop-3CD-10.txt",strSpp="POP",runNo=10,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=10,rwts=0:1,cpue=TRUE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
 out=runADMB("pop-3CD-10.txt",strSpp="POP",runNo=10,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
 runSweaveMCMC(strSpp="POP",filename="pop-3CD-10.txt",runNo=10,rwtNo=1,cpue=TRUE)  # estM parameter no longer used
 
-# Sensitivity 1 -- Increase catches from 1987-1995 (87-90 +20%, 91-92 +40%, 93-95 +60%)
+# Run11 -- Sensitivity 1: Increase catches from 1987-1995 (87-90 +20%, 91-92 +40%, 93-95 +60%)
 out=runADMB("pop-3CD-11.txt",strSpp="POP",runNo=11,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=11,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
 out=runADMB("pop-3CD-11.txt",strSpp="POP",runNo=11,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
 runSweaveMCMC(strSpp="POP",filename="pop-3CD-11.txt",runNo=11,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
 
-# Sensitivity 2 -- drop early historical survey
+# Run12 -- Sensitivity 2: drop early historical survey
 out=runADMB("pop-3CD-12.txt",strSpp="POP",runNo=12,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=12,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
 out=runADMB("pop-3CD-12.txt",strSpp="POP",runNo=12,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
 runSweaveMCMC(strSpp="POP",filename="pop-3CD-12.txt",runNo=12,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Note: No Run 13
+
+# Run14 -- Final Base case for 3CD
+out=runADMB("pop-3CD-14.txt",strSpp="POP",runNo=14,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=14,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+out=runADMB("pop-3CD-14.txt",strSpp="POP",runNo=14,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-3CD-14.txt",runNo=14,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Run15 -- Alternative base run for 3CD where foreign catch is 25% of the Vancouver region (3B+3C+3D)
+out=runADMB("pop-3CD-15.txt",strSpp="POP",runNo=15,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=15,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+
+# Note: No Runs 16-19
+
+# Run20 -- New base case, as for Run14 but using USSR catch from Ketchen (1980a) and Japanese catch from Ketchen (1980b).
+out=runADMB("pop-3CD-20.txt",strSpp="POP",runNo=20,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=20,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+
+# Run22 -- Sensitivity 2: incrementing catches 1987-1990 (+20%), 1991-1992 (+40%), 1993-1995 (+60%)
+out=runADMB("pop-3CD-22.txt",strSpp="POP",runNo=22,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=22,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
 
 
 #--testing--

@@ -1,0 +1,67 @@
+% runHistory.tex for POP 3CD.
+
+\section*{History of Runs}
+
+{\tt Run01}: 1 survey (WCVI Syn + US Triennial stitched just to get something running), no CPUE series, estimating $R_0$ and $q$ only, initial run with many POP QCS defaults. \newline  
+
+\noindent {\tt Run02}: Same as {\tt Run01}, but estimating all parameters. Tried extra reweightings to see if they made a difference (because average weights looked a worse fit for first reweighting than no reweighting). For ageing data, first reweight downweights survey effective sample size (originally 10, 8, 8, 29), first reweight is 15\% of that (so fit is worse). Commercial increases to 1.73 times, so it somewhat prefers that data. \newline
+
+\noindent {\tt Run03}: From Paul (his {\tt InputPOP wcvi 05A.txt}), 25/7/12. Now starts from 1976, many (but not all) of the parameters estimated. Gives moderately sensible results. Contains the 17 CPUE indices and the 1996 Caledonian survey estimate. Now estimating {\tt log init devs}: deviates for initial age structure; {\tt initial R}: number 1-year olds in year 1 relative to $R_0$ (**perhaps); {\tt initial u}: exploitation for initial age structure (one for each sex); {\tt plus scale}: multiplier on the "plus" group, which recognises that the cumulative exploitation on the plus group will exceed the estimate made by the parameter 'initial u' (one parameter for each sex). Find $R_0 \simeq 1700$, {\tt uinit}$\simeq 0.01$ and the plus-scale is a very small number. I don't think these make sense.  It may be a better idea to not estimate plus-scale at this point.  And {\tt Rinit}$>1$, which also seems silly. It's still early days, but it looks like this approach will lead to an assessment, which is good news. \newline
+
+\noindent {\tt Run04}: Same as {\tt Run03}, but setting priors for natural mortality to Normal(0.067, sd$=$0.0029) for females, Normal(0.073, 0.0031) for males, based on posteriors of QCS POP assessment. May want to (i) use one prior for both sexes (Normal(0.07, 0.003)), or (ii) make priors broader. Take out 1996 synoptic survey index that was included (it was targetting POP and caught POP about twice as frequently as the later cruises - see Paul's Appendix C). Also using priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors. I noticed in the previous input file these were set as uniforms, but I've changed to normals which seems to work. \newline
+
+\noindent {\tt Run05}: Same as {\tt Run04} with changes: (1) log init devs changed from phase 3 to phase 2. (2) Tried changing 'Survey catch at age likelihood type' survey1 to '0' (from 12), with dummy set of catch-at-age data for survey1 (this gives the same par and MPD estimates but throws the indexing off for catch-at-age fits; therefore reverted to one catch-at-age series with no dummy). (3) Updated the WCVI synoptic survey biomass estimates to reflect some minor changes in all of them, except for 2010 survey which has changed a lot. \newline
+
+
+\noindent {\tt Run06}: Upon the advice of the POP working group (meeting 2012-08-01) the age composition was shortened to 30 age bins, where 30 acts as a plus class. Also in this run, a third survey series (GB Reed: 1967-70) was added. Note that Awatea currently has an indexing bug in the output routine regarding survey (and possibly commercial) catch-at-age fits. Therefore, the last survey (WCVI Synoptic) is labelled the first (and survey 2 = NMFS Triennial, survey 3 = GB Reed). \newline
+
+\noindent {\tt Run07}: Same as {\tt Run06} except for placing priors on natural mortality and selectivity. $M_1$ and $M_2$ are fixed to the mean of the prior, steepness $h$ is fixed.  \newline
+
+\noindent {\tt Run08}: Same as {\tt Run07} except $M_1, M_2$ and $h$ are estimated. \newline
+
+\noindent **Proposed base run before the catch was corrected:
+
+\noindent {\tt Run09}: Same as {\tt Run08} except (after Working Group meeting 22nd August 2012 and some minor things we spotted): (i) Use the US Triennial Canada Vancouver survey series (rather than the Total US plus Canada), (ii) take out the CPUE series, (iii) correct the WCVI synoptic survey series (from the incorrect earlier one), (iv) take out 1996 commercial catch-at-age data as from only one trip (but three samples) -- criteria is then that three trips are required. \newline
+
+\noindent **Proposed senstivity runs before the catch was corrected:
+
+\noindent {\tt Run10} As for {\tt Run09}, but sensitivity S3: adding CPUE series back in (as for {\tt Run08}) to see if it makes a difference.    \newline
+
+\noindent {\tt Run11} As for {\tt Run09}, but sensitivity S1: incrementing catches: 87-90 ($+20\%$), 91-92 ($+40\%$), 93-95 ($+60\%$).  \newline
+
+\noindent {\tt Run12} As for {\tt Run09}, but sensitivity S2: dropping early historical survey.  \newline
+
+\noindent **NEW base run, with corrected catch (make it {\tt Run14} so the same as for 5DE**
+
+\noindent {\tt Run14} As for {\tt Run09}, but with corrected catch. \newline
+
+\noindent **Proposed senstivity runs with corrected catch:
+
+\noindent {\tt Run15} As for {\tt Run14}, but sensitivity run S1: incrementing catches: 1987-1990 ($+20\%$), 1991-1992 ($+40\%$), 1993-1995 ($+60\%$).  \newline
+
+\noindent {\tt Run16} As for {\tt Run14}, but sensitivity S2: dropping early historical survey.  \newline
+
+\noindent **Problems with catch data require new exploratory runs:
+
+\noindent {\tt Run15} As for {\tt Run14}, but with 3CD foreign catch set to 25\% of the Vancouver region (3B+3C+3D). \newline
+
+\noindent **NEW base run, with corrected catch (yet again), re-start series at 20
+
+\noindent {\tt Run20} As for {\tt Run14}, but using Japanese catch from Ketchen (1980a) and USSR catch from Ketchen (1980b). \newline
+
+\noindent {\tt Run21} As for {\tt Run20}, but sensitivity run S1: dropping early historical survey series.  \newline
+
+\noindent {\tt Run22} As for {\tt Run20}, but sensitivity run S2: incrementing catches: 1987-1990 ($+20\%$), 1991-1992 ($+40\%$), 1993-1995 ($+60\%$).  \newline
+
+
+% \noindent {\tt Run**}           \newline
+
+% \noindent {\tt Run**}           \newline
+
+% \noindent {\tt Run**}           \newline
+
+% \noindent {\tt Run**}           \newline
+
+% **NOT DONE YET: Use priors for selectivity parameters based on posteriors from QCS (see {\tt POP12SelPrior.pdf}), which works out normal distribution priors, but in the input files they were set as uniforms. So not sure which we are going to use.
+
+

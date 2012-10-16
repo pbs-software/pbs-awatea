@@ -2331,7 +2331,7 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
 }
 
 
-#plt.mcmcGraphs-------------------------2012-08-23
+#plt.mcmcGraphs-------------------------2012-10-16
 #  AME editing (with *AME*) to give a policy option 
 #  to be specified in run-master.Snw. 16th August 2012.
 #-------------------------------------------AME/AM
@@ -2350,6 +2350,15 @@ function (mcmcObj, projObj, save = FALSE,
           #  that will be useful if want to scale two model runs
           #  to the same ylim. If NULL then fits ylim automatically.
   {     
+	panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
+	{
+		usr <- par("usr"); on.exit(par(usr))
+		par(usr = c(0, 1, 0, 1))
+		r <- abs(cor(x, y))
+		txt <- format(c(r, 0.123456789), digits=digits)[1]
+		txt <- paste(prefix, txt, sep="")
+		text(0.5, 0.5, txt, cex = 1.4)
+	}
     postscript("recruitsMCMC.eps", height = 5, width = 6.2, horizontal = FALSE, 
         paper = "special")
     plotRmcmcPOP(currentMCMC$R, yLim = ylim.recruitsMCMC) # *AME*
@@ -2427,10 +2436,10 @@ function (mcmcObj, projObj, save = FALSE,
         policy = plotPolicies,    # *AME*
         save = FALSE, yaxis.lab = "Recruitment (1000s)")
     dev.off()
-    postscript("RprojOnePolicy.eps", horizontal = FALSE, paper = "special",                             # *AME* (filename)
+    postscript("RprojOnePolicy.eps", horizontal = FALSE, paper = "special",                    # *AME* (filename)
         height = 5, width = 6.2)
     plt.quantBioBB0(currentMCMC$R, currentProj$R, xyType = "quantBox", 
-        policy = onePolicy, save = FALSE, xaxis.by = 10, yaxis.lab = "Recruitment (1000s)")            # *AME* (onePolicy)
+        policy = onePolicy, save = FALSE, xaxis.by = 10, yaxis.lab = "Recruitment (1000s)")    # *AME* (onePolicy)
     dev.off()
     postscript("snail.eps", height = 5, width = 6.2, horizontal = FALSE, 
         paper = "special")
@@ -2445,14 +2454,15 @@ function (mcmcObj, projObj, save = FALSE,
       if (i<npp) ii = (1:npr)+(i-1)*npr
       else ii = (nuP-npr+1):nuP 
       postscript(paste("pairs",i,".eps",sep=""),height=7,width=7,horizontal=FALSE,paper="special")
-      pairs(currentMCMC$P[, ii], pch=20, cex=0.2, gap=0)
+      #pairs(currentMCMC$P[, ii], pch=20, cex=0.2, gap=0)
+      pairs(currentMCMC$P[, ii], pch = 20, cex = 0.2, gap = 0, lower.panel=panel.cor)
       dev.off()
     }
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mcmcGraphs
 
 
-#plt.mpdGraphs--------------------------2012-08-21
+#plt.mpdGraphs--------------------------2012-10-16
 # Plot the MPD graphs to encapsulated postscript files.
 #----------------------------------------------AME
 plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
@@ -2795,7 +2805,8 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
        ylab=expression(paste("Recruitment in year ",
            italic(t), ",", italic(R)[t], " (1000s)"), sep="") )
   #points(obj$B$SB, obj$B$R)
-  text(obj$B$SB, obj$B$R, labels=substring(as.character(years), 3), cex=0.5)
+  #text(obj$B$SB, obj$B$R, labels=substring(as.character(years), 3), cex=0.5)
+  text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels = substring(as.character(years), 3), cex = 0.5)
   dev.off()
   
   #windows()
