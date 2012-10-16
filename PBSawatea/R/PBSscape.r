@@ -3406,78 +3406,62 @@ importProj.ddiff <- function( yrVal="2006" )
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importProj.ddiff
 
 
-#msyCalc--------------------------------2011-08-31
+#msyCalc--------------------------------2012-10-16
 # To load in MSY.out and calculated the MSY.
 # Call this function with msy = msyCalc().
 #----------------------------------------------AME
-msyCalc = function(dir=getwd(), error.rep=1)
+msyCalc = 
+function (dir = getwd(), error.rep = 1) 
 {
-# See msyTestCreating.r for full details when figuring this out
-# error.rep = 1 to report errors (reaching bounds), 0 to not
-  control = readLines(paste(dir, "/Yields.ctl", sep=""))
-  maxProj = as.numeric(control[3])
-  tolerance = as.numeric(control[5])
-  test = read.table(paste(dir, "/MSY.out", sep=""),
-     header=TRUE, sep="\t")
-  num.draws = dim(test)[1]    # number of MCMC draws
-
-  nProjIndex = grep("nProj", names(test))
-  nProjMat = test[, nProjIndex]          # data frame of just nProj
-                                         #  values
-
-  nProjMatTF = (nProjMat > maxProj-1)   # TRUE for ones that didn't
-                                        #  reach equilibrium by 15000
-  # sum(nProjMatTF)                       # Shows how many
-  if(error.rep == 1 & (sum(nProjMatTF) > 0))
-    {    
-    stop(paste("Simulations reach maximum year for", sum(nProjMatTF), "of the", num.draws * dim(nProjMat)[2], "simulations, so need to run for longer or reduce tolerance to reach equilibrium"))
-    }
-
-  # source("myImagePlot.r")
-  # myImagePlot(nProjMatTF)        # are scattered for MCMC25
-
-  # Get a matrix of equil yields, corresponding U etc.
-
-  yieldIndex = grep("Yield", names(test))
-  yieldMat = test[,yieldIndex]
-
-  uIndex = grep("U", names(test))
-  uMat = test[, uIndex]
-
-  VBIndex = grep("VB_", names(test))
-  VBMat = test[, VBIndex]
-
-  SBIndex = grep("SB_", names(test))
-  SBMat = test[, SBIndex]
-
-  # Find the max yield for each draw:
-  imsy = apply(yieldMat, 1, which.max)
-  # Check that we reach the max at a value < the max U that's been
-  #  looked at.
-  if(error.rep == 1 & max(imsy) == dim(yieldMat)[2])
-    { stop("Need to use a higher max U to reach the MSY, for at least one draw")  }
-
-  # For one MCMC draw (first one):
-  # plot(as.numeric(uMat[1,]), as.numeric(yieldMat[1,]))
-
-  # These will be vectors, each value corresponds to a draw
-  msy = vector()
-  umsy = vector()
-  VBmsy = vector()
-  Bmsy = vector()
-  nProj = vector()
-
-  for(i in 1:num.draws)
-    {
-      ind = imsy[i]
-      msy[i] = yieldMat[i, ind]
-      umsy[i] = uMat[i, ind]
-      VBmsy[i] = VBMat[i, ind]
-      Bmsy[i] = SBMat[i, ind]
-      nProj[i] = nProjMat[i, ind]
-    }
-  # call this function with msy = msyCalc()
-  return(list(yield=msy, u=umsy, VB=VBmsy, B=Bmsy, nProj=nProj))
+# rewriting msyCalc here to report the convergence numbers:
+	control = readLines(paste(dir, "/Yields.ctl", sep = ""))
+	maxProj = as.numeric(control[3])
+	tolerance = as.numeric(control[5])
+	test = read.table(paste(dir, "/MSY.out", sep = ""), header = TRUE, sep = "\t")
+	num.draws = dim(test)[1]
+	nProjIndex = grep("nProj", names(test))
+	nProjMat = test[, nProjIndex]   # matrix of number of projections
+	nProjMatTF = rowSums(nProjMat > maxProj - 1)   # sum by row
+	if (error.rep == 1 & (sum(nProjMatTF) > 0)) {
+		stop(paste("Simulations reach maximum year for", sum(nProjMatTF), 
+			"of the", num.draws * dim(nProjMat)[2], "simulations, so need to run for longer or reduce tolerance to reach equilibrium"))
+	}
+	yieldIndex = grep("Yield", names(test))
+	yieldMat = test[, yieldIndex]
+	uIndex = grep("U", names(test))
+	uMat = test[, uIndex]
+	VBIndex = grep("VB_", names(test))
+	VBMat = test[, VBIndex]
+	SBIndex = grep("SB_", names(test))
+	SBMat = test[, SBIndex]
+	imsy = apply(yieldMat, 1, which.max)
+	if (error.rep == 1 & max(imsy) == dim(yieldMat)[2]) {
+		stop("Need to use a higher max U to reach the MSY, for at least one draw")
+	}
+	msy = vector()
+	umsy = vector()
+	VBmsy = vector()
+	Bmsy = vector()
+	nProj = vector()
+	for (i in 1:num.draws) {
+		ind = imsy[i]
+		msy[i] = yieldMat[i, ind]
+		umsy[i] = uMat[i, ind]
+		VBmsy[i] = VBMat[i, ind]
+		Bmsy[i] = SBMat[i, ind]
+		nProj[i] = nProjMat[i, ind]
+	}
+	return(list(yield = msy, u = umsy, VB = VBmsy, B = Bmsy, 
+		nProj = nProj, uMin=uMat[,1], uMax=uMat[,dim(uMat)[2]], imsy = imsy, maxUind = rep(dim(yieldMat)[2], num.draws),  maxProj = rep(maxProj, num.draws), tolerance = rep(tolerance, num.draws), nProjMatTF=nProjMatTF))
+	# imsy is index of tested u's for which you get umsy, so
+	#  so if it's 1 or maxUind for an MCMC then that one 
+	#  reached the bounds of u. Report that below in Sweave.
+	# uMin, uMax are vectors of the min/max tested u's
+	#  same for all MCMC samples, but need a vector to use
+	#  sapply below (and same for the following variables).
+	# maxProj is maximum number of projection years tried
+	#  (from Yields.ctl file), so need to report if that's
+	#  reached for any of the nProj. Again, need a vector.
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^msyCalc
 
