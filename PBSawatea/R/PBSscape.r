@@ -625,7 +625,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
     attr(model, "info") <- info
     class(model) <- "scape"
     return(model) }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importCol2
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importCol2
 
 
 load.allResFiles <- function( resList=NULL )  
@@ -764,7 +764,7 @@ plotB2 <- function (model, what = "d", series = NULL, years = NULL, axes = TRUE,
         invisible(graph)
     }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotB2
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotB2
 
 
 #plotBmcmcPOP---------------------------2011-08-31
@@ -844,7 +844,7 @@ plotBmcmcPOP = function(obj, currentRes1 = currentRes,
     # mtext( side=2, line=2, cex=1.0, "Biomass" )
   # }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBmcmcPOP
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBmcmcPOP
 
 
 #plotVBcatch----------------------------2011-08-31
@@ -923,7 +923,7 @@ plotVBcatch = function(obj, currentRes1 = currentRes,
     # mtext( side=2, line=2, cex=1.0, "Biomass" )
   # }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotVBcatch
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotVBcatch
 
 
 #plotBVBnorm----------------------------2011-08-31
@@ -990,7 +990,7 @@ plotBVBnorm = function(mcmcObj,
      # mtext( side=2, line=2, cex=1.0, "Biomass" )
    # }
  }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBVBnorm
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBVBnorm
 
 
 #plotRmcmcPOP---------------------------2011-08-31
@@ -1053,7 +1053,7 @@ plotRmcmcPOP = function(obj,
   axis(1, at=xLim[1]:xLim[2], tcl=tcl.val, labels=FALSE)
   axis(2, at = seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotRmcmcPOP
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotRmcmcPOP
 
 
 #plotIndex2-----------------------------2011-08-31
@@ -1185,7 +1185,7 @@ plotIndex2 <- function (model, what = "c", series = NULL, axes = TRUE, same.limi
         invisible(graph)
     }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotIndex2
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotIndex2
 
 
 #--------------------------------------------------------------------#
@@ -1283,7 +1283,7 @@ calc.projExpect <- function( obj, projObj, refYrs )
   print( result )
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.projExpect
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projExpect
 
 
 #calc.projExpect2-----------------------2011-08-31
@@ -1340,7 +1340,7 @@ calc.projExpect2 <- function( obj, projObj, refList )
   result$refs <- refList
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.projExpect2
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projExpect2
 
 
 #calc.projProbs-------------------------2011-08-31
@@ -1387,7 +1387,7 @@ calc.projProbs <- function( obj, projObj, refYrs )
   print( result )
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.projProbs
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projProbs
 
 
 #calc.projProbs2------------------------2011-08-31
@@ -1445,7 +1445,7 @@ calc.projProbs2 <- function( obj, projObj, refList )
   result$refs <- refList
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.projProbs2
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projProbs2
 
 
 #calc.refProbs--------------------------2011-08-31
@@ -1505,7 +1505,7 @@ calc.refProbs <- function( projObj=currentProj$B, refPlist=refPointsList )
   # result$refs <- refPlist
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.refProbs
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refProbs
 
 
 #calc.refVal----------------------------2011-08-31
@@ -1532,7 +1532,7 @@ calc.refVal <- function( obj, refYrs, fun=mean )
   result <- apply( tmp,1,fun )
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^calc.refVal
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refVal
 
 
 #getYrIdx-------------------------------2011-08-31
@@ -1549,7 +1549,7 @@ getYrIdx <- function( yrNames,mod=5 )
   result <- yrNames[ idx ]
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^getYrIdx
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~getYrIdx
 
 
 #out.pmTables---------------------------2011-08-31
@@ -1573,7 +1573,7 @@ out.pmTables <- function( obj, fileName="pm", dec=3 )
       file=paste( fileName,i,".csv",sep=""),sep="," )
   }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^out.pmTables
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~out.pmTables
 
 
 #stdRes.CA------------------------------2011-08-31
@@ -1618,7 +1618,7 @@ stdRes.CA <- function( obj, trunc=3, myLab="Age Residuals", prt=TRUE )
   }
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^stdRes.CA
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~stdRes.CA
 
 
 #stdRes.index---------------------------2011-08-31
@@ -1638,7 +1638,7 @@ stdRes.index <- function( obj, label=NULL, prt=TRUE )
   }
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^stdRes.index
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~stdRes.index
 
 
 #MAfun2---------------------------------2011-05-04
@@ -1666,7 +1666,7 @@ MAfun2 = function(padata,brks=NULL)  {
        return(list(MAobs=mOy, MAexp=mEy, Vexp=mEy2-mEy^2, N=N, J=J))
         # observed and expected mean ages, variance of expected ages
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^MAfun2
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAfun2
 
 
 #--------------------------------------------------------------------#
@@ -1706,7 +1706,7 @@ plt.ageResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95)
   # text( par("usr")[1] + 0.95*diff(par("usr")[1:2]),
   #     par("usr")[3] + 0.05*diff(par("usr")[3:4]), "(a)") 
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.ageResidsPOP
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.ageResidsPOP
 
 
 #plt.ageResidsqqPOP---------------------2011-08-31
@@ -1728,7 +1728,7 @@ plt.ageResidsqqPOP <- function( obj, ages=c(2,60),
   if ( !is.null(main) )
     mtext( side=3, line=-0.5, cex=1.0, outer=TRUE, main )
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.ageResidsqqPOP
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.ageResidsqqPOP
 
 
 #plt.yearResidsPOP----------------------2011-08-31
@@ -1756,7 +1756,7 @@ plt.yearResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95),
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, "Year" )
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.yearResidsPOP
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.yearResidsPOP
 
 
 #plt.cohortResids-----------------------2011-08-31
@@ -1801,7 +1801,7 @@ plt.cohortResids <- function( obj, ages=c(2,59), pct=c(5,25,50,75,95),          
 
   # par( mfrow=c(1,1) )
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.cohortResids
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.cohortResids
 
 
 #plt.allTraces--------------------------2011-08-31
@@ -1899,7 +1899,7 @@ plt.allTraces <- function( obj, bioYrList=NULL, recYrList=NULL, save=TRUE )
 
   par( mfrow=c(1,1) )
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.allTraces
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.allTraces
 
 
 #plt.expRate----------------------------2011-08-31
@@ -1940,7 +1940,7 @@ plt.expRate <- function( obj, yLim=c(0,0.5), xLim=c(1954,2005) )
 
   par( mfrow=c(1,1) )
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.expRate
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.expRate
 
 
 #plt.idx--------------------------------2011-08-31
@@ -1974,7 +1974,7 @@ plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=
     #   savePlot( paste(save,i,sep=""), type="png" )
   }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.idx
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.idx
 
 
 #plotIndexNotLattice--------------------2012-00-06
@@ -2194,7 +2194,7 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
     dev.off()
   }                         # cex was 0.8 for POP
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotIndexNotLattice
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotIndexNotLattice
 
 
 #plotChains-----------------------------2011-05-11
@@ -2331,25 +2331,36 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
 }
 
 
-#plt.mcmcGraphs-------------------------2012-10-16
+#plt.mcmcGraphs-------------------------2013-02-20
+# plt.mcmcGraphsAndySAR.r - Andy adding in wmf's for SAR. Based
+#  on ymrScape.r. Just adding in the ones needed. 5th Feb 2012.
+#-------------------------------------------------
+# plt.mcmcGraphsFromPBSscape16oct12.r.   5th Feb 2012.
+#-------------------------------------------------
 #  AME editing (with *AME*) to give a policy option 
 #  to be specified in run-master.Snw. 16th August 2012.
+#-------------------------------------------------
+# From PBSawatea from Rowan, dated 16th Oct 2012. Have checked
+#  plt.mcmcGraphs() is identical to if I load PBSawatea and type
+#  plt.mcmcGraphs (except formatting). Need to add in .wmf for
+#  SAR - seemed to have that in ymrScape.r for YMR SAR, but the .wmf
+#  commands are not in this one yet. So edit this, call it pltmcmcGraphsAndySAR.r
+#  then send back to Rowan to put into package. May not have to edit any other files?
 #-------------------------------------------AME/AM
 plt.mcmcGraphs <-
 function (mcmcObj, projObj, save = FALSE, 
           ylim.recruitsMCMC = NULL, ylim.exploitMCMC = NULL,
           ylim.VBcatch = NULL, ylim.BVBnorm = NULL,
           xlim.snail = NULL, ylim.snail = NULL,
-          plotPolicies = names(projObj$Y[1:6]), # *AME*
-          onePolicy=names(projObj$Y[2]),
-          mpd=list() )        # *AME*
-
-          # plotPolicies is 6 policies projections to plot *AME*
-          # onePolicy is one to use for some figures *AME*
-          #*AME*xlim.pdfrec was =c(0, 200000). Put options for others
-          #  that will be useful if want to scale two model runs
-          #  to the same ylim. If NULL then fits ylim automatically.
-  {     
+          plotPolicies = names(projObj$Y[1:6]),
+          onePolicy=names(projObj$Y[2]), mpd=list(),
+          SAR.width=7.5, SAR.height=4)
+# plotPolicies is 6 policies projections to plot *AME*
+# onePolicy is one to use for some figures *AME*
+#*AME*xlim.pdfrec was =c(0, 200000). Put options for others
+#  that will be useful if want to scale two model runs
+#  to the same ylim. If NULL then fits ylim automatically.
+{
 	panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
 	{
 		usr <- par("usr"); on.exit(par(usr))
@@ -2418,11 +2429,30 @@ function (mcmcObj, projObj, save = FALSE,
         height = 5, width = 6.2)
     plotVBcatch(currentMCMC$VB, currentRes, yLim = ylim.VBcatch)
     dev.off()
+
+    win.metafile("SARVBcatch.wmf", height = 0.8*SAR.height,
+                 width = 0.8*SAR.width)
+    par("mai" = c(0.72, 0.82, 0.2, 0.42), "mgp"=c(2,1,0))  
+    plotVBcatch( currentMCMC$VB, currentRes, yLim = ylim.VBcatch)
+    # mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
+  dev.off()
+
+    
     postscript("BVBnorm.eps", horizontal = FALSE, paper = "special", 
         height = 5, width = 6.2)
     plotBVBnorm(currentMCMC, xLeg = 0.02, yLeg = 0.2,
                 yLim = ylim.BVBnorm)
     dev.off()
+
+    win.metafile("SARBVBnorm.wmf", height = SAR.height*0.7,
+              width = SAR.width/2.3) # half width to do side-by-side
+    par("mai" = c(0.62, 0.65, 0.05, 0.05), "mgp"=c(2,1,0))  
+    plotBVBnorm(currentMCMC, xLeg=0.02, yLeg=0.25)
+                #, yLim = c(0, 1.1))
+                # yLim fixed for YMR11 submission, yLeg increased for SAR  
+    # mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
+    dev.off()
+
     options(scipen = 10)
     postscript("Bproj.eps", horizontal = FALSE, paper = "special", 
         height = 7, width = 6.2)
@@ -2458,8 +2488,9 @@ function (mcmcObj, projObj, save = FALSE,
       pairs(currentMCMC$P[, ii], pch = 20, cex = 0.2, gap = 0, lower.panel=panel.cor)
       dev.off()
     }
+  while(dev.cur() > 1)  dev.off()    # tidy up any remainingfrom the %d.eps
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mcmcGraphs
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.mcmcGraphs
 
 
 #plt.mpdGraphs--------------------------2012-10-16
@@ -2818,7 +2849,7 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   # plt.idx( obj$Survey,main="Survey",save="surveyResids" )
   closeAllWin()
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.mpdGraphs
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.mpdGraphs
 
 
 #plt.numR-------------------------------2011-08-31
@@ -2867,7 +2898,7 @@ plt.numR <- function( obj, minYr=NULL )
   }
   par( mfrow=c(1,1) )
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.numR
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.numR
 
 
 #plt.quantBio---------------------------2011-08-31
@@ -3045,7 +3076,7 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
   val <- list( recon=result1, proj=result2 )
   val
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.quantBio
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.quantBio
 
 
 #plt.quantBioBB0------------------------2011-08-31
@@ -3220,7 +3251,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
   val <- list( recon=result1, proj=result2 )
   val
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.quantBioBB0
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.quantBioBB0
 
 
 #plt.ssbVbCatch-------------------------2011-08-31
@@ -3269,7 +3300,7 @@ plt.ssbVbCatch <- function( obj, x1=1966, xLim=c(1954,2005), yLim=c(0,25000) )
   }
   par( mfrow=c(1,1) )
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.ssbVbCatch
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.ssbVbCatch
 
 
 #plt.stdResids--------------------------2011-08-31
@@ -3310,7 +3341,7 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
   if ( !is.null(main) )
     mtext( side=3, line=0, cex=1.0, outer=TRUE, main )
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plt.stdResids
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.stdResids
 
 
 #importMCMC.ddiff-----------------------2011-08-31
@@ -3343,7 +3374,7 @@ importMCMC.ddiff <- function()
   result <- list( L=L, P=P, B=B, R=R )
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importMCMC.ddiff
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importMCMC.ddiff
 
 
 #importProj.ddiff-----------------------2011-08-31
@@ -3403,7 +3434,7 @@ importProj.ddiff <- function( yrVal="2006" )
   result <- list( B=B, Y=Y )
   result
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importProj.ddiff
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importProj.ddiff
 
 
 #msyCalc--------------------------------2012-10-16
@@ -3463,7 +3494,7 @@ function (dir = getwd(), error.rep = 1)
 	#  (from Yields.ctl file), so need to report if that's
 	#  reached for any of the nProj. Again, need a vector.
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^msyCalc
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~msyCalc
 
 
 #refPoints------------------------------2011-08-31
@@ -3495,7 +3526,7 @@ refPointsB0 <- function( mcmcObj=currentMCMC, projObj=currentProj,
     }
   return(refPlist)
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^refPoints
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPoints
 
 
 #plotSnail------------------------------2012-08-17
@@ -3535,7 +3566,7 @@ plotSnail = function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, 
     abline(v = 0.4, col = "grey", lwd = Lwd)
     abline(v = 0.8, col = "grey", lwd = Lwd)
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotSnail
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotSnail
 
 
 #plotDensPOPparsPrior-------------------2011-08-31
@@ -3633,10 +3664,10 @@ plotDensPOPparsPrior <-
         invisible(graph)
     }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotDensPOPparsPrior
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotDensPOPparsPrior
 
 
-#findTarget-----------------------------2012-08-14
+#findTarget-----------------------------2013-02-20
 #  To derive decision tables for moving windows and find
 #  the times to achieve recovery with given confidence.
 #   Vmat   = matrix of projected B-values (MCMC projections x Year)
@@ -3655,6 +3686,7 @@ plotDensPOPparsPrior <-
 #    retVal="p.hi" gives global object "Ptab", a list of decision
 #     tables where row is the catch option and column is the year
 #     Values are probabilities of acheiving target.
+#  (2012-02-20) 'xhi = x>=r' change to 'xhi = x>r'
 #-----------------------------------------------RH
 findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0.5, target=B0.MCMC,
     conf=0.95, plotit=FALSE, retVal="N") {
@@ -3695,7 +3727,7 @@ findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0
 	}
 	else    # if it's a vector, so no moving window
 		rats = apply(vmat,2,function(x,targ){x/targ},targ=target)                # matrix of ratios Bt/ target (B0 or Bmsy)
-	p.hi = apply(rats,2,function(x,r){xhi=x>=r; sum(xhi)/length(xhi)},r=ratio)  # vector of probabilities Bt/B0 > target ratio for each year.
+	p.hi = apply(rats,2,function(x,r){xhi=x>r; sum(xhi)/length(xhi)},r=ratio)  # vector of probabilities Bt/B0 > target ratio for each year.
 	# p.hi can become each row of a decision table (AME checked
 	#  the numbers for 0.4 Bmsy match my existing
 	#  independent calculations). Need to save this for moving window.
@@ -3726,14 +3758,18 @@ findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0
 	}
 	eval(parse(text=paste("return(",retVal,")",sep=""))) 
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^findTarget
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~findTarget
 
 
-#importProjRec--------------------------2011-08-31
+#importProjRec--------------------------2013-02-13
 # Imports the projected recruitments
 #  (actually what's saved is the N(0,1) random numbers,
 #   which for a particular MCMC sample are the same for all the catch strategies),
 #   which 'importProj' does not do. Need this for YMR. 4th July 2011.
+# Also importing vulnerable biomass, for Jaclyn's requested projected
+#  exploitation rate decision tables for POP 3CD and 5DE, 2013.
+# importProjRecAndy.r - extending importProjRec to include VB, to
+#  then calculate projected exploitation rates. 13th Feb 2013
 #----------------------------------------------AME
 importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE) 
 {
@@ -3810,7 +3846,24 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 		if (!quiet) cat("list...OK\n")
 		return(eps)
 	}
-	files <- paste(dir, c("strategy.out", "projspbm.out", "procatch.out", "recres.out"), sep = "/")
+        # AME adding to load in Vulnerable Biomass, editing get.B
+       	get.VB <- function(Policies, Years) {
+		if (!quiet) cat("Vulnerable Biomass   ")
+		VB <- read.table(paste(dir, "Projbiom.out", sep = "/"), header = TRUE)[, -c(1, 2)]
+		if (!quiet) cat("file...")
+		VBlist <- list()
+		for (p in 1:length(Policies)) {
+			from <- (p - 1) * length(Years) + 1
+			to <- p * length(Years)
+			VBlist[[p]] <- VB[, from:to]
+			names(VBlist[[p]]) <- Years
+		}
+		names(VBlist) <- Policies
+		VB <- VBlist
+		if (!quiet) cat("list...OK\n")
+		return(VB)
+	}
+	files <- paste(dir, c("strategy.out", "projspbm.out", "procatch.out", "recres.out", "projbiom.out"), sep = "/")
 	sapply(files, function(f) if (!file.exists(f)) 
 		stop("File ", f, " does not exist. Please check the 'dir' argument.", call. = FALSE))
 	if (!quiet) cat("\nParsing files in directory ", dir, ":\n\n", sep = "")
@@ -3819,8 +3872,9 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 	B <- get.B(Policies, Years)
 	Y <- get.Y(Policies, Years)
 	eps <- get.eps(Policies, Years)
+      	VB <- get.VB(Policies, Years)
 	if (!quiet) cat("\n")
-	output <- list(B = B, Y = Y, eps = eps)
+	output <- list(B = B, Y = Y, eps = eps, VB = VB)
 	if (coda) {
 		require(coda, quietly = TRUE, warn.conflicts = FALSE)
 		output <- lapply(output, function(x) lapply(x, mcmc))
@@ -3829,7 +3883,7 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 	attr(output, "info") <- info
 	return(output)
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importProjRec
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importProjRec
 
 
 #srFun----------------------------------2011-08-31

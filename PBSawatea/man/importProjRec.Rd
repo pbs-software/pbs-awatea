@@ -25,6 +25,7 @@ importProjRec(dir, info="", coda=FALSE, quiet=TRUE)
 \value{
   A list object comprising:
     \item{B}{data frame of spawning biomass (dim = MCMC samples by projected years)}
+    \item{VB}{data frame of vulnerable biomass (dim = MCMC samples by projected years)}
     \item{Y}{data frame of yield (dim = MCMC samples by projected years)}
     \item{eps}{data frame of \eqn{\epsilon_t}{\epsilon[t]} (dim = MCMC samples by projected years)}
 }

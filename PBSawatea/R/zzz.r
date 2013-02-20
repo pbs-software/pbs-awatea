@@ -10,13 +10,16 @@
 	
 	packageStartupMessage("
 -----------------------------------------------------------
-PBS Awatea ", pkg_info$Version, " -- Copyright (C) 2011-12 Fisheries and Oceans Canada
+PBS Awatea ", pkg_info$Version, " -- Copyright (C) 2011-2013 Fisheries and Oceans Canada
 
 A rough guide 'PBSawatea.pdf' is located at 
 ", userguide_path, "
 
 Packaged on ", pkg_date, "
 Pacific Biological Station, Nanaimo
+
+All available PBS packages can be found at
+http://code.google.com/p/pbs-software/
 
 Aotearoa, six months in a leaky boat...
 -----------------------------------------------------------
@@ -33,15 +36,16 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"fval",
 	"gfcode","global",
 	"h.mpd",
+	"J",
 	"likdat",
-	"mainTitle","maxgrad","mess","minCpueYr",
-	"npars",
+	"MAexp","mainTitle","MAobs","maxgrad","mess","minCpueYr",
+	"N","npars",
 	"obj",
 	"pardat","plt.ageResids","policy","priorBoundsList","priorDistList","priorInput",
 	"R0.mpd","refPointsList","refs","resFileList","rpType",
 	"Series","sigmaR","stddat",
 	"use.Pnames",
-	"variable",
-	"years"),
-	package="PBSawatea")
+	"variable","Vexp",
+	"years"
+	), package="PBSawatea")
 
