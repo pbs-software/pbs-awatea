@@ -89,6 +89,7 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 		browser();return() }
 	Sweave(localSweave)
 	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)
+	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)
 	shell(cmd=paste("dvips -q ",gsub("\\.Snw$",".dvi",localName),sep=""),wait=TRUE)
 	shell(cmd=paste("ps2pdf ",gsub("\\.Snw$",".ps",localName),sep=""),wait=TRUE)
 	invisible() }

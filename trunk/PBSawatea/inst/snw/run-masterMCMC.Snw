@@ -507,6 +507,7 @@ currentMCMC[["VB"]] = vbMCMC[mcsub,]
 
 # currentProj <- importProj( dir=".", quiet=FALSE )
 
+# source("../../importProjRecAndy.r")   # adding VB to importProjRec
 currentProj <- importProjRec( dir=prj.dir, quiet=FALSE )
    # importProjRec includes epsilons for recruitments
    # Then below we calcualte the actual recruitments.
@@ -517,12 +518,30 @@ assign( "currentProj", currentProj, pos=1 )
 currentProj$B = lapply(currentProj$B, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
 currentProj$Y = lapply(currentProj$Y, function(x) { x[ ,1:(dim(x)[[2]]-1)]  })
 currentProj$eps = lapply(currentProj$eps, function(x) {  x[ ,1:(dim(x)[[2]]-1)] })
+currentProj$VB = lapply(currentProj$VB, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
 # currentProj$R is calculated below
 # sd(unlist(currentProj$eps$'0'))
 # [1] 0.8993165
 #  sd(unlist(currentProjaa$eps$'250'))
 # [1] 0.8993165
 #  etc., as they're all the same, and the sd equals sigmaR.
+
+
+# Calculate projected exploitation rates.
+currentProj$U = currentProj$VB    # Want the same size
+
+catchProj = names(currentProj$VB)
+for(i in catchProj)
+  {
+  currentProj$U[[i]] = currentProj$Y[[i]] / currentProj$VB[[i]]
+}
+# So currentProj$U is now exploitation rate for MCMC projections.
+
+# boxplot(currentProj$U[[5]])   to plot
+# Note: if go beyond 10 years (or have earlier maturing fish) then
+#  for u table need to check that u doesn't go to 0 when stock 
+#  extinct. Check  sapply(currentProj$U, min)   only has 0 for 0 
+#  catch policy.
 
 
 # Awatea MSY.
@@ -624,6 +643,9 @@ names(currentProj$R) = names(currentProj$eps)
 #  10 years in the input .txt file), so maybe just have to play
 #  with the output.
 
+# Can probably remove these calculations, now that everything
+#  seems to be done in Rowan's findTarget call below. Keeping
+#  for now as these are what are used in Sweave for POP 3CD and 5DE.
 
 refPointsList = refPoints()  # ONLY set up for default 0.4, 0.8 
                #  and 1 Bmsy at the moment. See refPointsB0 for B0.
@@ -721,14 +743,31 @@ Tlst = list(list(ratio=0.4,target=Bmsy.MCMC),
   list(ratio=0.2,target=B0.MCMC),
   list(ratio=0.4,target=B0.MCMC),
   list(ratio=0.5,target=currentMCMC$B),
-  list(ratio=0.7,target=currentMCMC$B))
-names(Tlst)=c("0.4Bmsy","0.8Bmsy","0.2B0","0.4B0","0.5Gen3","0.7Gen3")
+  list(ratio=0.7,target=currentMCMC$B),
+  list(ratio=1.0,target=Bcurr.MCMC))
+names(Tlst)=c("0.4Bmsy","0.8Bmsy","0.2B0","0.4B0","0.5Gen3","0.7Gen3", "Bcurr")
+
 
 refProbs3GenList = sapply(Tlst,function(x){sapply(currentProj$B,
   findTarget,ratio=x$ratio,target=x$target,retVal="p.hi")},
   simplify=FALSE)
 refProbs3GenList = sapply(refProbs3GenList,t,simplify=FALSE) 
                                         # transpose matrices
+
+# And have to do separately for u_t > u_MSY:
+Tlst.u = list(list(ratio=1,target=umsy.MCMC))
+  # list(ratio=1,target=umsy.MCMC))
+names(Tlst.u)=c("umsy") # , "umsyDummy")
+
+# create table for u > umsy
+refProbs3GenList.u = sapply(Tlst.u,function(x){sapply(currentProj$U,
+  findTarget,ratio=x$ratio,target=x$target,retVal="p.hi")},
+  simplify=FALSE)
+refProbs3GenList.u = sapply(refProbs3GenList.u,t,simplify=FALSE) 
+                                        # transpose matrices
+# If need 5/90 years then have to add in below:
+
+# To just get probabilities for 5 or 90 years (if available)
 refProbs3Gen5 = list()    # Probs for 5 years
 refProbs3Gen90 = list()   # Probs for 90 years
 
@@ -763,12 +802,19 @@ names(catch) = years[-length(years)]
    
 currentMCMC$U = currentMCMC$VB[,-dim(currentMCMC$VB)[2]] # Don't want final, as no catch; already subset because VB was subset
 names.cmu = names(currentMCMC$U)
+
 currentMCMC$U = t(apply(currentMCMC$U, 1, function(x,y){ y/x }, y=catch))    # Need transpose to get right way round again
 names(currentMCMC$U) = names.cmu
 # So currentMCMC$U is now exploitation rate for MCMC output.
 
 upenult.MCMC = currentMCMC$U[,as.character(currYear-1)]
 umax.MCMC = apply(currentMCMC$U, 1, max)
+
+# From Rowan - quantiles for every year, then manually find the
+#   maximum median. Not quite what I did above.
+# Uquant = apply(currentMCMC$U,2,quantile,c(0.05,.5,0.95))
+# Umean16 = apply(Uquant[,as.character(1997:2012)],1,mean)
+
 
 # Catch for last num.recentCatchYears years of data:
 num.recentCatchYears = 5
@@ -867,7 +913,6 @@ logRecDev.mpd = currentRes$Dev$Annual
 # plt.idx( currentRes$Survey,main="Survey Indices") # wasn't called 
 #  in plt.mpdGraphs. Doing it here spits out SD of standardised 
 #  residuals also. May be useful for iterative reweighting?
-
 
 if(redo.Graphs)
   plt.mcmcGraphs( currentMCMC, currentProj, save=TRUE, 
@@ -1154,6 +1199,9 @@ $V_\mathrm{MSY} / V_0$ & \Sexpr{qtab(VBmsy.MCMC / VB0.MCMC, dig=3)} \\
 %\cline{2-7}
 %strategy & 2011 & 2012 & 2013 & 2014 & 2015 & 2016 \\
 
+\newcommand{\currYear}{\Sexpr{currYear}} 
+                                % so can include in captions. 
+                                %  Should really do earlier.
 
 <<tables, results=tex, echo=FALSE>>=
 tabdigits = 2      # number of decimal places to give
@@ -1192,6 +1240,12 @@ print(xtable(refProbsB010$B00.2, caption=eval(paste("Decision table for the alte
 # 
 
 print(xtable(refProbsB010$B00.4, caption=eval(paste("Decision table for the alternative upper reference point $0.4 B_0$ for 1-10 year projections, such that values are P$(B_t > 0.4 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:B00.4.10yr", digits=tabdigits), caption.placement="top")
+
+
+print(xtable(refProbs3GenList$Bcurr, caption=eval(paste("Decision table for comparing the projected biomass to the current biomass, given by probabilities P$(B_t > B_{\\currYear})$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:Bcurr.10yr", digits=tabdigits), caption.placement="top")
+
+
+print(xtable(refProbs3GenList.u$umsy, caption=eval(paste("Decision table for comparing the projected exploitation rate to that at MSY, such that values are P$(u_t > u_\\mathrm{MSY})$, i.e.~the probability of the exploitation rate in the middle of year $t$ being greater than that at MSY. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), label="tab:umsy.10yr", digits=tabdigits), caption.placement="top") 
 
 
 # COSEWIC-type Tables. Not needed for POP 3CD and 5DE assessments.
@@ -1255,7 +1309,7 @@ Marginal posterior distributions and corresponding priors for the estimated para
 %*** natural mortality bit - change for 5DE.
 
 % Doing selectivity in MPD part now.
-***TO DO ONCE FIGURE DONE*** The selectivity curves (\ref{fig:selectivityMCMC}) show that......ADAPT from this, which was for YMR: , when estimated, the estimated age at full selectivity for females ($\mu_1$, $\mu_2$ and $\mu_6$ in Figure \ref{fig:selectivityMCMC}) is over 11 years, whereas the prior for these parameters had a mean of 7.2 years (Table F4).  Initial model exploration used informed priors but in the end we used a prior derived from the US commercial fishery on Darkblotched Rockfish for all surveys (or fixed it at such values if selectivity was not estimated) except the QCS shrimp survey (see Appendix D)  The latter used selectivity estimates from a US shelf survey as the fixed parameter values.  
+% ***TO DO ONCE FIGURE DONE*** The selectivity curves (\ref{fig:selectivityMCMC}) show that......ADAPT from this, which was for YMR: , when estimated, the estimated age at full selectivity for females ($\mu_1$, $\mu_2$ and $\mu_6$ in Figure \ref{fig:selectivityMCMC}) is over 11 years, whereas the prior for these parameters had a mean of 7.2 years (Table F4).  Initial model exploration used informed priors but in the end we used a prior derived from the US commercial fishery on Darkblotched Rockfish for all surveys (or fixed it at such values if selectivity was not estimated) except the QCS shrimp survey (see Appendix D)  The latter used selectivity estimates from a US shelf survey as the fixed parameter values.  
 
 % Marginal posterior densities are also shown for run 'Estimate M' for the annual spawning biomass (Figures G30-G32) and the annual age-1 recruitments (Figures G33-G35).  Some of these show appropriately wide distributions, resulting from the wide distributions shown for some of the estimated parameters (Figure G27).  However, in most instances, the mode of the posterior distribution is very close to the MPD estimates, indicating that the posterior distributions do not appear to be skewed by data outliers.  
 
@@ -1298,6 +1352,8 @@ As noted above, the depletion $B_{\Sexpr{currYear}}/B_0$, the ratio of current s
 
 \subsection{REFERENCE POINTS}
 
+**Now also have the extra two tables P($B_t > B_{\currYear}$) and P($u_t > \umsy)$, but haven't written text here for revising 3CD and 5DE Res Docs, just revising the .tex files as used for the working paper. So in future may want to put some of that text back into here and automate. 
+
 Decision tables are presented with respect to two sets of reference points (as determined from consultation with N.~Davis, Groundfish Management Unit, pers.~comm.); see below for rationale for the reference points. Each set is based on either $\Bmsy$ or $B_0$ (the estimated unfished equilibrium spawning biomass). All reference points and the associated probabilities were derived from the posterior distributions of Bayesian output from the model.
 
 As part of the Sustainable Fisheries Framework, \citet{dfo09} suggested provisional reference points to guide management and assess harvest in relation to sustainability. Because reference points for Canadian west coast groundfish species have not yet been specified by policy, the suggested provisional DFO limit and upper stock reference points of $0.4 \Bmsy$ and $0.8 \Bmsy$ have been adopted here. These were the reference points used for the POP stock in QCS \citep{\popQCS}.
@@ -1335,7 +1391,16 @@ Results for the three $\Bmsy$-based reference points are presented in Tables \re
 <<savingTables, results=hide, echo=FALSE>>=
 # see saving.r in YMR11 for details of tables. Or just look
 #  at each one, as they're not that long.  # refProbs3Gen90
-save(refProbs3Gen5, Ttab0.5, Ttab0.8, Ttab0.95,  file=paste(model.name, "Tables.RData", sep=""))
+save(refProbs3GenList, refProbs3GenList.u, Ttab0.5, Ttab0.8, Ttab0.95,  file=paste(model.name, "Tables.RData", sep=""))
+@ 
+
+<<savingTables, results=hide, echo=FALSE>>=
+Bmcmc <- list()
+SA=strsplit(model.name,split="-")  # Species & Area
+Bmcmc[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(B0.MCMC=B0.MCMC,Bt.MCMC=Bcurr.MCMC,Bmsy.MCMC=Bmsy.MCMC)
+save("Bmcmc",file="Bmcmc.rda")
+
+while(dev.cur() > 1)  dev.off()
 @ 
 
 

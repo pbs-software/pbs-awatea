@@ -37,8 +37,8 @@ findTarget(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90,
 
   The probability of exceeding a target ratio \eqn{R} is:
   
-  \deqn{p_t = \frac{1}{N} \sum^N  \left[ \frac{B_{Nt}}{T_N} \ge R \right], }{%
-        p[t] = (1/N) \Sigma_N [ B[N,t]/T[N] \ge R ],} 
+  \deqn{p_t = \frac{1}{N} \sum^N  \left[ \frac{B_{Nt}}{T_N} > R \right], }{%
+        p[t] = (1/N) \Sigma_N [ B[N,t]/T[N] > R ],} 
   
   where \eqn{R} = target ratio of the reference point 
   (\emph{e.g.}, 0.4\eqn{B_{MSY}}{Bmsy} (\eqn{R}=0.4), 0.2\eqn{B_0}{B0} (\eqn{R}=0.2), 0.5\eqn{B_{t-G}}{B[t-G]} (\eqn{R}=0.5) ).
