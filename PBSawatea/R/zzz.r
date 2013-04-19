@@ -1,4 +1,4 @@
-.onLoad <- function(lib,pkg)
+.onAttach <- function(lib,pkg)
 {
 	pkg_info = utils::sessionInfo( package="PBSawatea" )$otherPkgs$PBSawatea
 	if( is.character( pkg_info$Packaged ) )

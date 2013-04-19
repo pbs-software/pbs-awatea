@@ -4,6 +4,7 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
 
 0.11  2013-02-20
+  - Updated just for compatibility with R-3.0.0. (RH 4/19)
   - Revised functions `importProjRec` and `plt.mcmcGraphs`; revised `run-masterMCMC.Snw`. (AME 2/20)
 
 0.10  2012-10-16  Rowan
