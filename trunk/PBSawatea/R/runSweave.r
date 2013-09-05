@@ -2,32 +2,37 @@
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
-runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
+runSweave = function( wd = getwd(), strSpp="XYZ",
 		filename = "spp-area-00.txt",             # Name of Awatea .txt file in 'run.dir' to run
 		runNo   = 1,
 		rwtNo   = 0,
 		running.awatea =0,                        # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+		Nsex    = 2,                              # if 1 then Unisex, if 2 Males & Females
+		Ncpue   = 0,
 		Nsurvey = 3,
 		Snames  = paste("Ser",1:Nsurvey,sep=""),  # survey names (w/out spaces)
 		SApos   = rep(TRUE,Nsurvey),              # surveys with age composition data
 		delim   = "-",
-		debug   = FALSE
+		debug   = FALSE,
+		locode  = FALSE                          # if source as local code (for debugging)
 		) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave")),pos=1)
-	#getFile("gfcode")
-	#require(PBSmodelling, quietly=TRUE)
-	#require(xtable, quietly=TRUE) 
-	#require(lattice, quietly=TRUE)
-	#require(scape, quietly=TRUE)     # Arni Magnusson's support functions for Awatea.
-	#require(scapeMCMC, quietly=TRUE) # Arni Magnusson's support functions for Awatea MCMC.
-	#require(gdata, quietly=TRUE)     # Data manipulation functions from CRAN.
-
-	#source("ymrScape.r",local=FALSE)
-	#source("utilFuns.r",local=FALSE)
-	#source("plotFuns.r",local=FALSE)
-	#assign("importCol2",importRes,envir=.GlobalEnv)
-	
+	if (locode) { 
+		getFile(gfcode,path=system.file("data",package="PBSawatea"))
+		require(PBSmodelling, quietly=TRUE)
+		require(gplots, quietly=TRUE)
+		require(xtable, quietly=TRUE) 
+		require(lattice, quietly=TRUE)
+		require(scape, quietly=TRUE)     # Arni Magnusson's support functions for Awatea.
+		require(scapeMCMC, quietly=TRUE) # Arni Magnusson's support functions for Awatea MCMC.
+		require(gdata, quietly=TRUE)     # Data manipulation functions from CRAN.
+		source("PBSscape.r",local=FALSE)
+		source("utilFuns.r",local=FALSE)
+		source("plotFuns.r",local=FALSE)
+		assign("importCol2",importRes,envir=.GlobalEnv)
+	}
+	cpue     = Ncpue > 0
 	runNoStr = pad0(runNo,2)
 	rwtNoStr = pad0(rwtNo,2)
 	run.name = paste(strSpp,"run",runNoStr,sep="")
@@ -51,47 +56,92 @@ runSweave = function( wd = getwd(), cpue=FALSE, strSpp="XYZ",
 	tfile = gsub("@fig.dir",mpd.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
-	data(gfcode)
+	if (!locode) data(gfcode)
 	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
-	snames = rep(Snames,Nsurvey)[1:Nsurvey] # enforce same number of names as surveys
-	tfile = gsub("@surveys",paste(snames,collapse="\",\""),tfile)
 #browser();return()
+	packList(stuff=c("Snames"), target="PBSawatea")
+	#if (exists("tput")) tput(Snames)
+	snames = rep(Snames,Nsurvey)[1:Nsurvey] # enforce same number of names as surveys
+	snames = gsub(" ","",snames)
+	tfile = gsub("@surveys",paste(snames,collapse="\",\""),tfile)
+
+	if (Nsex==1) {
+		z0    = grep("@rmsex",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+		z1    = intersect(grep("Female",tfile),grep("sppfig",tfile))
+		z2    = intersect(grep("Female",tfile),grep("twofig",tfile))
+		tfile[z2] = sapply(tfile[z2],function(x){xx=strsplit(x,split="\\{"); paste(xx[[1]][c(1,2,4)],collapse="{")})
+		z12 = c(z1,z2)
+		tfile[z12] = gsub("twofig","sppfig",gsub("Female","Unisex",tfile[z12]))
+	} else {
+		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-Master.Snw`
+	}
 
 	if (!cpue) {
-		rmcpue = sapply(c("CPUEser","CPUEfit"),function(x,y){
-			x=paste("ymrfig\\{",x,sep="")
-			z=grep(x,y)
-			if (length(z)==0) 0 else z },y=tfile,simplify=TRUE)
-		tfile=tfile[!is.element(1:length(tfile),rmcpue)] }
-	priorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]",
-		"logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
-	figBites =c("survIndSer4-1","ageSurv","survRes","survAgeRes")
-	for (b in c(priorBites,figBites)) {
-		Nline = grep(b,tfile)
-		if (length(Nline)==0) next
-		aline = tfile[ Nline ]
-		alines=NULL
-		for ( i in 1:Nsurvey) {
-			if (regexpr("[Aa]ge",b)>0 && !SApos[i]) next
-			if (Nsurvey==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
-			else alines=c(alines,gsub("1",i,aline))
-		}
-		tfile=c(tfile[1:(Nline-1)],alines,tfile[(Nline+1):length(tfile)])
+		z0    = grep("@rmcpue",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-Master.Snw`
 	}
+
+	# Start expanding lines using bites
+	priorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]","logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
+	figBites   = c("survIndSer4-1","ageSurv","survRes","survAgeRes")
+	cpueBites  = c("logqCPUE\\.prior\\[1,]","CPUE 1")
+	survBites  = c("Survey 1") 
+	# note assume only one method, otherwise need to expand "CAc 1"
+
+	biteMe = function(infile, bites, N) {
+		for (b in bites) {
+			Nline = grep(b,infile)
+			if (length(Nline)==0) next
+			aline = infile[ Nline ]
+			alines=NULL
+			for ( i in 1:N) {
+				if (regexpr("[Aa]ge",b)>0 && !SApos[i]) next
+				if (N==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
+				else alines=c(alines,gsub("1",i,aline))
+			}
+			infile=c(infile[1:(Nline-1)],alines,infile[(Nline+1):length(infile)])
+		}
+		return(infile)
+	}
+	tfile = biteMe(tfile,priorBites,Nsurvey)
+	tfile = biteMe(tfile,figBites,Nsurvey)
+	tfile = biteMe(tfile,cpueBites,Ncpue)
+	tfile = biteMe(tfile,survBites,Nsurvey)
+	if (any(SApos))
+		tfile = biteMe(tfile,"CAs 1",sum(SApos))
+#browser();return()
+
+
 	for (i in 1:Nsurvey)
 		tfile = gsub(paste("@survey",i,sep=""),snames[i],tfile)
-	localName   = paste(run.name,"-",rwtNo,".Snw",sep="")
-	localSweave = paste(mpd.dir,"/",localName,sep="")
+
+	localHistory = paste(mpd.dir,"/runHistory.tex",sep="")
+	if(file.exists(paste(wd,"/runHistory.tex",sep=""))) {
+		is.history=file.copy(paste(wd,"/runHistory.tex",sep=""),localHistory,overwrite=TRUE)
+	} else
+		tfile = gsub("\\\\input","%\\\\input",tfile)
+
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
+	notcode = union(grep("^%",tfile),grep("^#",tfile))
+	tfile = tfile[setdiff(1:length(tfile),notcode)]
+
+	localName   = paste(run.name,"-",rwtNo,sep="")
+	localSweave = paste(mpd.dir,"/",localName,".Snw",sep="")
+
 	writeLines(tfile,con=localSweave)
-	if (debug) {
-		browser();return() }
+	if (debug) { browser();return() }
+	
 	Sweave(localSweave)
-	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)
-	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)
-	shell(cmd=paste("dvips -q ",gsub("\\.Snw$",".dvi",localName),sep=""),wait=TRUE)
-	shell(cmd=paste("ps2pdf ",gsub("\\.Snw$",".ps",localName),sep=""),wait=TRUE)
+	#mkpath="C:\\Miktex\\miktex\\bin\\"
+	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
+	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
+	shell(cmd=paste("dvips ",localName,".dvi",sep=""),wait=TRUE)
+#browser();return()
+	shell(cmd=paste("ps2pdf ",localName,".ps",sep=""),wait=TRUE)
 	invisible() }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^runSweave
 
@@ -118,4 +168,6 @@ runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 # runMPD(29, 0:6,cpue=FALSE)             # No switch for EstM. AME doesn't
 # runMPD(36, 0:6, cpue=FALSE, Nsurvey=6) # No switch for EstM. AME doesn't
 
-
+#runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=1,rwts=3,Nsex=1,Ncpue=2,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(T,T),locode=T)
+#runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=7,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=T)
+#runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=8,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)

@@ -122,8 +122,7 @@
 
 \vspace{7mm}
 
-%{\Large \bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
-{\Large \bf Paul J. Starr and Rowan Haigh}
+{\Large \bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
 
 % This file started for 2012 assessment in July 2012.
 
@@ -207,7 +206,7 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 
 
 % Can comment these out if doing sensitivites or just getting running.
-%\section{Text for writing up results in Appendix G of working paper}
+\section{Text for writing up results in Appendix G of working paper}
 
 % Copying then editing from YMRrev-AppG-Model-Results.doc
 
@@ -264,7 +263,9 @@ trellis.device(device="postscript", color=TRUE)   # for colour .eps
 # AME adding so we have one as currentRes:
 # currentRes = resFileList[[1]]
 # *** CHANGE this to load in model.name
-# currentRes <- importCol2("../results.dat", Dev=T, CPUE=T, Survey=T, CLc=T, CLs=T, CAs=T, CAc=T)
+# currentRes <- importCol2("../results.dat", Dev=T, CPUE=T,
+#                               Survey=T, CLc=T, CLs=T, CAs=T, CAc=T)
+
 
 setwd(fig.dir) 
 
@@ -292,21 +293,21 @@ currentPar = importPar(paste(run.dir,"/", model.name, ".par", sep=""))
 # Assign a generic title for use in some plots.
 mainTitle <- "@sppname"
 
-# Get the number of sexes (1 or 2)
-nsex = length(grep("^M1",names(currentPar)))
-
 # Minimum data year for tuning index.
 # minCpueYr <- 1940
 #ACH: I'm not sure exactly what this is for but I set it to the start year
 
+
 # Get the commercial and survey index series
 Cser=unique(currentRes$CPUE$Series);   
-NCser=length(Cser)
+NCser=length(Cser)    
 # There has to be a dummy CPUE series in the input, but the 
 #  likelihood switch says whether it is being fitted. Seems
 #  that the calculated likelihood is 0 if not fitted:
-if(all(currentRes$extra$likelihoods$CPUE==0)) { NCser = 0 }
-#if(NCser > 1) stop("priorInput construction assumes one CPUE series so needs updating in run-masterMCMC.Snw, also recDev acf plot")
+if(currentRes$extra$likelihoods$CPUE == 0) { NCser = 0 }
+if(NCser > 1) stop("priorInput construction assumes one CPUE 
+  series so needs updating in run-masterMCMC.Snw, also recDev 
+  acf plot")
 
 Sser=unique(currentRes$Survey$Series);
 NSser=length(Sser)
@@ -321,10 +322,6 @@ NSAser=length(SAser)
 
 Ncomm = max(NCser,NCAser) # number of commercial series w/ data/ages
 Nsurv = max(NSser,NSAser) # number of survey series with data/ages
-
-locsdnr = paste(run.dir,"/",substring(model.name,1,nchar(model.name)-3),".sdnr",sep="")
-sdnr = readLines(locsdnr)
-cvpro = strsplit(sdnr[grep("CVpro",sdnr)]," ")[[1]][2]  # as a string value
 
 firstYearOfAgeData = min( c(currentRes$CAc[,"Year"], 
   currentRes$CAs[,"Year"]))      # For recDevAcf.eps
@@ -399,16 +396,10 @@ logvC.mpd = currentRes$extra$parameters$log_varLest
 
 # From Rowan's extra function, to give the priors, not all are _prior
 R0.prior = currentRes$extra$priors$R0_prior
-M.prior = currentRes$extra$priors$M1_prior
-if (nsex==1) {
-	M1.prior = M.prior  # Unisex
-	M2.prior = NULL
-} else {
-	M1.prior = M.prior[1,] 
-	M2.prior = M.prior[2,]
-}
+M1.prior = currentRes$extra$priors$M1_prior[1,] 
+M2.prior = currentRes$extra$priors$M1_prior[2,]
 h.prior = currentRes$extra$priors$h_prior
-logqvec.prior = currentRes$extra$priors$log_qsurvey_prior # surveys, matrix
+logqvec.prior = currentRes$extra$priors$log_qsurvey_prior# surveys, matrix
 
 # Extras now being estimated for POP 3CD, since starting model not
 #  at equilibrium. Using Awatea input names for now, change once
@@ -430,26 +421,37 @@ recDev.mpd = exp(logRecDev.mpd - (sigmaR^2)/2)
 initAgeDev.mpd = exp(logInitAgeDev.mpd - (sigmaR^2)/2 )
                    # devitations for initial age structure, ages 2+
 
+
+
+
+
+
 #Initial R ( = # 1-yr olds in yr 1/R0; unfished = 1)
 Rinit.prior = currentRes$extra$priors$Rinit_prior
 Rinit.mpd = currentPar$Rinit                # From par file
 
 #Initial u (exploitation rate for initial age structure; 0=unfished)
 uinit.prior = currentRes$extra$priors$uinit_prior  # One row each sex
-if (nsex==1) uinit.prior = matrix(uinit.prior,nrow=1)
 uinit1.mpd = currentPar$uinit.1
-uinit2.mpd = currentPar$uinit.2  # NULL if Unisex
+uinit2.mpd = currentPar$uinit.2
 
-#Plus scale
+#Plus scale						
 plusScale.prior = currentRes$extra$priors$p_plusscale  # One row each sex. rho_s in write up
-if (nsex==1) plusScale.prior = matrix(plusScale.prior,nrow=1)
 rho1.mpd = currentPar$plusscale.1
-rho2.mpd = currentPar$plusscale.2  # NULL if Unisex
+rho2.mpd = currentPar$plusscale.2
+
+
 
 # CPUE:
-logqCPUE.prior    = currentRes$extra$priors$log_qCPUE       # cpue, matrix
+logqCPUE.prior = currentRes$extra$priors$log_qCPUE  # q for CPUE
 logbetaCPUE.prior = currentRes$extra$priors$log_BetaCPUE
-logqCPUEerr.prior = currentRes$extra$priors$qCPUEerr_prior  # error on the q ????
+
+logqCPUEerr.prior = currentRes$extra$priors$qCPUEerr_prior 
+                         # error on the q ????
+#Log q CPUE error						
+# -1	-5	5	0	0	0.6	0
+
+
 
 # survey selectivities (all matrices):
 muvec.prior = currentRes$extra$priors$surveySfull_prior
@@ -496,7 +498,6 @@ ptab = function(xx)
 # > plot(years, Bt.mpd, ylim=c(0,200000))
 # > plot(years, Bt.mpd, ylim=c(0,120000))
 # > plot(years[-length(years)], Ct)
-#browser();return()
 @ 
 
 
@@ -554,9 +555,8 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 \Sexpr{ptab(R0.prior)} & \Sexpr{R0.mpd} \\
 \multicolumn{5}{l}{{\bf $M_s (s=1,2)$, M (natural mortality), M1}} & \\
 \Sexpr{ptab(M1.prior)} & \Sexpr{M1.mpd} \\
-@rmsex \multicolumn{5}{l}{{\bf $M_2$, M (natural mortality row 2), M1 row 2}} & \\
-@rmsex \Sexpr{ptab(M2.prior)} & \Sexpr{M2.mpd} \\
-
+% \multicolumn{5}{l}{{\bf $M_2$, M (natural mortality row 2), M1 row 2}} & \\
+\Sexpr{ptab(M2.prior)} & \Sexpr{M2.mpd} \\
 \multicolumn{5}{l}{{\bf $h$,  h (steepness of spawner-recruit curve), h}} & \\
 \Sexpr{ptab(h.prior)} & \Sexpr{h.mpd} \\
  & & & & & \\
@@ -587,7 +587,15 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 %  but Rt[1] is 3514, > R0.mpd = 1652 and >> what I calc from N in 
 %   1976 above        
 
-% Had to remove lines specifying plusScale.prior as code would crash even when commented out. ?!?
+\multicolumn{5}{l}{\bf $\rho_s$, Plus scale, plusscale.1 plusscale.2 (females, males)} & \\
+\Sexpr{ptab(plusScale.prior[1,])} & \Sexpr{signif(rho1.mpd, sigdig)} \\
+\Sexpr{ptab(plusScale.prior[2,])} & \Sexpr{signif(rho2.mpd, sigdig)} \\
+
+
+\multicolumn{5}{l}{\bf $\chi_s$, initial u, uinit\_prior (females, males) is prior} & \\
+\Sexpr{ptab(uinit.prior[1,])} & \Sexpr{signif(uinit1.mpd, sigdig)} \\   % Think just a parameter
+\Sexpr{ptab(uinit.prior[2,])} & \Sexpr{signif(uinit2.mpd, sigdig)} \\
+
 
 \hline
 \end{tabular}	
@@ -607,16 +615,16 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 %=======The following line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(logqvec.prior[1,])} & \Sexpr{log(qvec.mpd[1])} \\
 
-@rmcpue \multicolumn{6}{l}{\bf CPUE catchability, $g=\Sexpr{Nsurv+1}$:} \\
-@rmcpue \multicolumn{5}{l}{\bf $\log q_{\Sexpr{Nsurv+1}}$, Log q CPUE, log\_qCPUE} & \\
-
-%=======The following line will be expanded to accomodate multiple cpue series=======
-@rmcpue \Sexpr{ptab(logqCPUE.prior[1,])} & \Sexpr{log(qCPUE.mpd[1])} \\
+\multicolumn{6}{l}{\bf CPUE catchability, $g=\Sexpr{Nsurv+1}$:} \\
+\multicolumn{5}{l}{\bf $\log q_{\Sexpr{Nsurv+1}}$, Log q CPUE, log\_qCPUE} & \\
+\Sexpr{ptab(logqCPUE.prior)} & \Sexpr{log(qCPUE.mpd)} \\
 
 % \multicolumn{5}{l}{\bf ???, Log q CPUE error, qCPUEerr\_prior is prior} & \\
 % \Sexpr{ptab(logqCPUEerr.prior)} & ??? \\  % currentPar$qCPUEerr.1 $
                                   %  has length 16 (all 0 for run05)
+
 % -1	-5	5	0	0	0.6	0
+
 
 % \multicolumn{5}{l}{\bf $\log \gamma$, LogBetaCPUE (CPUE POW), log\_BetaCPUE} & \\
 % \Sexpr{ptab(logbetaCPUE.prior)} & \Sexpr{log(betaCPUE.mpd)} \\
@@ -659,26 +667,23 @@ like.Surveys.rnd = c(like.Surveys.rnd, NA, NA, NA, NA)
 % Get numbers from chunk above
 \begin{table}[!p]
 \centering
-\caption{\label{tab:like}  Negative log-likelihoods and objective function from the MPD results for the two models. Parameters and likelihood symbols are defined in Appendix F. For indices ($\hat{I}_{tg}$) and proportions-at-age ($\hat{p}_{atgs}$), subscripts $g=1...\Sexpr{Nsurv}$ refer to the trawl surveys and subscript $g=\Sexpr{Nsurv+1}+$ refers to the commercial fishery.}
-\begin{tabular}{llr} 
+\caption{\label{tab:like} *****NUMBERS NOT CORRECT YET***** PLACEHOLDER from YMR write-up for now. Need to automate and simplify in Sweave, and fix captoin. Negative log-likelihoods and objective function from the MPD results for the two models. Parameters and likelihood symbols are defined in Appendix F. For indices ($\hat{I}_{tg}$) and proportions-at-age ($\hat{p}_{atgs}$), subscripts $g=1-5$****HARDWIRED FOR AT MOST THREE SURVEYS refer to the trawl surveys and subscript $g=6$*** refers to the commercial fishery. **Only automated for one set of survey age data. ***Remove any rows with NAs.}
+\begin{tabular}{lr} 
 \hline
-Description & Negative log likelihood & Value \\
-%~~component & \\
+Negative log likelihood & Value \\
+~~component & \\
 \hline \\[0.2pt]
-%=======This line will be expanded to accomodate multiple surveys=======
-Survey 1 & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$Survey_Index[1], dig=2)}\\[6pt]
-%=======This line will be expanded to accomodate multiple CPUE series=======
-CPUE 1   & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$CPUE[1], dig=2)}\\[6pt]
-CAs 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at1s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_survey"[1], dig=2)} \\[6pt] 
-%=======This line will be expanded to accomodate multiple surveys with age data=======
-CAc 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at\Sexpr{Nsurv+1}s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_Commercial"[1], dig=2)} \\[6pt] 
-Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right) - \log \left( \pi( \bfTh ) \right)$ & \Sexpr{round(currentRes$extra$likelihoods$Prior_penalties, dig=2)} \\[6pt]  
-
-% Still not convinced  about that, as think there should be a likelihood for recruitment
+$\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \right)$ & \Sexpr{like.Surveys.rnd[1]}\\[6pt]
+$\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t2} \right\} \right)$ & \Sexpr{like.Surveys.rnd[2]}\\[6pt] 
+$\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t3} \right\} \right)$ & \Sexpr{like.Surveys.rnd[3]}\\[6pt]
+$\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at1s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_survey", dig=2)} \\[6pt] 
+$\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at\Sexpr{Nsurv+1}s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_Commercial", dig=2)} \\[6pt] 
+$\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right) - \log \left( \pi( \bfTh ) \right)$ & \Sexpr{round(currentRes$extra$likelihoods$Prior_penalties, dig=2)} \\[6pt]    % Still not convinced
+%  about that, as think there should be a likelihood for recruitment
 %  residuals, though we may have resolved that before (YMR or QCS POP)   % AHA _ it's because the recruitment residuals epsilon_t sum to 0
 % so the rest of L_1 likelihood function is incorporated into the prior part
 \hline
-~ & Objective function $f( \bfTh)$ & \Sexpr{currentPar$fval} \\
+Objective function $f( \bfTh)$ & \Sexpr{currentPar$fval} \\
 % Add reweighting values & & \\
 % ~~ if needed & & \\
 \hline
@@ -688,6 +693,8 @@ Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right)
 \clearpage
 
 \newpage
+
+
 
 % Making figures, some are in plt.mpdGraphs() .
 
@@ -762,12 +769,7 @@ ageHalfFemSelComm = round(muC.mpd - sqrt(exp(logvC.mpd) * log(2) ))
 yearsForACF = (firstYearOfAgeData - A + ageHalfFemSelComm):
   (as.numeric(max(names(logRecDev.mpd))) - ageHalfFemSelComm)
 logRecDevForACF = logRecDev.mpd[as.character(yearsForACF)]
-if (all(logRecDevForACF==0)) {
-	plot(0,0,type="n",axes=FALSE,xlab="",ylab="")
-	text(0,0,"No ACF plot.\nAll recruitment deviations = 0",cex=1.5,col="red")
-} else {
-	acf(logRecDevForACF, lag.max=30, main="", ylab="Auto-correlation function of epsilon_t")
-}
+acf(logRecDevForACF, lag.max=30, main="", ylab="Auto-correlation function of epsilon_t")
 dev.off()
 @ 
 
@@ -787,22 +789,19 @@ dev.off()
 # Second two are not made automatically - got from Rowan for 05.01. 
 #  Use this when get updated package:
 # Note - 1 is males in plotBars.
+# out=plotBars(res,year=1976,sex=2,fill="salmon",eps=TRUE,win=FALSE) # ,age=c(1:60))
+# out=plotBars(res,year=1976,sex=1,fill="skyblue",eps=TRUE,win=FALSE)
 
 # Latest from Rowan, I may want to switch to have females first
-year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year"]]),8)
-if (nsex==1) {
-	plotBars(currentRes,type="N",sex=3,fill="green",eps=TRUE,win=FALSE,year=year.plotBar)
-} else {
-	plotBars(currentRes,type="N",sex=2,fill="slamon",eps=TRUE,win=FALSE,year=year.plotBar)
-	plotBars(currentRes,type="N",sex=1,fill="skyblue",eps=TRUE,win=FALSE,year=year.plotBar)
-}
+plotBars(currentRes,sex=1,fill="skyblue",eps=TRUE,win=FALSE)  # function default year is first year
+plotBars(currentRes,sex=2,fill="salmon",eps=TRUE,win=FALSE)
 @ 
 
 
 <<bubbleplots, results=hide, echo=FALSE>>=
 # Should redo as a function in scape program, but quicker for now:
 CAcObsFem = matrix(currentRes$CAc$Obs[is.element(currentRes$CAc$Sex,
-  c("Female","Unisex"))], nrow=length(ages))  
+  "Female")], nrow=length(ages))  
 yrCAc = sort(unique(currentRes$CAc$Year))
 dimnames(CAcObsFem)[[1]] = ages
 dimnames(CAcObsFem)[[2]] = yrCAc
@@ -817,7 +816,7 @@ dev.off()
 
 # And now for Fit to data
 CAcFitFem = matrix(currentRes$CAc$Fit[is.element(currentRes$CAc$Sex,
-  c("Female","Unisex"))], nrow=length(ages))  
+  "Female")], nrow=length(ages))  
 dimnames(CAcFitFem)[[1]] = ages
 dimnames(CAcFitFem)[[2]] = yrCAc
 
@@ -829,7 +828,6 @@ plotBubbles(CAcFitFem, dnam=TRUE, size=0.10, hide0=TRUE,
 # abline(a=-1976, b=1)   # to follow cohort 
 dev.off()
 
-if (nsex > 1) {
 # Data for males.
 CAcObsMale = matrix(currentRes$CAc$Obs[is.element(currentRes$CAc$Sex,
   "Male")], nrow=length(ages))  
@@ -854,10 +852,12 @@ plotBubbles(CAcFitMale, dnam=TRUE, size=0.10, hide0=TRUE,
             main="Males")
 # abline(a=-1976, b=1)   # to follow cohort 
 dev.off()
-}
+
 @
 
-% \sppfig{catch}{Commercial catch data.}   % No need to repeat for every model run, and it shows up later.
+% \sppfig{catch}{Commercial catch data.}   % No need to repeat for
+%  every model run, and it shows up later.
+
 
 % \sppfig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}    % Not on same year axis.
 
@@ -869,13 +869,13 @@ dev.off()
 
 % Andy tried replacing survey 1 with *at*surveys - seemed to work okay for survey index fits, but got warnings.
 
-\sppfig{survIndSer3}{Crude plot of time series of the \Sexpr{Nsurv} surveys, plus CPUE index (dashed line, unless it's not used), all normalised to their respective means. To see if they give conflicting signals. (Note that CPUE isn't necessarily being used in the model fitting).}
+% \sppfig{survIndSer3}{Crude plot of time series of the five surveys, plus CPUE index (dashed line, unless it's not used), all normalised to their respective means. To see if they give conflicting signals. (Note that CPUE isn't necessarily being used in the model fitting).}
 
 % \sppfig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
 
-@rmcpue \sppfig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 95\% error bars are based on lognormal assumption (double check error bars).}
+% \sppfig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 95\% error bars are based on lognormal assumption (double check error bars).}
 
-@rmcpue \sppfig{CPUEfit}{CPUE index series (without error bars) and biomass trajectories using different q's (if more than one CPUE series).}
+% \sppfig{CPUEfit}{Crude plot of CPUE index series, without error bars.}
 
 \sppfig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
 
@@ -883,15 +883,15 @@ dev.off()
 
 \clearpage   % otherwise too many unprocessed floats
 
-@rmsex \sppfig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
+\sppfig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
 
-@rmsex \sppfig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
+\sppfig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
 \newpage
 
 \sppfig{ageCommFemale1}{Observed and predicted commercial proportions-at-age for females. Note that years are not consecutive.}
 
-@rmsex \sppfig{ageCommMale1}{Observed and predicted commercial proportions-at-age for males. Note that years are not consecutive.}
+\sppfig{ageCommMale1}{Observed and predicted commercial proportions-at-age for males. Note that years are not consecutive.}
 
 \clearpage 
 
@@ -899,7 +899,9 @@ dev.off()
 %=======This line will be expanded to accomodate multiple surveys=======
 \twofig{ageSurv@survey1Female1}{ageSurv@survey1Male1}{Observed and predicted proportions-at-age for @survey1 survey.}
 
-\sppfig{meanAge}{Mean ages each year for the data (closed circles) and model estimates (joined open triangles) for the commercial and survey age data.}
+
+\sppfig{meanAge}{Mean ages each year for the data (open circles) and model estimates (joined filled circles) for the commercial and survey age data.}
+
 
 % \section{Residuals associated with MPD fits  for run \Sexpr{model.name}.}
 
@@ -913,6 +915,8 @@ dev.off()
 
 %=======This line will be expanded to accomodate multiple surveys=======
 \sppfig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from @survey1 survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -1) * 2
+
+
 
 % \sppfig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
 
@@ -933,20 +937,22 @@ dev.off()
 \label{fig:stockRecruit}
 \end{figure}
 
+
 \twofig{recDev}{recDevAcf}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]} (determined as the first year of commercial age data minus the accumulator age class plus the age for which commercial selectivity for females is 0.5, to the final year that recruitments are calculated minus the age for which commercial selectivity for females is 0.5).}
 
 % \twofig{recDev}{recruits}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1000's of age 1 fish; mean recruitment is \Sexpr{signif(mean(currentRes$B$R), sigdig)}.}
 
 % \sppfig{recDevAcf}{Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]} (determined as the first year of commercial age data minus the plus-age class plus the age for which commercial selectivity for females is 0.5, to the final year that recruitments are calculated minus the age for which commercial selectivity for females is 0.5).}
 
-\sppfig{selectivity}{Selectivities for commercial catch (labelled `Gear 1' here) and surveys (all MPD values), with maturity ogive for females indicated by `m'.}
+\sppfig{selectivity}{Selectivities for commercial catch (labelled `Gear 1' here) and surveys (all MPD values), with maturity ogive for females indicated by `m'. ***Not automated: Selectivities are fixed for surveys ** and **.}
+
 
 % Don't need the rest for results Appendix.
 
-\sppfig{ageBarsFemale}{Age structure for females during selected years (not sure if this is useful, but AME had it flagged).}
-@rmsex \sppfig{ageBarsFemale}{Age structure for females during selected years (not sure if this is useful, but AME had it flagged).}
+
 
 % \threefig{initAgeDev}{ageBarsFemale}{ageBarsMale}{*NOT AUTOMATED YET*. Top: initial age deviation, $\eta_a$, for each age $a = 2, 3, ..., A-1$). In log space, where the bias-corrected multiplicative deviation is $\mbox{e}^{\eta_a - \sigma_R^2/2}$ where $\eta_a \sim \mbox{Normal}(0, \sigma_R)$. Middle: initial age structure for females. Bottom: initial age structure for males. Lines are a steady-state initial age structure (yes?).}
+
 
 % \sppfig{Bt}{Spawning biomass (mature females) over time for run \Sexpr{model.name} (MPD values).}
 
@@ -962,6 +968,13 @@ dev.off()
 \end{figure}
 
 \sppfig{exploit}{Exploitation rate (MPD) over time  for run \Sexpr{model.name}.}
+
+
+
+
+
+
+
 
 \end{document}
 
