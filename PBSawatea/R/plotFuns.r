@@ -254,16 +254,16 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^cquantile.vec
 
-#plotBars-------------------------------2012-08-10
+#plotBars-------------------------------2013-09-04
 # Plot barplots of specific year age proportions.
 #-----------------------------------------------RH
 plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]), 
-    sex=c(2,1), # sex 2 =females (gfbio) 1 = males
-    age=NULL, fill=c("orange","cyan"), eps=FALSE, pix=FALSE, win=TRUE, ...) {
+    sex=c(2,1), # sex 2 =females (gfbio) 1 = males, 3 = unisex (awatea)
+    age=NULL, fill=c("orange","cyan","green"), eps=FALSE, pix=FALSE, win=TRUE, ...) {
 
 	if (!any(type==names(res))) stop("Choose another object in the list")
 	nyear = length(year)
-	SEX = c("Male","Female")
+	SEX = c("Male","Female","Unisex")
 	Sex = SEX[sex]; nsex=length(Sex)
 	M1  = res$extra$parameters$M1
 	M   = if (length(M1)==1) M1 else rev(M1)[sex]
@@ -288,13 +288,15 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 		}
 	}
 	#ncol=floor(sqrt(nyear)); nrow=ceiling(nyear/ncol)
-	nrow=min(nyear,5); ncol=ceiling(nyear/nrow)
+	nrow=min(nyear,4); ncol=ceiling(nyear/nrow)
 	fnam = paste("ageBars",paste(Sex,collapse=""),sep="")
 	figs = c(eps=eps,pix=pix,win=win)
+#browser();return()
 	for (k in names(figs)){
 		if (!figs[k]) next
-		if (k=="eps") postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", height=3*nrow, width=6.5)
+		if (k=="eps") postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", height=2*nrow, width=6.5)
 		else if (k=="pix") png(paste(fnam,"png",sep="."), width=1300, height=nrow*600, units="px", pointsize=16)
+		else resetGraph()
 		par(mfcol=c(nrow,ncol),mgp=c(2,0.5,0),las=0,xaxs="i",mar=c(4,4,1,1))
 		for (i in year) {
 			ii = as.character(i); aa=as.character(age)
@@ -324,7 +326,8 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 		if (any(k==c("eps","pix"))) dev.off()
 	}
 	invisible(list(dat=dat,mat=mat,xpos=xpos)) }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBars
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBars
+
 
 #plotBox--------------------------------2011-12-15
 # Modified boxplot with quantile whiskers.

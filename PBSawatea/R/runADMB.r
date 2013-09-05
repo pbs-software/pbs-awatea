@@ -18,7 +18,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
      doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
      doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
      doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
-     delim="-", awateaPath="E:/Projects/ADMB/Coleraine", clean=FALSE, ...) {
+     delim="-", awateaPath="%HOME%/Projects/ADMB/Coleraine", clean=FALSE, ...) {
 
 	ciao = function(){setwd(cwd); Sys.setenv(PATH=syspath0); gc(verbose=FALSE)} # exit function
 	cwd  = getwd(); syspath0  = Sys.getenv()["PATH"]
@@ -57,11 +57,14 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 	argsMPD  = paste(paste(" ",unlist(argsMPD),sep=""),collapse="")
 	argsMCMC = paste(paste(" ",unlist(argsMCMC),sep=""),collapse="")
 
+	packList(stuff=c("awateaPath","wd","filename.ext","strSpp","runNo","N.reweight","cvpro","mean.age","runname","rundir"), target="PBSawatea")
+
 	if (doMPD) {
 		.flush.cat("Reweighting surveys and proportions-at-age...\n")
 		if (!file.exists(filename.ext)) stop("Specified input file does not exist")
 		sdnrfile = paste(prefix,runNoStr,"sdnr",sep=".")
 		cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
+		cat("CVpro: ",cvpro,"\n",file=sdnrfile,append=TRUE,sep="")
 		#file0 = gsub(paste("\\.",ext,sep=""),paste(".000.",ext,sep=""),filename.ext)
 		file0 = paste(prefix,runNoStr,"00.txt",sep=".")
 		fileX = c("likelihood.dat",paste("Awatea",c("par","std","cor","eva"),sep=".")) # extra files to save
@@ -119,6 +122,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 			}
 			eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
 			Robj@reweight = list(nrwt=i)
+#if (i==1) {browser();return()}
 			Robj = reweight(Robj, cvpro=cvpro, mean.age=mean.age, sfile=sdnrfile, fileN=fileN)
 		}
 		if (!file.exists(rundir)) dir.create(rundir)
@@ -183,6 +187,7 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		Robj=list(ctlfile,strategy)
 			
 	}
+	if (exists("tput")) packList(stuff=c("Robj"), target="PBSawatea")
 	return(Robj) }
 #------------------------------------------runADMB
 
@@ -403,21 +408,8 @@ setMethod("reweight", signature="AWATEAdata",
 		return(CF) 
 	}
 	# Mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
-	MAfun = function(padata,brks=NULL)  {
-		# S = series, y = year, a = age bin, O = observed proportions, P = Predicted (fitted) proportions, N=sample size
-		S=padata$Series; y=padata$Year; a=padata$Age; O=padata$Obs; E=padata$Fit; SS=padata$SS   # note: SD and NR not used
-		if (is.null(brks)) {
-			f = paste(S,y,sep="-"); J = unique(S) }
-		else {
-			B = cut(y, breaks=brks, include.lowest=TRUE, labels=FALSE)
-			f = paste(S,B,y,sep="-"); J = unique(paste(S,B,sep="-")) }
-		Oay  = a * O; Eay = a * E; Eay2 = a^2 * E
-		mOy  = sapply(split(Oay,f),sum,na.rm=TRUE)
-		mEy  = sapply(split(Eay,f),sum,na.rm=TRUE)
-		mEy2 = sapply(split(Eay2,f),sum,na.rm=TRUE)
-		N    = sapply(split(SS,f),mean,na.rm=TRUE)
-		return(list(MAobs=mOy, MAexp=mEy, Vexp=mEy2-mEy^2, N=N, J=J)) # observed and expected mean ages, variance of expected ages
-	}
+	# MAfun now in `utilFuns.r` (because it is needed here and in `runSweave`).
+
 	# Weighting Method TA1.8 (Francis 2011, CJFAS, p.1137)
 	wfun = function (MAlist) {
 		# y=year, a=age bin, O=observed proportions, P=Predicted (fitted) proportions, N=sample size, J=series
@@ -452,9 +444,9 @@ setMethod("reweight", signature="AWATEAdata",
 		else
 			survey$CVnew[zs] = sser$CV * SDNR[ss]
 	}
-#browser();return()
+#browser()
 
-	if (view(obj,pat="CPUE likelihood",see=FALSE)==0) 
+	if (all(view(obj,pat="CPUE likelihood",see=FALSE)[[1]]==0)) 
 		cpue = NULL
 	else {
 		cpue =  res$CPUE[!is.na(res$CPUE[,"Obs"]),]
@@ -475,7 +467,6 @@ setMethod("reweight", signature="AWATEAdata",
 				cpue$CVnew[zu] = user$CV * SDNR[Useries[uu]]
 		}
 	}
-
 	sdnr = rep(0,2); names(sdnr) = c("cpa","spa"); SDNR = c(SDNR,sdnr)
 	wj   = NULL
 
@@ -489,6 +480,7 @@ setMethod("reweight", signature="AWATEAdata",
 	if (mean.age) {
 		#MAc   = MAfun(cpa,brks=c(1979,1985,1997,2004,2009)) # commercial mean ages
 		MAc   = MAfun(cpa) # commercial mean ages
+#browser(); return()
 		Wc    = wfun(MAc)
 		wNcpa = Wc$wN
 		wtemp = Wc$w; names(wtemp)=paste("cpa-",names(wtemp),sep="")
@@ -515,7 +507,7 @@ setMethod("reweight", signature="AWATEAdata",
 	}
 	else
 		wNspa  = eNfun(spa$Series,spa$Year,spa$Obs,spa$Fit)
-#browser();return()
+#browser()
 	SDNR["spa"] = sd(spa$NR,na.rm=TRUE)
 
 	if (!is.null(dots$sfile)) {
@@ -567,5 +559,10 @@ setMethod("reweight", signature="AWATEAdata",
 #out=runADMB("input27-ymr.txt",runNo=27,rwtNo=1,doMSY=TRUE)
 #out=runADMB("input28-ymr.txt",runNo=28,rwtNo=1,doMSY=TRUE)
 
+#=== ROL 5DE 2013 ===
+source("PBSscape.r"); source("runSweave.r"); source("runSweaveMCMC.r"); source("plotFuns.r"); source("menuFuns.r"); source("utilFuns.r"); 
+#out=runADMB("ROL-5CD-01.txt",strSpp="ROL",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 
-
+#=== ROL 5AB 2013 ===
+#out=runADMB("ROL-5AB-07.txt",strSpp="ROL",runNo=7,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.25,clean=TRUE)
+#out=runADMB("ROL-5AB-08.txt",strSpp="ROL",runNo=8,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)

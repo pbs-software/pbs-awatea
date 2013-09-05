@@ -1641,34 +1641,6 @@ stdRes.index <- function( obj, label=NULL, prt=TRUE )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~stdRes.index
 
 
-#MAfun2---------------------------------2011-05-04
-# to work out mean ages, from Rowan's MAfun from runADMB.r.
-#  4th May 2011. Don't think much changed from MAfun.
-# Call will be MAfun2(obj$CAc); f is regime, don't worry for here.
-#-------------------------------------------RH/AME
-MAfun2 = function(padata,brks=NULL)  {
-       # Mean age function (Chris Francis, 2011, submitted to CJFAS))
-       # S = series, y = year, a = age bin, O = observed proportions,
-       # P = Predicted (fitted) proportions, N=sample size
-       S=padata$Series; y=padata$Year; a=padata$Age;
-       O=padata$Obs; E=padata$Fit; N=padata$SS
-       if (is.null(brks)) {
-	 f = paste(S,y,sep="-"); J = unique(S) } else
-       {
-  	 B = cut(y, breaks=brks, include.lowest=TRUE, labels=FALSE)
-	 f = paste(S,B,y,sep="-"); J = unique(paste(S,B,sep="-"))
-       }
-       Oay  = a * O; Eay = a * E; Eay2 = a^2 * E
-       mOy  = sapply(split(Oay,f),sum,na.rm=TRUE)
-       mEy  = sapply(split(Eay,f),sum,na.rm=TRUE)
-       mEy2 = sapply(split(Eay2,f),sum,na.rm=TRUE)
-       N    = sapply(split(N,f),mean,na.rm=TRUE)
-       return(list(MAobs=mOy, MAexp=mEy, Vexp=mEy2-mEy^2, N=N, J=J))
-        # observed and expected mean ages, variance of expected ages
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAfun2
-
-
 #--------------------------------------------------------------------#
 #                         Plotting Functions                         #
 #--------------------------------------------------------------------#
@@ -1952,8 +1924,10 @@ plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=
   nseries = length(seriesList)
   #surveyFigName =c("survGIG.eps", "survQCSsyn.eps", "survQCSshr.eps", "survWCHG.eps", "survWCVI.eps", "survNFMS.eps")
   #surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial")
-  surveyFigName =paste("survRes",ssnames,".eps",sep="")
-  surveyHeadName = ssnames
+  surveyFigName = paste("survRes",ssnames,".eps",sep="")
+  surveyFigName = gsub(" ","",surveyFigName)
+  #surveyHeadName = ssnames
+  surveyHeadName = if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
   for ( i in 1:nseries )
   {
     idx <- seriesList[i]==obj$Series
@@ -1990,14 +1964,14 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
   # surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps",
   #   "survIndQCSshr.eps")
   #surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial") # Appears again below
-  surveyHeadName = ssnames
-  postscript("survIndSer.eps",
-    height = 8.0, width = 6.0,
-    horizontal=FALSE,  paper="special")   # height was 6 for POP
+  #surveyHeadName = if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
+  surveyHeadName = if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
+	if (is.null(cvpro) || cvpro==FALSE) cvpro = "unknown"
+  postscript("survIndSer.eps", height = 8.0, width = 6.0,  horizontal=FALSE,  paper="special")   # height was 6 for POP
   par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) # Do c(3,2) for 6 surveys
-  par(mai = c(0.3,0.25, 0.4,0.1))         # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
-  par(omi = c(0.25,0.25,0,0.1))           # Outer margins of whole thing, inch
-  yrTicks = as.numeric( obj$Year)
+  par(mai = c(0.3,0.25,0.4,0.1))          # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
+  par(omi = c(0.4,0.3,0,0.1))             # Outer margins of whole thing, inch
+  yrTicks = as.numeric( obj$Year)         # Haven't a clue why AME is doing this
    
   for ( i in 1:nseries )
   {
@@ -2023,23 +1997,21 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
          # restrict years for plot, does error bars
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-    mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
-          surveyHeadName[i]) #  outer=TRUE
-    if(i==3)
-       mtext( side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
-    if(i==5)
-       mtext(side=1, line=0.5, cex=1, outer=TRUE, "Year")      
+    mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+    addLabel(0.95,0.95,paste("+ CV process error ",cvpro,sep=""),adj=c(1,0),cex=0.8,col="grey")
+    if(i==nseries) {
+       mtext(side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
+       mtext(side=1, line=0.5, cex=1.2, outer=TRUE, "Year")
+    }
   }                         # cex was 0.8 for POP
   dev.off()
 
   # And again, but with the same year axis for each. Think will
   #  be instructive to see
-  postscript("survIndSer2.eps",
-    height = 8.0, width = 6.0,
-    horizontal=FALSE,  paper="special")   # height was 6 for POP
+  postscript("survIndSer2.eps", height = 8.0, width = 6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
   par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) #  do c(3,2) for 6 series, and change axes labelling
   par(mai = c(0.3,0.25, 0.4,0.1))         # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
-  par(omi = c(0.25,0.25,0,0.1))           # Outer margins of whole thing, inch
+  par(omi = c(0.4,0.3,0,0.1))           # Outer margins of whole thing, inch
   yrTicks = as.numeric( obj$Year)
   ymaxsurvIndSer3 = 0           # For ymaxsurvIndSer3.eps
   xLimmaxsurvIndSer3 = NA
@@ -2059,8 +2031,7 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
     ymaxsurvIndSer3 = max(ymaxsurvIndSer3,
          max(seriesVals$Obs, na.rm=TRUE)/
          mean(seriesVals$Obs, na.rm=TRUE) )
-    xLimmaxsurvIndSer3 = range(xLimmaxsurvIndSer3, yearsnotNA,
-      na.rm=TRUE)     # setting xLimmaxsurvIndSer3 = NA above
+    xLimmaxsurvIndSer3 = range(xLimmaxsurvIndSer3, yearsnotNA, na.rm=TRUE)     # setting xLimmaxsurvIndSer3 = NA above
 
     #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
     plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
@@ -2069,51 +2040,51 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
          # restrict years for plot, does error bars
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-    mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
-          surveyHeadName[i]) #  outer=TRUE
-    if(i==3)
-       mtext( side=2, line=0, cex=1, outer=TRUE,"Relative biomass")
-    if(i==5)
-       mtext(side=1, line=0, cex=1, outer=TRUE, "Year")      
+    mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+    addLabel(0.95,0.95,paste("+ CV process error ",cvpro,sep=""),adj=c(1,0),cex=0.8,col="grey")
+    if(i==nseries) {
+       mtext(side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
+       mtext(side=1, line=0.5, cex=1.2, outer=TRUE, "Year")
+    }
   }                         # cex was 0.8 for POP
   dev.off()
   
-  # And again, but all series on same plot, normalised to their means
-  #  to see trends. Maybe add CPUE also.
-  postscript("survIndSer3.eps",
-    height = 6.0, width = 6.0,
-    horizontal=FALSE,  paper="special")   # height was 6 for POP
-    yrTicks = as.numeric( obj$Year)
-    # Set up plot
-  plot(NA, xlim = xLimmaxsurvIndSer3, ylim = c(0, ymaxsurvIndSer3),
-       xlab="Years", ylab="Survey indices normalised by means")
-  for ( i in 1:length(seriesList) )
-    {
-      idx <- seriesList[i]==obj$Series
-      seriesVals = obj[idx,]
-      # seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
-      # seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
+  # And again, but all series on same plot, normalised to their means to see trends. Maybe add CPUE also.
+	# Calculate max of normalised surveys and CPUEs
+	objsurv = obj[!is.na(obj$Obs),]
+	norsurv = sapply(split(objsurv$Obs,objsurv$Series),function(x){xx=x[!is.na(x)]; if (length(xx)==0) 0 else xx/mean(xx)},simplify=FALSE)
+	maxsurv = max(sapply(norsurv,max))
+	yrssurv = range(objsurv$Year); yrsspan = yrssurv[1]:yrssurv[2]
+	objcpue = objCPUE[is.element(objCPUE$Year,yrsspan),]
+	norcpue = sapply(split(objcpue$Obs,objcpue$Series),function(x){xx=x[!is.na(x)]; if (length(xx)==0) 0 else xx/mean(xx)},simplify=FALSE)
+	maxcpue = max(sapply(norcpue,max))
 
-      yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-      points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] /
-          mean(seriesVals$Obs, na.rm=TRUE), pch=i, col=i, type="o")
-    }
-  # Now draw on CPUE series also:
-  nseries = length(seriesList)  #  Need nseries from surveys for col
-  # obj=objCPUE
-  seriesListCPUE <- sort( unique( objCPUE$Series ) )
-    # sort risky if not always in same order.
-  for ( i in 1:length(seriesListCPUE) )
-    {
-      idx <- seriesListCPUE[i]==objCPUE$Series
-      seriesVals = objCPUE[idx,]
-      yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-      points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] /
-          mean(seriesVals$Obs, na.rm=TRUE), pch=i+nseries,
-          col=i+nseries, type="o", lty=2)
-    }
+	postscript("survIndSer3.eps", height = 6.0, width = 6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
+	yrTicks = as.numeric( obj$Year)  # Haven't a clue why AME is doing this
+	# Set up plot
+	plot(NA, xlim = yrssurv, ylim = c(0, max(maxsurv,maxcpue)), xlab="Years", ylab="Survey indices normalised by means")
+	for ( i in 1:length(seriesList) )
+	{
+		idx <- seriesList[i]==objsurv$Series
+		seriesVals = obj[idx,]
+		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, na.rm=TRUE), pch=i, col=i, type="o")
+	}
+	# Now draw on CPUE series also:
+	nseries = length(seriesList)  #  Need nseries from surveys for col
+	seriesListCPUE <- sort( unique( objcpue$Series ) )
+	# sort risky if not always in same order.
+	for ( i in 1:length(seriesListCPUE) )
+	{
+		idx <- seriesListCPUE[i]==objcpue$Series
+		seriesVals = objcpue[idx,]
+		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		if (length(yearsnotNA)>0)
+			points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, 
+				na.rm=TRUE), pch=i+nseries, col=i+nseries, type="o", lty=2)
+	}
   dev.off()
-
+#browser();return()
   # And again, but just first series and CPUE to see conflicting
   #  signal. Axes not automated.
   postscript("survIndSer4.eps",
@@ -2283,13 +2254,13 @@ plotChains = function (mcmc, nchains=3, pdisc=0.1,
 
 # Plotting CPUE and fit with error bars, copying plotIndexNotLattice
 # from above.
-plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
+plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
 {                            # obj=currentRes$CPUE
   seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
   nseries = length(seriesList)
-  # surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps",
-  #   "survIndQCSshr.eps")
+  # surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
   surveyHeadName = c("CPUE")
+	if (is.null(cvpro) || cvpro==FALSE) cvpro = "unknown"
   postscript("CPUEser.eps",
         height = switch(nseries,5,8,9), width = 6.0,
         horizontal=FALSE,  paper="special")   # height was 6 for POP
@@ -2323,6 +2294,7 @@ plotCPUE <- function( obj,main="",save=NULL,bar=1.96, yLim=NULL, ...)
          # restrict years for plot, does error bars
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
+    addLabel(0.95,0.95,paste("+ CV process error ",cvpro,sep=""),adj=c(1,0),cex=0.8,col="grey")
     # mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
     # if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
     # if(i==5)  mtext(side=1, line=0, cex=1, outer=TRUE, "Year")
@@ -2568,97 +2540,92 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   CAc.yrs = sapply(split(obj$CAc$Year,obj$CAc$Series),unique,simplify=FALSE)
   CAc.nyrs = sapply(CAc.yrs,length)
 
-  for ( i in 1:length(seriesList) )
-  {
-            # AME dividing years into 4 groups - note no 1985, 86,
-            #  or 88 data - see below, doing more automatically saving as .eps
-    # windows()
-    # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c" )
-    # if ( save )
-    #   savePlot( paste("catchAgeComm",i,sep=""), type="png" )
-    # windows()
-    # AME trying to do two on one, from Paul Murrel's chap4:
-    # HERE
-    # plot1 <-  plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-    # plot2 <-  plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-    # print(plot1, position=c(0,0.2,1,1), more=TRUE)  #didn't work.
-    # ----
-#    par(mfrow=c(2,1))
-#    plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-   # if(0==1) {   # these were four files total, now doing less per page below:
-   # windows()
-   # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-   # if ( save )
-      # savePlot( paste("catchAgeComm",i,sep=""), type="png" )
-   #   savePlot( paste("catchAgeComm1"), type="png" ) # AME took out i
-   # windows()
-   # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i, "(no 1985, 86 or 88)"), what="c", years=1985:1994 )  # no 85, 86 or 88
-   # if ( save )
-   #   savePlot( paste("catchAgeComm2"), type="png" ) # AME took out i
-   # windows()
-   # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1995:2001 )
-   # if ( save )
-   #   savePlot( paste("catchAgeComm3"), type="png" ) # AME took out i
-   # 
-   # windows()
-   # plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=2002:2009 )
-   # if ( save )
-   #   savePlot( paste("catchAgeComm4"), type="png" ) # AME took out i
-   #} # end if(0==1)
-   # unique(currentRes$CAc$Year) is, do four a page:
-   # 1978 1979 1980 1981 1982 1983 1984 1987 1989 1990 1991 1992 1993 1994 1995
-   #  1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009
-  # uniqueCAcyears = unique(currentRes$CAc$Year)  # length=29, so do groups of 4
-  # # numpanels = 4
-  # for(jj in 0:7) { 
-  #    windows()
-  #    startyr = uniqueCAcyears[jj*4 + 1]
-  #    # print(startyr)
-  #    endyr = uniqueCAcyears[(jj+1)*4]
-  #      if(jj == 7) {endyr = uniqueCAcyears[length(uniqueCAcyears)]}
-  #    plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=startyr:endyr )
-      # browser()
-  #  if ( save )
-      # savePlot( paste("catchAgeComm",i,sep=""), type="png" )
-  #    savePlot( paste("catchAgeComm", jj, sep=""), type="png" ) # AME took out i
-  # } # end for jj in 0:7
-  # END of AME manually doing multiple plots. This is much easier:
-  # AME doing again, but more automatically, saving as .eps as for plotDens
-  #  as multiple pages. Starting writing plotCAPOP, but could do all
-  #  by changing arguments to plotCA(...). Haven't referred to i here, as for
-  #  POP there's only one commercial set of data.
-  CA.key = list(text = list(lab= c("Observed", "Predicted")),
-    lines = list(col= c("black", "red"),  cex= c(0.3, 0.3)),
-    type=c("p", "l"), x = 0.78, y = -0.04, pch=c(20,20), lwd=1, between=0.3)
-                    # pch[2] doesn't get used, as type[2]="l". Have to match
-                    #  up if change options in plotCA(currentRes, ....)
-  CAc.sex = unique(obj$CAc$Sex)
-  for(plot.sex in CAc.sex)
-    {                       # For YMR, changing height from 4.5, and
-                            #  layout from c(4,4), to put all on one
-      age.layout = rev(c(ceiling(CAc.nyrs[i]/maxcol),maxcol)) # backwards in stupid lattice
-      postscript(paste("ageComm", plot.sex,i,".eps", sep=""),
-        height = switch(age.layout[2],4,6,9,9,9,9,9,9,9), width = 6.5,
-        horizontal=FALSE,  paper="special", onefile=FALSE)
-      plotCA( obj, what="c", ylab="Proportion", xlab="Age class",
-        sex=plot.sex, layout= age.layout, key=CA.key, main=plot.sex,
-        pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 ,series=i)
-                 # col.lines otherwise boys are blue
-                 # Tried using rbind to add dummy data for 1985, 1986
-                 #  and 1988, but didn't work:
-                 # add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
-                 #   xxx$CAc = rbind(xxx$CAc, add)
-                 #  
-    dev.off()
-    }    # end of plot.sex loop
-  }
+	for ( i in 1:length(seriesList) )  {
+		# AME dividing years into 4 groups - note no 1985, 86,
+		#  or 88 data - see below, doing more automatically saving as .eps
+		# windows()
+		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c" )
+		# if ( save )
+		#   savePlot( paste("catchAgeComm",i,sep=""), type="png" )
+		# windows()
+		# AME trying to do two on one, from Paul Murrel's chap4:
+		# HERE
+		# plot1 <-  plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
+		# plot2 <-  plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
+		# print(plot1, position=c(0,0.2,1,1), more=TRUE)  #didn't work.
+		# ----
+		#par(mfrow=c(2,1))
+		#plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
+		# if(0==1) {   # these were four files total, now doing less per page below:
+		# windows()
+		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
+		# if ( save )
+		# savePlot( paste("catchAgeComm",i,sep=""), type="png" )
+		#   savePlot( paste("catchAgeComm1"), type="png" ) # AME took out i
+		# windows()
+		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i, "(no 1985, 86 or 88)"), what="c", years=1985:1994 )  # no 85, 86 or 88
+		# if ( save )
+		#		savePlot( paste("catchAgeComm2"), type="png" ) # AME took out i
+		# windows()
+		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1995:2001 )
+		# if ( save )
+		#   savePlot( paste("catchAgeComm3"), type="png" ) # AME took out i
+		# 
+		# windows()
+		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=2002:2009 )
+		# if ( save )
+		#   savePlot( paste("catchAgeComm4"), type="png" ) # AME took out i
+		#} # end if(0==1)
+		# unique(currentRes$CAc$Year) is, do four a page:
+		# 1978 1979 1980 1981 1982 1983 1984 1987 1989 1990 1991 1992 1993 1994 1995
+		#  1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009
+		# uniqueCAcyears = unique(currentRes$CAc$Year)  # length=29, so do groups of 4
+		# numpanels = 4
+		# for(jj in 0:7) { 
+		#    windows()
+		#    startyr = uniqueCAcyears[jj*4 + 1]
+		#    # print(startyr)
+		#    endyr = uniqueCAcyears[(jj+1)*4]
+		#      if(jj == 7) {endyr = uniqueCAcyears[length(uniqueCAcyears)]}
+		#    plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=startyr:endyr )
+		# browser()
+		#  if ( save )
+		# savePlot( paste("catchAgeComm",i,sep=""), type="png" )
+		#    savePlot( paste("catchAgeComm", jj, sep=""), type="png" ) # AME took out i
+		# } # end for jj in 0:7
+		# END of AME manually doing multiple plots. This is much easier:
+		# AME doing again, but more automatically, saving as .eps as for plotDens
+		#  as multiple pages. Starting writing plotCAPOP, but could do all
+		#  by changing arguments to plotCA(...). Haven't referred to i here, as for
+		#  POP there's only one commercial set of data.
+		CA.key = list(text = list(lab= c("Observed", "Predicted")),
+			lines = list(col= c("black", "red"),  cex= c(0.3, 0.3)),
+			type=c("p", "l"), x = 0.78, y = -0.04, pch=c(20,20), lwd=1, between=0.3)
+			# pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
+		CAc.sex = unique(obj$CAc$Sex)
+		for(plot.sex in CAc.sex) {
+			# For YMR, changing height from 4.5, and layout from c(4,4), to put all on one
+			age.layout = rev(c(ceiling(CAc.nyrs[i]/maxcol),maxcol)) # backwards in stupid lattice
+			postscript(paste("ageComm", plot.sex,i,".eps", sep=""),
+				height = switch(age.layout[2],4,6,9,9,9,9,9,9,9), width = 6.5,
+				horizontal=FALSE,  paper="special", onefile=FALSE)
+			plotCA( obj, what="c", ylab="Proportion", xlab="Age class",
+				sex=plot.sex, layout= age.layout, key=CA.key, main=plot.sex,
+				pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 ,series=i)
+			# col.lines otherwise boys are blue
+			# Tried using rbind to add dummy data for 1985, 1986 and 1988, but didn't work:
+			# add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
+			# xxx$CAc = rbind(xxx$CAc, add)
+			dev.off()
+		} # end of plot.sex loop
+	} # end of seriesList loop
 
   # AME adding - plotting the CA survey data for all three series.
   #  doing .eps below
     # {
-      if ( exists( "currentRes" ) )
-      {
-        seriesList <- sort( unique( obj$CAs$Series) )
+      #if ( exists( "currentRes" ) )
+      #{
+      #  seriesList <- sort( unique( obj$CAs$Series) )
         # for ( i in 1:length(seriesList) )
         # {
         #   windows()
@@ -2666,7 +2633,7 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
         #   if(save)
         #     savePlot( paste("catchAgeSurvey", i, sep=""), type="png" )
         #  }
-      }
+      #}
       # }
 
   # AME adding - CA survey data for all three (no fitting for 3)
@@ -2680,44 +2647,42 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   #          savePlot( paste("catchAgeSurvey", i, sep=""), type="png" )
   #        }
 
-  # Survey Age Fits (modified by RH 2012-08-01)
-  # Shifting the key here down slightly
-  CAs.key = list(text = list(lab= c("Obs", "Pred")),
-    lines = list(col= c("black", "red"),  cex= c(0.3, 0.3)),
-    type=c("p", "l"), x = 0.78, y = -0.16, pch=c(20,20), lwd=1, between=0.3)
-        # AME: pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
-
-  CAs.sex = unique(obj$CAs$Sex)
-  # GIG, survey 1      # should do a loop,         only first two
-  #ageSurveyFigName =c("ageSurvGIG", "ageSurvQCSsyn", "ageSurvQCSshr")
-  age.height = c(3.0, 2.8, 3)    # For .eps figs:
-  age.width = c(3.5, 7, 3)    # For .eps figs:
-  seriesList <- sort( unique( obj$CAs$Series) )
-  ageSurveyFigName = paste("ageSurv",ssnames[seriesList],sep="") # friggin nightmare
-  age.layout = list()
-  age.layout[[1]] = c(2,1)
-  age.layout[[2]] = c(4,1)
-  #age.layout[[3]] = c(1,1)
-    for ( i in 1:length(seriesList) ) {
-      ii = seriesList[i]; zi=is.element(obj$CAs$Series,ii)
-      if (!any(zi)) next
-      iyr = unique(obj$CAs$Year[zi]); nyr = length(iyr)
-      ncol = min(nyr,4); nrow=ceiling(nyr/ncol)
-      for(plot.sex in CAs.sex) {
-        postscript(paste(ageSurveyFigName[i], plot.sex,ii,".eps", sep=""),
-          #sep=""),  height = age.height[i], width = age.width[i], # RH disabled
-          height=3.5, width=2*ncol, horizontal=FALSE, paper="special", onefile=FALSE)
-        plotCA( obj, what="s", series = ii, ylab="Proportion",
-          #xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex, # RH disabled
-          xlab="Age class", sex=plot.sex, layout=c(ncol,nrow), key=CAs.key, main=plot.sex, # RH: Stupid trellis appears to take (columns,rows) for the layout.
-          pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
-              # AME: col.lines otherwise boys are blue
-              # AME: Tried using rbind to add dummy data for 1985, 1986, and 1988, but didn't work:
-              #      add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
-              #      xxx$CAc = rbind(xxx$CAc, add)
-    dev.off()
-    }    # end of plot.sex loop
-  }      # end of seriesList loop
+	# Survey Age Fits (modified by RH 2012-08-01)
+	# Shifting the key here down slightly
+	CAs.key = list(text = list(lab= c("Obs", "Pred")),
+		lines = list(col= c("black", "red"),  cex= c(0.3, 0.3)),
+		type=c("p", "l"), x = 0.78, y = -0.16, pch=c(20,20), lwd=1, between=0.3)
+		# AME: pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
+	CAs.sex = unique(obj$CAs$Sex)
+	#ageSurveyFigName =c("ageSurvGIG", "ageSurvQCSsyn", "ageSurvQCSshr")
+	age.height = c(3.0, 2.8, 3) # For .eps figs:
+	age.width = c(3.5, 7, 3)    # For .eps figs:
+	seriesList <- sort( unique( obj$CAs$Series) )
+	ageSurveyFigName = paste("ageSurv",ssnames[seriesList],sep="") # friggin nightmare
+	ageSurveyFigName = gsub(" ","",ageSurveyFigName)               # perhaps redundant but just to be sure
+	age.layout = list()
+	age.layout[[1]] = c(2,1)
+	age.layout[[2]] = c(4,1)
+	for ( i in 1:length(seriesList) ) {
+		ii = seriesList[i]; zi=is.element(obj$CAs$Series,ii)
+		if (!any(zi)) next
+		iyr = unique(obj$CAs$Year[zi]); nyr = length(iyr)
+		ncol = min(nyr,4); nrow=ceiling(nyr/ncol)
+		for(plot.sex in CAs.sex) {
+			postscript(paste(ageSurveyFigName[i], plot.sex,ii,".eps", sep=""),
+			#sep=""),  height = age.height[i], width = age.width[i], # RH disabled
+			height=3.5, width=2*ncol, horizontal=FALSE, paper="special", onefile=FALSE)
+		plotCA( obj, what="s", series = ii, ylab="Proportion",
+			#xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex, # RH disabled
+			xlab="Age class", sex=plot.sex, layout=c(ncol,nrow), key=CAs.key, main=plot.sex, # RH: Stupid trellis appears to take (columns,rows) for the layout.
+			pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
+		# AME: col.lines otherwise boys are blue
+		# AME: Tried using rbind to add dummy data for 1985, 1986, and 1988, but didn't work:
+		#      add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
+		#      xxx$CAc = rbind(xxx$CAc, add)
+		dev.off()
+		}  # end of plot.sex loop
+	}     # end of seriesList loop
   
   
   # Plot the fishery index (CPUE data I think)
@@ -2742,16 +2707,15 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 
   # Plot standardised residuals. Now doing four plots on one page.
   #  Commercial.
-  postscript("commAgeResids.eps",
-        height = 8.5, width = 6.8,
-        horizontal=FALSE,  paper="special")
-  par(mai = c(0.45, 0.5, 0.1, 0.2)) # JAE changed  for each figure
-  par(omi = c(0.45,0.1,0,0))      # Outer margins of whole thing, inch
+  postscript("commAgeResids.eps", height = 8.5, width = 6.8, horizontal=FALSE,  paper="special")
+  par(mai = c(0.45,0.55,0.1,0.1)) # JAE changed  for each figure
+  par(omi = c(0,0,0.4,0))        # Outer margins of whole thing, inch
 
   stdRes.CA.CAc = stdRes.CA( obj$CAc )
   #  Outliers don't get plotted, except for qq plot
   par(mfrow=c(4,1))
   plt.ageResidsPOP( stdRes.CA.CAc, main="" ) 
+  mtext("Commercial",side=3,outer=TRUE,line=0.25,cex=1.5)
   plt.yearResidsPOP(stdRes.CA.CAc)
   plt.cohortResids(stdRes.CA.CAc)   # cohort resid, by year of birth
   plt.ageResidsqqPOP(stdRes.CA.CAc)
@@ -2761,60 +2725,56 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   # AME adding - plotting the CA residuals for the two surveys:
   seriesList <- sort( unique( obj$CAs$Series) )  
   nseries = length(seriesList)
+  surveyHeadName = if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
   for ( i in 1:nseries ) {   # POP no fits for survey 3
 		ii = seriesList[i]
     postscript(paste("survAgeResSer", ii, ".eps", sep=""),
         height = 8.5, width = 6.8,
         horizontal=FALSE,  paper="special")
-    par(mai = c(0.45, 0.5, 0.1, 0.2)) # JAE changed  for each figure
-    par(omi = c(0.45,0.1,0,0))      # Outer margins of whole thing, inch
-    stdRes.CA.CAs = stdRes.CA( obj$CAs[
-          obj$CAs$Series == ii,] )
+		par(mai = c(0.45,0.55,0.1,0.1)) # JAE changed  for each figure
+		par(omi = c(0,0,0.4,0))        # Outer margins of whole thing, inch
+    stdRes.CA.CAs = stdRes.CA( obj$CAs[obj$CAs$Series == ii,] )
     #  Outliers don't get plotted, except for qq plot
     par(mfrow=c(4,1))
     plt.ageResidsPOP(stdRes.CA.CAs, main="" ) 
+    mtext(surveyHeadName[ii],side=3,outer=TRUE,line=0.25,cex=1.5)
     plt.yearResidsPOP(stdRes.CA.CAs)
     plt.cohortResids(stdRes.CA.CAs)   # cohort resid, by year of birth
     plt.ageResidsqqPOP(stdRes.CA.CAs)
     dev.off()
     }
-  # Here plot the mean age for catch and surveys
-  postscript("meanAge.eps", height = 6, width = 6.2,
-              horizontal=FALSE,  paper="special")
-  par(mfrow=c(nseries+1,1), mai=c(0.75,0.75,0.5,0.1))
-  MAc = MAfun2(obj$CAc)       # catch mean age
-  MAs = MAfun2(obj$CAs)       # surveys mean age
-  plot(as.numeric(substring(names(MAc$MAobs), 3)), MAc$MAobs,
-       xlab="Year", ylab="Mean age",
-       ylim=c(0, max(MAc$MAobs, MAc$MAexp)),mgp=c(2,0.75,0))
-      # substring takes off the 1- at the start. This is commercial.
-  points(as.numeric(substring(names(MAc$MAexp), 3)), MAc$MAexp,
-         pch=20, type="o")
-  mtext( side=3, line=0.25, cex=1.2, outer=FALSE,
-          "Commercial") #  outer=TRUE
+    
+	# Here plot the mean age for catch and surveys (`MAfun` in `utilsFun.r`)
+	MAc = MAfun(obj$CAc)       # catch mean age
+	MAs = MAfun(obj$CAs)       # surveys mean age
+	nseries <- length(c(sort(unique(obj$CAc$Series)),sort(unique(obj$CAs$Series))))
 
-  MAsSurvNum = as.numeric(substring(names(MAs$MAobs), 1, last=1))
-         # 1 or 2 for YMR
-  #surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic")
-  surveyHeadName = ssnames[MAs$J]
+	postscript("meanAge.eps", height = 7.5, width = 6.2, horizontal=FALSE, paper="special")
+	par(mfrow=c(nseries,1), mar=c(3,3,2,1))
+	plot(MAc$Yr, MAc$MAobs, xlab="Year", ylab="Mean age", 
+		ylim=extendrange(c(MAc$MAobs, MAc$MAexp),f=0.1), #ylim=c(0,max(MAc$MAobs, MAc$MAexp)),
+		mgp=c(2,0.75,0), pch=20, col="green4", cex=1.5)
+	points(MAc$Yr, MAc$MAexp, pch=2, type="o", col="blue", cex=1.2)
+	mtext( "Commercial", side=3, line=0.25, cex=1.2, outer=FALSE) #  outer=TRUE
 
-  for ( i in 1:length(unique(MAsSurvNum) ))
-    {
-      plot(as.numeric(substring(names(MAs$MAobs[MAsSurvNum ==
-          unique(MAsSurvNum)[i]]), 3)), MAs$MAobs[MAsSurvNum==
-          unique(MAsSurvNum)[i]], xlab="Year", ylab="Mean age",
-          ylim=c(0, max(MAs$MAobs[MAsSurvNum==unique(MAsSurvNum)[i]],
-          MAs$MAexp[MAsSurvNum== unique(MAsSurvNum)[i]] )),mgp=c(2,0.75,0))
-      # ylim=range(MAs$MAobs[MAsSurvNum==unique(MAsSurvNum)[i]],
-      #     MAs$MAexp[MAsSurvNum== unique(MAsSurvNum)[i]]  ))
-      points(as.numeric(substring(names(MAs$MAobs[MAsSurvNum ==
-          unique(MAsSurvNum)[i]]), 3)), MAs$MAexp[MAsSurvNum==
-          unique(MAsSurvNum)[i]],
-          pch=20, type="o")
-      mtext( side=3, line=0.25, cex=1.2, outer=FALSE,
-          surveyHeadName[i]) #  outer=TRUE
-    }
-  dev.off()
+	last = regexpr("-",names(MAs$MAobs))-1
+	MAsSurvNum = substring(names(MAs$MAobs),1,last)
+	#surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic")
+	#surveyHeadName = ssnames[MAs$J]
+	surveyHeadName = if (!exists("tcall")) ssnames[MAs$J] else tcall(PBSawatea)$Snames[MAs$J]
+
+	for ( i in 1:length(MAs$J)) #1:length(unique(MAsSurvNum)) )
+	{
+	ii  = MAs$J[i]
+	iii = substring(names(MAs$MAobs),1,last)
+	z   = is.element(iii,ii)
+	plot(MAs$Yr[z], MAs$MAobs[z], xlab="Year", ylab="Mean age", 
+		ylim=extendrange(c(MAs$MAobs[z],MAs$MAexp[z]),f=0.1), #ylim=c(0,max(MAs$MAobs[z],MAs$MAexp[z])),
+		mgp=c(2,0.75,0), pch=20, col="green4", cex=1.5)
+	points(MAs$Yr[z], MAs$MAexp[z], pch=2, type="o",col="blue", cex=1.2)
+	mtext(surveyHeadName[i], side=3, line=0.25, cex=1.2, outer=FALSE) #  outer=TRUE
+	}
+	dev.off()
 
   # Plot stock-recruitment function (based on MPD's)
   # xLimSR and yLimSR fixed here for YMR to have Run 26 and 27 figs
@@ -2837,7 +2797,7 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
            italic(t), ",", italic(R)[t], " (1000s)"), sep="") )
   #points(obj$B$SB, obj$B$R)
   #text(obj$B$SB, obj$B$R, labels=substring(as.character(years), 3), cex=0.5)
-  text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels = substring(as.character(years), 3), cex = 0.5)
+  text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels = substring(as.character(years), 3), cex = 0.5, col="blue")
   dev.off()
   
   #windows()
@@ -3900,4 +3860,5 @@ srFun = function(spawners, h=h.mpd, R0=R0.mpd, B0=B0.mpd) {
 # to input a vector of spawners in year t-1 and calculate recruits in year t 
 	4 * h * R0 * spawners / ( ( 1 - h) * B0 + (5 * h - 1) * spawners)
 }
+
 

@@ -103,7 +103,7 @@ importPar = function(par.file) {
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importPar
 #test=importPar("something.par")
 
-#importRes--------------------------------------------------2012-07-31
+#importRes--------------------------------------------------2013-09-04
 # Awatea res file has following structure (some elements may be      #
 # missing dependent on model configuration and importCol details.    #
 #                                                                    #
@@ -394,9 +394,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 			"p_log_InitialDev","p_log_RecDev")                                     # Recruitment_residuals
 		)
 		Nsexes       = as.numeric(rev(strsplit(resvec[grep("^Nsexes",resvec)],split=sep)[[1]])[1])
-		Nsurveyindex = as.numeric(rev(strsplit(resvec[grep("^Nsurveyindex",resvec)],split=sep)[[1]])[1])
+		Nages        = as.numeric(rev(strsplit(resvec[grep("^Nages",resvec)],split=sep)[[1]])[1])
+		Nmethods     = as.numeric(rev(strsplit(resvec[grep("^Nmethods",resvec)],split=sep)[[1]])[1])
 		NCPUEindex   = as.numeric(rev(strsplit(resvec[grep("^NCPUEindex",resvec)],split=sep)[[1]])[1])
-		glist = list(general=list(Nsexes=Nsexes,Nsurveyindex=Nsurveyindex,NCPUEindex=NCPUEindex))
+		Nsurveyindex = as.numeric(rev(strsplit(resvec[grep("^Nsurveyindex",resvec)],split=sep)[[1]])[1])
+		glist = list(general=list(Nsexes=Nsexes,Nages=Nages,Nmethods=Nmethods,NCPUEindex=NCPUEindex,Nsurveyindex=Nsurveyindex))
 		elist = sapply(extra,function(x,resvec) { 
 			ex = as.list(x); names(ex) = x
 #if (x=="Virgin_Vulnerable_Biomass") {browser();return() }
@@ -404,16 +406,18 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 				expr=paste("index = grep(\"^",i,sep,"\",resvec)",sep="")
 				eval(parse(text=expr))
 				if (length(index)==1) {
-					if (i %in% c("M1_prior","M2_prior","uinit_prior","p_plusscale")) index = index + (1:Nsexes) - 1
+					if (i %in% c("M1_prior","M2_prior","Rinit_prior","uinit_prior","p_plusscale")) index = index + (1:Nsexes) - 1
+					if (i %in% c("p_Sfullest","p_Sfulldelta","log_varLest_prior","log_varRest_prior",
+						"errSfull_prior","errvarL_prior","errvarR_prior")) index = index + (1:Nmethods) - 1
+					if (i %in% c("log_qCPUE_prior","log_BetaCPUE_prior","qCPUEerr_prior")) index = index + (1:NCPUEindex) - 1
 					if (i %in% c("log_qsurvey_prior","surveySfull_prior","p_surveySfulldelta",
 						"log_surveyvarL_prior","log_surveyvarR_prior")) index = index + (1:Nsurveyindex) - 1
-					if (i %in% c("p_Sfullest","p_Sfulldelta","log_varLest_prior","log_varRest_prior",
-						"errSfull_prior","errvarL_prior","errvarR_prior",
-						"log_qCPUE_prior","log_BetaCPUE_prior","qCPUEerr_prior")) index = index + (1:NCPUEindex) - 1
 					exvec = strsplit(resvec[index],split=sep)
 					exmat = t(sapply(exvec,function(x){as.numeric(x[!is.element(x,c(i,""))])}))
-					if (nrow(exmat)==1) exres=as.vector(exmat)
-					else                exres=exmat
+#if (i=="log_qCPUE_prior") {browser();return() }
+					if (!sapply(extra,function(e,i){is.element(i,e)},i=i)["priors"] && nrow(exmat)==1 )
+						exres=as.vector(exmat)
+						else exres=exmat
 					ex[[i]] = exres
 				}
 				else ex[[i]] = "not found"
@@ -519,7 +523,8 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 	class(model) <- "scape"
 	return(model)
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importRes
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importRes
+
 
 #importStd------------------------------2012-07-27
 # Import Awatea table of estimated parameters.
@@ -611,4 +616,32 @@ tabSAR = function(models=paste("input-ymr",pad0(c(29,30),2),pad0(1,2),sep="."),
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^tabSAR
 
+
+#MAfun----------------------------------2013-09-04
+# Mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
+# MAfun is used in both `runADMB` and in `runSweave`.
+#-----------------------------------------------RH
+MAfun = function(padata,brks=NULL)
+{
+	padata=padata[padata$Age>=padata$startL & padata$Age<=padata$endL,]# Choose only ages older than `startL`
+	# S = series, y = year, a = age bin, O = observed proportions, P = Predicted (fitted) proportions, N=sample size
+	S=padata$Series; y=padata$Year; a=padata$Age; O=padata$Obs; E=padata$Fit; SS=padata$SS   # note: SD and NR not used
+	if (is.null(brks)) {
+		f = paste(S,y,sep="-"); J = unique(S) }
+	else {
+		B = cut(y, breaks=brks, include.lowest=TRUE, labels=FALSE)
+		f = paste(S,B,y,sep="-"); J = unique(paste(S,B,sep="-")) }
+	# make sure that input age proportions are standardised (especially if females only)
+	O    = as.vector(sapply(split(O,f),function(x){x/sum(x)})) #standardise O (obs props)
+	#E    = as.vector(sapply(split(E,f),function(x){x/sum(x)})) #standardise E (fitted props)  -- causes instability
+	Oay  = a * O; Eay = a * E; Eay2 = a^2 * E
+	mOy  = sapply(split(Oay,f),sum,na.rm=TRUE)   # mean observed age
+	mEy  = sapply(split(Eay,f),sum,na.rm=TRUE)   # expected mean age
+	mEy2 = sapply(split(Eay2,f),sum,na.rm=TRUE)
+	Vexp = mEy2-mEy^2                            # variance of expected mean age
+	N    = sapply(split(SS,f),mean,na.rm=TRUE)
+	Yr   = as.numeric(substring(names(mOy),nchar(names(mOy))-3))
+	return(list(MAobs=mOy, MAexp=mEy, Vexp=Vexp, N=N, J=J, Yr=Yr)) # observed and expected mean ages, variance of expected ages
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAfun
 

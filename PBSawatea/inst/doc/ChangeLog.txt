@@ -2,6 +2,11 @@ PBSawatea Changes
 =================
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
+          PJS = Paul Starr
+
+0.12  2013-09-05
+  - Revised extensivley various functions to deal flexibly with one-sex models and optional CPUE series. (RH 9/5)
+	Recoding occurred in `runADMB.r`, `runSweave.r`, `PBSscape.r`, and `run-Master.tex`.
 
 0.11  2013-02-20
   - Updated just for compatibility with R-3.0.0. (RH 4/19)

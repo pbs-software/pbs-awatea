@@ -7,10 +7,11 @@
 		pkg_date  <- date()
 	
 	userguide_path <- system.file( "doc/PBSawatea.pdf", package = "PBSawatea" )
-	
+	year <- substring(date(),nchar(date())-3,nchar(date()))
+
 	packageStartupMessage("
 -----------------------------------------------------------
-PBS Awatea ", pkg_info$Version, " -- Copyright (C) 2011-2013 Fisheries and Oceans Canada
+PBS Awatea ", pkg_info$Version, " -- Copyright (C) 2011-",year," Fisheries and Oceans Canada
 
 A rough guide 'PBSawatea.pdf' is located at 
 ", userguide_path, "
