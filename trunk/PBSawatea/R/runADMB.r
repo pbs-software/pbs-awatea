@@ -500,7 +500,11 @@ setMethod("reweight", signature="AWATEAdata",
 	if (mean.age) {
 		MAs  = MAfun(spa) # survey mean ages
 		Ws    = wfun(MAs)
+		#temporary patch:
+		Ws = sapply(Ws,function(x){if (all(is.na(x))) y=rep(1,length(x)) else return(x); names(y)=names(x); return(y) },simplify=FALSE)
 		wNspa = Ws$wN
+		
+#browser()
 		#SDNR["spa"] = NA  # No formulae appropriate for composition-data likelihoods due to correlations (Francis 2011, Appendix B, CJFAS)
 		wtemp = Ws$w; names(wtemp)=paste("spa-",names(wtemp),sep="")
 		wj = c(wj,wtemp)
@@ -559,10 +563,18 @@ setMethod("reweight", signature="AWATEAdata",
 #out=runADMB("input27-ymr.txt",runNo=27,rwtNo=1,doMSY=TRUE)
 #out=runADMB("input28-ymr.txt",runNo=28,rwtNo=1,doMSY=TRUE)
 
-#=== ROL 5DE 2013 ===
+#===========================================================
 source("PBSscape.r"); source("runSweave.r"); source("runSweaveMCMC.r"); source("plotFuns.r"); source("menuFuns.r"); source("utilFuns.r"); 
+
+#=== ROL 5CD 2013 ===
 #out=runADMB("ROL-5CD-01.txt",strSpp="ROL",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+#out=runADMB("ROL-5CD-04.txt",strSpp="ROL",runNo=4,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 
 #=== ROL 5AB 2013 ===
 #out=runADMB("ROL-5AB-07.txt",strSpp="ROL",runNo=7,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.25,clean=TRUE)
 #out=runADMB("ROL-5AB-08.txt",strSpp="ROL",runNo=8,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
+#runADMB("ROL-5AB-09.txt",strSpp="ROL",runNo=9,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+
+#=== SGR CST 2013 ===
+#out=runADMB("SGR-CST-01.txt",strSpp="SGR",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
+

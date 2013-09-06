@@ -1,27 +1,36 @@
-#runSweave------------------------------2012-09-10
+#runSweave------------------------------2013-09-06
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
-runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
-    filename="spp-area-00.txt",           # Name of Awatea .txt file in 'run.dir' to run
-    runNo=1, rwtNo=0, running.awatea=0,   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
-    delim="-", mcsub=1:1000
+runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
+		filename="spp-area-00.txt",           # Name of Awatea .txt file in 'run.dir' to run
+		runNo = 1,
+		rwtNo = 0,
+		running.awatea=0,   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
+		Ncpue = 0,
+		estM  = TRUE,
+		mcsub = 1:1000,
+		delim = "-",
+		locode = FALSE                          # if source as local code (for debugging)
 	) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC")),pos=1)
-	#require(PBSmodelling, quietly=TRUE)
-	#require(xtable, quietly=TRUE) 
-	#require(lattice, quietly=TRUE)
-	#require(scape, quietly=TRUE)             # Arni Magnusson's support functions for Awatea.
-	#require(scapeMCMC, quietly=TRUE)         # Arni Magnusson's support functions for Awatea MCMC.
-	#require(gdata, quietly=TRUE)             # Data manipulation functions from CRAN.
-
-	#source("PBSscape.r",local=FALSE)
-	#source("utilFuns.r",local=FALSE)
-	#source("plotFuns.r",local=FALSE)
-	#assign("importCol2",importRes,envir=.GlobalEnv)
-
+	if (locode) { 
+		getFile(gfcode,path=system.file("data",package="PBSawatea"))
+		require(PBSmodelling, quietly=TRUE)
+		require(gplots, quietly=TRUE)
+		require(xtable, quietly=TRUE) 
+		require(lattice, quietly=TRUE)
+		require(scape, quietly=TRUE)     # Arni Magnusson's support functions for Awatea.
+		require(scapeMCMC, quietly=TRUE) # Arni Magnusson's support functions for Awatea MCMC.
+		require(gdata, quietly=TRUE)     # Data manipulation functions from CRAN.
+		source("PBSscape.r",local=FALSE)
+		source("utilFuns.r",local=FALSE)
+		source("plotFuns.r",local=FALSE)
+		assign("importCol2",importRes,envir=.GlobalEnv)
+	}
+	cpue     = Ncpue > 0
 	runNoStr = pad0(runNo,2)
 	rwtNoStr = pad0(rwtNo,2)
 	run.name = paste(strSpp,"run",runNoStr,sep="")
@@ -87,17 +96,23 @@ runSweaveMCMC = function(wd=getwd(), cpue=FALSE, estM=TRUE, strSpp="XYZ",
 		tfile=tfile[!is.element(1:length(tfile),rmcpue)] }
 	localName   = paste(mcname,".Snw",sep="")
 	localSweave = paste(mc.dir,"/",localName,sep="")
+
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
+	# Finally, get rid of those annoying comments and disabled code
+	notcode = union(grep("^%",tfile),grep("^#",tfile))
+	tfile = tfile[setdiff(1:length(tfile),notcode)]
+
 	writeLines(tfile,con=localSweave)
 #browser();return()
 	Sweave(localSweave)
-	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)
-	shell(cmd=paste("latex -interaction=nonstopmode ",gsub("\\.Snw$",".tex",localName),sep=""),wait=TRUE)      # latex twice to get labels correct
-	shell(cmd=paste("dvips -q ",gsub("\\.Snw$",".dvi",localName),sep=""),wait=TRUE)
-	shell(cmd=paste("ps2pdf ",gsub("\\.Snw$",".ps",localName),sep=""),wait=TRUE)
-	invisible() }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^runSweaveMCMC
+	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
+	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
+	shell(cmd=paste("dvips ",localName,".dvi",sep=""),wait=TRUE)
+#browser();return()
+	shell(cmd=paste("ps2pdf ",localName,".ps",sep=""),wait=TRUE)
+	invisible(tfile) }
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweaveMCMC
 
 #runMCMC------------------------------ -2012-08-23
 # Wrapper to function 'runSweaveMCMC' for MCMCs.

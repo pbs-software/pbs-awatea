@@ -1,0 +1,19 @@
+# MCMC Stuff--------------------------------------
+# Run MCMCs on Supercomputer, issue commands:
+#   awatea -ind ROL-5AB.01.01.txt -mcmc 10000000 -mcsave 10000
+#   awatea -ind ROL-5AB.01.01.txt -mceval
+# The latter creates projections specified by the input file.
+# Copy MCMC results to both POPrun01/MCMC.01.01 and ./POPrun01/MCMC.01.01/Proj.01.01 (the latter preserves the projections as the MSY calculation will overwrite)
+#-------------------------------------------------
+
+require("PBSawatea")
+
+# Run07 --  QCS Synoptic survey, 2 CPUE series (1966--1995, 1996--2012), $M$ and $h$ fixed, CV process error = 0.20.
+out=runADMB("ROL-5AB-07.txt",strSpp="ROL",runNo=7,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.25,clean=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=7,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
+out=runADMB("ROL-5AB-07.txt",strSpp="POP",runNo=07,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="ROL-5AB-07.txt",runNo=07,rwtNo=3,cpue=TRUE)  # estM parameter no longer used
+
+# Run 08 -- Same as Run 07 but CV process error = 0.35 and recruitment residuals disabled (deterministic recruitment).
+out=runADMB("ROL-5AB-08.txt",strSpp="ROL",runNo=8,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=8,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
