@@ -20,6 +20,7 @@
 % \usepackage{nccmath}
 % \usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry} 
 \usepackage{resDocSty}      % Res Doc .sty file
+\usepackage{graphicx}
 
 \def\AppLet{G}                   % Appendix letter
 \def\StartP{100}                   % page start
@@ -64,10 +65,13 @@
 \newcommand\twofig[3]{    % figure #1 under #2, caption text #3
   \begin{figure}[tp]            %  label will be #1
   \centering
-  \epsfxsize=6in
+%  \epsfxsize=6in
+%  \epsfysize=3.5in
   \begin{tabular}{c}
-  \epsfbox{#1.eps} \\
-  \epsfbox{#2.eps}
+	\includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{#1.eps} \\
+	\includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{#2.eps}
+%  \epsfbox{#1.eps} \\
+%  \epsfbox{#2.eps}
   \end{tabular}
   \caption{#3}
   \label{fig:#1}
@@ -326,8 +330,7 @@ locsdnr = paste(run.dir,"/",substring(model.name,1,nchar(model.name)-3),".sdnr",
 sdnr = readLines(locsdnr)
 cvpro = strsplit(sdnr[grep("CVpro",sdnr)]," ")[[1]][2]  # as a string value
 
-firstYearOfAgeData = min( c(currentRes$CAc[,"Year"], 
-  currentRes$CAs[,"Year"]))      # For recDevAcf.eps
+firstYearOfAgeData = min( c(currentRes$CAc[,"Year"], currentRes$CAs[,"Year"]))      # For recDevAcf.eps
 
 # This was for saving to an .RData file to load into 
 #  ../../../POPdeterminR/POPdeterminR.r   to run deterministic model.
@@ -337,7 +340,7 @@ firstYearOfAgeData = min( c(currentRes$CAc[,"Year"],
 # For YMR, for now commenting out ones from MCMC.
 
 A = max(currentRes$Sel[,"Age"])
-T = diff(range(currentRes$B[,"Year"]))+1       # =72
+#T = diff(range(currentRes$B[,"Year"]))+1        # doesn't seem to be needed and screws up code when using `T` for TRUE
 Ct = currentRes$B$Y[-length(currentRes$B$Y)]    # Takes off 2011 value - automated in MCMC I think
 years = currentRes$B[,"Year"]
 ages = sort(unique(currentRes$CAc$Age))
@@ -345,8 +348,7 @@ ages = sort(unique(currentRes$CAc$Age))
 selgeqComm = currentRes$Sel[currentRes$Sel$"Series" == "Gear 1",] 
     # comm sel, selgeq4 for POP, presumably would be 6 for YMR as
     #  5 surveyrs, so just write Comm
-mat = currentRes$Sel[currentRes$Sel$"Series" == "Maturity" &
-       currentRes$Sel$"Sex" == "Female",]      # Female maturity
+mat = currentRes$Sel[currentRes$Sel$"Series" == "Maturity" & currentRes$Sel$"Sex" == "Female",]      # Female maturity
 # M1 = currentMCMC$P[1,"M_1"]           # MPD is first line of MCMC
 # M2 = currentMCMC$P[1,"M_2"]           # MPD is first line of MCMC
 # Rt = currentRes$B$R[-length(currentRes$B$R)]   
@@ -480,7 +482,7 @@ ptab = function(xx)
 # not saving for YMR for now (don't have all these variables, though
 #  just MPDs so don't need MCMC output).  [These were from MCMC's]
 # save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
- # 
+# 
 # save.image(file="run23all.RData")
 
 # See popScape2.r for pairs plots, from:
@@ -621,19 +623,20 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 % \multicolumn{5}{l}{\bf $\log \gamma$, LogBetaCPUE (CPUE POW), log\_BetaCPUE} & \\
 % \Sexpr{ptab(logbetaCPUE.prior)} & \Sexpr{log(betaCPUE.mpd)} \\
  & \\
-\multicolumn{6}{l}{\bf Selectivities ($g=1,...$, last is commercial with details after '/' ):} \\
+ & \\
+\multicolumn{6}{l}{\bf Selectivities ($g=1,...\Sexpr{Nsurv}$ for surveys and $g=\Sexpr{Nsurv+1}$ for commercial fishery):} \\
 \multicolumn{6}{l}{\bf $\mu_g$, Survey L full (row g), surveySfull (row g) / S fullest (commercial), Sfullest} \\
-%=======This line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(muvec.prior[1,])} & \Sexpr{muvec.mpd[1]} \\
 \Sexpr{ptab(muC.prior)} & \Sexpr{muC.mpd} \\
 \multicolumn{6}{l}{\bf $\log v_{gL}$, Survey variance L (row g), log\_surveyvarL (row g) / Log variance of left side}\\
  & \multicolumn{5}{l}{\bf  of selectivity curve (for both sexes) (commercial), log\_varLest} \\ 
-%=======This line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(logvvec.prior[1,])} & \Sexpr{logvvec.mpd[1]} \\
 \Sexpr{ptab(logvC.prior)} & \Sexpr{logvC.mpd} \\
 \multicolumn{6}{l}{\bf $\Delta_g$, Survey L full delta (row g) surveySfulldeltaest (row g) / } \\
  & \multicolumn{5}{l}{\bf S full delta ... (commercial), SfullDelta} \\
-%=======This line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 \Sexpr{ptab(deltavec.prior[1,])} & \Sexpr{deltavec.mpd[1]} \\
 \Sexpr{ptab(deltaC.prior)} & \Sexpr{deltaC.mpd} \\
 
@@ -665,12 +668,12 @@ like.Surveys.rnd = c(like.Surveys.rnd, NA, NA, NA, NA)
 Description & Negative log likelihood & Value \\
 %~~component & \\
 \hline \\[0.2pt]
-%=======This line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 Survey 1 & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$Survey_Index[1], dig=2)}\\[6pt]
-%=======This line will be expanded to accomodate multiple CPUE series=======
-CPUE 1   & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$CPUE[1], dig=2)}\\[6pt]
+%=======Next line will be expanded to accomodate multiple CPUE series=======
+@rmcpue CPUE 1   & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$CPUE[1], dig=2)}\\[6pt]
+%=======Next line will be expanded to accomodate multiple surveys with age data=======
 CAs 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at1s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_survey"[1], dig=2)} \\[6pt] 
-%=======This line will be expanded to accomodate multiple surveys with age data=======
 CAc 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at\Sexpr{Nsurv+1}s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_Commercial"[1], dig=2)} \\[6pt] 
 Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right) - \log \left( \pi( \bfTh ) \right)$ & \Sexpr{round(currentRes$extra$likelihoods$Prior_penalties, dig=2)} \\[6pt]  
 
@@ -793,7 +796,7 @@ year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year
 if (nsex==1) {
 	plotBars(currentRes,type="N",sex=3,fill="green",eps=TRUE,win=FALSE,year=year.plotBar)
 } else {
-	plotBars(currentRes,type="N",sex=2,fill="slamon",eps=TRUE,win=FALSE,year=year.plotBar)
+	plotBars(currentRes,type="N",sex=2,fill="salmon",eps=TRUE,win=FALSE,year=year.plotBar)
 	plotBars(currentRes,type="N",sex=1,fill="skyblue",eps=TRUE,win=FALSE,year=year.plotBar)
 }
 @ 
@@ -864,7 +867,7 @@ dev.off()
 \sppfig{survIndSer2}{Survey index values (points) with 95\% confidence intervals (bars) and MPD model fits (curves) for the fishery-independent survey series.}
 
 % Individual surveys:
-%=======This line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 % \sppfig{survIndSer4-1}{Fit to fishery-independent survey 1 for run \Sexpr{model.name}.}
 
 % Andy tried replacing survey 1 with *at*surveys - seemed to work okay for survey index fits, but got warnings.
@@ -896,14 +899,14 @@ dev.off()
 \clearpage 
 
 % Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
-%=======This line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 \twofig{ageSurv@survey1Female1}{ageSurv@survey1Male1}{Observed and predicted proportions-at-age for @survey1 survey.}
 
 \sppfig{meanAge}{Mean ages each year for the data (closed circles) and model estimates (joined open triangles) for the commercial and survey age data.}
 
 % \section{Residuals associated with MPD fits  for run \Sexpr{model.name}.}
 
-%=======This line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 \sppfig{survRes@survey1}{Residuals of fits of model to @survey1 survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
 
 \sppfig{commAgeResids}{Residual of fits of model to commercial proportions-at-age data (MPD values).  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give interquartile ranges, with bold lines representing medians and whiskers extending to the most extreme data point that is $<$1.5 times the interquartile range from the box. Bottom panel is the normal quantile-quantile plot for residuals, with the 1:1 line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for the total of \Sexpr{(dim(CAcObsFem)[1] - 1)*dim(CAcObsFem)[2]*2} residuals).}
@@ -911,7 +914,7 @@ dev.off()
 % That calculations is (number of age classes - 1) * number of years of age
 %  data * 2 sexes.
 
-%=======This line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 \sppfig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from @survey1 survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -1) * 2
 
 % \sppfig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
@@ -944,7 +947,7 @@ dev.off()
 % Don't need the rest for results Appendix.
 
 \sppfig{ageBarsFemale}{Age structure for females during selected years (not sure if this is useful, but AME had it flagged).}
-@rmsex \sppfig{ageBarsFemale}{Age structure for females during selected years (not sure if this is useful, but AME had it flagged).}
+@rmsex \sppfig{ageBarsMale}{Age structure for males during selected years (not sure if this is useful, but AME had it flagged).}
 
 % \threefig{initAgeDev}{ageBarsFemale}{ageBarsMale}{*NOT AUTOMATED YET*. Top: initial age deviation, $\eta_a$, for each age $a = 2, 3, ..., A-1$). In log space, where the bias-corrected multiplicative deviation is $\mbox{e}^{\eta_a - \sigma_R^2/2}$ where $\eta_a \sim \mbox{Normal}(0, \sigma_R)$. Middle: initial age structure for females. Bottom: initial age structure for males. Lines are a steady-state initial age structure (yes?).}
 

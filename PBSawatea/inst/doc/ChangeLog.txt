@@ -4,7 +4,8 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
-0.12  2013-09-05
+0.12  2013-09-06
+  - Revised `runSweave` and various other functions to work with 2 sexes; improved some of the output figures. (RH 9/6)
   - Revised extensivley various functions to deal flexibly with one-sex models and optional CPUE series. (RH 9/5)
 	Recoding occurred in `runADMB.r`, `runSweave.r`, `PBSscape.r`, and `run-Master.tex`.
 

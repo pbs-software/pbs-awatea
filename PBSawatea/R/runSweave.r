@@ -1,4 +1,4 @@
-#runSweave------------------------------2012-08-21
+#runSweave------------------------------2013-09-05
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
@@ -33,6 +33,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		assign("importCol2",importRes,envir=.GlobalEnv)
 	}
 	cpue     = Ncpue > 0
+#### modified to here RH
 	runNoStr = pad0(runNo,2)
 	rwtNoStr = pad0(rwtNo,2)
 	run.name = paste(strSpp,"run",runNoStr,sep="")
@@ -97,9 +98,16 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 			if (length(Nline)==0) next
 			aline = infile[ Nline ]
 			alines=NULL
+			NApos = 0
 			for ( i in 1:N) {
-				if (regexpr("[Aa]ge",b)>0 && !SApos[i]) next
-				if (N==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
+				NApos = NApos + as.numeric(SApos[i])
+				if ((grepl("[Aa]ge",b) || grepl("CAs",b)) && !SApos[i]) next
+				#if (N==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
+				if (grepl("CAs",b) && SApos[i]){
+					bline = gsub("1",i,aline)
+					alines = c(alines, gsub(paste("\\[",i,"]",sep=""),paste("\\[",NApos,"]",sep=""),bline))
+				}
+				else if (N==1) alines=c(alines,gsub("\\[1,]","",aline))
 				else alines=c(alines,gsub("1",i,aline))
 			}
 			infile=c(infile[1:(Nline-1)],alines,infile[(Nline+1):length(infile)])
@@ -110,10 +118,9 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = biteMe(tfile,figBites,Nsurvey)
 	tfile = biteMe(tfile,cpueBites,Ncpue)
 	tfile = biteMe(tfile,survBites,Nsurvey)
-	if (any(SApos))
-		tfile = biteMe(tfile,"CAs 1",sum(SApos))
+	if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
+	else tfile = tfile[-grep("^CAs 1",tfile)]
 #browser();return()
-
 
 	for (i in 1:Nsurvey)
 		tfile = gsub(paste("@survey",i,sep=""),snames[i],tfile)
@@ -126,6 +133,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
+	# Finally, get rid of those annoying comments and disabled code
 	notcode = union(grep("^%",tfile),grep("^#",tfile))
 	tfile = tfile[setdiff(1:length(tfile),notcode)]
 
@@ -142,8 +150,8 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	shell(cmd=paste("dvips ",localName,".dvi",sep=""),wait=TRUE)
 #browser();return()
 	shell(cmd=paste("ps2pdf ",localName,".ps",sep=""),wait=TRUE)
-	invisible() }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^runSweave
+	invisible(tfile) }
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweave
 
 #runMPD---------------------------------2012-07-25
 # Wrapper to function 'runSweave' for MPDs.
@@ -168,6 +176,12 @@ runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 # runMPD(29, 0:6,cpue=FALSE)             # No switch for EstM. AME doesn't
 # runMPD(36, 0:6, cpue=FALSE, Nsurvey=6) # No switch for EstM. AME doesn't
 
+#=== ROL 5DE 2013 ===
 #runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=1,rwts=3,Nsex=1,Ncpue=2,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(T,T),locode=T)
-#runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=7,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=T)
+
+#=== ROL 5AB 2013 ===
+#runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=7,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
 #runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=8,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
+
+#=== SGR CST 2013 ===
+#runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=1,rwts=1:3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)

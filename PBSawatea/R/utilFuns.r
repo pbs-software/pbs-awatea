@@ -406,7 +406,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 				expr=paste("index = grep(\"^",i,sep,"\",resvec)",sep="")
 				eval(parse(text=expr))
 				if (length(index)==1) {
-					if (i %in% c("M1_prior","M2_prior","Rinit_prior","uinit_prior","p_plusscale")) index = index + (1:Nsexes) - 1
+					if (i %in% c("M1_prior","M2_prior","uinit_prior","p_plusscale")) index = index + (1:Nsexes) - 1
 					if (i %in% c("p_Sfullest","p_Sfulldelta","log_varLest_prior","log_varRest_prior",
 						"errSfull_prior","errvarL_prior","errvarR_prior")) index = index + (1:Nmethods) - 1
 					if (i %in% c("log_qCPUE_prior","log_BetaCPUE_prior","qCPUEerr_prior")) index = index + (1:NCPUEindex) - 1
