@@ -1,4 +1,4 @@
-#runSweave------------------------------2013-09-05
+#runSweave------------------------------2013-09-11
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
@@ -14,10 +14,12 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		SApos   = rep(TRUE,Nsurvey),              # surveys with age composition data
 		delim   = "-",
 		debug   = FALSE,
-		locode  = FALSE                          # if source as local code (for debugging)
-		) {
+		locode  = FALSE,                          # if source as local code (for debugging)
+		awateaPath="C:/Users/haighr/Files/Projects/ADMB/Coleraine",
+		codePath="C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop"
+	) {
 	on.exit(setwd(wd))
-	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave")),pos=1)
+	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","awateaCode","toolsCode")),pos=1)
 	if (locode) { 
 		getFile(gfcode,path=system.file("data",package="PBSawatea"))
 		require(PBSmodelling, quietly=TRUE)
@@ -27,13 +29,15 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		require(scape, quietly=TRUE)     # Arni Magnusson's support functions for Awatea.
 		require(scapeMCMC, quietly=TRUE) # Arni Magnusson's support functions for Awatea MCMC.
 		require(gdata, quietly=TRUE)     # Data manipulation functions from CRAN.
-		source("PBSscape.r",local=FALSE)
-		source("utilFuns.r",local=FALSE)
-		source("plotFuns.r",local=FALSE)
+		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
+		source(paste(codePath,"runADMB.r",sep="/"),local=FALSE)
+		source(paste(codePath,"runSweaveMCMC.r",sep="/"),local=FALSE)
+		source(paste(codePath,"plotFuns.r",sep="/"),local=FALSE)
+		source(paste(codePath,"utilFuns.r",sep="/"),local=FALSE)
+		source(paste(codePath,"menuFuns.r",sep="/"),local=FALSE)
 		assign("importCol2",importRes,envir=.GlobalEnv)
 	}
 	cpue     = Ncpue > 0
-#### modified to here RH
 	runNoStr = pad0(runNo,2)
 	rwtNoStr = pad0(rwtNo,2)
 	run.name = paste(strSpp,"run",runNoStr,sep="")
@@ -50,8 +54,14 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		dir.create(mpd.dir); setwd(mpd.dir) }
 	if (!file.exists("run-master.Snw"))
 		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-master.Snw",sep=""),wd)
-	masterSweave = readLines(paste(wd,"run-master.Snw",sep="/"))
-	tfile = gsub("@cwd",wd,masterSweave)
+	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-master.Snw",sep="/"))
+	tfile = masterSweave
+
+	# First, get rid of those annoying comments and disabled code
+	notcode = union(grep("^%",tfile),grep("^#",tfile))
+	tfile = tfile[setdiff(1:length(tfile),notcode)]
+
+	tfile = gsub("@cwd",wd,tfile)
 	tfile = gsub("@model.name",model.name,tfile)
 	tfile = gsub("@run.dir",run.dir,tfile)
 	tfile = gsub("@fig.dir",mpd.dir,tfile)
@@ -102,6 +112,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 			for ( i in 1:N) {
 				NApos = NApos + as.numeric(SApos[i])
 				if ((grepl("[Aa]ge",b) || grepl("CAs",b)) && !SApos[i]) next
+				#if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("muvec",b)) && !SApos[i]) next
 				#if (N==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
 				if (grepl("CAs",b) && SApos[i]){
 					bline = gsub("1",i,aline)
@@ -133,9 +144,6 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
-	# Finally, get rid of those annoying comments and disabled code
-	notcode = union(grep("^%",tfile),grep("^#",tfile))
-	tfile = tfile[setdiff(1:length(tfile),notcode)]
 
 	localName   = paste(run.name,"-",rwtNo,sep="")
 	localSweave = paste(mpd.dir,"/",localName,".Snw",sep="")
@@ -148,8 +156,10 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
 	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
 	shell(cmd=paste("dvips ",localName,".dvi",sep=""),wait=TRUE)
-#browser();return()
 	shell(cmd=paste("ps2pdf ",localName,".ps",sep=""),wait=TRUE)
+	# if `pstopdf` not working, try:
+	#system(cmd=paste("mgs -sDEVICE=pdfwrite -o ",localName,".pdf ",localName,".ps",sep=""),wait=TRUE)
+	#http://tex.stackexchange.com/questions/49682/how-to-configure-ps2pdf-in-miktex-portable
 	invisible(tfile) }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweave
 
@@ -183,5 +193,9 @@ runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 #runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=7,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
 #runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=8,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
 
+#=== ROL 5ABCD 2013 ===
+#runMPD(strSpp="ROL",prefix=c("ROL","5ABCD"),runs=1,rwts=3,Nsex=1,Nsurvey=3,Ncpue=2,Snames=c("HS Assemblage","HS Synoptic","QCS Synoptic"),SApos=c(TRUE,TRUE,TRUE),locode=TRUE)
+
 #=== SGR CST 2013 ===
-#runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=1,rwts=1:3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)
+#runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=1,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","US Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)
+#runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=2,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","US Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)

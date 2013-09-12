@@ -1,37 +1,36 @@
+% run-Master.Snw revised for Rock Sole and Silvergray Rockfish (2013-09-11)
 % ymrrun5-0.Snw. 5/4/11.
-% ymrrun2-5.Snw - from Rowan's run2 output. Fifth reweighting. Also
-%  adding in automatic table of parameter values. 28th March 2011
-% ymrrun1dos.Snw - automatically plot MPD output from Awatea, using
-%  scape. Awatea results.dat file must be in directory above, this
-%  one used just for figures. 23rd Feburary 2011
+% ymrrun2-5.Snw - from Rowan's run2 output. Fifth reweighting.
+%   Also adding in automatic table of parameter values. 28th March 2011
+% ymrrun1dos.Snw - automatically plot MPD output from Awatea, using scape.
+%   Awatea results.dat file must be in directory above, this one used just for figures. 23rd Feburary 2011.
 % POP2001admb6.Snw - changing t to be true years, not 1,2,3....
 %  18th August 2010.
-% POP2001admb5.Snw - having a parameter for model start year and 
-%  start of age-data. 20th July 2010
+% POP2001admb5.Snw - having a parameter for model start year and  start of age-data. 20th July 2010
 % POP2001admb4.Snw - making sure output is as automated as much as possible.
 \documentclass[11pt]{book}   
 % \documentclass[12pt]{article}
 
-\usepackage{Sweave}   % andy add3ed
+\usepackage{Sweave}      % andy add3ed
 % \usepackage{epsfig}
 \usepackage{rotating}    % for sideways table
 \usepackage{longtable}
 % \usepackage{placeins}
 % \usepackage{nccmath}
 % \usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry} 
-\usepackage{resDocSty}      % Res Doc .sty file
+\usepackage{resDocSty}   % Res Doc .sty file
 \usepackage{graphicx}
 
-\def\AppLet{G}                   % Appendix letter
-\def\StartP{100}                   % page start
-\def\bfTh{{\bf \Theta}}          % bold Theta
+\def\AppLet{G}           % Appendix letter
+\def\StartP{100}         % page start
+\def\bfTh{{\bf \Theta}}  % bold Theta
 
-\renewcommand{\theequation}{\AppLet.\arabic{equation}}
-\renewcommand{\thefigure}{\AppLet.\arabic{figure}}
+% Enable or disable two following lines based on whether the document is an appendix or not.
+%\renewcommand{\theequation}{\AppLet.\arabic{equation}}
+%\renewcommand{\thefigure}{\AppLet.\arabic{figure}}
 
 % \renewcommand{\rmdefault}{phv}   % Arial
 % \renewcommand{\sfdefault}{phv}   % Arial
-
 
 % \newcommand{\eb}{\begin{eqnarray}}
 % \newcommand{\ee}{\end{eqnarray}}
@@ -46,15 +45,15 @@
 %\renewcommand{\textfraction}{0.15}
 %\renewcommand{\floatpagefraction}{0.7}
 
-
-
-% Last line of http://www.latex-community.org/forum/viewtopic.php?f=45&t=4336, a German guy says: You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
-% Apparently shouldn't have just one argument.
+% Last line of http://www.latex-community.org/forum/viewtopic.php?f=45&t=4336, a German guy says: 
+%    You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
+%    Apparently shouldn't have just one argument.
 \newcommand\sppfig[2]{    % filename is #1, text is #2
   \begin{figure}[tp]
   \begin{center}
-  \epsfxsize=6in
-  \epsfbox{#1.eps}
+	\includegraphics[width=6in,height=7in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
+  %\epsfxsize=6in
+  %\epsfbox{#1.eps}
   \end{center}
   \caption{#2 }
   \label{fig:#1} 
@@ -62,13 +61,13 @@
   \clearpage
 }
 
-\newcommand\twofig[3]{    % figure #1 under #2, caption text #3
-  \begin{figure}[tp]            %  label will be #1
+\newcommand\twofig[3]{   % figure #1 under #2, caption text #3
+  \begin{figure}[tp]     %  label will be #1
   \centering
 %  \epsfxsize=6in
 %  \epsfysize=3.5in
   \begin{tabular}{c}
-	\includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{#1.eps} \\
+	\includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
 	\includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{#2.eps}
 %  \epsfbox{#1.eps} \\
 %  \epsfbox{#2.eps}
@@ -83,40 +82,37 @@
   \begin{figure}[htp]       %  caption text #4, label will be #1
   \centering
   \begin{tabular}{c}
-  \vspace{-20mm} 
-  \epsfbox{#1.eps} \\
-  \vspace{-20mm} 
-  \epsfbox{#2.eps} \\
+	\includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
+	\includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{#2.eps} \\
+	\includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{#3.eps}
+  %\vspace{-20mm} 
+  %\epsfbox{#1.eps} \\
+  %\vspace{-20mm} 
+  %\epsfbox{#2.eps} \\
   % \vspace{-20mm} 
-  \epsfbox{#3.eps}
+  %\epsfbox{#3.eps}
   \end{tabular}
   \caption{#4}
   \label{fig:#1}
   \end{figure}
 }
 
-
-\SweaveOpts{pdf=FALSE}        % keep.source=TRUE, 
+\SweaveOpts{pdf=FALSE}
 % Most useful options (with defaults):
-% echo = TRUE  - includes R code in output file
-% keep.source = FALSE - when echoing, if TRUE then original source is
-%  copied to the file, otherwise deparsed source is echoed.
-% eval = TRUE - if FALSE then chunk is not evaluated
-% results = VERBATIM - R output included verbatim, if TEX output is 
-%  already proper latex and included as is, if HIDE then all output
-%  is completely suppressed (but the code executed - good for admb)
-%  results options should all be lower case (else get warnings)
-% pdf = TRUE - whether .pdf figures shall be generated
-% eps = TRUE - whether .eps figures shall be generated
-% strip.white = FALSE - if true then blank lines at beginning and
-%  end of output are removed. If all, then all blank lines are removed.
-% width = 6  - width of figures in inches
-% height = 6 - height of figures in inches
-% fig = FALSE - whether the code chunk produces graphical output 
-%  (only one per chunk)
+% echo        = TRUE     - includes R code in output file
+% keep.source = FALSE    - when echoing, if TRUE then original source is copied to the file, otherwise deparsed source is echoed.
+% eval        = TRUE     - if FALSE then chunk is not evaluated
+% results     = VERBATIM - R output included verbatim, if TEX output is already proper latex and included as is, 
+%                          if HIDE then all output is completely suppressed (but the code executed - good for admb) results options should all be lower case (else get warnings)
+% pdf         = TRUE     - whether .pdf figures shall be generated
+% eps         = TRUE     - whether .eps figures shall be generated
+% strip.white = FALSE    - if true then blank lines at beginning and end of output are removed. If all, then all blank lines are removed.
+% width       = 6        - width of figures in inches
+% height      = 6        - height of figures in inches
+% fig         = FALSE    - whether the code chunk produces graphical output (only one per chunk)
+
 % \setkeys{Gin}{width=6in}     % from googling sweave figure bigger.
-%  It will set this for the rest of document 
-%  [doesn't width do that in the above?]
+%  It will set this for the rest of document [doesn't width do that in the above?]
 
 \begin{document}
 
@@ -133,25 +129,22 @@
 
 Latest is \today, with \Sexpr{print(version$version.string)}. 
 % \Sexpr{print(version$platform)}.
-
 % {\tt Andrew.Edwards@dfo-mpo.gc.ca}
-
 % \vspace{4mm}
-
 \end{center}
 
 % First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
 # '@variables' replaced by runSweave.
 cwd = "@cwd"            # Top level directory; all models occur below this one. 
-sigdig = 4              # Number of significant digits to output in tables
+sigdig = 5              # Number of significant digits to output in tables
 #rm(list=ls())  
-# require(PBSfishery)   # also loads mapping, modelling, data, RODBC
-# require(PBSadmb)      # 1st run of these will show package numbers etc.
+#require(PBSfishery)   # also loads mapping, modelling, data, RODBC
+#require(PBSadmb)      # 1st run of these will show package numbers etc.
 #require(PBSmodelling)
 #require(xtable) 
 #require(lattice)
-# readADopts()
+#readADopts()
 # Arni Magnusson's support functions for Awatea.
 #library(scape)
 # Arni Magnusson's support functions for Awatea MCMC.
@@ -168,7 +161,7 @@ sigdig = 4              # Number of significant digits to output in tables
 model.name     = "@model.name"
 run.dir        = "@run.dir"
 fig.dir        = "@fig.dir"
-running.awatea = @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+running.awatea =  @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
 @ 
 <<awatea.run, results=hide, echo = FALSE>>=
 if(running.awatea) {
@@ -230,11 +223,7 @@ Residuals to the MPD model fits are provided for the ***three survey indices (Fi
 
 Figure \ref{fig:stockRecruit} shows the resulting stock-recruitment function and the MPD values of recruitment over time (though see Figure \ref{fig:recruitMCMC} for the MCMC values of recruitment). Figure \ref{fig:recDev} shows that the recruitment deviations display no trend over time, and that the auto-correlation function of the deviations appears satisfactory. Figure \ref{fig:selectivity} gives the MPD fits for the selectivities, together with ogive for female maturity. The values of the log-likelihood and objective functions for the MPD fits are given in Table \ref{tab:like}.
 
-
-
-
 % The model is able to capture the main features of the age data fairly well.  *****FROM YMR, EDIT AS APPROPRIATE FOR EACH STOCK: For example, the strong cohort seen entering the fishery in the early 1990s (Figures G5 and G6) is fitted by the model (Figures G9 and G10).  However, older age classes seem slightly under-represented.  The residuals show no strong trends over time.  All these features were the same for the 'Fix M' run.
-
 
 % \section{FIGURES}
 
@@ -247,7 +236,6 @@ Figure \ref{fig:stockRecruit} shows the resulting stock-recruitment function and
 <<frompopscape, results=hide, echo=FALSE>>=
 # Commenting some out for @sppcode.
 #--------------------------------------------------------------------#   AME Commands that are actually run.
-
 # Set a flag to control interactive prompting of graphs.
 # This flag is set to false when saving all graphs to file.
 # userPrompt <- TRUE
@@ -328,7 +316,8 @@ Nsurv = max(NSser,NSAser) # number of survey series with data/ages
 
 locsdnr = paste(run.dir,"/",substring(model.name,1,nchar(model.name)-3),".sdnr",sep="")
 sdnr = readLines(locsdnr)
-cvpro = strsplit(sdnr[grep("CVpro",sdnr)]," ")[[1]][2]  # as a string value
+#browser();return()
+cvpro = strsplit(sdnr[grep("CVpro",sdnr)]," ")[[1]][-1]  # as a string values
 
 firstYearOfAgeData = min( c(currentRes$CAc[,"Year"], currentRes$CAs[,"Year"]))      # For recDevAcf.eps
 
@@ -364,12 +353,18 @@ Nats.mpd = currentRes$N
 ut.mpd = currentRes$B$U[-length(currentRes$B$U)]  
                                   # remove final NA for 2011
 if(currentRes$extra$priors$Rinit_prior[1] > 0 & currentRes$extra$priors$Rinit_prior[7] != 1) stop("Not starting from unfished equilibrium, so need to fix B0 values")
+
+# Virgin_Spawning_Biomass  Change if get above error message
 Bt.mpd = currentRes$B$SB
-B0.mpd = Bt.mpd[1]    # = currentRes$extra$biomass$
-                      #    Virgin_Spawning_Biomass  Change if get
-                      #    above error message
+B0.mpd = Bt.mpd[1]                # = currentRes$extra$biomass$Virgin_Spawning_Biomass
+By.mpd = Bt.mpd[length(Bt.mpd)]   # final year spawning biomass
+ByB0.mpd = By.mpd/B0.mpd          # depletion spawning biomass
+
+# Virgin_Vulnerable_Biomass 
 Vt.mpd = currentRes$B$V
-                       # 05.01.res: Virgin_Vulnerable_Biomass= 22287
+V0.mpd = Vt.mpd[1]                # = currentRes$extra$biomass$Virgin_Vulnerable_Biomass
+Vy.mpd = Vt.mpd[length(Vt.mpd)]   # final year vulnerable biomass
+VyV0.mpd = Vy.mpd/V0.mpd          # depletion vulnerable biomass
 
 logRecDev.mpd = currentRes$Dev$Annual    # epsilon_t
             # = currentRes$extra$parameters$log_RecDev
@@ -475,7 +470,7 @@ plt.idx( currentRes$Survey,main="Survey Indices",ssnames=c("@surveys")) # wasn't
 # function to use for priors in table. Must read in a vector of 
 #  length, and outputs it in the format for the table.
 ptab = function(xx) 
-  { print(paste(c(xx[1], " & [", xx[2], ",", xx[3], "] & ", xx[4], " & [", xx[5], ",", xx[6], "] & ", xx[7]), sep="", collapse="")) 
+  { print(paste(c(xx[1], " & (", xx[2], ",", xx[3], ") & ", xx[4], " & (", xx[5], ",", xx[6], ") & ", xx[7]), sep="", collapse="")) 
   }
 
 
@@ -500,7 +495,6 @@ ptab = function(xx)
 # > plot(years[-length(years)], Ct)
 #browser();return()
 @ 
-
 
 % Keep this for now in case do use it
 % \begin{table}[tp]
@@ -542,39 +536,67 @@ ptab = function(xx)
 
 \clearpage
 
-% Remove for Appendix G write-up.
-\begin{table}[!p]
-\caption{\label{tab:parest} Priors and MPD estimates for estimated parameters. First row for each parameter is in bold, giving the written-up model notation (as for QCS POP Appendix), corresponding Awatea input name and then Awatea export name. Next is the prior information (distributions: 0 -- uniform, 1 -- normal, 2 -- lognormal, 5 -- beta)  plus the MPD. Continued overleaf.}
-% $^*$ indicates value is not automatically updated here from {\tt .res} file. [???...In Awatea, some parameters are always written as the log of that parameter, (though note that for $v_{gL}$, $g=1,2$, the input name does not explicitly mention that it is the logarithm, but it does for $g=4$)].}
-\begin{tabular}{llllll} 
+
+\begin{table}[!t]
+\caption{\label{tab:biomass} Estimated biomass, spawning ($B$) and vulnerable ($V$), in \Sexpr{years[length(years)]} and relative to virgin biomass ($B_0$, $V_0$) in \Sexpr{years[1]}.}
+\begin{tabular}{cccc} 
+\hline \\ [-1.5ex]
+{\bf Biomass} & {\bf $B_{t=\Sexpr{years[length(years)]}}$} & {\bf $B_0$} & {\bf $B_t$~/~$B_0$} \\ [1ex]
+\hline \\ [-1.5ex]
+Spawning & \Sexpr{format(round(By.mpd),big.mark=",")} & \Sexpr{format(round(B0.mpd),big.mark=",")} & \Sexpr{signif(ByB0.mpd,sigdig)} \\
+\\ [-1.5ex]
+Vulnerable & \Sexpr{format(round(Vy.mpd),big.mark=",")} & \Sexpr{format(round(V0.mpd),big.mark=",")} & \Sexpr{signif(VyV0.mpd,sigdig)} \\
+\\ [-1.5ex]
 \hline
+\end{tabular}	
+\end{table}
+
+\qquad % or \hspace{2em}
+
+% Remove for Appendix G write-up.
+\begin{table}[!h]
+\caption{\label{tab:parest} Priors and MPD estimates for estimated parameters. Prior information -- distributions: 0~=~uniform, 1~=~normal, 2~=~lognormal, 5~=~beta}
+%\caption{\label{tab:parest} Priors and MPD estimates for estimated parameters. First row for each parameter is in bold, giving the written-up model notation (as for QCS POP Appendix), corresponding Awatea input name and then Awatea export name. Next is the prior information (distributions: 0 -- uniform, 1 -- normal, 2 -- lognormal, 5 -- beta)  plus the MPD. Continued overleaf.}
+% $^*$ indicates value is not automatically updated here from {\tt .res} file. [???...In Awatea, some parameters are always written as the log of that parameter, (though note that for $v_{gL}$, $g=1,2$, the input name does not explicitly mention that it is the logarithm, but it does for $g=4$)].}
+\begin{tabular}{cccccc} 
+\hline \\ [-1.5ex]
 % Parameter & Awatea input name & Awatea export name & Value\\ 
-\multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
-Phase & Range & Prior & Parameters & Initial & MPD \\
-\hline 
-\multicolumn{5}{l}{{\bf ${\bf R_0}$, R0 (recruitment in virgin condition), R0}} & \\
+%\multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
+{\bf Phase} & {\bf Range} & {\bf Type} & {\bf (Mean,SD)} & {\bf Initial} & {\bf MPD} \\ [1ex]
+\hline \\ [-1.5ex]
+%\multicolumn{5}{l}{{\bf ${\bf R_0}$, R0 (recruitment in virgin condition), R0}} & \\
+\multicolumn{6}{l}{\bf $R_0$~~(recruitment in virgin condition)} \\
 \Sexpr{ptab(R0.prior)} & \Sexpr{R0.mpd} \\
-\multicolumn{5}{l}{{\bf $M_s (s=1,2)$, M (natural mortality), M1}} & \\
+\\ [-1.5ex]
+
+%\multicolumn{5}{l}{{\bf $M_s (s=1,2)$, M (natural mortality), M1}} & \\
+\multicolumn{6}{l}{\bf $M_s$~~(natural mortality by sex $s$)} \\
 \Sexpr{ptab(M1.prior)} & \Sexpr{M1.mpd} \\
-@rmsex \multicolumn{5}{l}{{\bf $M_2$, M (natural mortality row 2), M1 row 2}} & \\
+%@rmsex \multicolumn{5}{l}{{\bf $M_2$, M (natural mortality row 2), M1 row 2}} & \\
 @rmsex \Sexpr{ptab(M2.prior)} & \Sexpr{M2.mpd} \\
+\\ [-1.5ex]
 
-\multicolumn{5}{l}{{\bf $h$,  h (steepness of spawner-recruit curve), h}} & \\
+%\multicolumn{5}{l}{{\bf $h$,  h (steepness of spawner-recruit curve), h}} & \\
+\multicolumn{6}{l}{\bf $h$~~(steepness of spawner-recruit curve)} \\
 \Sexpr{ptab(h.prior)} & \Sexpr{h.mpd} \\
- & & & & & \\
+\\ [-1.5ex]
+% & & & & & \\
 
+%\multicolumn{6}{l}{\bf $\epsilon_t$, log rec dev prior, p\_log\_RecDev is prior, results for each $t$, 2nd parameter is $\sigma_R$}  \\
+\multicolumn{6}{l}{\bf $\epsilon_t$~~(recruitment deviations)}  \\
+\Sexpr{ptab(log.rec.dev.prior)} & Fig \ref{fig:recDev} \\ % logRecDev.mpd
+\\ [-1.5ex]
 
-\multicolumn{6}{l}{\bf $\epsilon_t$, log rec dev prior, p\_log\_RecDev is prior, results for each $t$, 2nd parameter is $\sigma_R$}  \\
-\Sexpr{ptab(log.rec.dev.prior)} & Figure \ref{fig:recDev} \\ % logRecDev.mpd
-
-\multicolumn{6}{l}{\bf $\eta_a$, Log init dev prior, p\_log\_InitialDev is prior, results $a=2,3,...,A-1$} \\
-\Sexpr{ptab(log.init.dev.prior)} & Figure \ref{fig:initAgeDev} \\
+%\multicolumn{6}{l}{\bf $\eta_a$, Log init dev prior, p\_log\_InitialDev is prior, results $a=2,3,...,A-1$} \\
+%\Sexpr{ptab(log.init.dev.prior)} & Figure \ref{fig:initAgeDev} \\
        % logInitAgeDev.mpd ,  one for each age2+
+%& & & & & \\
 
- & & & & & \\
-
-\multicolumn{5}{l}{\bf $\omega$, initial R, Rinit\_prior is prior} & \\
+%\multicolumn{5}{l}{\bf $\omega$, initial R, Rinit\_prior is prior} & \\
+\multicolumn{6}{l}{\bf $\omega$~~(initial recruitment)} \\
 \Sexpr{ptab(Rinit.prior)} & \Sexpr{signif(Rinit.mpd, sigdig)} \\
+\\ [-1.5ex]
+
 % Had to import from .par file. Had thought would be able
 %  to get from the ratio of R0.mpd and the sum of age-1 fish and
 %  the first year, which is:
@@ -590,55 +612,89 @@ Phase & Range & Prior & Parameters & Initial & MPD \\
 %   1976 above        
 
 % Had to remove lines specifying plusScale.prior as code would crash even when commented out. ?!?
-
 \hline
 \end{tabular}	
 \end{table}
 
 \clearpage
 
-\begin{table}[!p]
-\caption{\label{tab:parest2} Table \ref{tab:parest} continued.}
-\begin{tabular}{llllll} 
-\hline
-\multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
-Phase & Range & Prior & Parameters & Initial & MPD \\
-\hline 
-\multicolumn{6}{l}{\bf Survey catchabilities, $g=1,...,\Sexpr{Nsurv}$:} \\
-\multicolumn{5}{l}{\bf $\log q_g$, Log q survey (row g), log\_qsurvey (row g)} & \\
-%=======The following line will be expanded to accomodate multiple surveys=======
-\Sexpr{ptab(logqvec.prior[1,])} & \Sexpr{log(qvec.mpd[1])} \\
+\begin{table}[!h]
+%\caption{\label{tab:parest2} Table \ref{tab:parest} continued.}
+\caption{\label{tab:parest2} Priors and MPD estimates for index $g$ (survey and commercial).}
+% Parameter & Awatea input name & Awatea export name & Value\\ 
+%\multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
+%\begin{tabular}{llllll} 
+%\hline
+%\multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
+%Phase & Range & Prior & Parameters & Initial & MPD \\
+%\hline 
+\begin{tabular}{cccccccc} 
+\hline \\ [-1.5ex]
+{\bf Index $g$} & {\bf Phase} & {\bf Range} & {\bf Type} & {\bf (Mean,SD)} & {\bf Initial} & {\bf MPD} & {\bf exp~(MPD)}  \\ [1ex]
+\hline \\ [-1.5ex]
 
-@rmcpue \multicolumn{6}{l}{\bf CPUE catchability, $g=\Sexpr{Nsurv+1}$:} \\
-@rmcpue \multicolumn{5}{l}{\bf $\log q_{\Sexpr{Nsurv+1}}$, Log q CPUE, log\_qCPUE} & \\
-
+@rmcpue \multicolumn{8}{l}{\bf CPUE catchability mode~~($\log q_g$ where $g=\Sexpr{Nsurv+1},...\Sexpr{Nsurv+Ncomm}$)} \\
+%@rmcpue \multicolumn{5}{l}{\bf $\log q_{\Sexpr{Nsurv+1}}$, Log q CPUE, log\_qCPUE} & \\
 %=======The following line will be expanded to accomodate multiple cpue series=======
-@rmcpue \Sexpr{ptab(logqCPUE.prior[1,])} & \Sexpr{log(qCPUE.mpd[1])} \\
+@rmcpue \Sexpr{Nsurv+1} & \Sexpr{ptab(logqCPUE.prior[1,])} & \Sexpr{signif(log(qCPUE.mpd[1]),sigdig)} & \Sexpr{signif(qCPUE.mpd[1],sigdig)} \\
+\\ [-1.5ex]
+
+\multicolumn{8}{l}{\bf Survey catchability mode~~($\log q_g$, where $g=1,...,\Sexpr{Nsurv}$)} \\
+%\multicolumn{5}{l}{\bf $\log q_g$, Log q survey (row g), log\_qsurvey (row g)} & \\
+%=======The following line will be expanded to accomodate multiple surveys=======
+1 & \Sexpr{ptab(logqvec.prior[1,])} & \Sexpr{signif(log(qvec.mpd[1]),sigdig)} & \Sexpr{signif(qvec.mpd[1],sigdig)} \\
+\\ [-1.5ex]
 
 % \multicolumn{5}{l}{\bf ???, Log q CPUE error, qCPUEerr\_prior is prior} & \\
 % \Sexpr{ptab(logqCPUEerr.prior)} & ??? \\  % currentPar$qCPUEerr.1 $
-                                  %  has length 16 (all 0 for run05)
+%  has length 16 (all 0 for run05)
 % -1	-5	5	0	0	0.6	0
 
 % \multicolumn{5}{l}{\bf $\log \gamma$, LogBetaCPUE (CPUE POW), log\_BetaCPUE} & \\
 % \Sexpr{ptab(logbetaCPUE.prior)} & \Sexpr{log(betaCPUE.mpd)} \\
- & \\
- & \\
-\multicolumn{6}{l}{\bf Selectivities ($g=1,...\Sexpr{Nsurv}$ for surveys and $g=\Sexpr{Nsurv+1}$ for commercial fishery):} \\
-\multicolumn{6}{l}{\bf $\mu_g$, Survey L full (row g), surveySfull (row g) / S fullest (commercial), Sfullest} \\
+
+%\multicolumn{6}{l}{\bf Selectivities ($g=1,...\Sexpr{Nsurv}$ for surveys and $g=\Sexpr{Nsurv+1}$ for commercial fishery):} \\
+%\multicolumn{6}{l}{\bf $\mu_g$, Survey L full (row g), surveySfull (row g) / S fullest (commercial), Sfullest} \\
 %=======Next line will be expanded to accomodate multiple surveys=======
-\Sexpr{ptab(muvec.prior[1,])} & \Sexpr{muvec.mpd[1]} \\
-\Sexpr{ptab(muC.prior)} & \Sexpr{muC.mpd} \\
-\multicolumn{6}{l}{\bf $\log v_{gL}$, Survey variance L (row g), log\_surveyvarL (row g) / Log variance of left side}\\
- & \multicolumn{5}{l}{\bf  of selectivity curve (for both sexes) (commercial), log\_varLest} \\ 
+%\Sexpr{ptab(muvec.prior[1,])} & \Sexpr{muvec.mpd[1]} \\
+%\Sexpr{ptab(muC.prior)} & \Sexpr{muC.mpd} \\
+%\multicolumn{6}{l}{\bf $\log v_{gL}$, Survey variance L (row g), log\_surveyvarL (row g) / Log variance of left side}\\
+% & \multicolumn{5}{l}{\bf  of selectivity curve (for both sexes) (commercial), log\_varLest} \\ 
 %=======Next line will be expanded to accomodate multiple surveys=======
-\Sexpr{ptab(logvvec.prior[1,])} & \Sexpr{logvvec.mpd[1]} \\
-\Sexpr{ptab(logvC.prior)} & \Sexpr{logvC.mpd} \\
-\multicolumn{6}{l}{\bf $\Delta_g$, Survey L full delta (row g) surveySfulldeltaest (row g) / } \\
- & \multicolumn{5}{l}{\bf S full delta ... (commercial), SfullDelta} \\
+%\Sexpr{ptab(logvvec.prior[1,])} & \Sexpr{logvvec.mpd[1]} \\
+%\Sexpr{ptab(logvC.prior)} & \Sexpr{logvC.mpd} \\
+%\multicolumn{6}{l}{\bf $\Delta_g$, Survey L full delta (row g) surveySfulldeltaest (row g) / } \\
+% & \multicolumn{5}{l}{\bf S full delta ... (commercial), SfullDelta} \\
 %=======Next line will be expanded to accomodate multiple surveys=======
-\Sexpr{ptab(deltavec.prior[1,])} & \Sexpr{deltavec.mpd[1]} \\
-\Sexpr{ptab(deltaC.prior)} & \Sexpr{deltaC.mpd} \\
+%\Sexpr{ptab(deltavec.prior[1,])} & \Sexpr{deltavec.mpd[1]} \\
+%\Sexpr{ptab(deltaC.prior)} & \Sexpr{deltaC.mpd} \\
+
+\multicolumn{8}{l}{\bf Commercial selectivity~~($\mu_g$, where $g=\Sexpr{Nsurv+1}$)} \\
+\Sexpr{Nsurv+1} & \Sexpr{ptab(muC.prior)} & \Sexpr{signif(muC.mpd,sigdig)} & \\
+\\ [-1.5ex]
+
+\multicolumn{8}{l}{\bf Survey selectivity ($\mu_g$, where $g=1,...\Sexpr{Nsurv}$)} \\
+%=======Next line will be expanded to accomodate multiple surveys=======
+1 & \Sexpr{ptab(muvec.prior[1,])} & \Sexpr{signif(muvec.mpd[1],sigdig)} & \\
+\\ [-1.5ex]
+
+\multicolumn{8}{l}{\bf Variance (left) of commercial selectivity curve~~($\log v_{gL}$, where $g=\Sexpr{Nsurv+1}$)} \\ 
+\Sexpr{Nsurv+1} & \Sexpr{ptab(logvC.prior)} & \Sexpr{signif(logvC.mpd,sigdig)} & \\ %\Sexpr{signif(exp(logvC.mpd),sigdig)} \\
+\\ [-1.5ex]
+
+\multicolumn{8}{l}{\bf Variance (left) of survey selectivity curve~~($\log v_{gL}$, where $g=1,...\Sexpr{Nsurv}$)} \\ 
+%=======Next line will be expanded to accomodate multiple surveys=======
+1 & \Sexpr{ptab(logvvec.prior[1,])} & \Sexpr{signif(logvvec.mpd[1],sigdig)} & \\ %\Sexpr{signif(exp(logvvec.mpd[1]),sigdig)} \\
+\\ [-1.5ex]
+
+@rmsex \multicolumn{8}{l}{\bf Shift in commercial selectivity for males~~($\Delta_g$, where $g=\Sexpr{Nsurv+1}$)} \\ 
+@rmsex \Sexpr{Nsurv+1} & \Sexpr{ptab(deltaC.prior)} & \Sexpr{signif(deltaC.mpd,sigdig)} &  \\
+@rmsex \\ [-1.5ex]
+
+@rmsex \multicolumn{8}{l}{\bf Shift in survey selectivity for males~~($\Delta_g$, where $g=1,...\Sexpr{Nsurv}$)} \\ 
+@rmsex %=======Next line will be expanded to accomodate multiple surveys=======
+@rmsex 1 & \Sexpr{ptab(deltavec.prior[1,])} & \Sexpr{signif(deltavec.mpd[1],sigdig)} & \\
+@rmsex \\ [-1.5ex]
 
 %$\Delta_1$ & Survey L full delta & surveySfulldeltaest\_1 & \\
 %$\Delta_2$ & Survey L full delta & surveySfulldeltaest\_2 & \\
@@ -730,15 +786,17 @@ dev.off()
 
 <<CPUEfig, results=hide, echo=FALSE>>=    # Crude for now
 postscript("CPUEfit.eps", horizontal=FALSE, paper="special", height = 7, width = 6)
-zobs = !is.na(currentRes$CPUE$Obs)
-xlim = range(currentRes$CPUE$Year[zobs]); ylim = range(c(currentRes$CPUE$Obs[zobs],currentRes$CPUE$Fit[zobs]))
-plot(currentRes$CPUE$Year, currentRes$CPUE$Obs, xlim=xlim, ylim=ylim, type="n", xlab="Year",ylab="CPUE: Observed & Fit")
+	zobs = !is.na(currentRes$CPUE$Obs)
+	xlim = range(currentRes$CPUE$Year[zobs]); ylim = range(c(currentRes$CPUE$Obs[zobs],currentRes$CPUE$Fit[zobs]))
+	plot(currentRes$CPUE$Year, currentRes$CPUE$Obs, xlim=xlim, ylim=ylim, type="n", xlab="Year",ylab="CPUE: Observed & Fit")
 	series = unique(currentRes$CPUE$Series); nseries = length(series)
 	for (i in 1:nseries) {
 		ii = series[i]; z = is.element(currentRes$CPUE$Series,ii)
 		points(currentRes$CPUE$Year[z], currentRes$CPUE$Obs[z], pch=21, bg=i+1, cex=1.2)
-		lines(currentRes$CPUE$Year[z], currentRes$CPUE$Fit[z], col=i+1, lwd=2) }
-dev.off()
+		lines(currentRes$CPUE$Year[z], currentRes$CPUE$Fit[z], col=i+1, lwd=2)
+	}
+	legend("topright",bty="n",col=(1:nseries)+1,lwd=2,legend=gsub("Series","CPUE",series),cex=0.8)
+	dev.off()
 @ 
 
 <<recdevplot, results=hide, echo=FALSE>>=
@@ -786,21 +844,20 @@ dev.off()
 @ 
 
 <<plotBarsFigs, results=hide, echo=FALSE>>=
-
 # Second two are not made automatically - got from Rowan for 05.01. 
 #  Use this when get updated package:
 # Note - 1 is males in plotBars.
 
 # Latest from Rowan, I may want to switch to have females first
-year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year"]]),8)
+#year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year"]]),8)
+year.plotBar = round(quantile(years,seq(0,1,len=6)))
 if (nsex==1) {
 	plotBars(currentRes,type="N",sex=3,fill="green",eps=TRUE,win=FALSE,year=year.plotBar)
 } else {
-	plotBars(currentRes,type="N",sex=2,fill="salmon",eps=TRUE,win=FALSE,year=year.plotBar)
+	plotBars(currentRes,type="N",sex=2,fill="pink",eps=TRUE,win=FALSE,year=year.plotBar)
 	plotBars(currentRes,type="N",sex=1,fill="skyblue",eps=TRUE,win=FALSE,year=year.plotBar)
 }
-@ 
-
+@
 
 <<bubbleplots, results=hide, echo=FALSE>>=
 # Should redo as a function in scape program, but quicker for now:
@@ -872,7 +929,7 @@ dev.off()
 
 % Andy tried replacing survey 1 with *at*surveys - seemed to work okay for survey index fits, but got warnings.
 
-\sppfig{survIndSer3}{Crude plot of time series of the \Sexpr{Nsurv} surveys, plus CPUE index (dashed line, unless it's not used), all normalised to their respective means. To see if they give conflicting signals. (Note that CPUE isn't necessarily being used in the model fitting).}
+\sppfig{survIndSer3}{Index series of \Sexpr{Nsurv} surveys and commercial CPUE (dashed line), all normalised to their respective means within the span of years covered by all surveys. The plot provides a crude diagnostic to see if indices are giving conflicting signals. \Sexpr{if(NCser==0) paste("(Note that CPUE isn't being used in the model fitting.)")}}
 
 % \sppfig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
 

@@ -254,7 +254,8 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^cquantile.vec
 
-#plotBars-------------------------------2013-09-04
+
+#plotBars-------------------------------2013-09-11
 # Plot barplots of specific year age proportions.
 #-----------------------------------------------RH
 plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]), 
@@ -288,20 +289,27 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 		}
 	}
 	#ncol=floor(sqrt(nyear)); nrow=ceiling(nyear/ncol)
-	nrow=min(nyear,4); ncol=ceiling(nyear/nrow)
+	#nrow=min(nyear,4); ncol=ceiling(nyear/nrow)
+	rc =  .findSquare(nyear)
+	nrow=rc[1]; ncol=rc[2]
 	fnam = paste("ageBars",paste(Sex,collapse=""),sep="")
 	figs = c(eps=eps,pix=pix,win=win)
 #browser();return()
 	for (k in names(figs)){
 		if (!figs[k]) next
-		if (k=="eps") postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", height=2*nrow, width=6.5)
+		if (k=="eps") postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", height=2.5*nrow, width=6.75)
 		else if (k=="pix") png(paste(fnam,"png",sep="."), width=1300, height=nrow*600, units="px", pointsize=16)
 		else resetGraph()
-		par(mfcol=c(nrow,ncol),mgp=c(2,0.5,0),las=0,xaxs="i",mar=c(4,4,1,1))
+		par(mfcol=c(nrow,ncol),mgp=c(2,0.5,0),las=1,xaxs="i",
+			mar = if(nyear==1) c(4,6,1,1) else c(4,3,1,1),
+			oma = if(nyear==1) c(0,0,0,0) else c(0,3,0,0))
 		for (i in year) {
 			ii = as.character(i); aa=as.character(age)
-			xy = barplot(t(mat[aa,,ii]),beside=TRUE,space=c(0,0), xaxt=ifelse(nage>10,"n","s"),
-				col=fill, xlab="Age",ylab=ifelse(prop,"Proportions",type),cex.lab=1.25)
+			xy = barplot(t(mat[aa,,ii]),beside=TRUE,space=c(0,0), xaxt=ifelse(nage>15,"n","s"),
+				col=fill, xlab="Age",ylab="",cex.lab=1.5,cex.axis=1.25,cex=1.25)
+			ylab = ifelse(prop,"Proportions",type)
+			if (nyear==1) mtext(ylab,side=2,outer=FALSE,line=4,cex=2,las=0)
+			else          mtext(ylab,side=2,outer=TRUE,line=0.5,cex=1.75,las=0)
 			xpos  = apply(xy,2,mean)
 			xdiff = diff(xpos)[1]
 			for (s in Sex) {
@@ -313,13 +321,13 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 				lines(xpos,ypos,lwd=3,col="black")
 				lines(xpos,ypos,lwd=1,col=f)
 			}
-			if (nage>10) {
+			if (nage>15) {
 				AGE = seq(5,200,5)
 				agelab = intersect(AGE,age)
 				agepos = xpos[is.element(age,agelab)]
-				axis(1,tick=FALSE,at=agepos,labels=agelab,mgp=c(2,0.2,0))
+				axis(1,tick=FALSE,at=agepos,labels=agelab,mgp=c(2,0.1,0),cex.axis=1.25)
 			}
-			addLabel(0.95,0.95,ii,adj=c(1,1),cex=1.5,font=2)
+			addLabel(0.95,0.95,ii,adj=c(1,1),cex=1.75,font=2)
 			if (i==year[1])
 				addLegend(0.975,0.875,legend=paste(Sex," M = ",M,sep=""),fill=fill,bty="n",yjust=1,xjust=1)
 		}
@@ -403,6 +411,7 @@ plotBox = function (x, ..., range=1.5, width=NULL, varwidth=FALSE,
     else z 
     invisible(x)}
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBox
+
 
 #plotDensPOP----------------------------2010-10-19
 #  editing scapeMCMC::plotDens function to have
@@ -507,6 +516,7 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotDensPOP
 
+
 #plotDensPOPpars------------------------2010-10-26
 # editing scapeMCMC::plotDens for parameters,
 #  to put MPDs on. AME. 26th Oct 2010.
@@ -592,6 +602,7 @@ plotDensPOPpars =
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotDensPOPpars
 
+
 #plotTracePOP---------------------------2012-08-23
 # Now adding running median, and taking off overall
 # median and lowess line. Using cquantile from cumuplot.
@@ -674,6 +685,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
     }
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotTracePOP
+
 
 #==============H I D D E N========================
 
