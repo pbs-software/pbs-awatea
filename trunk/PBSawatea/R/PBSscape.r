@@ -1951,63 +1951,62 @@ plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.idx
 
 
-#plotIndexNotLattice--------------------2012-00-06
+#plotIndexNotLattice--------------------2013-09-12
 # Taking some of plt.idx, but doing plot.Index NOT as lattice
 # YMR - have five survey series, so adapting as required.
 #----------------------------------------------AME
 plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
     ssnames=paste("Ser",1:9,sep=""), ...)
 {
-  # obj=obj$Survey, objCPUE=obj$CPUE
-  seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
-  nseries = length(seriesList)
-  # surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps",
-  #   "survIndQCSshr.eps")
-  #surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial") # Appears again below
-  #surveyHeadName = if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
-  surveyHeadName = if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
-	if (is.null(cvpro) || cvpro==FALSE) cvpro = "unknown"
-  postscript("survIndSer.eps", height = 8.0, width = 6.0,  horizontal=FALSE,  paper="special")   # height was 6 for POP
-  par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) # Do c(3,2) for 6 surveys
-  par(mai = c(0.3,0.25,0.4,0.1))          # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
-  par(omi = c(0.4,0.3,0,0.1))             # Outer margins of whole thing, inch
-  yrTicks = as.numeric( obj$Year)         # Haven't a clue why AME is doing this
-   
-  for ( i in 1:nseries )
-  {
-    idx <- seriesList[i]==obj$Series
-    seriesVals = obj[idx,]
-    # seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
-    seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
-    seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
+	cvcol = "slategrey"
+	# obj=obj$Survey, objCPUE=obj$CPUE
+	seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
+	nseries = length(seriesList)
+	# surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
+	#surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial") # Appears again below
+	#surveyHeadName = if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
+	surveyHeadName = if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
+	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro = "unknown"
 
-    yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-    # yearsPlot = min(yearsnotNA):max(yearsnotNA)
-    xLim = range(yearsnotNA)
-    if(i==1)
-      xLimAll = xLim    # range to use in next plot
-    xLimAll = range(xLim, xLimAll)    # range to use in next plot
-    yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
-    # postscript(surveyFigName[i],  height = 4, width = 3.2,
-    #     horizontal=FALSE,  paper="special")
-    #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-    plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-           li=seriesVals$Lo, xlim = xLim, ylim=yLim, xlab="",
-           ylab="", gap=0, pch=19)
-         # restrict years for plot, does error bars
-    lines(seriesVals$Year, seriesVals$Fit, lwd=2)
-    axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-    mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
-    addLabel(0.95,0.95,paste("+ CV process error ",cvpro,sep=""),adj=c(1,0),cex=0.8,col="grey")
-    if(i==nseries) {
-       mtext(side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
-       mtext(side=1, line=0.5, cex=1.2, outer=TRUE, "Year")
-    }
-  }                         # cex was 0.8 for POP
-  dev.off()
+	postscript("survIndSer.eps", height = 8.0, width = 6.0,  horizontal=FALSE,  paper="special")   # height was 6 for POP
+	par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) # Do c(3,2) for 6 surveys
+	par(mai = c(0.3,0.25,0.4,0.1))          # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
+	par(omi = c(0.4,0.3,0,0.1))             # Outer margins of whole thing, inch
+	#yrTicks = as.numeric( obj$Year)         # Haven't a clue why AME is doing this
+	yrTicks = min(obj$Year):max(obj$Year)
 
-	# And again, but with the same year axis for each. Think will
-	#  be instructive to see
+	for ( i in 1:nseries )
+	{
+		idx <- seriesList[i]==obj$Series
+		seriesVals = obj[idx,]
+		# seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
+		seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
+		seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
+
+		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		# yearsPlot = min(yearsnotNA):max(yearsnotNA)
+		xLim = range(yearsnotNA)
+		if(i==1)
+		  xLimAll = xLim    # range to use in next plot
+		xLimAll = range(xLim, xLimAll)    # range to use in next plot
+		yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
+		# postscript(surveyFigName[i],  height = 4, width = 3.2,
+		#     horizontal=FALSE,  paper="special")
+		#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+		plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo,
+			xlim = xLim, ylim=yLim, xlab="", ylab="", gap=0, pch=19) # restrict years for plot, does error bars
+		lines(seriesVals$Year, seriesVals$Fit, lwd=2)
+		axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
+		mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+		addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,0),cex=0.8,col=cvcol)
+		if(i==nseries) {
+			mtext(side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
+			mtext(side=1, line=0.5, cex=1.2, outer=TRUE, "Year")
+		}
+	}  # cex was 0.8 for POP
+	dev.off()
+
+	# And again, but with the same year axis for each. Think will be instructive to see
 	postscript("survIndSer2.eps", height = 8.0, width = 6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
 	par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) #  do c(3,2) for 6 series, and change axes labelling
 	par(mar = c(0,3,0,3))         # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
@@ -2040,7 +2039,7 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 		axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
 		axis( side=1, at=YrTicks, tcl=-0.4, labels=FALSE)
 		mtext(side=4, line=0.5, cex=0.8, outer=FALSE, surveyHeadName[i])
-		addLabel(0.95,0.95,paste("+ CV process error ",cvpro,sep=""),adj=c(1,1),cex=.8+(.05*(nseries-1)),col="grey")
+		addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,1),cex=.8+(.05*(nseries-1)),col=cvcol)
 		if(i==nseries) {
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
 			axis( side=1, at=YrTicks, tcl=-0.4, labels=TRUE)
@@ -2068,6 +2067,7 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 	NSL = 1:length(seriesList)
 	# Set up plot
 	plot(NA, xlim = yrssurv, ylim = c(0, max(maxsurv,maxcpue)), xlab="Years", ylab="Survey indices normalised by means", xaxt="n")
+	abline(h=1, col="grey")
 	axis(1,at=yrTicks,tck=-0.01,labels=FALSE)
 	axis(1,at=YrTicks,tck=-0.02,labels=TRUE)
 	for ( i in NSL )
@@ -2078,13 +2078,16 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 		points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, na.rm=TRUE), pch=i, col=i, type="o")
 	}
 	legtxt = if (exists(".PBSmodEnv")) tcall(PBSawatea)$Snames else PBSawatea$Snames
-	legend("topright",bty="n",col=NSL,pch=NSL,legend=legtxt,cex=0.8)
 
 	# Now draw on CPUE series also:
 	nseries = length(seriesList)  #  Need nseries from surveys for col
 	seriesListCPUE <- sort( unique( objcpue$Series ) )
+	ncpue = length(seriesListCPUE)
 	# sort risky if not always in same order.
-	for ( i in 1:length(seriesListCPUE) )
+	lty = c(rep(1,length(NSL)),rep(2,ncpue))
+	NSL = c(NSL, (max(NSL)+1):(max(NSL)+ncpue))
+	legtxt = c(legtxt, gsub("Series","CPUE",seriesListCPUE))
+	for ( i in 1:ncpue )
 	{
 		idx <- is.element(objcpue$Series,seriesListCPUE[i])
 		seriesVals = objcpue[idx,]
@@ -2093,88 +2096,33 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 			points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, 
 				na.rm=TRUE), pch=i+nseries, col=i+nseries, type="o", lty=2)
 	}
+	legend("topright",bty="n",col=NSL,pch=NSL,legend=legtxt,cex=0.8)
 	dev.off()
 #browser();return()
 
-  # And again, but just first series and CPUE to see conflicting
-  #  signal. Axes not automated.
-  postscript("survIndSer4.eps",
-    height = 5.0, width = 5.0,
-    horizontal=FALSE,  paper="special")   # height was 6 for POP
-    yrTicks = as.numeric( obj$Year)
-    # Set up plot
-  plot(NA, xlim = c(1965, 1995), ylim = c(0, 2.5),
-       xlab="Years", ylab="Normalised GIG survey index and CPUE")
-  abline(h=1, col="grey")
-  for ( i in 1)   # Just doing first series
-    {
-      idx <- seriesList[i]==obj$Series
-      seriesVals = obj[idx,]
-      # seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
-      # seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
-
-      yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-      points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] /
-          mean(seriesVals$Obs, na.rm=TRUE), pch=19, type="o")
-    }
-  # Now draw on CPUE series also:
-  nseries = length(seriesList)  #  Need nseries from surveys for col
-  # obj=objCPUE
-  seriesListCPUE <- sort( unique( objCPUE$Series ) )
-    # sort risky if not always in same order.
-  for ( i in 1:length(seriesListCPUE) )
-    {
-      idx <- seriesListCPUE[i]==objCPUE$Series
-      seriesVals = objCPUE[idx,]
-      yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-      points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] /
-          mean(seriesVals$Obs, na.rm=TRUE), pch=5,
-          col="blue", type="o", lty=2)
-    }
-  dev.off()
-
-  
-  # And again, but big figures for ease of viewing. 
-  #  postscript("survIndSer4-%d.eps",
-  #  height = 8.0, width = 6.0,
-  #  horizontal=FALSE,  paper="special")   # height was 6 for POP
-  #par(mfrow=c(2,1),mgp=c(2,0.75,0))
-  #par(mai = c(0.25,0.25, 0.25, 0.1))      # JAE changed  for each figure # was for POP 0.45, 0.5, 0.3, 0.2
-  #par(omi = c(0.25,0.25,0,0.1))           # Outer margins of whole thing, inch
-  yrTicks = as.numeric( obj$Year)
-   
-  for ( i in 1:length(seriesList) )
-  {
-    idx <- seriesList[i]==obj$Series
-    seriesVals = obj[idx,]
-    # seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
-    seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
-    seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
-
-    yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-    # yearsPlot = min(yearsnotNA):max(yearsnotNA)
-    xLim = range(yearsnotNA)
-    yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
-    # postscript(surveyFigName[i],  height = 4, width = 3.2,
-    #     horizontal=FALSE,  paper="special")
-    postscript(paste("survIndSer4-", i, ".eps", sep=""),
-    height = 6.0, width = 6.0,
-    horizontal=FALSE,  paper="special")   # height was 6 for POP
-    #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-    plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-           li=seriesVals$Lo, xlim = xLim, ylim=yLim, xlab="Year",
-           ylab="Relative biomass", gap=0, pch=19)
-         # restrict years for plot, does error bars
-    lines(seriesVals$Year, seriesVals$Fit, lwd=2)
-    axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-    mtext( side=3, line=0.25, cex=0.8, outer=FALSE,
-          surveyHeadName[i]) #  outer=TRUE
-    #if(i==3)
-    #   mtext( side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
-    #if(i==5)
-    #   mtext(side=1, line=0.5, cex=1, outer=TRUE, "Year")
-    dev.off()
-  }                         # cex was 0.8 for POP
+	# And again, but big figures for ease of viewing. 
+	for ( i in 1:length(seriesList) )
+	{
+		idx <- seriesList[i]==obj$Series
+		seriesVals = obj[idx,]
+		# seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
+		seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
+		seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
+		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		# yearsPlot = min(yearsnotNA):max(yearsnotNA)
+		xLim = range(yearsnotNA)
+		yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
+		postscript(paste("survIndSer4-", i, ".eps", sep=""), height = 6.0, width = 6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
+		#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+		par( oma=c(0,0,0,0), mar=c(3,3,2,1), mgp=c(1.8,0.5,0))
+		plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, 
+			xlim = xLim, ylim=yLim, xlab="Year", ylab="Relative biomass", gap=0, pch=19)
+		lines(seriesVals$Year, seriesVals$Fit, lwd=2)
+		axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
+		mtext( side=3, line=0.25, cex=1, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+		addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,0),cex=0.8,col=cvcol)
+		dev.off()
+	}  # cex was 0.8 for POP
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotIndexNotLattice
 
@@ -2185,12 +2133,12 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 # mcmc = data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
 #-------------------------------------------------
 plotChains = function (mcmc, nchains=3, pdisc=0.1, 
-     axes=FALSE, same.limits=FALSE, between=list(x=axes,y=axes), div=1, span=1/4,
-     log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
-     cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8, las=0, 
-     tck=0.5, tick.number=5, lty.trace=1, lwd.trace=1, col.trace="grey", 
-     lty.median=1, lwd.median=1, col.median="black", lty.quant=2, lwd.quant=1, 
-     col.quant="black", plot=TRUE, probs=c(0.025, 0.5, 0.975), ...)  # AME probs
+   axes=FALSE, same.limits=FALSE, between=list(x=axes,y=axes), div=1, span=1/4,
+   log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
+   cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8, las=0, 
+   tck=0.5, tick.number=5, lty.trace=1, lwd.trace=1, col.trace="grey", 
+   lty.median=1, lwd.median=1, col.median="black", lty.quant=2, lwd.quant=1, 
+   col.quant="black", plot=TRUE, probs=c(0.025, 0.5, 0.975), ...)  # AME probs
 {
 	panel.trace <- function(x, y, ...) {
 
@@ -2271,7 +2219,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
   nseries = length(seriesList)
   # surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
   surveyHeadName = c("CPUE")
-	if (is.null(cvpro) || cvpro==FALSE) cvpro = "unknown"
+	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro = "unknown"
   postscript("CPUEser.eps",
         height = switch(nseries,5,8,9), width = 6.0,
         horizontal=FALSE,  paper="special")   # height was 6 for POP
@@ -2282,6 +2230,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
    
   for ( i in 1:nseries )
   {
+    ii = Nsurv + i  # to index the CPUE cvpro
     idx <- seriesList[i]==obj$Series
     seriesVals = obj[idx,]
     # seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
@@ -2305,7 +2254,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
          # restrict years for plot, does error bars
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-    addLabel(0.95,0.95,paste("+ CV process error ",cvpro,sep=""),adj=c(1,0),cex=0.8,col="grey")
+    addLabel(0.95,0.95,paste("+ CV process error ",cvpro[ii],sep=""),adj=c(1,0),cex=0.8,col="slategrey")
     # mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
     # if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
     # if(i==5)  mtext(side=1, line=0, cex=1, outer=TRUE, "Year")

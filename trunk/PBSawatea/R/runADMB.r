@@ -3,7 +3,7 @@ setClass ("AWATEAdata",
      dnam="character", nvars="numeric", vdesc="character", vars="list", 
      gcomm="character", vcomm="character", resdat="list" , likdat="list",
      pardat="list", stddat="list", cordat="list", evadat="list", 
-     reweight="list") )
+     reweight="list", controls="list") )
 
 #require(PBSmodelling)
 #source("utilFuns.r",local=FALSE)
@@ -11,18 +11,35 @@ setClass ("AWATEAdata",
 # Flush the cat down the console
 .flush.cat = function(...) { cat(...); flush.console() }
 
-#runADMB--------------------------------2012-08-08
+#runADMB--------------------------------2013-09-09
 # Run AD Model Builder code for Awatea
 #-----------------------------------------------RH
-runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
-     doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
-     doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
-     doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
-     delim="-", awateaPath="%HOME%/Projects/ADMB/Coleraine", clean=FALSE, ...) {
+runADMB = function(
+		filename.ext, wd=getwd(), 
+		strSpp="XYZ", runNo=1, rwtNo=0,
+		doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
+		doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
+		doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
+		delim="-", clean=FALSE, locode=FALSE, 
+		awateaPath="C:/Users/haighr/Files/Projects/ADMB/Coleraine",
+		codePath="C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+		...
+	) {
 
 	ciao = function(){setwd(cwd); Sys.setenv(PATH=syspath0); gc(verbose=FALSE)} # exit function
 	cwd  = getwd(); syspath0  = Sys.getenv()["PATH"]
 	on.exit(ciao())
+	if (locode) { 
+		getFile(gfcode,path=system.file("data",package="PBSawatea"))
+		require(PBSmodelling, quietly=TRUE)
+		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
+		source(paste(codePath,"runSweave.r",sep="/"),local=FALSE)
+		source(paste(codePath,"runSweaveMCMC.r",sep="/"),local=FALSE)
+		source(paste(codePath,"plotFuns.r",sep="/"),local=FALSE)
+		source(paste(codePath,"utilFuns.r",sep="/"),local=FALSE)
+		source(paste(codePath,"menuFuns.r",sep="/"),local=FALSE)
+		assign("importCol2",importRes,envir=.GlobalEnv)
+	}
 	awateaPath = gsub("/","\\\\",awateaPath)
 	syspath   = paste(syspath0,awateaPath,sep=";")
 	Sys.setenv(PATH=syspath)
@@ -56,15 +73,16 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 	}
 	argsMPD  = paste(paste(" ",unlist(argsMPD),sep=""),collapse="")
 	argsMCMC = paste(paste(" ",unlist(argsMCMC),sep=""),collapse="")
-
-	packList(stuff=c("awateaPath","wd","filename.ext","strSpp","runNo","N.reweight","cvpro","mean.age","runname","rundir"), target="PBSawatea")
+	packList(stuff=c("awateaPath","codePath","wd","filename.ext","strSpp","runNo","N.reweight","cvpro","mean.age","runname","rundir"), target="PBSawatea")
 
 	if (doMPD) {
 		.flush.cat("Reweighting surveys and proportions-at-age...\n")
 		if (!file.exists(filename.ext)) stop("Specified input file does not exist")
+		cvpro = readAD(filename.ext)@controls$cvpro  # expanded cvpro determined by number of surveys and number of cpue series
 		sdnrfile = paste(prefix,runNoStr,"sdnr",sep=".")
 		cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
-		cat("CVpro: ",cvpro,"\n",file=sdnrfile,append=TRUE,sep="")
+		cat("CVpro:",cvpro,"\n",file=sdnrfile,append=TRUE,sep=" ")
+#browser();return()
 		#file0 = gsub(paste("\\.",ext,sep=""),paste(".000.",ext,sep=""),filename.ext)
 		file0 = paste(prefix,runNoStr,"00.txt",sep=".")
 		fileX = c("likelihood.dat",paste("Awatea",c("par","std","cor","eva"),sep=".")) # extra files to save
@@ -187,11 +205,11 @@ runADMB = function(filename.ext, wd=getwd(), strSpp="XYZ", runNo=1, rwtNo=0,
 		Robj=list(ctlfile,strategy)
 			
 	}
-	if (exists("tput")) packList(stuff=c("Robj"), target="PBSawatea")
-	return(Robj) }
+	if (exists(".PBSmodEnv")) packList(stuff=c("Robj"), target="PBSawatea")
+	invisible(Robj) }
 #------------------------------------------runADMB
 
-#readAD---------------------------------2012-10-16
+#readAD---------------------------------2013-09-09
 # Read the ADMB input file and create an AWATEA class object.
 #-----------------------------------------------RH
 readAD = function(txt) {
@@ -257,9 +275,28 @@ readAD = function(txt) {
 			}
 		}
 	}
+	#Gather some control variables from original text (otxt)
+	#-------------------------------------------------------
+	ctllabs=list(Nsex="Number of sexes", Nsurv="Number of survey series", Ncpue="Number of CPUE series",
+	NsurvDP="Number of survey data points \\(all series\\)", NcpueDP="Number of CPUE data points \\(all series\\)",
+	NyrCAs="Number of years with survey C@A data", NyrCAc="Number of years with commercial C@A data", 
+	Nmethod="Number of commercial fishing gears", gear="Initial gear",
+	ageMax="Max age in model", ageFullMat = "Age at full maturity",
+	YrStart="Start year of model",YrEnd="End year of model",strategy="Strategy Type",YrProj="End year of projections")
+
+	controls=sapply(ctllabs,function(x){
+		strval = gsub("#","",otxt[grep(x,otxt)[1]+1])
+		as.numeric(strval)
+	},simplify=FALSE)
+
+	cvpro = if (exists(".PBSmodEnv")) tcall(PBSawatea)$cvpro else PBSawatea$cvpro
+	Nsc   = controls$Nsurv + controls$Ncpue
+	controls[["cvpro"]] = rep(cvpro,Nsc)[1:Nsc]  # expand cvpro to accommodate all series (user may only specify one value, or underestimate number of series)
+
 	Data=new("AWATEAdata",txtnam=txtnam, input=ntxt, vlst=vlst, dnam=dnam, 
 		nvars=nvars, vdesc=vdesc, vars=vars, gcomm=gcomm, vcomm=vcomm, resdat=resdat,
-		likdat=likdat, pardat=pardat, stddat=stddat, cordat=cordat, evadat=evadat, reweight=list(nrwt=0))
+		likdat=likdat, pardat=pardat, stddat=stddat, cordat=cordat, evadat=evadat, 
+		reweight=list(nrwt=0), controls=controls)
 	return(Data) }
 #-------------------------------------------readAD
 
@@ -347,7 +384,7 @@ setMethod("write", signature(x = "AWATEAdata"),
 	invisible(nvec) } )
 #----------------------------------setMethod.write
 
-#setMethod.reweight---------------------2011-05-31
+#setMethod.reweight---------------------2013-09-09
 # Set the method for 'reweight' when using an AWATEA class.
 # Calculates reweighted values and populates S4 object.
 #-----------------------------------------------RH
@@ -414,14 +451,17 @@ setMethod("reweight", signature="AWATEAdata",
 	wfun = function (MAlist) {
 		# y=year, a=age bin, O=observed proportions, P=Predicted (fitted) proportions, N=sample size, J=series
 		unpackList(MAlist,scope="L")
-		w    = rep(NA,length(J)); names(w)=J
+		w    = rep(1,length(J)); names(w)=J
 		jvec = substring(names(N),1,nchar(names(N))-5)
 		wN   = N
 		for (j in 1:length(J)) {
 			jj = J[j]
-			z = is.element(jvec,jj)
-			w[j] = 1 / var((MAobs[z]-MAexp[z])/((Vexp[z]/N[z])^0.5) )  
-			wN[z] = N[z] * w[j]
+			z = is.element(jvec,jj); zNoVar = is.element(Vexp,0); zNoVal = is.element(MAexp,0) & zNoVar
+			# Only use values in series jj with non-zero variance and with fitted values
+			zUse = z&!zNoVar&!zNoVal
+			if (!any(zUse)) next
+			w[j] = 1 / var((MAobs[zUse]-MAexp[zUse])/((Vexp[zUse]/N[zUse])^0.5) )  
+			wN[zUse] = N[zUse] * w[j]
 			}
 		return(list(w=w,wN=wN))
 	}
@@ -437,14 +477,13 @@ setMethod("reweight", signature="AWATEAdata",
 		zs = is.element(survey$Series,s)
 		sser = survey[zs,]
 		SDNR[ss] = sd(sser$NR)
-		if (cvpro && nrwt==0)
-			survey$CVnew[zs] = sqrt(survey$CV[zs]^2 + cvpro^2)
-		else if (cvpro && nrwt>0)
+		if (cvpro[1] && nrwt==0)
+			survey$CVnew[zs] = sqrt(survey$CV[zs]^2 + cvpro[s]^2)
+		else if (cvpro[1] && nrwt>0)
 			survey$CVnew[zs] = survey$CV[zs]
 		else
 			survey$CVnew[zs] = sser$CV * SDNR[ss]
 	}
-#browser()
 
 	if (all(view(obj,pat="CPUE likelihood",see=FALSE)[[1]]==0)) 
 		cpue = NULL
@@ -455,12 +494,13 @@ setMethod("reweight", signature="AWATEAdata",
 		cpue$NR = NRfun(cpue$Obs,cpue$Fit,cpue$CV)
 		cpue$CVnew = rep(0,nrow(cpue))
 		for (u in names(Useries)) {
+			s = s + 1 # to index cvpro
 			uu=as.character(u)
 			zu = is.element(cpue$Series,u)
 			user = cpue[zu,]
 			SDNR[Useries[uu]] = sd(user[,"NR"])
 			if (cvpro && nrwt==0)
-				cpue$CVnew[zu] = sqrt(user$CV^2 + cvpro^2)
+				cpue$CVnew[zu] = sqrt(user$CV^2 + cvpro[s]^2)
 			else if (cvpro && nrwt>0)
 				cpue$CVnew[zu] = user$CV
 			else
@@ -480,7 +520,6 @@ setMethod("reweight", signature="AWATEAdata",
 	if (mean.age) {
 		#MAc   = MAfun(cpa,brks=c(1979,1985,1997,2004,2009)) # commercial mean ages
 		MAc   = MAfun(cpa) # commercial mean ages
-#browser(); return()
 		Wc    = wfun(MAc)
 		wNcpa = Wc$wN
 		wtemp = Wc$w; names(wtemp)=paste("cpa-",names(wtemp),sep="")
@@ -501,17 +540,15 @@ setMethod("reweight", signature="AWATEAdata",
 		MAs  = MAfun(spa) # survey mean ages
 		Ws    = wfun(MAs)
 		#temporary patch:
-		Ws = sapply(Ws,function(x){if (all(is.na(x))) y=rep(1,length(x)) else return(x); names(y)=names(x); return(y) },simplify=FALSE)
+		#Ws = sapply(Ws,function(x){if (all(is.na(x))) y=rep(1,length(x)) else return(x); names(y)=names(x); return(y) },simplify=FALSE)
 		wNspa = Ws$wN
-		
-#browser()
 		#SDNR["spa"] = NA  # No formulae appropriate for composition-data likelihoods due to correlations (Francis 2011, Appendix B, CJFAS)
 		wtemp = Ws$w; names(wtemp)=paste("spa-",names(wtemp),sep="")
 		wj = c(wj,wtemp)
 	}
 	else
 		wNspa  = eNfun(spa$Series,spa$Year,spa$Obs,spa$Fit)
-#browser()
+
 	SDNR["spa"] = sd(spa$NR,na.rm=TRUE)
 
 	if (!is.null(dots$sfile)) {
@@ -564,16 +601,19 @@ setMethod("reweight", signature="AWATEAdata",
 #out=runADMB("input28-ymr.txt",runNo=28,rwtNo=1,doMSY=TRUE)
 
 #===========================================================
-source("PBSscape.r"); source("runSweave.r"); source("runSweaveMCMC.r"); source("plotFuns.r"); source("menuFuns.r"); source("utilFuns.r"); 
+#source("PBSscape.r"); source("runSweave.r"); source("runSweaveMCMC.r"); source("plotFuns.r"); source("menuFuns.r"); source("utilFuns.r"); 
 
 #=== ROL 5CD 2013 ===
 #out=runADMB("ROL-5CD-01.txt",strSpp="ROL",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 #out=runADMB("ROL-5CD-04.txt",strSpp="ROL",runNo=4,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+#out=runADMB("ROL-5CD-05.txt", strSpp="ROL", runNo=5, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=0.2, clean=TRUE, locode=TRUE)
 
 #=== ROL 5AB 2013 ===
 #out=runADMB("ROL-5AB-07.txt",strSpp="ROL",runNo=7,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.25,clean=TRUE)
 #out=runADMB("ROL-5AB-08.txt",strSpp="ROL",runNo=8,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
-#runADMB("ROL-5AB-09.txt",strSpp="ROL",runNo=9,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+
+#=== ROL 5ABCD 2013 ===
+#out=runADMB("ROL-5ABCD-01.txt",strSpp="ROL",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.35,0.2,0.1,0.2,0.35),clean=TRUE,locode=TRUE)
 
 #=== SGR CST 2013 ===
 #out=runADMB("SGR-CST-01.txt",strSpp="SGR",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
