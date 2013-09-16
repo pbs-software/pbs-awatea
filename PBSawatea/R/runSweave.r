@@ -15,8 +15,9 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		delim   = "-",
 		debug   = FALSE,
 		locode  = FALSE,                          # if source as local code (for debugging)
-		awateaPath="C:/Users/haighr/Files/Projects/ADMB/Coleraine",
-		codePath="C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop"
+		awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
+		codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+		sexlab  = c("Females","Males")
 	) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","awateaCode","toolsCode")),pos=1)
@@ -35,9 +36,10 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		source(paste(codePath,"plotFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"utilFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"menuFuns.r",sep="/"),local=FALSE)
-		assign("importCol2",importRes,envir=.GlobalEnv)
+		#assign("importCol2",importRes,envir=.GlobalEnv) # RH: removed importCol2 (2013-09-13)
 	}
 	cpue     = Ncpue > 0
+	sexlab   = rep(sexlab,Nsex)[1:Nsex]
 	runNoStr = pad0(runNo,2)
 	rwtNoStr = pad0(rwtNo,2)
 	run.name = paste(strSpp,"run",runNoStr,sep="")
@@ -66,6 +68,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = gsub("@run.dir",run.dir,tfile)
 	tfile = gsub("@fig.dir",mpd.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
+	tfile = gsub("@sexlab",deparse(sexlab),tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
 	if (!locode) data(gfcode)
 	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
@@ -79,11 +82,11 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	if (Nsex==1) {
 		z0    = grep("@rmsex",tfile)
 		tfile = tfile[setdiff(1:length(tfile),z0)]
-		z1    = intersect(grep("Female",tfile),grep("sppfig",tfile))
+		z1    = intersect(grep("Female",tfile),grep("onefig",tfile))
 		z2    = intersect(grep("Female",tfile),grep("twofig",tfile))
 		tfile[z2] = sapply(tfile[z2],function(x){xx=strsplit(x,split="\\{"); paste(xx[[1]][c(1,2,4)],collapse="{")})
 		z12 = c(z1,z2)
-		tfile[z12] = gsub("twofig","sppfig",gsub("Female","Unisex",tfile[z12]))
+		tfile[z12] = gsub("twofig","onefig",gsub("Female","Unisex",tfile[z12]))
 	} else {
 		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-Master.Snw`
 	}
@@ -103,6 +106,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	# note assume only one method, otherwise need to expand "CAc 1"
 
 	biteMe = function(infile, bites, N) {
+		if (N==0) return(infile)
 		for (b in bites) {
 			Nline = grep(b,infile)
 			if (length(Nline)==0) next

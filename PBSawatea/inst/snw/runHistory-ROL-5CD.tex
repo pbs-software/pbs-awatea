@@ -1,0 +1,39 @@
+% runHistory.tex for ROL 5CD.
+
+\section*{History of Runs (ROL 5CD)}
+
+{\bf Run01}: selectivity priors: uniform; 2 CPUE series; 2 surveys (HS Assemblage, HS Synoptic); all survey/CPUE process error~=~0.2; selectivities: phase 3; Rdevs: phase 2; M \& h fixed (M~=~0.2; h~=~0.85) \newline  
+
+{\bf Run02}: Same as Run01, except estimate M (prior mean~=~0.2; prior SD~=~0.04). \newline
+
+{\bf Run03}: Same as Run01, except h (prior mean~=~0.85; prior SD~=~0.085). \newline
+
+{\bf Run04}: Same as Run01,  except estimate M (prior mean~=~0.2; prior SD~=~0.04) and estimate h (prior mean~=~0.85; prior SD~=~0.085). \newline
+
+{\bf Run05}: fixed M (=~0.2) and h (=~0.85).  CV process error weights (all the same as 5ABCD except for CPUE2, which is slightly lower): a)~HS assemblage survey~=~0.35; b)~HS synoptic survey~=~0.2; c)~CPUE1 (1954--1995)~=~0.2; d)~CPUE2 (1996--2012)~=~0.3; uniform priors on all selectivities, plus survey and CPUE q's. \newline
+
+{\bf Run06}: estimate M (prior mean~=~0.2 with CV~=~20\%); fixed h (=~0.85).  same CV process error weights as for Run05: a)~HS assemblage survey~=~0.35; b)~HS synoptic survey~=~0.2; c)~CPUE1 (1954--1995)~=~0.2; d)~CPUE2 (1996--2012)~=~0.3; uniform priors on all selectivities, plus survey and CPUE q's. \newline
+
+{\bf Run07}: fixed M (=~0.2); estimate h (prior mean~=~0.85 with CV~=~20\%).  same CV process error weights as for Run05 \& Run06: a)~HS assemblage survey~=~0.35; b)~HS synoptic survey~=~0.2; c)~CPUE1 (1954--1995)~=~0.2; d)~CPUE2 (1996--2012)~=~0.3; uniform priors on all selectivities, plus survey and CPUE q's.  This is the current base case. \newline
+
+{\bf Run08}: S estimate M (prior mean~=~0.2 with CV~=~20\%); estimate h (prior mean~=~0.85 with CV~=~20\%).  same CV process error weights as for Run05, Run06 and Run07: a)~HS assemblage survey~=~0.35; b)~HS synoptic survey~=~0.2; c)~CPUE1 (1954--1995)~=~0.2; d)~CPUE2 (1996--2012)~=~0.3; uniform priors on all selectivities, plus survey and CPUE q's;. \newline
+
+{\bf Run09}: estimate M (prior mean~=~0.2 with CV~=~20\%); estimate h (prior mean~=~0.85 with CV~=~20\%).  same CV process error weights: a)~HS assemblage survey~=~0.2; b)~HS synoptic survey~=~0.2; c)~CPUE1 (1954-1995)~=~0.2; d)~CPUE2 (1996-2012)~=~0.3; uniform priors on all selectivities, plus survey and CPUE q's. \newline
+
+{\bf Run10}: estimate M (prior mean~=~0.2 with CV~=~20\%); estimate h (prior mean~=~0.85 with CV~=~20\%).  same CV process error weights: a)~HS assemblage survey~=~0.35; b)~HS synoptic survey~=~0.2; c)~CPUE1 (1954-1995)~=~0.2; d)~CPUE2 (1996-2012)~=~0.2; uniform priors on all selectivities, plus survey and CPUE q's.    \newline
+
+{\bf Run11}: estimate M (prior mean~=~0.2 with CV~=~20\%); estimate h (prior mean~=~0.85 with CV~=~20\%).  This input file exactly the same as Run08 and similar to Run04.  Differs from Run04 in the following ways: a)~CPUE1 is normalised to geomean(1954--1995)~=~1.0; b)~starts in 1945; c)~phase order of selectivity/log(Rdev) reversed; Run11 run with all cvpro~=~0.2.  \newline
+
+{\bf Run12}: estimate M (prior mean~=~0.2 with CV~=~20\%); estimate h (prior mean~=~0.85 with CV~=~20\%).  This input file exactly the same as Run11 except that CPUE1 is not normalised to geomean~=~1.0; use the same CPUE1 series as Run 04; Run 12 run with all cvpro~=~0.2.  \newline
+
+{\bf Run13}: fixed M (~=~0.2) and h (~=~0.85).  Turn off CPUE (fit only survey biomass indices); Run13 run with all cvpro~=~0.2. \newline
+
+{\bf Run14}: fixed M (~=~0.2) and h (~=~0.85).  Turn off CPUE1 and fit to survey biomass indices; Run14 run with all cvpro~=~0.2.  \newline
+
+{\bf Run15}: exactly the same as Run07: fixed M (~=~0.2); estimate h (prior mean~=~0.85 with CV~=~20\%).  Run15 run with all cvpro~=~0.2; uniform priors on all selectivities, plus survey and CPUE q's; effectively Run15 is the same as Run03, except that it starts in 1945 and geomean(CPUE1)~=~1.0.  \newline
+
+{\bf Run16}: drop all CPUE (as for Run13) but emulate Run07 (base run): fixed M (~=~0.2); estimate h (prior mean~=~0.85 with CV~=~20\%).  CVpro: a)~HS assemblage survey~=~0.35; b)~HS synoptic survey~=~0.2. \newline
+
+{\bf Run17}: set this run up as with Run14 (drop other CPUE data);  fixed M (~=~0.2); estimate h (prior mean~=~0.85 with CV~=~20\%).  CVpro: a)~HS assemblage survey~=~0.35; b)~HS synoptic survey~=~0.2; c)~CPUE1 (1954--1995)~=~0.2. \newline
+
+

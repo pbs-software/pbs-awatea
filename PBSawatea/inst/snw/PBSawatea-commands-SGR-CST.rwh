@@ -10,5 +10,10 @@
 #=== SGR CST 2013 ===
 
 # Run01 -- 6 surveys (Historic GBReed, WCHG Synoptic, HS Synoptic, QCS Synoptic, US Triennial, WCVI Synoptic), no CPUE series, $M$ and $h$ fixed, CV process error = 0.35.
-out=runADMB("SGR-CST-01.txt",strSpp="SGR",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
+out=runADMB("SGR-CST-01.txt",strSpp="SGR",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.15,0.0.35,clean=TRUE)
 runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=1,rwts=1:3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)
+
+# Run02 -- Like Run01 but with survey-specific cvpros and estimation of CPUE turned off (CPUE likelihood type = 0)
+out=runADMB("SGR-CST-02.txt",strSpp="SGR",runNo=2,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=seq(.15,.40,.05),clean=TRUE)
+runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=2,rwts=1,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","US Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)
+

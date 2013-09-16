@@ -38,7 +38,7 @@ runADMB = function(
 		source(paste(codePath,"plotFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"utilFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"menuFuns.r",sep="/"),local=FALSE)
-		assign("importCol2",importRes,envir=.GlobalEnv)
+		#assign("importCol2",importRes,envir=.GlobalEnv) # RH: removed importCol2 (2013-09-13)
 	}
 	awateaPath = gsub("/","\\\\",awateaPath)
 	syspath   = paste(syspath0,awateaPath,sep=";")

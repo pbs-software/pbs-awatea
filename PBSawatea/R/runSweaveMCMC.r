@@ -8,14 +8,19 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		runNo = 1,
 		rwtNo = 0,
 		running.awatea=0,   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
-		Ncpue = 0,
+		Nsex    = 2,                              # if 1 then Unisex, if 2 Males & Females
+		Ncpue   = 0,
+		Nsurvey = 3,
 		estM  = TRUE,
 		mcsub = 1:1000,
 		delim = "-",
-		locode = FALSE                          # if source as local code (for debugging)
+		locode = FALSE,                          # if source as local code (for debugging)
+		awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
+		codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+		sexlab  = c("Females","Males")
 	) {
 	on.exit(setwd(wd))
-	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC")),pos=1)
+	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC","awateaCode","toolsCode")),pos=1)
 	if (locode) { 
 		getFile(gfcode,path=system.file("data",package="PBSawatea"))
 		require(PBSmodelling, quietly=TRUE)
@@ -25,10 +30,13 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		require(scape, quietly=TRUE)     # Arni Magnusson's support functions for Awatea.
 		require(scapeMCMC, quietly=TRUE) # Arni Magnusson's support functions for Awatea MCMC.
 		require(gdata, quietly=TRUE)     # Data manipulation functions from CRAN.
-		source("PBSscape.r",local=FALSE)
-		source("utilFuns.r",local=FALSE)
-		source("plotFuns.r",local=FALSE)
-		assign("importCol2",importRes,envir=.GlobalEnv)
+		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
+		source(paste(codePath,"runADMB.r",sep="/"),local=FALSE)
+		source(paste(codePath,"runSweave.r",sep="/"),local=FALSE)
+		source(paste(codePath,"plotFuns.r",sep="/"),local=FALSE)
+		source(paste(codePath,"utilFuns.r",sep="/"),local=FALSE)
+		source(paste(codePath,"menuFuns.r",sep="/"),local=FALSE)
+		#assign("importCol2",importRes,envir=.GlobalEnv) # RH: removed importCol2 (2013-09-13)
 	}
 	cpue     = Ncpue > 0
 	runNoStr = pad0(runNo,2)
@@ -53,8 +61,15 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		#dir.create(mc.dir); setwd(mc.dir) }
 	if (!file.exists("run-masterMCMC.Snw"))
 		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-masterMCMC.Snw",sep=""),wd)
-	masterSweave = readLines(paste(wd,"run-masterMCMC.Snw",sep="/"))
-	tfile = gsub("@cwd",wd,masterSweave)
+	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-masterMCMC.Snw",sep="/"))
+	tfile = masterSweave
+#browser();return()
+
+	# First, get rid of those annoying comments and disabled code
+	notcode = union(grep("^%",tfile),grep("^#",tfile))
+	tfile = tfile[setdiff(1:length(tfile),notcode)]
+
+	tfile = gsub("@cwd",wd,tfile)
 	tfile = gsub("@model.name",model.name,tfile)
 	tfile = gsub("@run.dir",run.dir,tfile)
 	tfile = gsub("@fig.dir",mc.dir,tfile)
@@ -67,50 +82,94 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
 	mcmc  = read.table("params.pst",header=TRUE)
 	ncol  = dim(mcmc)[2];  Nfigs = ceiling(ncol/6)
-	figBites =c("pairs1")
-	for (b in c(figBites)) {
-		Nline = grep(b,tfile)
-		if (length(Nline)==0) next
-		aline = tfile[ Nline ]
-		alines=NULL
-		for ( i in 1:Nfigs) {
-			nline = aline
-			if (i==2)      nline=gsub("\\{st}","{nd}",nline)
-			else if (i==3) nline=gsub("\\{st}","{rd}",nline)
-			else if (i>=4) nline=gsub("\\{st}","{th}",nline)
-			alines=c(alines,gsub("1",i,nline))
-		}
-		tfile=c(tfile[1:(Nline-1)],alines,tfile[(Nline+1):length(tfile)])
-	}
-	
 
-# Smarter Sweave will now deal with non-estimated parameters
-#	if (!estM){
-#		tfile = gsub("\"M_1\",","",tfile)
-#		tfile = gsub("\"M_2\",","",tfile) }
+	if (Nsex==1) {
+		z0    = grep("@rmsex",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+		z1    = intersect(grep("Female",tfile),grep("onefig",tfile))
+		z2    = intersect(grep("Female",tfile),grep("twofig",tfile))
+		tfile[z2] = sapply(tfile[z2],function(x){xx=strsplit(x,split="\\{"); paste(xx[[1]][c(1,2,4)],collapse="{")})
+		z12 = c(z1,z2)
+		tfile[z12] = gsub("twofig","onefig",gsub("Female","Unisex",tfile[z12]))
+	} else {
+		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-Master.Snw`
+	}
+
 	if (!cpue) {
-		rmcpue = sapply(c("CPUEser","CPUEfit"),function(x,y){
-			x=paste("ymrfig\\{",x,sep="")
-			z=grep(x,y)
-			if (length(z)==0) 0 else z },y=tfile,simplify=TRUE)
-		tfile=tfile[!is.element(1:length(tfile),rmcpue)] }
-	localName   = paste(mcname,".Snw",sep="")
-	localSweave = paste(mc.dir,"/",localName,sep="")
+		z0    = grep("@rmcpue",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-Master.Snw`
+	}
+
+	# Start expanding lines using bites
+	SpriorBites = c("log_qsurvey_prior\\[1,]","surveySfull_prior\\[1,]","p_surveySfulldelta\\[1,]","log_surveyvarL_prior\\[1,]")
+	CpriorBites = c("log_qCPUE_prior\\[1,]","p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]")
+	SpostBites  = c("currentMCMC\\$P\\$q_1","currentMCMC\\$P\\$mu_1","currentMCMC\\$P\\$Delta_1","currentMCMC\\$P\\$\"log v_1L\"")
+	CpostBites  = c("currentMCMC\\$P\\$q_999","currentMCMC\\$P\\$mu_999","currentMCMC\\$P\\$Delta_999","currentMCMC\\$P\\$\"log v_999L\"")
+	#MpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]") # would bite with Nmethods (if need be)
+	figBites =c("pairs1")
+
+SApos=c(TRUE,TRUE)
+	biteMe = function(infile, bites, N) {
+		if (N==0) return(infile)
+		for (b in bites) {
+			Nline = grep(b,infile)
+			if (length(Nline)==0) next
+			aline = infile[ Nline ]
+			alines=NULL
+			NApos = 0
+			for ( i in 1:N) {
+				iline = aline
+				NApos = NApos + as.numeric(SApos[i])
+				#if ((grepl("[Aa]ge",b) || grepl("CAs",b)) && !SApos[i]) next
+				#if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("muvec",b)) && !SApos[i]) next
+				#if (N==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
+				if (any(b==c(CpriorBites,CpostBites)) && grepl("999",iline)) iline = gsub("999",Nsurvey+i,iline)
+				if (any(b==figBites)) {
+					if (i==2)      iline=gsub("\\{st}","{nd}",iline)
+					else if (i==3) iline=gsub("\\{st}","{rd}",iline)
+					else if (i>=4) iline=gsub("\\{st}","{th}",iline)
+				}
+				if (grepl("CAs",b) && SApos[i]){
+					iline = gsub("1",i,iline)
+					alines = c(alines, gsub(paste("\\[",i,"]",sep=""),paste("\\[",NApos,"]",sep=""),iline))
+				}
+				else if (N==1) alines=c(alines,gsub("\\[1,]","",iline))
+				else alines=c(alines,gsub("1",i,iline))
+			}
+			infile=c(infile[1:(Nline-1)],alines,infile[(Nline+1):length(infile)])
+		}
+		return(infile)
+	}
+	tfile = biteMe(tfile,SpriorBites,Nsurvey)
+	tfile = biteMe(tfile,CpriorBites,Ncpue)
+	tfile = biteMe(tfile,figBites,Nfigs)
+	tfile = biteMe(tfile,SpostBites,Nsurvey)
+	tfile = biteMe(tfile,CpostBites,Ncpue)
+#browser();return()
+	#if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
+	#else tfile = tfile[-grep("^CAs 1",tfile)]
+
+	localHistory = paste(mc.dir,"/runHistory.tex",sep="")
+	if(file.exists(paste(wd,"/runHistory.tex",sep=""))) {
+		is.history=file.copy(paste(wd,"/runHistory.tex",sep=""),localHistory,overwrite=TRUE)
+	} else
+		tfile = gsub("\\\\input","%\\\\input",tfile)
 
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
-	# Finally, get rid of those annoying comments and disabled code
-	notcode = union(grep("^%",tfile),grep("^#",tfile))
-	tfile = tfile[setdiff(1:length(tfile),notcode)]
+
+	localName   = paste(mcname,".Snw",sep="")
+	localSweave = paste(mc.dir,"/",localName,sep="")
 
 	writeLines(tfile,con=localSweave)
 #browser();return()
 	Sweave(localSweave)
-	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
-	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
-	shell(cmd=paste("dvips ",localName,".dvi",sep=""),wait=TRUE)
-#browser();return()
-	shell(cmd=paste("ps2pdf ",localName,".ps",sep=""),wait=TRUE)
+	shell(cmd=paste("latex ",mcname,".tex",sep=""),wait=TRUE)
+	shell(cmd=paste("latex ",mcname,".tex",sep=""),wait=TRUE)
+	shell(cmd=paste("dvips ",mcname,".dvi",sep=""),wait=TRUE)
+	shell(cmd=paste("ps2pdf ",mcname,".ps",sep=""),wait=TRUE)
 	invisible(tfile) }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweaveMCMC
 

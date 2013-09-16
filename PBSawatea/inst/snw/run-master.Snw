@@ -48,7 +48,7 @@
 % Last line of http://www.latex-community.org/forum/viewtopic.php?f=45&t=4336, a German guy says: 
 %    You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
 %    Apparently shouldn't have just one argument.
-\newcommand\sppfig[2]{    % filename is #1, text is #2
+\newcommand\onefig[2]{    % filename is #1, text is #2
   \begin{figure}[tp]
   \begin{center}
 	\includegraphics[width=6in,height=7in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
@@ -115,23 +115,7 @@
 %  It will set this for the rest of document [doesn't width do that in the above?]
 
 \begin{document}
-
 \begin{center}
-
-{\Large \bf @sppcode MPD working results}
-
-\vspace{7mm}
-
-%{\Large \bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
-{\Large \bf Paul J. Starr and Rowan Haigh}
-
-% This file started for 2012 assessment in July 2012.
-
-Latest is \today, with \Sexpr{print(version$version.string)}. 
-% \Sexpr{print(version$platform)}.
-% {\tt Andrew.Edwards@dfo-mpo.gc.ca}
-% \vspace{4mm}
-\end{center}
 
 % First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
@@ -159,9 +143,11 @@ sigdig = 5              # Number of significant digits to output in tables
 % '@variables' replaced by function 'runSweave' to create individual Sweaves for runs and reweightings.
 <<modelname, echo=FALSE>>=
 model.name     = "@model.name"
+area.name      = strsplit(model.name,split="[-\\.]")[[1]][2]
 run.dir        = "@run.dir"
 fig.dir        = "@fig.dir"
 running.awatea =  @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+eval(parse(text=paste("sexlab=",deparse(@sexlab))))
 @ 
 <<awatea.run, results=hide, echo = FALSE>>=
 if(running.awatea) {
@@ -178,6 +164,21 @@ if(running.awatea) {
   setwd(cwd)     # back to current directory
   } 
 @ 
+
+{\Large \bf MPD working results for @sppname (\Sexpr{area.name})}
+\vspace{7mm}
+
+%{\Large \bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
+{\Large \bf Paul J. Starr and Rowan Haigh}
+
+% This file started for 2012 assessment in July 2012.
+
+Latest is \today, with \Sexpr{print(version$version.string)}. 
+% \Sexpr{print(version$platform)}.
+% {\tt Andrew.Edwards@dfo-mpo.gc.ca}
+% \vspace{4mm}
+\end{center}
+
 
 % \pagestyle{myheadings}
 % \markright{\Sexpr{paste("From ", model.name, ".txt", sep="")}}
@@ -264,8 +265,7 @@ setwd(fig.dir)
 #  package so switch to that. CSDiff on the functions gives only
 #  minor modifications, and summary of outputs is the same.
 currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
-             Dev=TRUE, CPUE=TRUE, Survey=TRUE, 
-             CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
+	Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
 
 # WHEN TIME, change this in importRes function, see:     
 #  model$B$R <- c(rec[-1], NA)     and check emails from Arni, seems
@@ -278,7 +278,8 @@ currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
 #  age-0, but that will require more work and verifying.
 #  Think it may have originally been set up to be recruits in year
 #  t are the number of age-1's in year t+1. Maybe.
-currentRes$B$R = c( sum(currentRes$N[currentRes$N$Year == "1940" & currentRes$N$Age == "1", ]$N),  currentRes$B$R[-length(currentRes$B$R)] )  
+#===RH=== fixed in importRes.r so no longer need this adjustment
+#currentRes$B$R = c( sum(currentRes$N[currentRes$N$Year == "1940" & currentRes$N$Age == "1", ]$N),  currentRes$B$R[-length(currentRes$B$R)] )  
 
 currentPar = importPar(paste(run.dir,"/", model.name, ".par", sep=""))
 # Assign a generic title for use in some plots.
@@ -917,41 +918,41 @@ dev.off()
 }
 @
 
-% \sppfig{catch}{Commercial catch data.}   % No need to repeat for every model run, and it shows up later.
+% \onefig{catch}{Commercial catch data.}   % No need to repeat for every model run, and it shows up later.
 
-% \sppfig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}    % Not on same year axis.
+% \onefig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}    % Not on same year axis.
 
-\sppfig{survIndSer2}{Survey index values (points) with 95\% confidence intervals (bars) and MPD model fits (curves) for the fishery-independent survey series.}
+\onefig{survIndSer2}{Survey index values (points) with 95\% confidence intervals (bars) and MPD model fits (curves) for the fishery-independent survey series.}
 
 % Individual surveys:
 %=======Next line will be expanded to accomodate multiple surveys=======
-% \sppfig{survIndSer4-1}{Fit to fishery-independent survey 1 for run \Sexpr{model.name}.}
+% \onefig{survIndSer4-1}{Fit to fishery-independent survey 1 for run \Sexpr{model.name}.}
 
 % Andy tried replacing survey 1 with *at*surveys - seemed to work okay for survey index fits, but got warnings.
 
-\sppfig{survIndSer3}{Index series of \Sexpr{Nsurv} surveys and commercial CPUE (dashed line), all normalised to their respective means within the span of years covered by all surveys. The plot provides a crude diagnostic to see if indices are giving conflicting signals. \Sexpr{if(NCser==0) paste("(Note that CPUE isn't being used in the model fitting.)")}}
+\onefig{survIndSer3}{Index series of \Sexpr{Nsurv} surveys and commercial CPUE (dashed line), all normalised to their respective means within the span of years covered by all surveys. The plot provides a crude diagnostic to see if indices are giving conflicting signals. \Sexpr{if(NCser==0) paste("(Note that CPUE isn't being used in the model fitting.)")}}
 
-% \sppfig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
+% \onefig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
 
-@rmcpue \sppfig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 95\% error bars are based on lognormal assumption (double check error bars).}
+@rmcpue \onefig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 95\% error bars are based on lognormal assumption (double check error bars).}
 
-@rmcpue \sppfig{CPUEfit}{CPUE index series (without error bars) and biomass trajectories using different q's (if more than one CPUE series).}
+@rmcpue \onefig{CPUEfit}{CPUE index series (without error bars) and biomass trajectories using different q's (if more than one CPUE series).}
 
-\sppfig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
+\onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
 
-\sppfig{CAcFitFem}{Estimated proportions-at-age of females that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
+\onefig{CAcFitFem}{Estimated proportions-at-age of females that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
 \clearpage   % otherwise too many unprocessed floats
 
-@rmsex \sppfig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
+@rmsex \onefig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
 
-@rmsex \sppfig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
+@rmsex \onefig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
 \newpage
 
-\sppfig{ageCommFemale1}{Observed and predicted commercial proportions-at-age for females. Note that years are not consecutive.}
+\onefig{ageCommFemale1}{Observed and predicted commercial proportions-at-age for females. Note that years are not consecutive.}
 
-@rmsex \sppfig{ageCommMale1}{Observed and predicted commercial proportions-at-age for males. Note that years are not consecutive.}
+@rmsex \onefig{ageCommMale1}{Observed and predicted commercial proportions-at-age for males. Note that years are not consecutive.}
 
 \clearpage 
 
@@ -959,22 +960,22 @@ dev.off()
 %=======Next line will be expanded to accomodate multiple surveys=======
 \twofig{ageSurv@survey1Female1}{ageSurv@survey1Male1}{Observed and predicted proportions-at-age for @survey1 survey.}
 
-\sppfig{meanAge}{Mean ages each year for the data (closed circles) and model estimates (joined open triangles) for the commercial and survey age data.}
+\onefig{meanAge}{Mean ages each year for the data (closed circles) and model estimates (joined open triangles) for the commercial and survey age data.}
 
 % \section{Residuals associated with MPD fits  for run \Sexpr{model.name}.}
 
 %=======Next line will be expanded to accomodate multiple surveys=======
-\sppfig{survRes@survey1}{Residuals of fits of model to @survey1 survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+\onefig{survRes@survey1}{Residuals of fits of model to @survey1 survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
 
-\sppfig{commAgeResids}{Residual of fits of model to commercial proportions-at-age data (MPD values).  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give interquartile ranges, with bold lines representing medians and whiskers extending to the most extreme data point that is $<$1.5 times the interquartile range from the box. Bottom panel is the normal quantile-quantile plot for residuals, with the 1:1 line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for the total of \Sexpr{(dim(CAcObsFem)[1] - 1)*dim(CAcObsFem)[2]*2} residuals).}
+\onefig{commAgeResids}{Residual of fits of model to commercial proportions-at-age data (MPD values).  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give interquartile ranges, with bold lines representing medians and whiskers extending to the most extreme data point that is $<$1.5 times the interquartile range from the box. Bottom panel is the normal quantile-quantile plot for residuals, with the 1:1 line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for the total of \Sexpr{(dim(CAcObsFem)[1] - 1)*dim(CAcObsFem)[2]*2} residuals).}
 
 % That calculations is (number of age classes - 1) * number of years of age
 %  data * 2 sexes.
 
 %=======Next line will be expanded to accomodate multiple surveys=======
-\sppfig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from @survey1 survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -1) * 2
+\onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from @survey1 survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -1) * 2
 
-% \sppfig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
+% \onefig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
 
 % Doing the long way to close up figures
 % \twofig{stockRecruit}{recruits}{Top: Deterministic stock-recruit relationship (black curve) and observed values (numbers corresponding to years) using MPD values for run \Sexpr{model.name}. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1,000s of age 1 fish; mean recruitment is \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=",")}.}
@@ -997,18 +998,18 @@ dev.off()
 
 % \twofig{recDev}{recruits}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1000's of age 1 fish; mean recruitment is \Sexpr{signif(mean(currentRes$B$R), sigdig)}.}
 
-% \sppfig{recDevAcf}{Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]} (determined as the first year of commercial age data minus the plus-age class plus the age for which commercial selectivity for females is 0.5, to the final year that recruitments are calculated minus the age for which commercial selectivity for females is 0.5).}
+% \onefig{recDevAcf}{Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]} (determined as the first year of commercial age data minus the plus-age class plus the age for which commercial selectivity for females is 0.5, to the final year that recruitments are calculated minus the age for which commercial selectivity for females is 0.5).}
 
-\sppfig{selectivity}{Selectivities for commercial catch (labelled `Gear 1' here) and surveys (all MPD values), with maturity ogive for females indicated by `m'.}
+\onefig{selectivity}{Selectivities for commercial catch (labelled `Gear 1' here) and surveys (all MPD values), with maturity ogive for females indicated by `m'.}
 
 % Don't need the rest for results Appendix.
 
-\sppfig{ageBarsFemale}{Age structure for females during selected years (not sure if this is useful, but AME had it flagged).}
-@rmsex \sppfig{ageBarsMale}{Age structure for males during selected years (not sure if this is useful, but AME had it flagged).}
+\onefig{ageBarsFemale}{Age structure for females during selected years (not sure if this is useful, but AME had it flagged).}
+@rmsex \onefig{ageBarsMale}{Age structure for males during selected years (not sure if this is useful, but AME had it flagged).}
 
 % \threefig{initAgeDev}{ageBarsFemale}{ageBarsMale}{*NOT AUTOMATED YET*. Top: initial age deviation, $\eta_a$, for each age $a = 2, 3, ..., A-1$). In log space, where the bias-corrected multiplicative deviation is $\mbox{e}^{\eta_a - \sigma_R^2/2}$ where $\eta_a \sim \mbox{Normal}(0, \sigma_R)$. Middle: initial age structure for females. Bottom: initial age structure for males. Lines are a steady-state initial age structure (yes?).}
 
-% \sppfig{Bt}{Spawning biomass (mature females) over time for run \Sexpr{model.name} (MPD values).}
+% \onefig{Bt}{Spawning biomass (mature females) over time for run \Sexpr{model.name} (MPD values).}
 
 \begin{figure}[htp]
 \centering
@@ -1021,7 +1022,7 @@ dev.off()
 \label{fig:BtB0}
 \end{figure}
 
-\sppfig{exploit}{Exploitation rate (MPD) over time  for run \Sexpr{model.name}.}
+\onefig{exploit}{Exploitation rate (MPD) over time  for run \Sexpr{model.name}.}
 
 \end{document}
 

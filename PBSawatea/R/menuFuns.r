@@ -1,5 +1,5 @@
-#--------------------------------------------------------------------#
-#                            Menu Functions                          #
+#-----------------------------------------------------------2013-09-13
+#                           Menu Functions                           #
 #--------------------------------------------------------------------#
 
 get.resFile <- function( resFile=NULL )
@@ -25,14 +25,16 @@ get.resFile <- function( resFile=NULL )
    #  load.allResFiles does load in them all at the beginning, but
    #  the reloading here was probably done so an updated .res file
    #  can be loaded in. Also added CAc=TRUE, CAs=TRUE
-   newRes <- importCol2( res.file=resFile, Dev=TRUE, CPUE=TRUE,
-                               Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE)
-  assign( "currentRes", newRes, pos=1 )
-  assign( "resFile",resFile )
-  cat( "\nLoaded Awatea res file: ",resFile,"\n\n" )
-  print( ll( currentRes ) )
+	#  RH: removed importCol2 (2013-09-13) because importRes is preferred and maintained.
 
-  resFile
+	newRes <- importRes( res.file=resFile, Dev=TRUE, CPUE=TRUE,
+		Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE)
+	assign( "currentRes", newRes, pos=1 )
+	assign( "resFile",resFile )
+	cat( "\nLoaded Awatea res file: ",resFile,"\n\n" )
+	print( ll( currentRes ) )
+
+	resFile
 }
 
 
