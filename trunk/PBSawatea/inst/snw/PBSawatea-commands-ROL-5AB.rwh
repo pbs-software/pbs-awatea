@@ -17,3 +17,9 @@ runSweaveMCMC(strSpp="POP",filename="ROL-5AB-07.txt",runNo=07,rwtNo=3,cpue=TRUE)
 # Run 08 -- Same as Run 07 but CV process error = 0.35 and recruitment residuals disabled (deterministic recruitment).
 out=runADMB("ROL-5AB-08.txt",strSpp="ROL",runNo=8,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
 runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=8,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
+
+# Run 09 -- Same as Run 07 but survey catch-at age likelihood turned off
+runADMB("ROL-5AB-09.txt",strSpp="ROL",runNo=9,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=9,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(FALSE),locode=TRUE)
+
+

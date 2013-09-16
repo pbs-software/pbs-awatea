@@ -4,7 +4,8 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
-0.12  2013-09-12
+0.12  2013-09-16
+  - Revised `run-MasterSweave.Snw` and `runSweaveMCMC.r`. (RH 9/16)
   - Revised `run-Master.Snw` and various functions. (RH 9/12)
   - Revised `runSweave` and various other functions to work with 2 sexes; improved some of the output figures. (RH 9/6)
   - Revised extensivley various functions to deal flexibly with one-sex models and optional CPUE series. (RH 9/5)

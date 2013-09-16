@@ -398,7 +398,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		Nmethods     = as.numeric(rev(strsplit(resvec[grep("^Nmethods",resvec)],split=sep)[[1]])[1])
 		NCPUEindex   = as.numeric(rev(strsplit(resvec[grep("^NCPUEindex",resvec)],split=sep)[[1]])[1])
 		Nsurveyindex = as.numeric(rev(strsplit(resvec[grep("^Nsurveyindex",resvec)],split=sep)[[1]])[1])
-		glist = list(general=list(Nsexes=Nsexes,Nages=Nages,Nmethods=Nmethods,NCPUEindex=NCPUEindex,Nsurveyindex=Nsurveyindex))
+		StartYear    = as.numeric(rev(strsplit(resvec[grep("^StartYear",resvec)],split=sep)[[1]])[1])
+		EndYear      = as.numeric(rev(strsplit(resvec[grep("^EndYear",resvec)],split=sep)[[1]])[1])
+#browser();return()
+		glist = list(general=list(Nsexes=Nsexes,Nages=Nages,Nmethods=Nmethods,
+			NCPUEindex=NCPUEindex,Nsurveyindex=Nsurveyindex,StartYear=StartYear,EndYear=EndYear))
 		elist = sapply(extra,function(x,resvec) { 
 			ex = as.list(x); names(ex) = x
 #if (x=="Virgin_Vulnerable_Biomass") {browser();return() }
@@ -444,7 +448,6 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 				else ex[[i]] = "not found"
 			}
 			return(ex) }, resvec=resvec, simplify=FALSE)
-#browser();return()
 	return(c(glist,elist,clist))
 	}
 	#---END SUBFUNCTIONS---------------------------
@@ -485,7 +488,8 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 	model$B <- getB(years, gears)
 	rec     <- model$N[model$N$Age == 1, ]
 	rec     <- tapply(rec$N, rec$Year, sum)
-	model$B$R <- c(rec[-1], NA)
+	#model$B$R <- c(rec[-1], NA) # RH: Lagged to represent age 1?
+	model$B$R <- rec             # RH: Just use original number as AME reverts to this in `run-Master.Snw`
 	model$Sel <- getSel(gears, surveys, years, sexes, ages)
 	if (Dev)
 		model$Dev <- getDev(ages, years)

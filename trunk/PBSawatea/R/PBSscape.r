@@ -1,42 +1,45 @@
-#PBSscape-------------------------------2012-08-21
+#PBSscape-------------------------------2013-09-13
 #  Modified functions from Arni Magnussen's 
 #  packages 'scape' and 'scapeMCMC'
 #-------------------------------------------AME/RH
 
 #---History---------------------------------------
+# PBSscape.r - originally created from `ymrscape` for POP 2012.
+#   Since then, it has been extensively revised by RH to handle
+#   Rock Sole (single-sex model) and Silvergray Rockfish (2013).
+
 # ymrScape.r - for ymr, just the function definitions here. Calls to
-#  them will go into .Snw. Call this from .Snw. 23rd February 2011
+#   them will go into .Snw. Call this from .Snw. 23rd February 2011
 # SEE popScapeRuns2.r for figures to do for both runs at once, as
-#  went into the POP SAR. Wait until we have final results.
+#   went into the POP SAR. Wait until we have final results.
 
 # popScape2.r - going to do all postscript files as better than .png.
-#  Getting rid of menus and automatically doing all required figures
+#   Getting rid of menus and automatically doing all required figures
 #   each time I run it, then automatically into latex to check, then
 #   when all good put into the Word file with captions etc. Will be
 #   way more efficient for me to work, rather than all the time it
 #   takes opening and closing windows.
-# **Jump to end to load in MCMC and plot pairs plots and acf.
-#
+#   **Jump to end to load in MCMC and plot pairs plots and acf.
+
 # popScape.r notes:
-# Always choose one of the "Save all ** plots to PNG" options, as I'm not
-#  repeating the new figures. 
+# Always choose one of the "Save all ** plots to PNG" options, 
+#   as I'm not repeating the new figures. 
 # Go through figures, see what else to add. Some will just need tweaking - see
-#  notes on Appendix D printout.
+#   notes on Appendix D printout.
 # Checking that first value for MCMC chain is what's in currentRes as
-#  the "MPD". Do get:
-# > currentRes$B[30, ]
-#   Year     VB    SB       Y         U        R
-#30 1969 145424 88107 10382.4 0.0713941 17866.36
-#> currentMCMC$B[1, "1969"]
-#[1] 88107    # so this is correct (they call it SB then B)
-# But recruitment isn't - damn, maybe it's a year off again, like what I
-#  figured out for MCMC:
-# > currentMCMC$R[1, "1969"]
-# [1] 12773.1        # so disagrees
-# > currentMCMC$R[1, "1970"]
-# [1] 17866.4
-#                    # so it is a year off.
-# But recruits aren't actually plotted from MPD stuff, so think is okay.
+#   the "MPD". Do get:
+#   > currentRes$B[30, ]
+#      Year     VB    SB       Y         U        R
+#   30 1969 145424 88107 10382.4 0.0713941 17866.36
+#   > currentMCMC$B[1, "1969"]
+#   [1] 88107    # so this is correct (they call it SB then B)
+#   But recruitment isn't - damn, maybe it's a year off again, 
+#   like what I figured out for MCMC:
+#   > currentMCMC$R[1, "1969"]
+#   [1] 12773.1        # so disagrees
+#   > currentMCMC$R[1, "1970"]
+#   [1] 17866.4    # so it is a year off.
+#   But recruits aren't actually plotted from MPD stuff, so think is okay.
 
 # Plots like biomass.png use the MPD, but shouldn't they really use the median
 #  of posterior (or mean), and maybe show credible intervals?? Check difference
@@ -630,21 +633,21 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
 
 load.allResFiles <- function( resList=NULL )  
 {
-  # Loads all Awatea "res" files in working directory into a list.
-  if ( is.null(resList) )
-  resList <- dir( path="../.", pattern="results.dat$" )
-         #YMR AME path was "."
-         # YMR pattern was ".res$", but need to go through Excel
-         #  to get .res, and .dat has same numbers (see .Snw)
-         # NOT called now by ymrrun1dos.Snw,just import results.dat
+	# Loads all Awatea "res" files in working directory into a list.
+	if ( is.null(resList) )
+	resList <- dir( path="../.", pattern="results.dat$" )
+	#YMR AME path was "."
+	# YMR pattern was ".res$", but need to go through Excel
+	#  to get .res, and .dat has same numbers (see .Snw)
+	# NOT called now by ymrrun1dos.Snw,just import results.dat
 
-  result <- as.list( c(1:length(resList)) )
-  names( result) <- resList
+	result <- as.list( c(1:length(resList)) )
+	names( result) <- resList
 
-  for ( i in 1:length(result) )
-    result[[i]] <- importCol2( res.file=resList[i], Dev=TRUE, CPUE=TRUE,
-                               Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE)
-  result                             # AME added CAc=TRUE, CAs=TRUE.
+	for ( i in 1:length(result) )
+		result[[i]] <- importRes( res.file=resList[i], Dev=TRUE, CPUE=TRUE,
+			Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE) # AME added CAc=TRUE, CAs=TRUE.
+	result                             
 }
 
 
@@ -2386,8 +2389,7 @@ function (mcmcObj, projObj, save = FALSE,
     dev.off()
 
     options(scipen = 10)
-    postscript("Bproj.eps", horizontal = FALSE, paper = "special", 
-        height = 7, width = 6.2)
+    postscript("Bproj.eps", horizontal=FALSE, paper="special", height=7, width=6.2)
     plt.quantBio(currentMCMC$B, currentProj$B, xyType = "quantBox", 
         policy = plotPolicies,    # *AME*
         save = FALSE)
@@ -2564,13 +2566,14 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 			# pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
 		CAc.sex = unique(obj$CAc$Sex)
 		for(plot.sex in CAc.sex) {
+			ii = grep(plot.sex,CAc.sex)
 			# For YMR, changing height from 4.5, and layout from c(4,4), to put all on one
 			age.layout = rev(c(ceiling(CAc.nyrs[i]/maxcol),maxcol)) # backwards in stupid lattice
 			postscript(paste("ageComm", plot.sex,i,".eps", sep=""),
 				height = switch(age.layout[2],4,6,9,9,9,9,9,9,9), width = 6.5,
 				horizontal=FALSE,  paper="special", onefile=FALSE)
 			plotCA( obj, what="c", ylab="Proportion", xlab="Age class",
-				sex=plot.sex, layout= age.layout, key=CA.key, main=plot.sex,
+				sex=plot.sex, layout= age.layout, key=CA.key, main=sexlab[ii],
 				pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 ,series=i)
 			# col.lines otherwise boys are blue
 			# Tried using rbind to add dummy data for 1985, 1986 and 1988, but didn't work:
@@ -2608,11 +2611,7 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   #        }
 
 	# Survey Age Fits (modified by RH 2012-08-01)
-	# Shifting the key here down slightly
-	CAs.key = list(text = list(lab= c("Obs", "Pred")),
-		lines = list(col= c("black", "red"),  cex= c(0.3, 0.3)),
-		type=c("p", "l"), x = 0.78, y = -0.16, pch=c(20,20), lwd=1, between=0.3)
-		# AME: pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
+	# AME: pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
 	CAs.sex = unique(obj$CAs$Sex)
 	#ageSurveyFigName =c("ageSurvGIG", "ageSurvQCSsyn", "ageSurvQCSshr")
 	age.height = c(3.0, 2.8, 3) # For .eps figs:
@@ -2620,27 +2619,30 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 	seriesList <- sort( unique( obj$CAs$Series) )
 	ageSurveyFigName = paste("ageSurv",ssnames[seriesList],sep="") # friggin nightmare
 	ageSurveyFigName = gsub(" ","",ageSurveyFigName)               # perhaps redundant but just to be sure
-	age.layout = list()
-	age.layout[[1]] = c(2,1)
-	age.layout[[2]] = c(4,1)
+	#age.layout = list(); age.layout[[1]] = c(2,1); age.layout[[2]] = c(4,1)
 	for ( i in 1:length(seriesList) ) {
 		ii = seriesList[i]; zi=is.element(obj$CAs$Series,ii)
 		if (!any(zi)) next
 		iyr = unique(obj$CAs$Year[zi]); nyr = length(iyr)
-		ncol = min(nyr,4); nrow=ceiling(nyr/ncol)
+		ncol = min(nyr,maxcol); nrow=ceiling(nyr/ncol)
+		# Shifting the key here down slightly (RH: variable y-shift depending on nrow)
+		CAs.key = list(text=list(lab=c("Obs","Pred")), lines=list(col=c("black","red"),
+			cex= c(0.3,0.3)), type=c("p","l"), x=0.78, y=ifelse(nrow==1,-0.16,-0.08), pch=c(20,20), lwd=1, between=0.3)
 		for(plot.sex in CAs.sex) {
+			jj = grep(plot.sex,CAs.sex)
 			postscript(paste(ageSurveyFigName[i], plot.sex,ii,".eps", sep=""),
 			#sep=""),  height = age.height[i], width = age.width[i], # RH disabled
-			height=3.5, width=2*ncol, horizontal=FALSE, paper="special", onefile=FALSE)
-		plotCA( obj, what="s", series = ii, ylab="Proportion",
-			#xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex, # RH disabled
-			xlab="Age class", sex=plot.sex, layout=c(ncol,nrow), key=CAs.key, main=plot.sex, # RH: Stupid trellis appears to take (columns,rows) for the layout.
-			pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
-		# AME: col.lines otherwise boys are blue
-		# AME: Tried using rbind to add dummy data for 1985, 1986, and 1988, but didn't work:
-		#      add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
-		#      xxx$CAc = rbind(xxx$CAc, add)
-		dev.off()
+			height=2*nrow+1.5, width=1.5*ncol, horizontal=FALSE, paper="special", onefile=FALSE)
+
+			plotCA( obj, what="s", series = ii, ylab="Proportion",
+				#xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex, # RH disabled
+				xlab="Age class", sex=plot.sex, layout=c(ncol,nrow), key=CAs.key, main=sexlab[jj], # RH: Stupid trellis appears to take (columns,rows) for the layout.
+				pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
+			# AME: col.lines otherwise boys are blue
+			# AME: Tried using rbind to add dummy data for 1985, 1986, and 1988, but didn't work:
+			#      add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
+			#      xxx$CAc = rbind(xxx$CAc, add)
+			dev.off()
 		}  # end of plot.sex loop
 	}     # end of seriesList loop
   
