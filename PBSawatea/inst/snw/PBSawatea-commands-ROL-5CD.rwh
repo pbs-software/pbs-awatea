@@ -30,4 +30,29 @@ runMPD(strSpp="ROL", prefix=c("ROL","5CD"), runs=8, rwts=3, Nsex=1, Ncpue=2,Nsur
 out=runADMB("ROL-5CD-08.txt",strSpp="ROL",runNo=8,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
 runSweaveMCMC(strSpp="ROL",filename="ROL-5CD-08.txt",runNo=8,rwtNo=3,Nsex=1,Ncpue=2,Nsurvey=2,locode=TRUE)  # estM parameter no longer used
 
+Run 11
+out=runADMB("ROL-5CD-11.txt", strSpp="ROL", runNo=11, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.35, 0.2, 0.2, 0.3), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=11,rwts=3,Nsex=1,Ncpue=2,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(TRUE,TRUE),locode=TRUE)
+out=runADMB("ROL-5CD-11.txt",strSpp="ROL",runNo=11,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="ROL",filename="ROL-5CD-11.txt",runNo=11,rwtNo=3,Nsex=1,Ncpue=2,Nsurvey=2,locode=TRUE)  # estM parameter no longer used
+
+Run 18
+out=runADMB("ROL-5CD-18.txt", strSpp="ROL", runNo=18, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.35, 0.2), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=18,rwts=1,Nsex=1,Ncpue=0,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(TRUE,TRUE),locode=TRUE)
+out=runADMB("ROL-5CD-18.txt",strSpp="ROL",runNo=18,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="ROL",filename="ROL-5CD-18.txt",runNo=18,rwtNo=1,Nsex=1,Ncpue=0,Nsurvey=2,locode=TRUE)  # estM parameter no longer used
+
+# Run 19
+out=runADMB("ROL-5CD-19.txt", strSpp="ROL", runNo=19, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.35, 0.2, 0.3), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=19,rwts=3,Nsex=1,Ncpue=1,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(TRUE,TRUE),locode=TRUE)
+
+#Run 20
+out=runADMB("ROL-5CD-20.txt", strSpp="ROL", runNo=20, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.35, 0.2, 0.2), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=20,rwts=3,Nsex=1,Ncpue=1,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(TRUE,TRUE),locode=TRUE)
+
+#Run 21
+out=runADMB("ROL-5CD-21.txt", strSpp="ROL", runNo=21, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.35, 0.2, 0.2, 0.3), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=21,rwts=3,Nsex=1,Ncpue=2,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(TRUE,TRUE),locode=TRUE)
+out=runADMB("ROL-5CD-21.txt",strSpp="ROL",runNo=21,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="ROL",filename="ROL-5CD-21.txt",runNo=21,rwtNo=3,Nsex=1,Ncpue=2,Nsurvey=2,locode=TRUE)  # estM parameter no longer used
 

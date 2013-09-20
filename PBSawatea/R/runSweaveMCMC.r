@@ -88,27 +88,32 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		tfile = tfile[setdiff(1:length(tfile),z0)]
 		z1    = intersect(grep("Female",tfile),grep("onefig",tfile))
 		z2    = intersect(grep("Female",tfile),grep("twofig",tfile))
-		tfile[z2] = sapply(tfile[z2],function(x){xx=strsplit(x,split="\\{"); paste(xx[[1]][c(1,2,4)],collapse="{")})
-		z12 = c(z1,z2)
-		tfile[z12] = gsub("twofig","onefig",gsub("Female","Unisex",tfile[z12]))
+		if (length(z2) > 0) {
+			tfile[z2] = sapply(tfile[z2],function(x){xx=strsplit(x,split="\\{"); paste(xx[[1]][c(1,2,4)],collapse="{")})
+			z12 = c(z1,z2)
+			if (length(z1z2) > 0)
+				tfile[z12] = gsub("twofig","onefig",gsub("Female","Unisex",tfile[z12]))
+		}
 	} else {
 		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-Master.Snw`
 	}
 
 	if (!cpue) {
 		z0    = grep("@rmcpue",tfile)
-		tfile = tfile[setdiff(1:length(tfile),z0)]
+		if (length(z0) > 0)
+			tfile = tfile[setdiff(1:length(tfile),z0)]
 	} else {
 		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-Master.Snw`
 	}
 
 	# Start expanding lines using bites
 	SpriorBites = c("log_qsurvey_prior\\[1,]","surveySfull_prior\\[1,]","p_surveySfulldelta\\[1,]","log_surveyvarL_prior\\[1,]")
-	CpriorBites = c("log_qCPUE_prior\\[1,]","p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]")
-	SpostBites  = c("currentMCMC\\$P\\$q_1","currentMCMC\\$P\\$mu_1","currentMCMC\\$P\\$Delta_1","currentMCMC\\$P\\$\"log v_1L\"")
-	CpostBites  = c("currentMCMC\\$P\\$q_999","currentMCMC\\$P\\$mu_999","currentMCMC\\$P\\$Delta_999","currentMCMC\\$P\\$\"log v_999L\"")
-	#MpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]") # would bite with Nmethods (if need be)
+	CpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]")
+	cpueBites = c("log q_999")
 	figBites =c("pairs1")
+	#SpostBites  = c("currentMCMC\\$P\\$q_1","currentMCMC\\$P\\$mu_1","currentMCMC\\$P\\$Delta_1","currentMCMC\\$P\\$\"log v_1L\"") # replaced by a call to xtable
+	#CpostBites  = c("currentMCMC\\$P\\$mu_999","currentMCMC\\$P\\$Delta_999","currentMCMC\\$P\\$\"log v_999L\"") # replaced by a call to xtable
+	#MpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]") # would bite with Nmethods (if need be)
 
 SApos=c(TRUE,TRUE)
 	biteMe = function(infile, bites, N) {
@@ -122,10 +127,7 @@ SApos=c(TRUE,TRUE)
 			for ( i in 1:N) {
 				iline = aline
 				NApos = NApos + as.numeric(SApos[i])
-				#if ((grepl("[Aa]ge",b) || grepl("CAs",b)) && !SApos[i]) next
-				#if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("muvec",b)) && !SApos[i]) next
-				#if (N==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
-				if (any(b==c(CpriorBites,CpostBites)) && grepl("999",iline)) iline = gsub("999",Nsurvey+i,iline)
+				if (grepl("999",iline)){ iline = gsub("999",Nsurvey+i,iline) }#; browser()}
 				if (any(b==figBites)) {
 					if (i==2)      iline=gsub("\\{st}","{nd}",iline)
 					else if (i==3) iline=gsub("\\{st}","{rd}",iline)
@@ -143,11 +145,13 @@ SApos=c(TRUE,TRUE)
 		return(infile)
 	}
 	tfile = biteMe(tfile,SpriorBites,Nsurvey)
-	tfile = biteMe(tfile,CpriorBites,Ncpue)
-	tfile = biteMe(tfile,figBites,Nfigs)
-	tfile = biteMe(tfile,SpostBites,Nsurvey)
-	tfile = biteMe(tfile,CpostBites,Ncpue)
+	tfile = biteMe(tfile,CpriorBites,1)
+	if (cpue)
+		tfile = biteMe(tfile,cpueBites,Ncpue)
 #browser();return()
+	tfile = biteMe(tfile,figBites,Nfigs)
+	#tfile = biteMe(tfile,SpostBites,Nsurvey)
+	#tfile = biteMe(tfile,CpostBites,max(Ncpue,1))
 	#if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
 	#else tfile = tfile[-grep("^CAs 1",tfile)]
 

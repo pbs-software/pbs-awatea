@@ -354,7 +354,7 @@ for(i in 1:length(use.Pnames))
        # This covers all choices in tab.Pnames
        "R_0" = currentRes$extra$priors$R0,
        "M_1" = currentRes$extra$priors$M1_prior[1,],
-@rmcpue        "M_2" = currentRes$extra$priors$M1_prior[2,],            
+@rmsex        "M_2" = currentRes$extra$priors$M1_prior[2,],            
        "h"   = currentRes$extra$priors$h_prior,              
 #=======Next line will be expanded to accomodate multiple surveys=======
        "log q_1" = currentRes$extra$priors$log_qsurvey_prior[1,],
@@ -1072,11 +1072,12 @@ CAfirstYear = min(min(currentRes$CAc$Year), min(currentRes$CAs$Year))
 \clearpage     % to get tables at end
 
 <<tabmcmc, results=tex, echo=FALSE>>=
-	tabdigits = 4      # number of decimal places to give
+	tabdigits = 3      # number of decimal places to give
 	tabmcmc  = t(sapply(currentMCMC$P,quantile,c(0.05,0.50,0.95)))
+	if (exists("formatCatch")) { tabmcmc = formatCatch(tabmcmc,N=4) } else { tabmcmc["R_0",] = round(tabmcmc["R_0",]) }
 	rownames(tabmcmc) =  paste(rep("$",nrow(tabmcmc)),gsub("mu","\\\\mu",rownames(tabmcmc)),rep("$",nrow(tabmcmc)),sep="")
-	xtabmcmc = xtable(tabmcmc,
-		label   = "tab:MCMCpar", digits  = tabdigits,
+	xtabmcmc = xtable(tabmcmc, align="crrr",
+		label   = "tab:MCMCpar", digits = if (exists("formatCatch")) NULL else tabdigits,
 		caption = "Summary statistics of MCMC results for estimated parameters (defined in Appendix F)." )
 	print(xtabmcmc, caption.placement="top",sanitize.rownames.function=function(x){x}) 
 @

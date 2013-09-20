@@ -821,8 +821,7 @@ ageHalfFemSelComm = round(muC.mpd - sqrt(exp(logvC.mpd) * log(2) ))
          #   s_{ag1} = 0.5. Working out saved in POP12 folder.
   # This may be 1 year off, given I've now fixed the recruitment
   #  indexing issue.
-yearsForACF = (firstYearOfAgeData - A + ageHalfFemSelComm):
-  (as.numeric(max(names(logRecDev.mpd))) - ageHalfFemSelComm)
+yearsForACF = (firstYearOfAgeData - A + ageHalfFemSelComm): (as.numeric(max(names(logRecDev.mpd))) - ageHalfFemSelComm)
 logRecDevForACF = logRecDev.mpd[as.character(yearsForACF)]
 if (all(logRecDevForACF==0)) {
 	plot(0,0,type="n",axes=FALSE,xlab="",ylab="")
