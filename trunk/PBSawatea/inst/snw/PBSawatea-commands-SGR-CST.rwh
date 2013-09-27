@@ -1,9 +1,9 @@
 # MCMC Stuff--------------------------------------
 # Run MCMCs on Supercomputer, issue commands:
-#   awatea -ind SGR-CST.01.01.txt -mcmc 10000000 -mcsave 10000
-#   awatea -ind SGR-CST.01.01.txt -mceval
+#   awatea -ind SGR-CST.01.03.txt -mcmc 10000000 -mcsave 10000
+#   awatea -ind SGR-CST.01.03.txt -mceval
 # The latter creates projections specified by the input file.
-# Copy MCMC results to both POPrun01/MCMC.01.01 and ./POPrun01/MCMC.01.01/Proj.01.01 (the latter preserves the projections as the MSY calculation will overwrite)
+# Copy MCMC results to both SGRrun01/MCMC.01.03 and SGRrun01/MCMC.01.03/Proj.01.03 (the latter preserves the projections as the MSY calculation will overwrite)
 #-------------------------------------------------
 
 #require("PBSawatea")
@@ -17,3 +17,60 @@ runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=1,rwts=1:3,Nsex=2,Ncpue=0,Nsurvey
 out=runADMB("SGR-CST-02.txt",strSpp="SGR",runNo=2,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=seq(.15,.40,.05),clean=TRUE)
 runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=2,rwts=1,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","US Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)
 
+#Run09
+out=runADMB("SGR-CST-09.txt",strSpp="SGR",runNo=9,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.2,0.2,0.35,0.4,0.4,0.35),clean=TRUE, locode=TRUE)
+runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=9,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("WCHG Synoptic","HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","US Triennial"),SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)
+# Run MCMCs on Supercomputer, issue commands:
+#   awatea -ind SGR-CST.09.03.txt -mcmc 10000000 -mcsave 10000   ( or 5x the amounts)
+#   awatea -ind SGR-CST.09.03.txt -mceval
+# The latter call creates projections specified by the input file (so choose appropriate end-year-of-projection for 5 or 10-y projections)
+# Copy MCMC results to both SGRrun09/MCMC.09.03 and SGRrun09/MCMC.09.03/PRF.09.03 (the latter preserves the projections as the MSY calculation will overwrite)
+out=runADMB("SGR-CST-09.txt",strSpp="SGR",runNo=9,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="SGR",filename="SGR-CST-09.txt",runNo=9,rwtNo=3,Nsex=2,Ncpue=0,Nsurvey=6,locode=TRUE)  
+
+#Run10
+out=runADMB("SGR-CST-10.txt",strSpp="SGR",runNo=10,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.2,0.2,0.35,0.4,0.4,0.35),clean=TRUE, locode=TRUE)
+runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=10,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("WCHG Synoptic","HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","US Triennial"),SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)
+# Run MCMCs on Supercomputer, issue commands:
+#   awatea -ind SGR-CST.10.03.txt -mcmc 10000000 -mcsave 10000   ( or 5x the amounts)
+#   awatea -ind SGR-CST.10.03.txt -mceval
+# The latter call creates projections specified by the input file (so choose appropriate end-year-of-projection for 5 or 10-y projections)
+# Copy MCMC results to both SGRrun10/MCMC.10.03 and SGRrun10/MCMC.10.03/PRF.10.03 (the latter preserves the projections as the MSY calculation will overwrite)
+out=runADMB("SGR-CST-10.txt",strSpp="SGR",runNo=9,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="SGR",filename="SGR-CST-10.txt",runNo=9,rwtNo=3,Nsex=2,Ncpue=0,Nsurvey=6,locode=TRUE)  
+
+#Run 11 (base case)
+out=runADMB("SGR-CST-11.txt",strSpp="SGR",runNo=11,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.2,0.2,0.35,0.4,0.4,0.35),clean=TRUE,locode=TRUE)
+outdat=runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=11,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("WCHG Synoptic","HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","US Triennial"),SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)
+# awatea -ind SGR-CST.11.03.txt -mcmc 10000000 -mcsave 10000
+# awatea -ind SGR-CST.11.03.txt -mceval
+out=runADMB("SGR-CST-11.txt",strSpp="SGR",runNo=11,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="SGR",filename="SGR-CST-11.txt",runNo=11,rwtNo=3,Nsex=2,Ncpue=0,Nsurvey=6,SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)  
+
+#Run 12 (Sensitivity 1 -- as for Run11 except fix M=0.06)
+out=runADMB("SGR-CST-12.txt",strSpp="SGR",runNo=12,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.2,0.2,0.35,0.4,0.4,0.35),clean=TRUE,locode=TRUE)
+outdat=runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=12,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("WCHG Synoptic","HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","US Triennial"),SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)
+# awatea -ind SGR-CST.12.03.txt -mcmc 10000000 -mcsave 10000
+# awatea -ind SGR-CST.12.03.txt -mceval
+out=runADMB("SGR-CST-12.txt",strSpp="SGR",runNo=12,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="SGR",filename="SGR-CST-12.txt",runNo=12,rwtNo=3,Nsex=2,Ncpue=0,Nsurvey=6,SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)  
+
+#Run 13 (Sensitivity 2 -- as for Run11 except add back two missing indices in the GB Reed historical series)
+out=runADMB("SGR-CST-13.txt",strSpp="SGR",runNo=13,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.2,0.2,0.35,0.4,0.4,0.35),clean=TRUE,locode=TRUE)
+outdat=runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=13,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("WCHG Synoptic","HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","US Triennial"),SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)
+
+# Run 14 (Sensitivuty 3 -- as for Run11 except use 2+ maturity ogive)
+out=runADMB("SGR-CST-14.txt",strSpp="SGR",runNo=14,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.2,0.2,0.35,0.4,0.4,0.35),clean=TRUE,locode=TRUE)
+outdat=runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=14,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("WCHG Synoptic","HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","US Triennial"),SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)
+# awatea -ind SGR-CST.14.03.txt -mcmc 10000000 -mcsave 10000
+# awatea -ind SGR-CST.14.03.txt -mceval
+out=runADMB("SGR-CST-14.txt",strSpp="SGR",runNo=14,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="SGR",filename="SGR-CST-14.txt",runNo=14,rwtNo=3,Nsex=2,Ncpue=0,Nsurvey=6,SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)  
+
+# Run 15 (Sensitivity 4 -- as for Run11 except use uniform priors for 4 estimated survey selectivies)
+out=runADMB("SGR-CST-15.txt",strSpp="SGR",runNo=15,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.2,0.2,0.35,0.4,0.4,0.35),clean=TRUE,locode=TRUE)
+outdat=runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=15,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("WCHG Synoptic","HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","US Triennial"),SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)
+# awatea -ind SGR-CST.15.03.txt -mcmc 10000000 -mcsave 10000
+# awatea -ind SGR-CST.15.03.txt -mceval
+out=runADMB("SGR-CST-15.txt",strSpp="SGR",runNo=15,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="SGR",filename="SGR-CST-15.txt",runNo=15,rwtNo=3,Nsex=2,Ncpue=0,Nsurvey=6,SApos=c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE),locode=TRUE)

@@ -8,11 +8,10 @@
 
 require("PBSawatea")
 
-# Run07 --  QCS Synoptic survey, 2 CPUE series (1966--1995, 1996--2012), $M$ and $h$ fixed, CV process error = 0.20.
+# Run 07 --  QCS Synoptic survey, 2 CPUE series (1966--1995, 1996--2012), $M$ and $h$ fixed, CV process error = 0.20.
 out=runADMB("ROL-5AB-07.txt",strSpp="ROL",runNo=7,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.25,clean=TRUE)
 runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=7,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
-out=runADMB("ROL-5AB-07.txt",strSpp="POP",runNo=07,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
-runSweaveMCMC(strSpp="POP",filename="ROL-5AB-07.txt",runNo=07,rwtNo=3,cpue=TRUE)  # estM parameter no longer used
+out=runADMB("ROL-5AB-07.txt",strSpp="ROL",runNo=07,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
 
 # Run 08 -- Same as Run 07 but CV process error = 0.35 and recruitment residuals disabled (deterministic recruitment).
 out=runADMB("ROL-5AB-08.txt",strSpp="ROL",runNo=8,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
@@ -22,4 +21,27 @@ runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=8,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1
 runADMB("ROL-5AB-09.txt",strSpp="ROL",runNo=9,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=9,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(FALSE),locode=TRUE)
 
+# Run 22 (base case)
+out=runADMB("ROL-5AB-22.txt", strSpp="ROL", runNo=22, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.25, 0.2), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=22,rwts=3,Nsex=1,Ncpue=1,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
+out=runADMB("ROL-5AB-22.txt",strSpp="ROL",runNo=22,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="ROL",filename="ROL-5AB-22.txt",runNo=22,rwtNo=3,Nsex=1,Ncpue=1,Nsurvey=1,SApos=c(TRUE),histRP=TRUE,locode=TRUE)
+
+# Run 23 (sensitivity 2)
+out=runADMB("ROL-5AB-23.txt", strSpp="ROL", runNo=23, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.25, 0.2), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=23,rwts=3,Nsex=1,Ncpue=1,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
+out=runADMB("ROL-5AB-23.txt",strSpp="ROL",runNo=23,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="ROL",filename="ROL-5AB-23.txt",runNo=23,rwtNo=3,Nsex=1,Ncpue=1,Nsurvey=1,SApos=c(TRUE),histRP=TRUE,locode=TRUE)
+
+# Run 27 (sensitivity 1)
+out=runADMB("ROL-5AB-27.txt", strSpp="ROL", runNo=27, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.25, 0.15, 0.4), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=27,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
+out=runADMB("ROL-5AB-27.txt",strSpp="ROL",runNo=27,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="ROL",filename="ROL-5AB-27.txt",runNo=27,rwtNo=3,Nsex=1,Ncpue=2,Nsurvey=1,SApos=c(TRUE),histRP=TRUE,locode=TRUE)
+
+# Run 28 (sensitivity 3)
+out=runADMB("ROL-5AB-28.txt", strSpp="ROL", runNo=28, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.25, 0.15, 0.4), clean=TRUE, locode=TRUE)
+runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=28,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
+out=runADMB("ROL-5AB-28.txt",strSpp="ROL",runNo=28,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="ROL",filename="ROL-5AB-28.txt",runNo=28,rwtNo=3,Nsex=1,Ncpue=2,Nsurvey=1,SApos=c(TRUE),histRP=TRUE,locode=TRUE)
 

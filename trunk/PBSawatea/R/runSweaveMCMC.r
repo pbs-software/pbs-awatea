@@ -1,4 +1,4 @@
-#runSweave------------------------------2013-09-06
+#runSweave------------------------------2013-09-24
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
@@ -11,13 +11,13 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		Nsex    = 2,                              # if 1 then Unisex, if 2 Males & Females
 		Ncpue   = 0,
 		Nsurvey = 3,
-		estM  = TRUE,
+		SApos   = rep(TRUE,Nsurvey),              # surveys with age composition data
 		mcsub = 1:1000,
 		delim = "-",
 		locode = FALSE,                          # if source as local code (for debugging)
 		awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
 		codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-		sexlab  = c("Females","Males")
+		histRP  =FALSE
 	) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC","awateaCode","toolsCode")),pos=1)
@@ -63,11 +63,25 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-masterMCMC.Snw",sep=""),wd)
 	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-masterMCMC.Snw",sep="/"))
 	tfile = masterSweave
-#browser();return()
 
-	# First, get rid of those annoying comments and disabled code
+	# First, get rid excess lines, annoying comments, and disabled code
+	if (length(grep("CUT HERE",tfile))>0)
+		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
 	notcode = union(grep("^%",tfile),grep("^#",tfile))
 	tfile = tfile[setdiff(1:length(tfile),notcode)]
+#browser();return()
+
+	# Bring in the results file
+	if (any(grepl("@resultsMCMC",tfile))) {
+		rescode = grep("@resultsMCMC",tfile)[1]
+		resfile = paste(wd,"/resultsMCMC-run",runNoStr,".tex",sep="")
+		if (file.exists(resfile)) {
+			rfile = readLines(resfile)
+			tfile = c(tfile[1:(rescode-1)],rfile,tfile[(rescode+1):length(tfile)])
+		}
+		else 
+			tfile = tfile[setdiff(1:length(tfile),rescode)]
+	}
 
 	tfile = gsub("@cwd",wd,tfile)
 	tfile = gsub("@model.name",model.name,tfile)
@@ -77,6 +91,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	tfile = gsub("@prj.dir",prj.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
 	tfile = gsub("@mcsub",deparse(mcsub),tfile)
+	tfile = gsub("@nsex",Nsex,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
 	data(gfcode,package="PBSawatea")
 	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
@@ -97,7 +112,6 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-Master.Snw`
 	}
-
 	if (!cpue) {
 		z0    = grep("@rmcpue",tfile)
 		if (length(z0) > 0)
@@ -105,17 +119,23 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-Master.Snw`
 	}
+	if (!histRP) {
+		z0    = grep("@rmhrp",tfile)
+		if (length(z0) > 0)
+			tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmhrp ","",tfile) # assumes space after @rmhrp for readability in `run-Master.Snw`
+	}
 
 	# Start expanding lines using bites
 	SpriorBites = c("log_qsurvey_prior\\[1,]","surveySfull_prior\\[1,]","p_surveySfulldelta\\[1,]","log_surveyvarL_prior\\[1,]")
 	CpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]")
 	cpueBites = c("log q_999")
-	figBites =c("pairs1")
+	figBites =c("onefig\\{pairs1\\}")
 	#SpostBites  = c("currentMCMC\\$P\\$q_1","currentMCMC\\$P\\$mu_1","currentMCMC\\$P\\$Delta_1","currentMCMC\\$P\\$\"log v_1L\"") # replaced by a call to xtable
 	#CpostBites  = c("currentMCMC\\$P\\$mu_999","currentMCMC\\$P\\$Delta_999","currentMCMC\\$P\\$\"log v_999L\"") # replaced by a call to xtable
 	#MpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]") # would bite with Nmethods (if need be)
 
-SApos=c(TRUE,TRUE)
 	biteMe = function(infile, bites, N) {
 		if (N==0) return(infile)
 		for (b in bites) {
@@ -127,6 +147,7 @@ SApos=c(TRUE,TRUE)
 			for ( i in 1:N) {
 				iline = aline
 				NApos = NApos + as.numeric(SApos[i])
+#if (length(iline)>1) {browser();return()}
 				if (grepl("999",iline)){ iline = gsub("999",Nsurvey+i,iline) }#; browser()}
 				if (any(b==figBites)) {
 					if (i==2)      iline=gsub("\\{st}","{nd}",iline)
@@ -161,14 +182,14 @@ SApos=c(TRUE,TRUE)
 	} else
 		tfile = gsub("\\\\input","%\\\\input",tfile)
 
-	if (length(grep("CUT HERE",tfile))>0)
-		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
+	# Final clean-up of empty lines ( cannot because paragraphs delineation is sqaushed)
+	#tfile = tfile[setdiff(1:length(tfile),grep("^$",tfile))]
+#browser();return()
 
 	localName   = paste(mcname,".Snw",sep="")
 	localSweave = paste(mc.dir,"/",localName,sep="")
 
 	writeLines(tfile,con=localSweave)
-#browser();return()
 	Sweave(localSweave)
 	shell(cmd=paste("latex ",mcname,".tex",sep=""),wait=TRUE)
 	shell(cmd=paste("latex ",mcname,".tex",sep=""),wait=TRUE)
@@ -180,16 +201,13 @@ SApos=c(TRUE,TRUE)
 #runMCMC------------------------------ -2012-08-23
 # Wrapper to function 'runSweaveMCMC' for MCMCs.
 #-----------------------------------------------RH
-runMCMC = function(strSpp="XYZ", prefix=c("spp","area"), runs=7, rewts=0:6, cpue=FALSE, estM=TRUE, delim="-", mcsub=1:1000) {
+runMCMC = function(strSpp="XYZ", prefix=c("spp","area"), runs=7, rewts=0:6, Nsex=2, Ncpue=0, Nsurvey=3, SApos=rep(TRUE,Nsurvey), delim="-", mcsub=1:1000) {
 	for (i in runs) {
 		for (j in rewts) {
-			#runSweaveMCMC(filename=paste("input",pad0(i,2),"-ymr.txt",sep=""), runNo=i,rwtNo=j, cpue=cpue, estM=estM)
-			runSweaveMCMC(strSpp=strSpp,filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep=""),runNo=i,rwtNo=j,cpue=cpue,estM=estM,mcsub=mcsub)
+			runSweaveMCMC(strSpp=strSpp,filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep=""),runNo=i,rwtNo=j,Nsex=Nsex,Ncpue=Ncpue,Nsurvey=Nsurvey,SApos=SApos,mcsub=mcsub)
 }	}	}
 
 #runMCMC(strSpp="POP",prefix=c("pop","wcvi"),runs=29,rewts=1,cpue=FALSE,estM=TRUE)
-
-
 #runMCMC(c(24:26),1,cpue=FALSE,estM=TRUE)
 # runMCMC(c(27:28),1,cpue=FALSE,estM=FALSE)
 # runMCMC(26,1,cpue=FALSE,estM=TRUE)
