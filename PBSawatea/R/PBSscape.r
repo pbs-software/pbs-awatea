@@ -195,32 +195,32 @@
 # Modified 'importCol' with RH's 'extra' section.
 # Use function 'importRes' which is maintained.
 #----------------------------------------------AME
-importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey = FALSE,
-    CAc = FALSE, CAs = FALSE, CLc = FALSE, CLs = FALSE, LA = FALSE, quiet = TRUE, extra = TRUE)
+importCol2 <- function (res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
+    CAc=FALSE, CAs=FALSE, CLc=FALSE, CLs=FALSE, LA=FALSE, quiet=TRUE, extra=TRUE)
 {
-    readVector <- function(keyword, same.line = TRUE, file = res.file,
-        vector = res.vector) {
+    readVector <- function(keyword, same.line=TRUE, file=res.file,
+        vector=res.vector) {
         line <- match(keyword, substring(vector, 1, nchar(keyword)))
         v <- if (same.line)
-            as.numeric(scan(file, what = "", skip = line - 1,
-                nlines = 1, quiet = TRUE)[-1])
-        else as.numeric(scan(file, what = "", skip = line, nlines = 1,
-            quiet = TRUE))
+            as.numeric(scan(file, what="", skip=line - 1,
+                nlines=1, quiet=TRUE)[-1])
+        else as.numeric(scan(file, what="", skip=line, nlines=1,
+            quiet=TRUE))
         if (!quiet)
             cat("vector...")
         return(v)
     }
-    readMatrix <- function(keyword, nrow, header = FALSE, stripe = c("no",
-        "left", "right", "upper", "lower"), file = res.file,
-        vector = res.vector) {
+    readMatrix <- function(keyword, nrow, header=FALSE, stripe=c("no",
+        "left", "right", "upper", "lower"), file=res.file,
+        vector=res.vector) {
         stripe <- match.arg(stripe)
         line <- match(keyword, substring(vector, 1, nchar(keyword))) +
             as.numeric(header)
-        m <- scan(file, skip = line, nlines = nrow, quiet = TRUE)
-        m <- matrix(m, byrow = TRUE, nrow = nrow)
-        m <- switch(stripe, left = m[, seq(1, ncol(m)/2)], right = m[,
-            seq(ncol(m)/2 + 1, ncol(m))], upper = m[seq(1, nrow(m) -
-            1, by = 2), ], lower = m[seq(2, nrow(m), by = 2),
+        m <- scan(file, skip=line, nlines=nrow, quiet=TRUE)
+        m <- matrix(m, byrow=TRUE, nrow=nrow)
+        m <- switch(stripe, left=m[, seq(1, ncol(m)/2)], right=m[,
+            seq(ncol(m)/2 + 1, ncol(m))], upper=m[seq(1, nrow(m) -
+            1, by=2), ], lower=m[seq(2, nrow(m), by=2),
             ], m)
         if (!quiet)
             cat("matrix...")
@@ -234,19 +234,19 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         nages <- length(ages)
         if (nsexes == 1) {
             Nu <- readMatrix("Numbers_at_age_by_Year,sex_and_age",
-                nrow = nyears * nsexes)
-            N <- data.frame(Sex = rep(sexes, nyears * nages),
-                Year = rep(years, each = nages), Age = rep(ages,
-                  nyears), N = as.vector(t(Nu)))
+                nrow=nyears * nsexes)
+            N <- data.frame(Sex=rep(sexes, nyears * nages),
+                Year=rep(years, each=nages), Age=rep(ages,
+                  nyears), N=as.vector(t(Nu)))
         }
         if (nsexes == 2) {
             Nf <- readMatrix("Numbers_at_age_by_Year,sex_and_age",
-                nrow = nyears * nsexes, stripe = "upper")
+                nrow=nyears * nsexes, stripe="upper")
             Nm <- readMatrix("Numbers_at_age_by_Year,sex_and_age",
-                nrow = nyears * nsexes, stripe = "lower")
-            N <- data.frame(Sex = rep(sexes, each = nyears *
-                nages), Year = rep(rep(years, each = nages),
-                2), Age = rep(ages, 2 * nyears), N = as.vector(t(rbind(Nf,
+                nrow=nyears * nsexes, stripe="lower")
+            N <- data.frame(Sex=rep(sexes, each=nyears *
+                nages), Year=rep(rep(years, each=nages),
+                2), Age=rep(ages, 2 * nyears), N=as.vector(t(rbind(Nf,
                 Nm))))
         }
         if (!quiet)
@@ -258,8 +258,8 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         if (!quiet)
             cat("B         ")
         vb <- readMatrix("Vulnerable_Biomass_by_Method_and_Year",
-            nrow = ngears)
-        sb <- readVector("Spawning_Biomass_by_Year", same.line = FALSE)
+            nrow=ngears)
+        sb <- readVector("Spawning_Biomass_by_Year", same.line=FALSE)
 
         # *** ADD in the exploitation rate, last year is missing and need
         #     to pad the matrix with missing values to match other "B" columns.
@@ -267,7 +267,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         U <- readMatrix("Exploitation_Rate_by_Method_and_Year", nrow=ngears )
         U <- cbind( U, rep(NA,nrow(U)) )
 
-#        y <- c(readVector("Total_Catch_by_Method_and_Year", same.line = FALSE),
+#        y <- c(readVector("Total_Catch_by_Method_and_Year", same.line=FALSE),
 #            NA)
 
         # BUG FIX: Appears should call readMatrix to accommodate multiple gear series.
@@ -279,7 +279,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         B <- as.data.frame( cbind(years, t(vb), sb, y, t(U)) )
         names(B) <- if (ngears == 1)
             c("Year", "VB", "SB", "Y", "U")
-        else c("Year", paste("VB", gears, sep = "."), "SB", "Y",
+        else c("Year", paste("VB", gears, sep="."), "SB", "Y",
                        paste("U",gears,sep=".") )
         if (!quiet)
             cat("OK\n")
@@ -294,24 +294,24 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         nsexes <- length(sexes)
         nages <- length(ages)
         com <- readMatrix("Commercial_age-specific_selectivity_by_method,Year,sex_and_age",
-            nrow = ngears * nyears * nsexes)
-        com <- com[seq(1, to = ngears * nyears * nsexes, by = nyears),
+            nrow=ngears * nyears * nsexes)
+        com <- com[seq(1, to=ngears * nyears * nsexes, by=nyears),
             ]
         srv <- readMatrix("Survey_age-specific_selectivity_by_survey,Year,sex_and_age",
-            nrow = nsurveys * nsexes)
+            nrow=nsurveys * nsexes)
         fecundity <- readVector("Fecundity_by_year_and_age",
-            same.line = FALSE)
-        weight <- readVector("Weight_by_year,sex_and_age", same.line = FALSE)
+            same.line=FALSE)
+        weight <- readVector("Weight_by_year,sex_and_age", same.line=FALSE)
         mat <- rep(ifelse(weight > 0, fecundity/weight, 0), nsexes)
         if (is.numeric(gears))
             gears <- paste("Gear", gears)
         if (is.numeric(surveys))
             surveys <- paste("Survey", surveys)
-        Sel <- data.frame(Series = c(rep(gears, each = nsexes *
-            nages), rep(surveys, each = nsexes * nages), rep("Maturity",
-            nsexes * nages)), Sex = rep(rep(sexes, each = nages),
-            ngears + nsurveys + 1), Age = rep(ages, (ngears +
-            nsurveys + 1) * nsexes), P = c(t(com), t(srv), mat))
+        Sel <- data.frame(Series=c(rep(gears, each=nsexes *
+            nages), rep(surveys, each=nsexes * nages), rep("Maturity",
+            nsexes * nages)), Sex=rep(rep(sexes, each=nages),
+            ngears + nsurveys + 1), Age=rep(ages, (ngears +
+            nsurveys + 1) * nsexes), P=c(t(com), t(srv), mat))
         if (!quiet)
             cat("OK\n")
         return(Sel)
@@ -320,9 +320,9 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         if (!quiet)
             cat("Dev       ")
         Dev <- list()
-        Dev$Initial <- readVector("log_InitialDev", same.line = TRUE)
+        Dev$Initial <- readVector("log_InitialDev", same.line=TRUE)
         names(Dev$Initial) <- ages[-c(1, length(ages))]
-        Dev$Annual <- readVector("log_RecDev", same.line = TRUE)
+        Dev$Annual <- readVector("log_RecDev", same.line=TRUE)
         names(Dev$Annual) <- years[-length(years)]
         if (!quiet)
             cat("OK\n")
@@ -334,19 +334,19 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         nseries <- readVector("NCPUEindex")
         ngears <- length(gears)
         nyears <- length(years)
-        obs <- readMatrix("indexmethodyearvaluecv", nrow = readVector("Number_of_CPUE_data",
-            same.line = FALSE))
-        obs <- data.frame(Series = obs[, 1], Gear = obs[, 2],
-            Year = obs[, 3], Obs = obs[, 4], CV = obs[, 5])
-        fit <- readMatrix("CPUE_Index_Trajectories", nrow = nseries)
-        fit <- data.frame(Series = rep(1:nseries, each = nyears),
-            Year = rep(years, nseries), Fit = as.vector(t(fit)))
-        CPUE <- merge(obs[, names(obs) != "Gear"], fit, all = TRUE)
+        obs <- readMatrix("indexmethodyearvaluecv", nrow=readVector("Number_of_CPUE_data",
+            same.line=FALSE))
+        obs <- data.frame(Series=obs[, 1], Gear=obs[, 2],
+            Year=obs[, 3], Obs=obs[, 4], CV=obs[, 5])
+        fit <- readMatrix("CPUE_Index_Trajectories", nrow=nseries)
+        fit <- data.frame(Series=rep(1:nseries, each=nyears),
+            Year=rep(years, nseries), Fit=as.vector(t(fit)))
+        CPUE <- merge(obs[, names(obs) != "Gear"], fit, all=TRUE)
         sgkey <- unique(obs[, c("Series", "Gear")])
         CPUE <- merge(sgkey, CPUE)
-        CPUE <- data.frame(Series = paste("Series ", CPUE$Series,
-            "-", CPUE$Gear, sep = ""), Year = as.integer(CPUE$Year),
-            Obs = CPUE$Obs, CV = CPUE$CV, Fit = CPUE$Fit)
+        CPUE <- data.frame(Series=paste("Series ", CPUE$Series,
+            "-", CPUE$Gear, sep=""), Year=as.integer(CPUE$Year),
+            Obs=CPUE$Obs, CV=CPUE$CV, Fit=CPUE$Fit)
         if (!quiet)
             cat("OK\n")
         return(CPUE)
@@ -356,14 +356,14 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
             cat("Survey    ")
         nyears <- length(years)
         nseries <- readVector("Nsurveyindex")
-        obs <- readMatrix("indexyearvaluecv", nrow = readVector("Number_of_survey_data",
-            same.line = FALSE))
-        obs <- data.frame(Series = obs[, 1], Year = obs[, 2],
-            Obs = obs[, 3], CV = obs[, 4])
-        fit <- readMatrix("Survey_Index_Trajectories", nrow = nseries)
-        fit <- data.frame(Series = rep(1:nseries, each = nyears),
-            Year = rep(years, nseries), Fit = as.vector(t(fit)))
-        Survey <- merge(obs, fit, all = TRUE)
+        obs <- readMatrix("indexyearvaluecv", nrow=readVector("Number_of_survey_data",
+            same.line=FALSE))
+        obs <- data.frame(Series=obs[, 1], Year=obs[, 2],
+            Obs=obs[, 3], CV=obs[, 4])
+        fit <- readMatrix("Survey_Index_Trajectories", nrow=nseries)
+        fit <- data.frame(Series=rep(1:nseries, each=nyears),
+            Year=rep(years, nseries), Fit=as.vector(t(fit)))
+        Survey <- merge(obs, fit, all=TRUE)
         Survey$Series <- as.integer(Survey$Series)
         Survey$Year <- as.integer(Survey$Year)
         if (!quiet)
@@ -397,11 +397,11 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
             cat("CAs       ")
         nsexes <- length(sexes)
         nages <- length(ages)
-        nobs <- readVector("Number_of_survey_C@A", same.line = FALSE)
+        nobs <- readVector("Number_of_survey_C@A", same.line=FALSE)
         obs <- readMatrix("surveyyearsamplesizesex1a1sex1a2sex1a3",
-            nrow = nobs)
+            nrow=nobs)
         fit <- readMatrix("surveyyearsamplesizesex1a1sex1a2sex1a3",
-            nrow = nobs, header = 2 * (nobs + 1))
+            nrow=nobs, header=2 * (nobs + 1))
         CAs <- data.frame(Series=rep(obs[,1],each=nsexes*nages), Year=rep(obs[,2],each=nsexes*nages),
                       SS=rep(obs[,3],each=nsexes*nages), Sex=rep(rep(sexes,each=nages),nobs),
                       startL=rep(obs[,4],each=nsexes*nages),endL=rep(obs[,5],each=nsexes*nages),
@@ -460,13 +460,13 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
             cat("LA        ")
         nsexes <- length(sexes)
         nages <- length(ages)
-        nobs <- readVector("#femalesmales", same.line = FALSE,
-            file = latage.file, vector = latage.vector)
+        nobs <- readVector("#femalesmales", same.line=FALSE,
+            file=latage.file, vector=latage.vector)
         obs <- readMatrix("VonBertalanfy--Lenght-at-agefit--Likelihood",
-            nrow = sum(nobs), header = 8)
-        obs <- data.frame(Sex = rep(sexes, nobs), Age = obs[,
-            1], Obs = obs[, 2])
-        owarn <- options(warn.conflicts = -1)
+            nrow=sum(nobs), header=8)
+        obs <- data.frame(Sex=rep(sexes, nobs), Age=obs[,
+            1], Obs=obs[, 2])
+        owarn <- options(warn.conflicts=-1)
         Linf <- readVector("VonBeratalanfy:Linf")[-(1:3)]
         K <- readVector("VonBeratalanfy:k")[-(1:3)]
         t0 <- readVector("VonBeratalanfy:to")[-(1:3)]
@@ -474,10 +474,10 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         CVratio <- readVector("ratioofcv(L_an)/cv(L_a1)oftheFitbysex")[-(1:7)]
         options(owarn)
         sigmaLA <- readVector("#LinearrelationshipofsigmaL@A(1=age;2=length---ignoreifW@Aissupplied)",
-            same.line = FALSE, file = txt.file, vector = txt.vector)[1]
+            same.line=FALSE, file=txt.file, vector=txt.vector)[1]
         max.age <- c(max(obs$Age[obs$Sex == sexes[1]]), max(obs$Age[obs$Sex ==
             sexes[2]]))
-        fit <- data.frame(Sex = rep(sexes, max.age), Age = c(1:max.age[1],
+        fit <- data.frame(Sex=rep(sexes, max.age), Age=c(1:max.age[1],
             1:max.age[2]))
         fit$Fit[fit$Sex == sexes[1]] <- Linf[1] * (1 - exp(-K[1] *
             (fit$Age[fit$Sex == sexes[1]] - t0[1])))
@@ -502,7 +502,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
                 (CVratio[2] - 1)/(Ln[2] - L1[2]) * (fit$Fit[fit$Sex ==
                 sexes[2]] - L1[2])
         }
-        LA <- merge(obs, fit, by = c("Sex", "Age"), all = TRUE)
+        LA <- merge(obs, fit, by=c("Sex", "Age"), all=TRUE)
         LA$Age <- as.integer(LA$Age)
         LA$Fit <- LA$Fit
         LA$CV <- LA$CV
@@ -510,11 +510,11 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
             cat("OK\n")
         return(LA)
     }
-    	getExtra = function(resvec) {
-		extra = list(
-			likelihoods = c(
+    	getExtra=function(resvec) {
+		extra=list(
+			likelihoods=c(
 			"CPUE","Survey_Index","C@A_Commercial","C@A_survey","Prior_penalties"),  # Likelihoods
-			parameters = c(
+			parameters=c(
 			"R0","avgR0","h",                                                      # Parameters (P)
 			"M1","M2",                                                             #  (P) Sex_specific
 			"Sfullest","SfullDelta","log_varLest","log_varRest",                   #  (P) Method_specific
@@ -522,7 +522,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
 			"log_qsurvey","surveySfull","survey_SfullDelta",
 			"log_surveyvarL","log_surveyvarR",                                     # (P)  Survey_index_specific
 			"log_RecDev"),                                                         #  (P) Recruitment_residuals
-			priors = c(
+			priors=c(
 			"R0_prior","h_prior",                                                  # Priors (I)
 			"M1_prior","M2_prior","Rinit_prior","uinit_prior","p_plusscale",       #  (I) Sex_specific
 			"p_Sfullest","p_Sfulldelta","log_varLest_prior","log_varRest_prior",   #  (I) Method_specific
@@ -531,28 +531,28 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
 			"qCPUEerr_prior",                                                      #  (I) CPUE_index_specific_and_annual
 			"log_qsurvey_prior","surveySfull_prior","p_surveySfulldelta",
 			"log_surveyvarL_prior","log_surveyvarR_prior"),                        #  (I) Survey_index_specific
-			residuals = c(
+			residuals=c(
 			"p_log_InitialDev","p_log_RecDev")                                     # Recruitment_residuals
 		)
-		Nsexes = as.numeric(rev(strsplit(resvec[grep("^Nsexes",resvec)],split=" ")[[1]])[1])
-		Nsurveyindex = as.numeric(rev(strsplit(resvec[grep("^Nsurveyindex",resvec)],split=" ")[[1]])[1])
-		elist = sapply(extra,function(x,resvec) { 
-			ex = as.list(x); names(ex) = x
+		Nsexes=as.numeric(rev(strsplit(resvec[grep("^Nsexes",resvec)],split=" ")[[1]])[1])
+		Nsurveyindex=as.numeric(rev(strsplit(resvec[grep("^Nsurveyindex",resvec)],split=" ")[[1]])[1])
+		elist=sapply(extra,function(x,resvec) { 
+			ex=as.list(x); names(ex)=x
 			for (i in ex) {
-				expr=paste("index = grep(\"^",i," \",resvec)",sep="")
+				expr=paste("index=grep(\"^",i," \",resvec)",sep="")
 				eval(parse(text=expr))
 				if (length(index)==1) {
-					if (i %in% c("M1_prior","M2_prior","uinit_prior","p_plusscale")) index = index + (1:Nsexes) - 1
+					if (i %in% c("M1_prior","M2_prior","uinit_prior","p_plusscale")) index=index + (1:Nsexes) - 1
 					if (i %in% c("log_qsurvey_prior","surveySfull_prior","p_surveySfulldelta",
-						"log_surveyvarL_prior","log_surveyvarR_prior")) index = index + (1:Nsurveyindex) - 1
-					exvec = strsplit(resvec[index],split=" ")
-					exmat = t(sapply(exvec,function(x){as.numeric(x[!is.element(x,c(i,""))])}))
+						"log_surveyvarL_prior","log_surveyvarR_prior")) index=index + (1:Nsurveyindex) - 1
+					exvec=strsplit(resvec[index],split=" ")
+					exmat=t(sapply(exvec,function(x){as.numeric(x[!is.element(x,c(i,""))])}))
 					if (nrow(exmat)==1) exres=as.vector(exmat)
 					else                exres=exmat
 #if (i=="log_qsurvey_prior") {browser();return() }
-					ex[[i]] = exres
+					ex[[i]]=exres
 				}
-				else ex[[i]] = "not found"
+				else ex[[i]]="not found"
 			}
 			return(ex) }, resvec=resvec, simplify=FALSE)
 
@@ -562,24 +562,24 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         stop("File ", res.file, " not found. Use / or \\\\ separators.")
     res.vector <- readLines(res.file)
     if (extra)
-	extra = getExtra(res.vector)
-       else extra = NULL
+	extra=getExtra(res.vector)
+       else extra=NULL
 
     res.vector <- gsub("\"", "", gsub("\t", "", gsub(" ", "",
         res.vector)))
     if (!quiet)
         cat("\nParsing text file ", res.file, ":\n\nPreamble  ",
-            sep = "")
+            sep="")
     sexes <- if (readVector("Nsexes") == 1)
         "Unisex"
     else c("Female", "Male")
-    gears <- seq(1, length.out = readVector("Nmethods"))
-    surveys <- seq(1, length.out = readVector("Nsurveyindex"))
-    years <- seq(from = readVector("StartYear"), to = readVector("EndYear") +
+    gears <- seq(1, length.out=readVector("Nmethods"))
+    surveys <- seq(1, length.out=readVector("Nsurveyindex"))
+    years <- seq(from=readVector("StartYear"), to=readVector("EndYear") +
         1)
-    ages <- seq(from = 1, to = readVector("Nages"))
-    lengths <- seq(from = readVector("First_length"), by = readVector("Length_class_increment"),
-        length.out = readVector("Number_of_length_classes"))
+    ages <- seq(from=1, to=readVector("Nages"))
+    lengths <- seq(from=readVector("First_length"), by=readVector("Length_class_increment"),
+        length.out=readVector("Number_of_length_classes"))
     if (!quiet)
         cat("OK\n")
     model <- list()
@@ -605,7 +605,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
         model$CLs <- getCLs(sexes, lengths)
     if (LA) {
         latage.file <- paste(dirname(res.file), "l_at_age.dat",
-            sep = "/")
+            sep="/")
         if (!file.exists(latage.file))
             stop("File ", latage.file, " not found. Use / or \\\\ separators.")
         latage.vector <- readLines(latage.file)
@@ -619,7 +619,7 @@ importCol2 <- function (res.file, info = "", Dev = FALSE, CPUE = FALSE, Survey =
             "", txt.vector)))
         model$LA <- getLA(sexes, ages)
     }
-    model$extra = extra
+    model$extra=extra
     if (!quiet)
         cat("\n")
     attr(model, "call") <- match.call()
@@ -655,26 +655,26 @@ load.allResFiles <- function( resList=NULL )
 # This is an alteration of Arni Magnussons "plotB" function to accommodate
 # PJS request not to show biomass prior to fishery and survey indices period.
 #----------------------------------------------AME
-plotB2 <- function (model, what = "d", series = NULL, years = NULL, axes = TRUE,
-    div = 1, legend = "bottom", main = "", xlab = "", ylab = "",
-    cex.main = 1.2, cex.legend = 1, cex.lab = 1, cex.axis = 0.8,
-    las = 1, tck = c(1, what == "d")/2, tick.number = 5, lty.grid = 3,
-    col.grid = "white", pch = 16, cex.points = 0.8, col.points = "black",
-    lty.lines = 1:3, lwd.lines = 2, col.lines = "black", ratio.bars = 3,
-    col.bars = "grey", plot = TRUE, ...)
+plotB2 <- function (model, what="d", series=NULL, years=NULL, axes=TRUE,
+    div=1, legend="bottom", main="", xlab="", ylab="",
+    cex.main=1.2, cex.legend=1, cex.lab=1, cex.axis=0.8,
+    las=1, tck=c(1, what == "d")/2, tick.number=5, lty.grid=3,
+    col.grid="white", pch=16, cex.points=0.8, col.points="black",
+    lty.lines=1:3, lwd.lines=2, col.lines="black", ratio.bars=3,
+    col.bars="grey", plot=TRUE, ...)
 {
     panel.linebar <- function(x, y, bars, ...) {
-        panel.abline(h = pretty(y, tick.number), lty = lty.grid,
-            col = col.grid)
+        panel.abline(h=pretty(y, tick.number), lty=lty.grid,
+            col=col.grid)
         panel.superpose(x, y, ...)
-        panel.barchart(bars$Year, bars$Value, horizontal = FALSE,
-            box.ratio = ratio.bars, col = col.bars)
+        panel.barchart(bars$Year, bars$Value, horizontal=FALSE,
+            box.ratio=ratio.bars, col=col.bars)
     }
     panel.bar <- function(x, y, ...) {
-        panel.abline(h = pretty(y, tick.number), lty = lty.grid,
-            col = col.grid)
-        panel.barchart(x, y, horizontal = FALSE, box.ratio = ratio.bars,
-            col = col.bars)
+        panel.abline(h=pretty(y, tick.number), lty=lty.grid,
+            col=col.grid)
+        panel.barchart(x, y, horizontal=FALSE, box.ratio=ratio.bars,
+            col=col.bars)
     }
     if (class(model) != "scape")
         stop("The 'model' argument should be a scape object, not ",
@@ -682,8 +682,8 @@ plotB2 <- function (model, what = "d", series = NULL, years = NULL, axes = TRUE,
     what <- match.arg(what, c("d", "s", "l"))
     las <- as.numeric(las)
     x <- model$B
-    x <- data.frame(Year = rep(x$Year, ncol(x) - 1), Series = rep(names(x)[-1],
-        each = nrow(x)), Value = as.vector(as.matrix(x[, -1])))
+    x <- data.frame(Year=rep(x$Year, ncol(x) - 1), Series=rep(names(x)[-1],
+        each=nrow(x)), Value=as.vector(as.matrix(x[, -1])))
     x$Value <- x$Value
     if (is.null(series))
         series <- unique(as.character(x$Series))
@@ -698,7 +698,7 @@ plotB2 <- function (model, what = "d", series = NULL, years = NULL, axes = TRUE,
     x <- x[ok.series & ok.years, ]
 
 
-    Bframe <- x[x$Series %in% grep("B", series, value = TRUE),]
+    Bframe <- x[x$Series %in% grep("B", series, value=TRUE),]
     Bframe$Series <- factor(Bframe$Series)
 
     # Find the first year where there are fishery CPUE data.
@@ -711,51 +711,51 @@ plotB2 <- function (model, what = "d", series = NULL, years = NULL, axes = TRUE,
     Yframe <- x[x$Series == "Y", ]
 
     Bframe$Value <- Bframe$Value/div[1]
-    Rframe$Value <- Rframe$Value/rep(div, length.out = 2)[2]
+    Rframe$Value <- Rframe$Value/rep(div, length.out=2)[2]
     Yframe$Value <- Yframe$Value/div[1]
 
-    require(grid, quietly = TRUE, warn.conflicts = FALSE)
-    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
+    require(grid, quietly=TRUE, warn.conflicts=FALSE)
+    require(lattice, quietly=TRUE, warn.conflicts=FALSE)
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
-        trellis.device(color = FALSE)
+        trellis.device(color=FALSE)
     }
-    main <- rep(main, length.out = 2)
-    xlab <- rep(xlab, length.out = 2)
-    ylab <- rep(ylab, length.out = 2)
-    las <- rep(las, length.out = 2)
-    mymain <- list(label = main[1], cex = cex.main)
-    myxlab <- list(label = xlab[1], cex = cex.lab)
-    myylab <- list(label = ylab[1], cex = cex.lab)
-    myrot <- switch(as.character(las[1]), "0" = list(x = list(rot = 0),
-        y = list(rot = 90)), "1" = list(x = list(rot = 0), y = list(rot = 0)),
-        "2" = list(x = list(rot = 90), y = list(rot = 0)), "3" = list(x = list(rot = 90),
-            y = list(rot = 90)))
-    myscales <- c(list(draw = axes, cex = cex.axis, tck = tck,
-        tick.number = tick.number), myrot)
-    lty.lines <- rep(lty.lines, length.out = nlevels(Bframe$Series))
-    lwd.lines <- rep(lwd.lines, length.out = nlevels(Bframe$Series))
-    col.lines <- rep(col.lines, length.out = nlevels(Bframe$Series))
-    mykey <- list(space = legend, text = list(lab = levels(Bframe$Series),
-        cex = cex.legend), lines = list(lty = lty.lines, lwd = lwd.lines,
-        col = col.lines))
+    main <- rep(main, length.out=2)
+    xlab <- rep(xlab, length.out=2)
+    ylab <- rep(ylab, length.out=2)
+    las <- rep(las, length.out=2)
+    mymain <- list(label=main[1], cex=cex.main)
+    myxlab <- list(label=xlab[1], cex=cex.lab)
+    myylab <- list(label=ylab[1], cex=cex.lab)
+    myrot <- switch(as.character(las[1]), "0"=list(x=list(rot=0),
+        y=list(rot=90)), "1"=list(x=list(rot=0), y=list(rot=0)),
+        "2"=list(x=list(rot=90), y=list(rot=0)), "3"=list(x=list(rot=90),
+            y=list(rot=90)))
+    myscales <- c(list(draw=axes, cex=cex.axis, tck=tck,
+        tick.number=tick.number), myrot)
+    lty.lines <- rep(lty.lines, length.out=nlevels(Bframe$Series))
+    lwd.lines <- rep(lwd.lines, length.out=nlevels(Bframe$Series))
+    col.lines <- rep(col.lines, length.out=nlevels(Bframe$Series))
+    mykey <- list(space=legend, text=list(lab=levels(Bframe$Series),
+        cex=cex.legend), lines=list(lty=lty.lines, lwd=lwd.lines,
+        col=col.lines))
     if (what == "s") {
         graph <- xyplot(Rframe$Value ~ Bframe$Value[Bframe$Series ==
-            "SB"], main = mymain, xlab = myxlab, ylab = myylab,
-            scales = myscales, pch = pch, cex = cex.points, col = col.points,
+            "SB"], main=mymain, xlab=myxlab, ylab=myylab,
+            scales=myscales, pch=pch, cex=cex.points, col=col.points,
             ...)
         graph$x.limits[1] <- 0
     }
     else if (what == "d" && nrow(Bframe) > 0) {
-        graph <- xyplot(Value ~ Year, groups = Series, data = Bframe,
-            panel = panel.linebar, type = "l", bars = Yframe,
-            main = mymain, xlab = myxlab, ylab = myylab, scales = myscales,
-            key = mykey, lty = lty.lines, lwd = lwd.lines, col = col.lines,
+        graph <- xyplot(Value ~ Year, groups=Series, data=Bframe,
+            panel=panel.linebar, type="l", bars=Yframe,
+            main=mymain, xlab=myxlab, ylab=myylab, scales=myscales,
+            key=mykey, lty=lty.lines, lwd=lwd.lines, col=col.lines,
             ...)
     }
     else {
-        graph <- xyplot(Value ~ Year, data = Yframe, panel = panel.bar,
-            main = mymain, xlab = myxlab, ylab = myylab, scales = myscales,
+        graph <- xyplot(Value ~ Year, data=Yframe, panel=panel.bar,
+            main=mymain, xlab=myxlab, ylab=myylab, scales=myscales,
             ...)
     }
     graph$y.limits[1] <- 0
@@ -782,14 +782,14 @@ plotB2 <- function (model, what = "d", series = NULL, years = NULL, axes = TRUE,
 # obj should be the specficic MCMC posterior by year (so just a data.frame),
 #  e.g. currentMCMC$B.  currentRes1 is local currentRes.
 #----------------------------------------------AME
-plotBmcmcPOP = function(obj, currentRes1 = currentRes,
+plotBmcmcPOP=function(obj, currentRes1=currentRes,
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="quantBox",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=TRUE, xLab = c(1939, 1939, 1939),
-                  yLab = c(10000, 70000, 170000),
-                  textLab = c("catch", "spawning", "vulnerable"),
+                  userPrompt=FALSE, save=TRUE, xLab=c(1939, 1939, 1939),
+                  yLab=c(10000, 70000, 170000),
+                  textLab=c("catch", "spawning", "vulnerable"),
                   yaxis.by=10000, tcl.val=-0.2, ...)
                                # xLab - x position for label, etc.
   {
@@ -831,15 +831,15 @@ plotBmcmcPOP = function(obj, currentRes1 = currentRes,
       yLim <- c(0, max(c(max(result1), max(currentRes1$B$VB)))) #range(result1)
       xLim=range(yrs1)
     }
-  # xLegPos = xLeg*diff(xLim)+xLim[1]    # position of xLeg
-  # yLegPos = yLeg*diff(yLim)+yLim[1]
+  # xLegPos=xLeg*diff(xLim)+xLim[1]    # position of xLeg
+  # yLegPos=yLeg*diff(yLim)+yLim[1]
 
   plt.qB( result1,xLim=xLim,yLim=yLim, xyType=xyType )
   points(obj$B$Year, currentRes1$B$Y, type="h", lwd=3)   # catch
   points(obj$B$Year, currentRes1$B$VB, type="p")         # vuln biom
   text( xLab, yLab, textLab, pos=4, offset=0)
   axis(1, at=xLim[1]:xLim[2], tcl=tcl.val, labels=FALSE)
-  axis(2, at = seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
+  axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
 
   # legend(xLegPos, yLegPos, c("Vulnerable", "Spawning", "Catch"), bty="n")
   # points(xLegPos-2, yLegPos, type="p")
@@ -854,14 +854,14 @@ plotBmcmcPOP = function(obj, currentRes1 = currentRes,
 # AME adding, based on plotBmcmcPOP (tweaking some)
 #  currentMCMC$B.  currentRes1 is local currentRes.
 #----------------------------------------------AME
-plotVBcatch = function(obj, currentRes1 = currentRes,
+plotVBcatch=function(obj, currentRes1=currentRes,
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="quantBox",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=TRUE, xLab = c(1939, 1939),
-                  yLab = c(10000, 220000),
-                  textLab = c("catch", "vulnerable"),
+                  userPrompt=FALSE, save=TRUE, xLab=c(1939, 1939),
+                  yLab=c(10000, 220000),
+                  textLab=c("catch", "vulnerable"),
                   yaxis.by=10000, tcl.val=-0.2, ...)
                                # xLab - x position for label, etc.
   {
@@ -907,8 +907,8 @@ plotVBcatch = function(obj, currentRes1 = currentRes,
        xLim=range(yrs1)
     }
 
-  # xLegPos = xLeg*diff(xLim)+xLim[1]    # position of xLeg
-  # yLegPos = yLeg*diff(yLim)+yLim[1]
+  # xLegPos=xLeg*diff(xLim)+xLim[1]    # position of xLeg
+  # yLegPos=yLeg*diff(yLim)+yLim[1]
 
   plt.qB( result1,xLim=xLim,yLim=yLim, xyType=xyType )
   points(currentRes1$B$Year, currentRes1$B$Y, type="h", lwd=3)   # catch
@@ -918,7 +918,7 @@ plotVBcatch = function(obj, currentRes1 = currentRes,
   # text( xLab, yLab, textLab, pos=4, offset=0)   # Taking out
   #   as not really needed if give a decent caption
   axis(1, at=xLim[1]:xLim[2], tcl=tcl.val, labels=FALSE)
-  axis(2, at = seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
+  axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
 
   # legend(xLegPos, yLegPos, c("Vulnerable", "Spawning", "Catch"), bty="n")
   # points(xLegPos-2, yLegPos, type="p")
@@ -936,22 +936,22 @@ plotVBcatch = function(obj, currentRes1 = currentRes,
 #  currentMCMC$B.  currentRes1 is local currentRes.
 #  xLab - x position for label, etc.
 #----------------------------------------------AME
-plotBVBnorm = function(mcmcObj,
+plotBVBnorm=function(mcmcObj,
                    p=c(0.025,0.25,0.5,0.75,0.975),
                    xyType="quantBox",
                    lineType=c(3,2,1,2,3),
                    refLines=NULL, xLim=NULL, yLim=NULL,
-                   userPrompt=FALSE, save=TRUE, xLeg = 0.7, yLeg=0.9,
+                   userPrompt=FALSE, save=TRUE, xLeg=0.7, yLeg=0.9,
                    yaxis.by=0.02, tcl.val=-0.2,
                    B.col="black", VB.col="black", ...)
                                 # xLab - x position for label, etc.
    {
    # Calculate medians to be plotted
-   BoverB0 = currentMCMC$B / currentMCMC$B[,1]     # B/B0  each chain
-   VBoverVB0 = currentMCMC$VB / currentMCMC$VB[,1] #VB/VB0 each chain
+   BoverB0=currentMCMC$B / currentMCMC$B[,1]     # B/B0  each chain
+   VBoverVB0=currentMCMC$VB / currentMCMC$VB[,1] #VB/VB0 each chain
    
-   BoverB0med = apply(BoverB0, 2, median)         # median each year
-   VBoverVB0med = apply(VBoverVB0, 2, median)     # median each year
+   BoverB0med=apply(BoverB0, 2, median)         # median each year
+   VBoverVB0med=apply(VBoverVB0, 2, median)     # median each year
  
  
    # Plot quantiles of biomass using the posterior densities.
@@ -961,8 +961,8 @@ plotBVBnorm = function(mcmcObj,
    result1 <- NULL
    result2 <- NULL
  
-   result1 = BoverB0med
-   result2 = VBoverVB0med
+   result1=BoverB0med
+   result2=VBoverVB0med
    yrs1 <- as.numeric(names(result1))    # dimnames(result1)[[2]])
  
    if ( is.null(yLim) )
@@ -974,18 +974,18 @@ plotBVBnorm = function(mcmcObj,
        xLim=range(yrs1)
      }
  
-   # xLegPos = xLeg*diff(xLim)+xLim[1]    # position of xLeg
-   # yLegPos = yLeg*diff(yLim)+yLim[1]
+   # xLegPos=xLeg*diff(xLim)+xLim[1]    # position of xLeg
+   # yLegPos=yLeg*diff(yLim)+yLim[1]
  
    plot( xLim,yLim, type="n", xlab="Year",ylab="Biomasses relative to virgin")
    points(yrs1, result1, type="p", col=B.col) 
    points(yrs1, result2, type="l", col=VB.col)
    # text( xLab, yLab, textLab, pos=4, offset=0)
    axis(1, at=xLim[1]:xLim[2], tcl=tcl.val, labels=FALSE)
-   axis(2, at = seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
+   axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
  
-   xLegPos = xLeg*diff(xLim)+xLim[1]    # position of xLeg
-   yLegPos = yLeg*diff(yLim)+yLim[1]
+   xLegPos=xLeg*diff(xLim)+xLim[1]    # position of xLeg
+   yLegPos=yLeg*diff(yLim)+yLim[1]
  
    legend(xLegPos, yLegPos, c(expression(B[t]/B[0]), expression(V[t]/V[0])), bty="n", lty=c(0,1), pch=c(1, NA), col=c(B.col, VB.col))   # pch=c(1, NA) okay, but adds o
    # points(xLegPos-2, yLegPos, type="p")
@@ -1003,7 +1003,7 @@ plotBVBnorm = function(mcmcObj,
 #   not simplifying down as much as could due to time constraints.
 # Adding yLab and then using for exploitation plot also
 #----------------------------------------------AME
-plotRmcmcPOP = function(obj, 
+plotRmcmcPOP=function(obj, 
                   p=c(0.025,0.25,0.5,0.75,0.975),
                   xyType="quantBox",
                   lineType=c(3,2,1,2,3),
@@ -1054,7 +1054,7 @@ plotRmcmcPOP = function(obj,
     }
   plt.qB( result1,xLim=xLim,yLim=yLim, xyType=xyType )
   axis(1, at=xLim[1]:xLim[2], tcl=tcl.val, labels=FALSE)
-  axis(2, at = seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
+  axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotRmcmcPOP
 
@@ -1062,30 +1062,30 @@ plotRmcmcPOP = function(obj,
 #plotIndex2-----------------------------2011-08-31
 # Revised version of Arni's function to confine plotting to data region.
 #----------------------------------------------AME
-plotIndex2 <- function (model, what = "c", series = NULL, axes = TRUE, same.limits = FALSE,
-    between = list(x = axes, y = axes), ylim = NULL, q = 1, bar = 1,
-    log = FALSE, base = 10, main = "", xlab = "", ylab = "",
-    cex.main = 1.2, cex.lab = 1, cex.strip = 0.8, cex.axis = 0.8,
-    las = 1, tck = c(1, 0)/2, tick.number = 5, lty.grid = 3,
-    col.grid = "white", pch = 16, cex.points = 1.2, col.points = "black",
-    lty.lines = 1, lwd.lines = 4, col.lines = "dimgrey", lty.bar = 1,
-    plot = TRUE, ...)
+plotIndex2 <- function (model, what="c", series=NULL, axes=TRUE, same.limits=FALSE,
+    between=list(x=axes, y=axes), ylim=NULL, q=1, bar=1,
+    log=FALSE, base=10, main="", xlab="", ylab="",
+    cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8,
+    las=1, tck=c(1, 0)/2, tick.number=5, lty.grid=3,
+    col.grid="white", pch=16, cex.points=1.2, col.points="black",
+    lty.lines=1, lwd.lines=4, col.lines="dimgrey", lty.bar=1,
+    plot=TRUE, ...)
 {
     panel.index <- function(x, y, subscripts, yobs, yfit, col.points,
         col.lines, ...) {
         y.range <- range(c(rep(0, !log), attr(yobs, "other"),
-            y), na.rm = TRUE)
-        panel.abline(v = pretty(x, tick.number), h = pretty(y.range,
-            tick.number), lty = lty.grid, col = col.grid)
-        panel.xyplot(x, y, type = "n", ...)
-        panel.xyplot(x, yfit[subscripts], type = "l", lty = lty.lines,
-            lwd = lwd.lines, col = col.lines[subscripts], ...)
+            y), na.rm=TRUE)
+        panel.abline(v=pretty(x, tick.number), h=pretty(y.range,
+            tick.number), lty=lty.grid, col=col.grid)
+        panel.xyplot(x, y, type="n", ...)
+        panel.xyplot(x, yfit[subscripts], type="l", lty=lty.lines,
+            lwd=lwd.lines, col=col.lines[subscripts], ...)
         ok.Y <- !is.na(yobs[subscripts])
         if (lty.bar == 0)
-            panel.xyplot(x, yobs[subscripts], col = col.points,
+            panel.xyplot(x, yobs[subscripts], col=col.points,
                 ...)
-        else panel.xYplot(x[ok.Y], yobs[subscripts][ok.Y], subscripts = subscripts[ok.Y],
-            col = col.points[subscripts], lty.bar = lty.bar,
+        else panel.xYplot(x[ok.Y], yobs[subscripts][ok.Y], subscripts=subscripts[ok.Y],
+            col=col.points[subscripts], lty.bar=lty.bar,
             ...)
     }
     if (class(model) != "scape")
@@ -1106,7 +1106,7 @@ plotIndex2 <- function (model, what = "c", series = NULL, axes = TRUE, same.limi
             what <- "s"
             cat("Commercial CPUE data (", substitute(model),
                 "$CPUE) not found. Assuming user intended what=\"s\".\n",
-                sep = "")
+                sep="")
         }
     }
     if (what == "s") {
@@ -1135,43 +1135,43 @@ plotIndex2 <- function (model, what = "c", series = NULL, axes = TRUE, same.limi
     x$Hi <- x$Obs * exp(bar * x$CV)
     x$Lo <- x$Obs/exp(bar * x$CV)
     if (log) {
-        x$Obs <- log(x$Obs, base = base)
-        x$Fit <- log(x$Fit, base = base)
-        x$Hi <- log(x$Hi, base = base)
-        x$Lo <- log(x$Lo, base = base)
+        x$Obs <- log(x$Obs, base=base)
+        x$Fit <- log(x$Fit, base=base)
+        x$Hi <- log(x$Hi, base=base)
+        x$Lo <- log(x$Lo, base=base)
     }
-    require(grid, quietly = TRUE, warn.conflicts = FALSE)
-    require(Hmisc, quietly = TRUE, warn.conflicts = FALSE)
-    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
+    require(grid, quietly=TRUE, warn.conflicts=FALSE)
+    require(Hmisc, quietly=TRUE, warn.conflicts=FALSE)
+    require(lattice, quietly=TRUE, warn.conflicts=FALSE)
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
-        trellis.device(color = FALSE)
+        trellis.device(color=FALSE)
     }
-    col.points <- rep(col.points, length.out = nlevels(x$Series))
-    col.lines <- rep(col.lines, length.out = nlevels(x$Series))
-    mymain <- list(label = main, cex = cex.main)
-    myxlab <- list(label = xlab, cex = cex.lab)
-    myylab <- list(label = ylab, cex = cex.lab)
-    myrot <- switch(as.character(las), "0" = list(x = list(rot = 0),
-        y = list(rot = 90)), "1" = list(x = list(rot = 0), y = list(rot = 0)),
-        "2" = list(x = list(rot = 90), y = list(rot = 0)), "3" = list(x = list(rot = 90),
-            y = list(rot = 90)))
-    myscales <- c(list(draw = axes, relation = relation, cex = cex.axis,
-        tck = tck, tick.number = tick.number), myrot)
-    mystrip <- list(cex = cex.strip)
-    graph <- xyplot(Fit ~ Year+0.5 | Series, data = x, panel = panel.index,
-        yobs = Cbind(x$Obs, x$Hi, x$Lo), yfit = x$Fit, as.table = TRUE,
-        between = between, main = mymain, xlab = myxlab, ylab = myylab,
-        par.strip.text = mystrip, scales = myscales, pch = pch,
-        cex = cex.points, col.points = col.points[x$Series],
-        col.lines = col.lines[x$Series], ...)
+    col.points <- rep(col.points, length.out=nlevels(x$Series))
+    col.lines <- rep(col.lines, length.out=nlevels(x$Series))
+    mymain <- list(label=main, cex=cex.main)
+    myxlab <- list(label=xlab, cex=cex.lab)
+    myylab <- list(label=ylab, cex=cex.lab)
+    myrot <- switch(as.character(las), "0"=list(x=list(rot=0),
+        y=list(rot=90)), "1"=list(x=list(rot=0), y=list(rot=0)),
+        "2"=list(x=list(rot=90), y=list(rot=0)), "3"=list(x=list(rot=90),
+            y=list(rot=90)))
+    myscales <- c(list(draw=axes, relation=relation, cex=cex.axis,
+        tck=tck, tick.number=tick.number), myrot)
+    mystrip <- list(cex=cex.strip)
+    graph <- xyplot(Fit ~ Year+0.5 | Series, data=x, panel=panel.index,
+        yobs=Cbind(x$Obs, x$Hi, x$Lo), yfit=x$Fit, as.table=TRUE,
+        between=between, main=mymain, xlab=myxlab, ylab=myylab,
+        par.strip.text=mystrip, scales=myscales, pch=pch,
+        cex=cex.points, col.points=col.points[x$Series],
+        col.lines=col.lines[x$Series], ...)
     if (is.list(ylim))
-        graph$y.limits <- rep(ylim, length.out = length(series))
+        graph$y.limits <- rep(ylim, length.out=length(series))
     else if (is.numeric(ylim))
         graph$y.limits <- rep(list(ylim), length(series))
     else {
         extremes <- as.data.frame(lapply(split(x[, c("Fit", "Hi",
-            "Lo")], x$Series), range, na.rm = TRUE))
+            "Lo")], x$Series), range, na.rm=TRUE))
         if (!log)
             graph$y.limits <- lapply(extremes, function(x) c(0,
                 1.04 * x[2]))
@@ -1463,7 +1463,7 @@ calc.refProbs <- function( projObj=currentProj$B, refPlist=refPointsList )
   projYrs <- dimnames( projObj[[1]] )[[2]]
   nProjYrs <- length(projYrs)
   
-  nRefPoints = length(names(refPlist))  # refYears <- refList$refYrs
+  nRefPoints=length(names(refPlist))  # refYears <- refList$refYrs
     # nRefYrs <- nrow( refYears )
     # funs <- refList$funVec
   # browser(); return()
@@ -1484,7 +1484,7 @@ calc.refProbs <- function( projObj=currentProj$B, refPlist=refPointsList )
 
     # Calculate the reference value for the performance measure.
     # refVal <- calc.refVal( obj,period,funs[[i]] )
-    refVal = refPlist[[i]]
+    refVal=refPlist[[i]]
     
     # Loop over the catch level policies.
     for ( j in 1:nPolicies )
@@ -1509,6 +1509,50 @@ calc.refProbs <- function( projObj=currentProj$B, refPlist=refPointsList )
   result
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refProbs
+
+
+#calc.refProbsHist----------------------2013-09-23
+# Calculate the reference probabilities (basing on calc.projProbs2)
+#-----------------------------------------------RH
+calc.refProbsHist <- function( projObj=currentProj$B, refPlist=refPointsHistList[c("blimHRP","btarHRP")] )  
+{
+	# refPlist will be a list, LRP, URP and Bmsy are defaults with values for each draw
+	policyList=names(projObj)
+	nPolicies =length(policyList)
+	projYrs   =dimnames( projObj[[1]] )[[2]]
+	nProjYrs  =length(projYrs)
+	nRefPoints=length(names(refPlist))  # refYears <- refList$refYrs
+	# Final results, each reference point stored as list element.
+	result    =sapply(as.list(1:nRefPoints),function(x){NULL},simplify=FALSE) # to get right number of list elements, but they'll get overwritten
+	names( result ) <- names(refPlist)
+	# Loop over the reference points.
+	for ( i in names(refPlist) )
+	{
+		# Retrieve the reference value for the performance measure.
+		refVal=refPlist[[i]]
+		if (is.null(refVal))  next
+		# Create a results matrix for nPolicies (j), nProjYr (k).
+		val <- matrix( NA, nrow=nPolicies,ncol=nProjYrs )
+		dimnames( val ) <- list( policyList,projYrs )
+		# Loop over the catch level policies.
+		for ( j in 1:nPolicies )
+		{
+			# These are the projection results for policy j.
+			proj <- projObj[[j]]
+			# Loop over the projection years.
+			for ( k in 1:ncol(proj) )
+			{
+				tmp <- proj[,k] > refVal
+				val[j,k] <- sum( tmp ) / length(tmp)
+			}
+		}
+		result[[i]] <- val
+	}
+	cat( "\n\nProbability of projection biomass > reference point:\n\n" )
+	print( result )
+	return(result)
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refProbsHist
 
 
 #calc.refVal----------------------------2011-08-31
@@ -1616,8 +1660,8 @@ stdRes.CA <- function( obj, trunc=3, myLab="Age Residuals", prt=TRUE )
     sdTrunc <- ifelse( result$stdRes < -trunc, -trunc, result$stdRes )
     sdResTrunc <- sqrt( var( sdTrunc,na.rm=TRUE ) )
     cat( "\n",myLab,"\n" )
-    cat( "\n     Std. Dev. of standardised Residuals = ",sdRes,"\n" )
-    cat( "     Std. Dev. of Truncated standardised Residuals = ",sdResTrunc,"\n" )
+    cat( "\n     Std. Dev. of standardised Residuals=",sdRes,"\n" )
+    cat( "     Std. Dev. of Truncated standardised Residuals=",sdResTrunc,"\n" )
   }
   result
 }
@@ -1637,7 +1681,7 @@ stdRes.index <- function( obj, label=NULL, prt=TRUE )
   {
     sdRes <- sqrt( var( stdRes,na.rm=TRUE ) )
     cat( "\n",label,"\n" )
-    cat( "\n     Std. Dev. of standardised Residuals = ",sdRes,"\n" )
+    cat( "\n     Std. Dev. of standardised Residuals=",sdRes,"\n" )
   }
   result
 }
@@ -1649,7 +1693,7 @@ stdRes.index <- function( obj, label=NULL, prt=TRUE )
 #--------------------------------------------------------------------#
 
 # AME introducing for YMR. Bubble plots of data:
-# plt.bubbles = function( obj,
+# plt.bubbles=function( obj,
 # For now just do in Sweave as quicker.
 
 #plt.ageResidsPOP-----------------------2011-08-31
@@ -1666,13 +1710,13 @@ plt.ageResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95)
   obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
   if( max(diff(sort(unique(obj$Age)))) > 1)
     {
-      allAges = min(obj$Age):max(obj$Age)
-      nodataAges = allAges[ !(allAges %in% obj$Age)]
-      xx = split(c(obj$stdRes, rep(NA, length(nodataAges))), c(obj$Age, nodataAges))
-      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = FALSE removes outliers
+      allAges=min(obj$Age):max(obj$Age)
+      nodataAges=allAges[ !(allAges %in% obj$Age)]
+      xx=split(c(obj$stdRes, rep(NA, length(nodataAges))), c(obj$Age, nodataAges))
+      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
     } else
     {            
-    xpos <- boxplot( split( obj$stdRes, obj$Age ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = FALSE removes outliers
+    xpos <- boxplot( split( obj$stdRes, obj$Age ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, "Age class" )
@@ -1708,25 +1752,25 @@ plt.ageResidsqqPOP <- function( obj, ages=c(2,60),
 
 #plt.yearResidsPOP----------------------2011-08-31
 # AME adding to plot age residuals by year. Is called for comm and survs.
-#  fill.in = TRUE is to add the missing years for boxplot
+#  fill.in=TRUE is to add the missing years for boxplot
 #  ..POP does not do qq plot. See popScape.r for previous.
 #----------------------------------------------AME
 plt.yearResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95),
-                           main=NULL, fill.in = TRUE, ... )
+                           main=NULL, fill.in=TRUE, ... )
 {
   # Subset to required ages - still do as don't want age 1.
   obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
   if(fill.in)
     {
-      allYears = min(obj$Year):max(obj$Year)
-      nodataYears = allYears[ !(allYears %in% obj$Year)]
-      xx = split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$Year, nodataYears))
+      allYears=min(obj$Year):max(obj$Year)
+      nodataYears=allYears[ !(allYears %in% obj$Year)]
+      xx=split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$Year, nodataYears))
       xpos <- boxplot( xx, whisklty=1, xlab="", ylab="",
-          outline=FALSE, ... )     #AME outline = FALSE removes outliers
+          outline=FALSE, ... )     #AME outline=FALSE removes outliers
       # browser()
     } else
     {  
-      xpos <- boxplot( split( obj$stdRes, obj$Year ), whisklty=1, xlab="", ylab="", outline=FALSE, ... )     #AME outline = FALSE removes outliers
+      xpos <- boxplot( split( obj$stdRes, obj$Year ), whisklty=1, xlab="", ylab="", outline=FALSE, ... )     #AME outline=FALSE removes outliers
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, "Year" )
@@ -1750,16 +1794,16 @@ plt.cohortResids <- function( obj, ages=c(2,59), pct=c(5,25,50,75,95),          
   # obj$stdRes has residuals for each age, year and both sexes. Need
   #  to assign a year of birth for each age as an extra column, then
   #  presumably just do the boxplot split using that.
-  obj$birthyr = obj$Year - obj$Age
+  obj$birthyr=obj$Year - obj$Age
   if( max(diff(sort(unique(obj$birthyr)))) > 1)
     {
-      allYears = min(obj$birthyr):max(obj$birthyr)
-      nodataYears = allYears[ !(allYears %in% obj$birthyr)]
-      xx = split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$birthyr, nodataYears))
-      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = FALSE removes outliers
+      allYears=min(obj$birthyr):max(obj$birthyr)
+      nodataYears=allYears[ !(allYears %in% obj$birthyr)]
+      xx=split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$birthyr, nodataYears))
+      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
     } else
     {            
-    xpos = boxplot( split( obj$stdRes, obj$birthyr ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline = FALSE removes outliers
+    xpos=boxplot( split( obj$stdRes, obj$birthyr ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, "Year of birth" )
@@ -1924,25 +1968,25 @@ plt.expRate <- function( obj, yLim=c(0,0.5), xLim=c(1954,2005) )
 plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=""),...)
 {
   seriesList <- sort( unique( obj$Series ) )
-  nseries = length(seriesList)
+  nseries=length(seriesList)
   #surveyFigName =c("survGIG.eps", "survQCSsyn.eps", "survQCSshr.eps", "survWCHG.eps", "survWCVI.eps", "survNFMS.eps")
-  #surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial")
-  surveyFigName = paste("survRes",ssnames,".eps",sep="")
-  surveyFigName = gsub(" ","",surveyFigName)
-  #surveyHeadName = ssnames
-  surveyHeadName = if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
+  #surveyHeadName=c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial")
+  surveyFigName=paste("survRes",ssnames,".eps",sep="")
+  surveyFigName=gsub(" ","",surveyFigName)
+  #surveyHeadName=ssnames
+  surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
   for ( i in 1:nseries )
   {
     idx <- seriesList[i]==obj$Series
     result <- stdRes.index( obj[idx,],
                 label=paste(main,"Series",i) )
     # windows()
-     postscript(surveyFigName[i],  height = 6, width = 5,
+     postscript(surveyFigName[i],  height=6, width=5,
          horizontal=FALSE,  paper="special")  # was 7.5, 6.0
-    # png(surveyFigName[i],  height = 4, width = 3.2,
+    # png(surveyFigName[i],  height=4, width=3.2,
     #     horizontal=FALSE,  paper="special")
     plt.stdResids( result,
-               xLim = range(result[!is.na(result$Obs), ]$Year))
+               xLim=range(result[!is.na(result$Obs), ]$Year))
                # restrict years for plot
       mtext( side=3, line=0, cex=1.0, outer=TRUE,
            surveyHeadName[i])
@@ -1961,43 +2005,43 @@ plt.idx <- function( obj,main="Residuals",save=NULL,ssnames=paste("Ser",1:9,sep=
 plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
     ssnames=paste("Ser",1:9,sep=""), ...)
 {
-	cvcol = "slategrey"
+	cvcol="slategrey"
 	# obj=obj$Survey, objCPUE=obj$CPUE
 	seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
-	nseries = length(seriesList)
+	nseries=length(seriesList)
 	# surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
-	#surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial") # Appears again below
-	#surveyHeadName = if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
-	surveyHeadName = if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
-	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro = "unknown"
+	#surveyHeadName=c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial") # Appears again below
+	#surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
+	surveyHeadName=if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
+	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
 
-	postscript("survIndSer.eps", height = 8.0, width = 6.0,  horizontal=FALSE,  paper="special")   # height was 6 for POP
+	postscript("survIndSer.eps", height=8.0, width=6.0,  horizontal=FALSE,  paper="special")   # height was 6 for POP
 	par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) # Do c(3,2) for 6 surveys
-	par(mai = c(0.3,0.25,0.4,0.1))          # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
-	par(omi = c(0.4,0.3,0,0.1))             # Outer margins of whole thing, inch
-	#yrTicks = as.numeric( obj$Year)         # Haven't a clue why AME is doing this
-	yrTicks = min(obj$Year):max(obj$Year)
+	par(mai=c(0.3,0.25,0.4,0.1))          # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
+	par(omi=c(0.4,0.3,0,0.1))             # Outer margins of whole thing, inch
+	#yrTicks=as.numeric( obj$Year)         # Haven't a clue why AME is doing this
+	yrTicks=min(obj$Year):max(obj$Year)
 
 	for ( i in 1:nseries )
 	{
 		idx <- seriesList[i]==obj$Series
-		seriesVals = obj[idx,]
-		# seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
+		seriesVals=obj[idx,]
+		# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
 		seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
 		seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
 
-		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-		# yearsPlot = min(yearsnotNA):max(yearsnotNA)
-		xLim = range(yearsnotNA)
+		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		# yearsPlot=min(yearsnotNA):max(yearsnotNA)
+		xLim=range(yearsnotNA)
 		if(i==1)
-		  xLimAll = xLim    # range to use in next plot
-		xLimAll = range(xLim, xLimAll)    # range to use in next plot
-		yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
-		# postscript(surveyFigName[i],  height = 4, width = 3.2,
+		  xLimAll=xLim    # range to use in next plot
+		xLimAll=range(xLim, xLimAll)    # range to use in next plot
+		yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
+		# postscript(surveyFigName[i],  height=4, width=3.2,
 		#     horizontal=FALSE,  paper="special")
 		#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
 		plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo,
-			xlim = xLim, ylim=yLim, xlab="", ylab="", gap=0, pch=19) # restrict years for plot, does error bars
+			xlim=xLim, ylim=yLim, xlab="", ylab="", gap=0, pch=19) # restrict years for plot, does error bars
 		lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 		axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
 		mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
@@ -2010,30 +2054,30 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 	dev.off()
 
 	# And again, but with the same year axis for each. Think will be instructive to see
-	postscript("survIndSer2.eps", height = 8.0, width = 6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
+	postscript("survIndSer2.eps", height=8.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
 	par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) #  do c(3,2) for 6 series, and change axes labelling
-	par(mar = c(0,3,0,3))         # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
-	par(oma = c(4,3,0,0))           # Outer margins of whole thing, inch
-	#yrTicks = as.numeric( obj$Year)
-	ymaxsurvIndSer3 = 0           # For ymaxsurvIndSer3.eps
-	xLimmaxsurvIndSer3 = NA
+	par(mar=c(0,3,0,3))         # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
+	par(oma=c(4,3,0,0))           # Outer margins of whole thing, inch
+	#yrTicks=as.numeric( obj$Year)
+	ymaxsurvIndSer3=0           # For ymaxsurvIndSer3.eps
+	xLimmaxsurvIndSer3=NA
 	for ( i in 1:length(seriesList) )
 	{
 		idx <- seriesList[i]==obj$Series
-		yrTicks = as.numeric( obj$Year[idx])           # all years
-		YrTicks = intersect(seq(1900,2100,10),yrTicks) # decadal ticks
-		seriesVals = obj[idx,]
-		# seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
+		yrTicks=as.numeric( obj$Year[idx])           # all years
+		YrTicks=intersect(seq(1900,2100,10),yrTicks) # decadal ticks
+		seriesVals=obj[idx,]
+		# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
 		seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
 		seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
 
-		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-		# yearsPlot = min(yearsnotNA):max(yearsnotNA)
-		# xLim = range(yearsnotNA)
-		yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
+		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		# yearsPlot=min(yearsnotNA):max(yearsnotNA)
+		# xLim=range(yearsnotNA)
+		yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
 		# For axis for survIndSer3.eps:
-		ymaxsurvIndSer3 = max(ymaxsurvIndSer3, max(seriesVals$Obs, na.rm=TRUE)/ mean(seriesVals$Obs, na.rm=TRUE) )
-		xLimmaxsurvIndSer3 = range(xLimmaxsurvIndSer3, yearsnotNA, na.rm=TRUE)     # setting xLimmaxsurvIndSer3 = NA above
+		ymaxsurvIndSer3=max(ymaxsurvIndSer3, max(seriesVals$Obs, na.rm=TRUE)/ mean(seriesVals$Obs, na.rm=TRUE) )
+		xLimmaxsurvIndSer3=range(xLimmaxsurvIndSer3, yearsnotNA, na.rm=TRUE)     # setting xLimmaxsurvIndSer3=NA above
 
 		#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
 		plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, xaxt="n", xlim=xLimAll, ylim=yLim, xlab="", ylab="", gap=0, pch=19)
@@ -2054,47 +2098,47 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
   
   # And again, but all series on same plot, normalised to their means to see trends. Maybe add CPUE also.
 	# Calculate max of normalised surveys and CPUEs
-	objsurv = obj[!is.na(obj$Obs),]
-	norsurv = sapply(split(objsurv$Obs,objsurv$Series),function(x){xx=x[!is.na(x)]; if (length(xx)==0) 0 else xx/mean(xx)},simplify=FALSE)
-	maxsurv = max(sapply(norsurv,max))
-	yrssurv = range(objsurv$Year); yrsspan = yrssurv[1]:yrssurv[2]
-	objcpue = objCPUE[is.element(objCPUE$Year,yrsspan),]
-	norcpue = sapply(split(objcpue$Obs,objcpue$Series),function(x){xx=x[!is.na(x)]; if (length(xx)==0) 0 else xx/mean(xx)},simplify=FALSE)
-	maxcpue = max(sapply(norcpue,max))
+	objsurv=obj[!is.na(obj$Obs),]
+	norsurv=sapply(split(objsurv$Obs,objsurv$Series),function(x){xx=x[!is.na(x)]; if (length(xx)==0) 0 else xx/mean(xx)},simplify=FALSE)
+	maxsurv=max(sapply(norsurv,max))
+	yrssurv=range(objsurv$Year); yrsspan=yrssurv[1]:yrssurv[2]
+	objcpue=objCPUE[is.element(objCPUE$Year,yrsspan),]
+	norcpue=sapply(split(objcpue$Obs,objcpue$Series),function(x){xx=x[!is.na(x)]; if (length(xx)==0) 0 else xx/mean(xx)},simplify=FALSE)
+	maxcpue=max(sapply(norcpue,max))
 #browser();return()
 
-	postscript("survIndSer3.eps", height = 6.0, width = 6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
-	#yrTicks = as.numeric( obj$Year)  # Haven't a clue why AME is doing this
-	yrTicks = yrsspan
-	YrTicks = intersect(seq(1900,2100,10),yrTicks) # decadal ticks
-	NSL = 1:length(seriesList)
+	postscript("survIndSer3.eps", height=6.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
+	#yrTicks=as.numeric( obj$Year)  # Haven't a clue why AME is doing this
+	yrTicks=yrsspan
+	YrTicks=intersect(seq(1900,2100,10),yrTicks) # decadal ticks
+	NSL=1:length(seriesList)
 	# Set up plot
-	plot(NA, xlim = yrssurv, ylim = c(0, max(maxsurv,maxcpue)), xlab="Years", ylab="Survey indices normalised by means", xaxt="n")
+	plot(NA, xlim=yrssurv, ylim=c(0, max(maxsurv,maxcpue)), xlab="Years", ylab="Survey indices normalised by means", xaxt="n")
 	abline(h=1, col="grey")
 	axis(1,at=yrTicks,tck=-0.01,labels=FALSE)
 	axis(1,at=YrTicks,tck=-0.02,labels=TRUE)
 	for ( i in NSL )
 	{
 		idx <- is.element(objsurv$Series,seriesList[i])
-		seriesVals = objsurv[idx,]
-		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		seriesVals=objsurv[idx,]
+		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
 		points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, na.rm=TRUE), pch=i, col=i, type="o")
 	}
-	legtxt = if (exists(".PBSmodEnv")) tcall(PBSawatea)$Snames else PBSawatea$Snames
+	legtxt=if (exists(".PBSmodEnv")) tcall(PBSawatea)$Snames else PBSawatea$Snames
 
 	# Now draw on CPUE series also:
-	nseries = length(seriesList)  #  Need nseries from surveys for col
+	nseries=length(seriesList)  #  Need nseries from surveys for col
 	seriesListCPUE <- sort( unique( objcpue$Series ) )
-	ncpue = length(seriesListCPUE)
+	ncpue=length(seriesListCPUE)
 	# sort risky if not always in same order.
-	lty = c(rep(1,length(NSL)),rep(2,ncpue))
-	NSL = c(NSL, (max(NSL)+1):(max(NSL)+ncpue))
-	legtxt = c(legtxt, gsub("Series","CPUE",seriesListCPUE))
+	lty=c(rep(1,length(NSL)),rep(2,ncpue))
+	NSL=c(NSL, (max(NSL)+1):(max(NSL)+ncpue))
+	legtxt=c(legtxt, gsub("Series","CPUE",seriesListCPUE))
 	for ( i in 1:ncpue )
 	{
 		idx <- is.element(objcpue$Series,seriesListCPUE[i])
-		seriesVals = objcpue[idx,]
-		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		seriesVals=objcpue[idx,]
+		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
 		if (length(yearsnotNA)>0)
 			points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, 
 				na.rm=TRUE), pch=i+nseries, col=i+nseries, type="o", lty=2)
@@ -2107,19 +2151,19 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 	for ( i in 1:length(seriesList) )
 	{
 		idx <- seriesList[i]==obj$Series
-		seriesVals = obj[idx,]
-		# seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
+		seriesVals=obj[idx,]
+		# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
 		seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
 		seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
-		yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-		# yearsPlot = min(yearsnotNA):max(yearsnotNA)
-		xLim = range(yearsnotNA)
-		yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
-		postscript(paste("survIndSer4-", i, ".eps", sep=""), height = 6.0, width = 6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
+		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+		# yearsPlot=min(yearsnotNA):max(yearsnotNA)
+		xLim=range(yearsnotNA)
+		yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
+		postscript(paste("survIndSer4-", i, ".eps", sep=""), height=6.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
 		#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
 		par( oma=c(0,0,0,0), mar=c(3,3,2,1), mgp=c(1.8,0.5,0))
 		plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, 
-			xlim = xLim, ylim=yLim, xlab="Year", ylab="Relative biomass", gap=0, pch=19)
+			xlim=xLim, ylim=yLim, xlab="Year", ylab="Relative biomass", gap=0, pch=19)
 		lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 		axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
 		mtext( side=3, line=0.25, cex=1, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
@@ -2133,9 +2177,9 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 #plotChains-----------------------------2011-05-11
 # Plots cumulative fequency of 'nchains' by partitioning one trace.
 # Revised from 'plotTracePOP'
-# mcmc = data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
+# mcmc=data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
 #-------------------------------------------------
-plotChains = function (mcmc, nchains=3, pdisc=0.1, 
+plotChains=function (mcmc, nchains=3, pdisc=0.1, 
    axes=FALSE, same.limits=FALSE, between=list(x=axes,y=axes), div=1, span=1/4,
    log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
    cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8, las=0, 
@@ -2146,61 +2190,61 @@ plotChains = function (mcmc, nchains=3, pdisc=0.1,
 	panel.trace <- function(x, y, ...) {
 
 		panel.xyplot(x, y, type="n")
-		chainlink = rep(1:nchains,f)
+		chainlink=rep(1:nchains,f)
 		for (i in 1:nchains) {
-			z = is.element(chainlink,i)
+			z=is.element(chainlink,i)
 			panel.xyplot(x[z], y[z], type="l", lty=lty.trace, lwd=2, col=rep(col.trace,nchains)[i])
 		}
-		#panel.xyplot(x, y, type = "l", lty = lty.trace, lwd = lwd.trace, col = col.trace)
+		#panel.xyplot(x, y, type="l", lty=lty.trace, lwd=lwd.trace, col=col.trace)
 	}
 
 	mcmc=mcmc[(round(pdisc*nrow(mcmc))+1):nrow(mcmc),]  # get rid of the first 'pdisc' (e.g., 10%)
 	relation <- if (same.limits) "same" else "free"
 	if (is.null(dim(mcmc))) {
 		mcmc.name <- rev(as.character(substitute(mcmc)))[1]
-		mcmc <- matrix(mcmc, dimnames = list(NULL, mcmc.name))
+		mcmc <- matrix(mcmc, dimnames=list(NULL, mcmc.name))
 	}
 	mcmc <- if (log) 
-		log(mcmc/div, base = base)
+		log(mcmc/div, base=base)
 	else mcmc/div
 	mcmc <- as.data.frame(mcmc)
 	n <- nrow(mcmc)
-	f = rep(round(n/nchains),nchains-1); f = c(f,n-sum(f))
+	f=rep(round(n/nchains),nchains-1); f=c(f,n-sum(f))
 	p <- ncol(mcmc)
-	dat <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
-		names(mcmc)), Draw = rep(1:n, p), Chain = rep(rep(1:nchains,f),p), Value = as.vector(as.matrix(mcmc)))
-	require(grid, quietly = TRUE, warn.conflicts = FALSE)
-	require(lattice, quietly = TRUE, warn.conflicts = FALSE)
+	dat <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
+		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,f),p), Value=as.vector(as.matrix(mcmc)))
+	require(grid, quietly=TRUE, warn.conflicts=FALSE)
+	require(lattice, quietly=TRUE, warn.conflicts=FALSE)
 	if (trellis.par.get()$background$col == "#909090") {
 		for (d in dev.list()) dev.off()
-		trellis.device(color = FALSE)
+		trellis.device(color=FALSE)
 	}
-	mymain <- list(label = main, cex = cex.main)
-	myxlab <- list(label = xlab, cex = cex.lab)
-	myylab <- list(label = ylab, cex = cex.lab)
-	myrot <- switch(as.character(las), `0` = 0, `1` = 0, `2` = 0, `3` = 90)     # AME changed '0' = 90 to 0
-	myscales <- list(x = list(draw=axes, relation=relation, cex=cex.axis, tck=tck, tick.number=tick.number, rot=myrot), 
+	mymain <- list(label=main, cex=cex.main)
+	myxlab <- list(label=xlab, cex=cex.lab)
+	myylab <- list(label=ylab, cex=cex.lab)
+	myrot <- switch(as.character(las), `0`=0, `1`=0, `2`=0, `3`=90)     # AME changed '0'=90 to 0
+	myscales <- list(x=list(draw=axes, relation=relation, cex=cex.axis, tck=tck, tick.number=tick.number, rot=myrot), 
 		y= list(draw=axes, relation=relation, cex=cex.axis, tck=tck, tick.number=tick.number, rot=myrot))
-	mystrip <- list(cex = cex.strip)
+	mystrip <- list(cex=cex.strip)
 
-	dat$Index = paste(dat$Factor,dat$Chain,sep="-")
-	vList = split(dat$Value,dat$Index)
-	qList = sapply(vList,function(x){
-		xsort = sort(x)
-		xscal = xsort - min(xsort)
-		ycumu = cumsum(xscal)/sum(xscal)
-		out = cbind(x=xsort,y=ycumu)
+	dat$Index=paste(dat$Factor,dat$Chain,sep="-")
+	vList=split(dat$Value,dat$Index)
+	qList=sapply(vList,function(x){
+		xsort=sort(x)
+		xscal=xsort - min(xsort)
+		ycumu=cumsum(xscal)/sum(xscal)
+		out=cbind(x=xsort,y=ycumu)
 		return(out) }, simplify=FALSE )
-	dat$CumFreq = dat$ValueSort = NA
+	dat$CumFreq=dat$ValueSort=NA
 	for (i in names(qList)) {
-		z = is.element(dat$Index,i)
-		dat$ValueSort[z] = qList[[i]][,"x"]
-		dat$CumFreq[z]   = qList[[i]][,"y"]
+		z=is.element(dat$Index,i)
+		dat$ValueSort[z]=qList[[i]][,"x"]
+		dat$CumFreq[z]  =qList[[i]][,"y"]
 	}
-	graph <- xyplot(CumFreq ~ ValueSort  | Factor, panel = panel.trace, 
-		data = dat, as.table = TRUE, between = between, main = mymain, 
-		xlab = myxlab, ylab = myylab, par.strip.text = mystrip, 
-		scales = myscales, ylim=c(0,1), ...)
+	graph <- xyplot(CumFreq ~ ValueSort  | Factor, panel=panel.trace, 
+		data=dat, as.table=TRUE, between=between, main=mymain, 
+		xlab=myxlab, ylab=myylab, par.strip.text=mystrip, 
+		scales=myscales, ylim=c(0,1), ...)
 #browser();return()
 	if (plot) {
 		print(graph)
@@ -2219,40 +2263,40 @@ plotChains = function (mcmc, nchains=3, pdisc=0.1,
 plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
 {                            # obj=currentRes$CPUE
   seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
-  nseries = length(seriesList)
+  nseries=length(seriesList)
   # surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
-  surveyHeadName = c("CPUE")
-	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro = "unknown"
+  surveyHeadName=c("CPUE")
+	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
   postscript("CPUEser.eps",
-        height = switch(nseries,5,8,9), width = 6.0,
+        height=switch(nseries,5,8,9), width=6.0,
         horizontal=FALSE,  paper="special")   # height was 6 for POP
   par(mfrow=c(nseries,1),mai=c(0.75,0.75,0,0.1),omi=c(0,0,0.25,0),mgp=c(2,.75,0))
-  # par(mai = c(0.25, 0.5, 0.3, 0.2)) # JAE changed  for each figure was for POP 0.45, 0.5, 0.3, 0.2
-  # par(omi = c(0.45,0.1,0,0))  # Outer margins of whole thing, inch
-  yrTicks = as.numeric( obj$Year)
+  # par(mai=c(0.25, 0.5, 0.3, 0.2)) # JAE changed  for each figure was for POP 0.45, 0.5, 0.3, 0.2
+  # par(omi=c(0.45,0.1,0,0))  # Outer margins of whole thing, inch
+  yrTicks=as.numeric( obj$Year)
    
   for ( i in 1:nseries )
   {
-    ii = Nsurv + i  # to index the CPUE cvpro
+    ii=Nsurv + i  # to index the CPUE cvpro
     idx <- seriesList[i]==obj$Series
-    seriesVals = obj[idx,]
-    # seriesvals$Obs = seriesvals$Obs   # /q[i] - set to 1 anyway
+    seriesVals=obj[idx,]
+    # seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
     seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
     seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
     # browser(); return()
-    yearsnotNA = seriesVals[ !is.na(seriesVals$Obs), ]$Year
-    # yearsPlot = min(yearsnotNA):max(yearsnotNA)
-    xLim = range(yearsnotNA)
+    yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+    # yearsPlot=min(yearsnotNA):max(yearsnotNA)
+    xLim=range(yearsnotNA)
     if(i==1)
-      xLimAll = xLim    # range to use in next plot
-    xLimAll = range(xLim, xLimAll)    # range to use in next plot
+      xLimAll=xLim    # range to use in next plot
+    xLimAll=range(xLim, xLimAll)    # range to use in next plot
     #if(is.null(yLim))     
-    yLim = c(0, max(seriesVals$Hi, na.rm=TRUE))
-    # postscript(surveyFigName[i],  height = 4, width = 3.2,
+    yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
+    # postscript(surveyFigName[i],  height=4, width=3.2,
     #     horizontal=FALSE,  paper="special")
     #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
     plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-           li=seriesVals$Lo, xlim = xLim, ylim=yLim, xlab="Year",
+           li=seriesVals$Lo, xlim=xLim, ylim=yLim, xlab="Year",
            ylab=paste("CPUE index:",seriesList[i]), gap=0, pch=19)
          # restrict years for plot, does error bars
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
@@ -2283,11 +2327,11 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
 #  then send back to Rowan to put into package. May not have to edit any other files?
 #-------------------------------------------AME/AM
 plt.mcmcGraphs <-
-function (mcmcObj, projObj, save = FALSE, 
-          ylim.recruitsMCMC = NULL, ylim.exploitMCMC = NULL,
-          ylim.VBcatch = NULL, ylim.BVBnorm = NULL,
-          xlim.snail = NULL, ylim.snail = NULL,
-          plotPolicies = names(projObj$Y[1:6]),
+function (mcmcObj, projObj, save=FALSE, 
+          ylim.recruitsMCMC=NULL, ylim.exploitMCMC=NULL,
+          ylim.VBcatch=NULL, ylim.BVBnorm=NULL,
+          xlim.snail=NULL, ylim.snail=NULL,
+          plotPolicies=names(projObj$Y[1:6]),
           onePolicy=names(projObj$Y[2]), mpd=list(),
           SAR.width=7.5, SAR.height=4)
 # plotPolicies is 6 policies projections to plot *AME*
@@ -2299,127 +2343,160 @@ function (mcmcObj, projObj, save = FALSE,
 	panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
 	{
 		usr <- par("usr"); on.exit(par(usr))
-		par(usr = c(0, 1, 0, 1))
+		par(usr=c(0, 1, 0, 1))
 		r <- abs(cor(x, y))
 		txt <- format(c(r, 0.123456789), digits=digits)[1]
 		txt <- paste(prefix, txt, sep="")
-		text(0.5, 0.5, txt, cex = 1.4)
+		text(0.5, 0.5, txt, cex=1.4)
 	}
-    postscript("recruitsMCMC.eps", height = 5, width = 6.2, horizontal = FALSE, 
-        paper = "special")
-    plotRmcmcPOP(currentMCMC$R, yLim = ylim.recruitsMCMC) # *AME*
+
+    postscript("recruitsMCMC.eps", width=6.2, height=5, horizontal=FALSE, paper="special")
+    plotRmcmcPOP(currentMCMC$R, yLim=ylim.recruitsMCMC) # *AME*
     dev.off()
-    postscript("exploitMCMC.eps", height = 5, width = 6.2, horizontal = FALSE, 
-        paper = "special")
-    plotRmcmcPOP(currentMCMC$U, yLab = "Exploitation rate",
-                 yLim = ylim.exploitMCMC, yaxis.by = 0.01)
+    win.metafile("recruitsMCMC.wmf", width=6.2, height=5)
+    plotRmcmcPOP(currentMCMC$R, yLim=ylim.recruitsMCMC) # *AME*
     dev.off()
-    postscript("pdfBiomass%d.eps", height = 7, width = 6.2, horizontal = FALSE, 
-        paper = "special", onefile = FALSE)
-    plotDensPOP(currentMCMC$B/1000, xlab = "Female spawning biomass, Bt (1000 t)", 
-        between = list(x = 0.2, y = 0.2), ylab = "Density", lwd.density = 2, 
-        same.limits = TRUE, layout = c(4, 6), lty.outer = 2, mpd=mpd[["mpd.B"]]/1000)
+
+    postscript("exploitMCMC.eps", width=6.2, height=5, horizontal=FALSE, paper="special")
+    plotRmcmcPOP(currentMCMC$U, yLab="Exploitation rate", yLim=ylim.exploitMCMC, yaxis.by=0.01)
     dev.off()
-    postscript("pdfRecruitment%d.eps", height = 7, width = 6.2, 
-        horizontal = FALSE, paper = "special", onefile = FALSE)
-    plotDensPOP(currentMCMC$R/1000, xlab = "Recruitment, Rt (1000s)", 
-        between = list(x = 0.2, y = 0.2), ylab = "Density", lwd.density = 2, 
-        same.limits = TRUE, layout = c(4, 6), lty.median = 2, 
-        lty.outer = 2, mpd=mpd[["mpd.R"]]/1000)
+    win.metafile("exploitMCMC.wmf", width=6.2, height=5)
+    plotRmcmcPOP(currentMCMC$U, yLab="Exploitation rate", yLim=ylim.exploitMCMC, yaxis.by=0.01)
     dev.off()
-    postscript("pdfParameters.eps", horizontal = FALSE, paper = "special", 
-        height = 7, width = 6.2)
-    plotDensPOPparsPrior(mcmcObj$P, lty.outer = 2, between = list(x = 0.3, 
-        y = 0.2),mpd=mpd[["mpd.P"]])
+
+    postscript("pdfBiomass%d.eps", width=6.5, height=8, horizontal=FALSE, paper="special", onefile=FALSE)
+    plotDensPOP(currentMCMC$B/1000, xlab="Female spawning biomass, Bt (1000 t)", 
+        between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, #panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
+        same.limits=TRUE, layout=c(4,5), lty.outer=2, mpd=mpd[["mpd.B"]]/1000) 
     dev.off()
-    postscript("selectivityMCMC.eps", height = 5, width = 6.2, 
-        horizontal = FALSE, paper = "special")
-    plot(1:10, main = "This will be selectivities from MCMC")
+
+    postscript("pdfRecruitment%d.eps", width=6.5, height=8, horizontal=FALSE, paper="special", onefile=FALSE)
+    plotDensPOP(currentMCMC$R/1000, xlab="Recruitment, Rt (1000s)", 
+        between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2,
+        same.limits=TRUE, layout=c(4,5), lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]]/1000)
     dev.off()
-    postscript("traceRecruits.eps", horizontal = FALSE, paper = "special", 
-        height = 7, width = 6.2)
-    plotTracePOP(mcmcObj$R[, getYrIdx(names(mcmcObj$R))]/1000, 
-        axes = TRUE, between = list(x = 0.2, y = 0.2), xlab = "Sample", 
-        ylab = "Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000)
+
+    postscript("pdfParameters.eps", horizontal=FALSE, paper="special", width=6.2, height=7)
+    plotDensPOPparsPrior(mcmcObj$P, lty.outer=2, between=list(x=0.3, y=0.2),mpd=mpd[["mpd.P"]])
     dev.off()
-    postscript("traceBiomass.eps", horizontal = FALSE, paper = "special", 
-        height = 7, width = 6.2)
-    plotTracePOP(mcmcObj$B[, getYrIdx(names(mcmcObj$B))]/1000, 
-        axes = TRUE, between = list(x = 0.2, y = 0.2), xlab = "Sample", 
-        ylab = "Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000)
+    win.metafile("pdfParameters.wmf", width=6.2, height=7)
+    plotDensPOPparsPrior(mcmcObj$P, lty.outer=2, between=list(x=0.3, y=0.2),mpd=mpd[["mpd.P"]])
     dev.off()
-    postscript("traceParams.eps", horizontal = FALSE, paper = "special", 
-        height = 7, width = 6.2)
+
+    #postscript("selectivityMCMC.eps", height=5, width=6.2, horizontal=FALSE, paper="special")
+    #plot(1:10, main="This will be selectivities from MCMC")
+    #dev.off()
+
+    postscript("traceRecruits.eps", horizontal=FALSE, paper="special",  width=6.2, height=7)
+    plotTracePOP(mcmcObj$R[, getYrIdx(names(mcmcObj$R))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), 
+      xlab="Sample", ylab="Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000)
+    dev.off()
+    png("traceRecruits.png", width=6.2, height=7, units="in", res=72)
+    plotTracePOP(mcmcObj$R[, getYrIdx(names(mcmcObj$R))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), 
+      xlab="Sample", ylab="Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000)
+    dev.off()
+
+    postscript("traceBiomass.eps", horizontal=FALSE, paper="special", width=6.2, height=7)
+    plotTracePOP(mcmcObj$B[, getYrIdx(names(mcmcObj$B))]/1000, axes=TRUE, between=list(x=0.2, y=0.2),
+      xlab="Sample", ylab="Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000)
+    dev.off()
+    png("traceBiomass.png", width=6.2, height=7, units="in", res=72)
+    plotTracePOP(mcmcObj$B[, getYrIdx(names(mcmcObj$B))]/1000, axes=TRUE, between=list(x=0.2, y=0.2),
+      xlab="Sample", ylab="Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000)
+    dev.off()
+
+    postscript("traceParams.eps", horizontal=FALSE, paper="special", width=6.2, height=7)
     idx <- apply(mcmcObj$P, 2, allEqual)
-    plotTracePOP(mcmcObj$P[, !idx], axes = TRUE, between = list(x = 0.2, 
-        y = 0.2), xlab = "Sample", ylab = "Parameter estimate", mpd=mpd[["mpd.P"]][!idx])
+    plotTracePOP(mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), 
+      xlab="Sample", ylab="Parameter estimate", mpd=mpd[["mpd.P"]][!idx])
     dev.off()
-    postscript("splitChain.eps", horizontal = FALSE, paper = "special", 
-        height = 7, width = 6.2)
-    plotChains(mcmc = currentMCMC$P, axes = TRUE, between = list(x = 0.15, 
-        y = 0.2), col.trace = c("green", "red", "blue"), xlab = "Sample", 
-        ylab = "Cumulative Frequency", pdisc = 0.001)
-    dev.off()
-    postscript("VBcatch.eps", horizontal = FALSE, paper = "special", 
-        height = 5, width = 6.2)
-    plotVBcatch(currentMCMC$VB, currentRes, yLim = ylim.VBcatch)
+    png("traceParams.png", width=6.2, height=7, units="in", res=72)
+    plotTracePOP(mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), 
+      xlab="Sample", ylab="Parameter estimate", mpd=mpd[["mpd.P"]][!idx])
     dev.off()
 
-    win.metafile("SARVBcatch.wmf", height = 0.8*SAR.height,
-                 width = 0.8*SAR.width)
-    par("mai" = c(0.72, 0.82, 0.2, 0.42), "mgp"=c(2,1,0))  
-    plotVBcatch( currentMCMC$VB, currentRes, yLim = ylim.VBcatch)
-    # mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
-  dev.off()
+    postscript("splitChain.eps", horizontal=FALSE, paper="special", width=6.2, height=7)
+    plotChains(mcmc=currentMCMC$P, axes=TRUE, between=list(x=0.15, y=0.2), 
+      col.trace=c("green", "red", "blue"), xlab="Sample", ylab="Cumulative Frequency", pdisc=0.001)
+    dev.off()
+    win.metafile("splitChain.wmf", width=6.2, height=7)
+    plotChains(mcmc=currentMCMC$P, axes=TRUE, between=list(x=0.15, y=0.2), 
+      col.trace=c("green", "red", "blue"), xlab="Sample", ylab="Cumulative Frequency", pdisc=0.001)
+    dev.off()
 
+    postscript("VBcatch.eps", horizontal=FALSE, paper="special", width=6.2, height=5)
+    plotVBcatch(currentMCMC$VB, currentRes, yLim=ylim.VBcatch)
+    dev.off()
+    win.metafile("VBcatch.wmf", width=6.2, height=5)
+    plotVBcatch(currentMCMC$VB, currentRes, yLim=ylim.VBcatch)
+    dev.off()
     
-    postscript("BVBnorm.eps", horizontal = FALSE, paper = "special", 
-        height = 5, width = 6.2)
-    plotBVBnorm(currentMCMC, xLeg = 0.02, yLeg = 0.2,
-                yLim = ylim.BVBnorm)
-    dev.off()
-
-    win.metafile("SARBVBnorm.wmf", height = SAR.height*0.7,
-              width = SAR.width/2.3) # half width to do side-by-side
-    par("mai" = c(0.62, 0.65, 0.05, 0.05), "mgp"=c(2,1,0))  
-    plotBVBnorm(currentMCMC, xLeg=0.02, yLeg=0.25)
-                #, yLim = c(0, 1.1))
-                # yLim fixed for YMR11 submission, yLeg increased for SAR  
+    win.metafile("SARVBcatch.wmf", width=0.8*SAR.width, height=0.8*SAR.height)
+    par(mai=c(0.72, 0.82, 0.2, 0.42), mgp=c(2,1,0))  
+    plotVBcatch( currentMCMC$VB, currentRes, yLim=ylim.VBcatch)
     # mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
     dev.off()
 
-    options(scipen = 10)
-    postscript("Bproj.eps", horizontal=FALSE, paper="special", height=7, width=6.2)
-    plt.quantBio(currentMCMC$B, currentProj$B, xyType = "quantBox", 
-        policy = plotPolicies,    # *AME*
-        save = FALSE)
+    postscript("BVBnorm.eps", horizontal=FALSE, paper="special", width=6.2, height=5)
+    plotBVBnorm(currentMCMC, xLeg=0.02, yLeg=0.2, yLim=ylim.BVBnorm)
     dev.off()
-    postscript("Rproj.eps", horizontal = FALSE, paper = "special", 
-        height = 7, width = 6.2)
-    plt.quantBio(currentMCMC$R, currentProj$R, xyType = "quantBox", 
-        policy = plotPolicies,    # *AME*
-        save = FALSE, yaxis.lab = "Recruitment (1000s)")
+    win.metafile("BVBnorm.wmf", width=6.2, height=5)
+    plotBVBnorm(currentMCMC, xLeg=0.02, yLeg=0.2, yLim=ylim.BVBnorm)
     dev.off()
-    postscript("RprojOnePolicy.eps", horizontal = FALSE, paper = "special",                    # *AME* (filename)
-        height = 5, width = 6.2)
-    plt.quantBioBB0(currentMCMC$R, currentProj$R, xyType = "quantBox", 
-        policy = onePolicy, save = FALSE, xaxis.by = 10, yaxis.lab = "Recruitment (1000s)")    # *AME* (onePolicy)
+
+    win.metafile("SARBVBnorm.wmf", height=SAR.height*0.7, width=SAR.width/2.3) # half width to do side-by-side
+    par(mai=c(0.62, 0.65, 0.05, 0.05), mgp=c(2,1,0))
+    plotBVBnorm(currentMCMC, xLeg=0.02, yLeg=0.25)
+    #, yLim=c(0, 1.1))  # yLim fixed for YMR11 submission, yLeg increased for SAR 
+    #  mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
     dev.off()
-    postscript("snail.eps", height = 5, width = 6.2, horizontal = FALSE, 
-        paper = "special")
-    plotSnail(currentMCMC$BoverBmsy, currentMCMC$UoverUmsy, p = c(0.1, 
-        0.9), xLim = xlim.snail, yLim = ylim.snail)
+
+#browser(); return()
+    options(scipen=10)
+    postscript("Bproj.eps", horizontal=FALSE, paper="special", width=6.2, height=7)
+    plt.quantBio(currentMCMC$B, currentProj$B, xyType="quantBox",  policy=plotPolicies, save=FALSE)  # *AME* 
     dev.off()
+    win.metafile("Bproj.wmf", width=6.2, height=7)
+    plt.quantBio(currentMCMC$B, currentProj$B, xyType="quantBox",  policy=plotPolicies, save=FALSE)  # *AME* 
+    dev.off()
+
+    postscript("Rproj.eps", horizontal=FALSE, paper="special", width=6.2, height=7)
+    plt.quantBio(currentMCMC$R, currentProj$R, xyType="quantBox", policy=plotPolicies,    # *AME*
+        save=FALSE, yaxis.lab="Recruitment (1000s)")
+    dev.off()
+    win.metafile("Rproj.wmf", width=6.2, height=7)
+    plt.quantBio(currentMCMC$R, currentProj$R, xyType="quantBox", policy=plotPolicies,    # *AME*
+        save=FALSE, yaxis.lab="Recruitment (1000s)")
+    dev.off()
+
+    postscript("RprojOnePolicy.eps", horizontal=FALSE, paper="special", width=6.2, height=5)                    # *AME* (filename)
+    plt.quantBioBB0(currentMCMC$R, currentProj$R, xyType="quantBox", policy=onePolicy, 
+      save=FALSE, xaxis.by=10, yaxis.lab="Recruitment (1000s)")    # *AME* (onePolicy)
+    dev.off()
+    win.metafile("RprojOnePolicy.wmf", width=6.2, height=5)                    # *AME* (filename)
+    plt.quantBioBB0(currentMCMC$R, currentProj$R, xyType="quantBox", policy=onePolicy, 
+      save=FALSE, xaxis.by=10, yaxis.lab="Recruitment (1000s)")    # *AME* (onePolicy)
+    dev.off()
+
+    postscript("snail.eps", width=6.2, height=5, horizontal=FALSE, paper="special")
+    plotSnail(currentMCMC$BoverBmsy, currentMCMC$UoverUmsy, p=c(0.1, 0.9), xLim=xlim.snail, yLim=ylim.snail)
+    dev.off()
+    win.metafile("snail.wmf", width=6.2, height=5)
+    plotSnail(currentMCMC$BoverBmsy, currentMCMC$UoverUmsy, p=c(0.1, 0.9), xLim=xlim.snail, yLim=ylim.snail)
+    dev.off()
+
     # Doing 6 on a page:
-    npr = 6
-    nuP = length(use.Pnames)
-    npp = ceiling(nuP/npr) # number of pairs plots
+    npr=6
+    nuP=length(use.Pnames)
+    npp=ceiling(nuP/npr) # number of pairs plots
     for (i in 1:npp) {
-      if (i<npp) ii = (1:npr)+(i-1)*npr
-      else ii = (nuP-npr+1):nuP 
-      postscript(paste("pairs",i,".eps",sep=""),height=7,width=7,horizontal=FALSE,paper="special")
-      #pairs(currentMCMC$P[, ii], pch=20, cex=0.2, gap=0)
-      pairs(currentMCMC$P[, ii], pch = 20, cex = 0.2, gap = 0, lower.panel=panel.cor)
+      if (i<npp) ii=(1:npr)+(i-1)*npr
+      else ii=(nuP-npr+1):nuP 
+      postscript(paste("pairs",i,".eps",sep=""), width=7, height=7, horizontal=FALSE, paper="special")
+      pairs(currentMCMC$P[, ii], pch=20, cex=0.2, gap=0, lower.panel=panel.cor)
+      dev.off()
+      png(paste("pairs",i,".png",sep=""), width=7, height=7, units="in", res=72)
+      pairs(currentMCMC$P[, ii], pch=20, cex=0.2, gap=0, lower.panel=panel.cor)
       dev.off()
     }
   while(dev.cur() > 1)  dev.off()    # tidy up any remainingfrom the %d.eps
@@ -2446,12 +2523,12 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
                                         #  plt.mcmcGraphs above
 
   # AME adding, plot exploitation rate, not writing new function:
-  postscript("exploit.eps", height = 5, width = 6.2, horizontal=FALSE,  paper="special")
-  B = obj$B
-  xlim = range(B$Year,na.rm=TRUE)
-  uflds = findPat("U",names(B))
-  B$U = apply(B[,uflds,drop=FALSE],1,sum)
-  ylim  = range(B$U,na.rm=TRUE)
+  postscript("exploit.eps", height=5, width=6.2, horizontal=FALSE,  paper="special")
+  B=obj$B
+  xlim=range(B$Year,na.rm=TRUE)
+  uflds=findPat("U",names(B))
+  B$U=apply(B[,uflds,drop=FALSE],1,sum)
+  ylim =range(B$U,na.rm=TRUE)
   par(mfrow=c(1,1),mgp=c(2,.75,0))
   plot(0,0,xlim=xlim,ylim=ylim,type="n",xlab="Year",ylab="Exploitation rate")
   lines(B$Year, B$U, col="black")
@@ -2463,8 +2540,7 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   # AME had added recruits.eps for POP, but that's MCMC, so moving
   #  to plt.mcmcGraphs, changing that filename to recruitsMCMC.eps
   #  and just adding here to do MPD for recruits.
-  postscript("recruits.eps", height = 5, width = 6.2,
-              horizontal=FALSE,  paper="special")
+  postscript("recruits.eps", height=5, width=6.2, horizontal=FALSE,  paper="special")
   plot(obj$B$Year, obj$B$R, type="o", xlab="Year",
        ylab="Recruitment, Rt (1000s)", ylim=c(0, max(obj$B$R, na.rm=TRUE)))
   dev.off()
@@ -2479,16 +2555,15 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 
   # Plot the selectivity.
   # windows()
-  # objRed = obj      # Reduced object, just plotting Selectivity to 20
-  # objRed$Sel = objRed$Sel[objRed$Sel$Age < 21,]
+  # objRed=obj      # Reduced object, just plotting Selectivity to 20
+  # objRed$Sel=objRed$Sel[objRed$Sel$Age < 21,]
   # plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,20))
   # if ( save )
   #   savePlot( "selectivity", type="png" )
 
-  postscript("selectivity.eps", height = 5, width = 6.2,
-              horizontal=FALSE,  paper="special")
-  objRed = obj      # Reduced object, just plotting Selectivity to 20
-  objRed$Sel = objRed$Sel[objRed$Sel$Age < 21,]
+  postscript("selectivity.eps", height=5, width=6.2, horizontal=FALSE,  paper="special")
+  objRed=obj      # Reduced object, just plotting Selectivity to 20
+  objRed$Sel=objRed$Sel[objRed$Sel$Age < 21,]
   plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,20))
   dev.off()
   
@@ -2498,9 +2573,9 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   #         ACH: I'm not sure if this applies to CL
 
   seriesList <- sort( unique( obj$CAc$Series) )
-  maxcol = 4
-  CAc.yrs = sapply(split(obj$CAc$Year,obj$CAc$Series),unique,simplify=FALSE)
-  CAc.nyrs = sapply(CAc.yrs,length)
+  maxcol=4
+  CAc.yrs=sapply(split(obj$CAc$Year,obj$CAc$Series),unique,simplify=FALSE)
+  CAc.nyrs=sapply(CAc.yrs,length)
 
 	for ( i in 1:length(seriesList) )  {
 		# AME dividing years into 4 groups - note no 1985, 86,
@@ -2541,14 +2616,14 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 		# unique(currentRes$CAc$Year) is, do four a page:
 		# 1978 1979 1980 1981 1982 1983 1984 1987 1989 1990 1991 1992 1993 1994 1995
 		#  1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009
-		# uniqueCAcyears = unique(currentRes$CAc$Year)  # length=29, so do groups of 4
-		# numpanels = 4
+		# uniqueCAcyears=unique(currentRes$CAc$Year)  # length=29, so do groups of 4
+		# numpanels=4
 		# for(jj in 0:7) { 
 		#    windows()
-		#    startyr = uniqueCAcyears[jj*4 + 1]
+		#    startyr=uniqueCAcyears[jj*4 + 1]
 		#    # print(startyr)
-		#    endyr = uniqueCAcyears[(jj+1)*4]
-		#      if(jj == 7) {endyr = uniqueCAcyears[length(uniqueCAcyears)]}
+		#    endyr=uniqueCAcyears[(jj+1)*4]
+		#      if(jj == 7) {endyr=uniqueCAcyears[length(uniqueCAcyears)]}
 		#    plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=startyr:endyr )
 		# browser()
 		#  if ( save )
@@ -2560,25 +2635,25 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 		#  as multiple pages. Starting writing plotCAPOP, but could do all
 		#  by changing arguments to plotCA(...). Haven't referred to i here, as for
 		#  POP there's only one commercial set of data.
-		CA.key = list(text = list(lab= c("Observed", "Predicted")),
-			lines = list(col= c("black", "red"),  cex= c(0.3, 0.3)),
-			type=c("p", "l"), x = 0.78, y = -0.04, pch=c(20,20), lwd=1, between=0.3)
+		CA.key=list(text=list(lab= c("Observed", "Predicted")),
+			lines=list(col= c("black", "red"),  cex= c(0.3, 0.3)),
+			type=c("p", "l"), x=0.78, y=-0.04, pch=c(20,20), lwd=1, between=0.3)
 			# pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
-		CAc.sex = unique(obj$CAc$Sex)
+		CAc.sex=unique(obj$CAc$Sex)
 		for(plot.sex in CAc.sex) {
-			ii = grep(plot.sex,CAc.sex)
+			ii=grep(plot.sex,CAc.sex)
 			# For YMR, changing height from 4.5, and layout from c(4,4), to put all on one
-			age.layout = rev(c(ceiling(CAc.nyrs[i]/maxcol),maxcol)) # backwards in stupid lattice
+			age.layout=rev(c(ceiling(CAc.nyrs[i]/maxcol),maxcol)) # backwards in stupid lattice
 			postscript(paste("ageComm", plot.sex,i,".eps", sep=""),
-				height = switch(age.layout[2],4,6,9,9,9,9,9,9,9), width = 6.5,
+				height=switch(age.layout[2],4,6,9,9,9,9,9,9,9), width=6.5,
 				horizontal=FALSE,  paper="special", onefile=FALSE)
 			plotCA( obj, what="c", ylab="Proportion", xlab="Age class",
 				sex=plot.sex, layout= age.layout, key=CA.key, main=sexlab[ii],
 				pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 ,series=i)
 			# col.lines otherwise boys are blue
 			# Tried using rbind to add dummy data for 1985, 1986 and 1988, but didn't work:
-			# add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
-			# xxx$CAc = rbind(xxx$CAc, add)
+			# add=c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
+			# xxx$CAc=rbind(xxx$CAc, add)
 			dev.off()
 		} # end of plot.sex loop
 	} # end of seriesList loop
@@ -2612,36 +2687,36 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 
 	# Survey Age Fits (modified by RH 2012-08-01)
 	# AME: pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
-	CAs.sex = unique(obj$CAs$Sex)
+	CAs.sex=unique(obj$CAs$Sex)
 	#ageSurveyFigName =c("ageSurvGIG", "ageSurvQCSsyn", "ageSurvQCSshr")
-	age.height = c(3.0, 2.8, 3) # For .eps figs:
-	age.width = c(3.5, 7, 3)    # For .eps figs:
+	age.height=c(3.0, 2.8, 3) # For .eps figs:
+	age.width=c(3.5, 7, 3)    # For .eps figs:
 	seriesList <- sort( unique( obj$CAs$Series) )
-	ageSurveyFigName = paste("ageSurv",ssnames[seriesList],sep="") # friggin nightmare
-	ageSurveyFigName = gsub(" ","",ageSurveyFigName)               # perhaps redundant but just to be sure
-	#age.layout = list(); age.layout[[1]] = c(2,1); age.layout[[2]] = c(4,1)
+	ageSurveyFigName=paste("ageSurv",ssnames[seriesList],sep="") # friggin nightmare
+	ageSurveyFigName=gsub(" ","",ageSurveyFigName)               # perhaps redundant but just to be sure
+	#age.layout=list(); age.layout[[1]]=c(2,1); age.layout[[2]]=c(4,1)
 	for ( i in 1:length(seriesList) ) {
-		ii = seriesList[i]; zi=is.element(obj$CAs$Series,ii)
+		ii=seriesList[i]; zi=is.element(obj$CAs$Series,ii)
 		if (!any(zi)) next
-		iyr = unique(obj$CAs$Year[zi]); nyr = length(iyr)
-		ncol = min(nyr,maxcol); nrow=ceiling(nyr/ncol)
+		iyr=unique(obj$CAs$Year[zi]); nyr=length(iyr)
+		ncol=min(nyr,maxcol); nrow=ceiling(nyr/ncol)
 		# Shifting the key here down slightly (RH: variable y-shift depending on nrow)
-		CAs.key = list(text=list(lab=c("Obs","Pred")), lines=list(col=c("black","red"),
+		CAs.key=list(text=list(lab=c("Obs","Pred")), lines=list(col=c("black","red"),
 			cex= c(0.3,0.3)), type=c("p","l"), x=0.78, y=ifelse(nrow==1,-0.16,-0.08), pch=c(20,20), lwd=1, between=0.3)
 		for(plot.sex in CAs.sex) {
-			jj = grep(plot.sex,CAs.sex)
+			jj=grep(plot.sex,CAs.sex)
 			postscript(paste(ageSurveyFigName[i], plot.sex,ii,".eps", sep=""),
-			#sep=""),  height = age.height[i], width = age.width[i], # RH disabled
+			#sep=""),  height=age.height[i], width=age.width[i], # RH disabled
 			height=2*nrow+1.5, width=1.5*ncol, horizontal=FALSE, paper="special", onefile=FALSE)
 
-			plotCA( obj, what="s", series = ii, ylab="Proportion",
+			plotCA( obj, what="s", series=ii, ylab="Proportion",
 				#xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex, # RH disabled
 				xlab="Age class", sex=plot.sex, layout=c(ncol,nrow), key=CAs.key, main=sexlab[jj], # RH: Stupid trellis appears to take (columns,rows) for the layout.
 				pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
 			# AME: col.lines otherwise boys are blue
 			# AME: Tried using rbind to add dummy data for 1985, 1986, and 1988, but didn't work:
-			#      add = c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
-			#      xxx$CAc = rbind(xxx$CAc, add)
+			#      add=c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
+			#      xxx$CAc=rbind(xxx$CAc, add)
 			dev.off()
 		}  # end of plot.sex loop
 	}     # end of seriesList loop
@@ -2669,11 +2744,11 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 
   # Plot standardised residuals. Now doing four plots on one page.
   #  Commercial.
-  postscript("commAgeResids.eps", height = 8.5, width = 6.8, horizontal=FALSE,  paper="special")
-  par(mai = c(0.45,0.55,0.1,0.1)) # JAE changed  for each figure
-  par(omi = c(0,0,0.4,0))        # Outer margins of whole thing, inch
+  postscript("commAgeResids.eps", height=8.5, width=6.8, horizontal=FALSE,  paper="special")
+  par(mai=c(0.45,0.55,0.1,0.1)) # JAE changed  for each figure
+  par(omi=c(0,0,0.4,0))        # Outer margins of whole thing, inch
 
-  stdRes.CA.CAc = stdRes.CA( obj$CAc )
+  stdRes.CA.CAc=stdRes.CA( obj$CAc )
   #  Outliers don't get plotted, except for qq plot
   par(mfrow=c(4,1))
   plt.ageResidsPOP( stdRes.CA.CAc, main="" ) 
@@ -2686,16 +2761,16 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   # And now for surveys.
   # AME adding - plotting the CA residuals for the two surveys:
   seriesList <- sort( unique( obj$CAs$Series) )  
-  nseries = length(seriesList)
-  surveyHeadName = if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
+  nseries=length(seriesList)
+  surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
   for ( i in 1:nseries ) {   # POP no fits for survey 3
-		ii = seriesList[i]
+		ii=seriesList[i]
     postscript(paste("survAgeResSer", ii, ".eps", sep=""),
-        height = 8.5, width = 6.8,
+        height=8.5, width=6.8,
         horizontal=FALSE,  paper="special")
-		par(mai = c(0.45,0.55,0.1,0.1)) # JAE changed  for each figure
-		par(omi = c(0,0,0.4,0))        # Outer margins of whole thing, inch
-    stdRes.CA.CAs = stdRes.CA( obj$CAs[obj$CAs$Series == ii,] )
+		par(mai=c(0.45,0.55,0.1,0.1)) # JAE changed  for each figure
+		par(omi=c(0,0,0.4,0))        # Outer margins of whole thing, inch
+    stdRes.CA.CAs=stdRes.CA( obj$CAs[obj$CAs$Series == ii,] )
     #  Outliers don't get plotted, except for qq plot
     par(mfrow=c(4,1))
     plt.ageResidsPOP(stdRes.CA.CAs, main="" ) 
@@ -2707,8 +2782,8 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
     }
     
 	# Here plot the mean age for catch and surveys (`MAfun` in `utilsFun.r`)
-	MAc = MAfun(obj$CAc)       # catch mean age
-	MAs = MAfun(obj$CAs)       # surveys mean age
+	MAc=MAfun(obj$CAc)       # catch mean age
+	MAs=MAfun(obj$CAs)       # surveys mean age
 	nseries <- length(c(sort(unique(obj$CAc$Series)),sort(unique(obj$CAs$Series))))
 
 	postscript("meanAge.eps", height=8.0, width=6.0, horizontal=FALSE, paper="special")
@@ -2719,17 +2794,17 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 	points(MAc$Yr, MAc$MAexp, pch=2, type="o", col="blue", cex=1.2)
 	mtext( "Commercial", side=3, line=0.25, cex=1.2, outer=FALSE) #  outer=TRUE
 
-	last = regexpr("-",names(MAs$MAobs))-1
-	MAsSurvNum = substring(names(MAs$MAobs),1,last)
-	#surveyHeadName = c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic")
-	#surveyHeadName = ssnames[MAs$J]
-	surveyHeadName = if (!exists("tcall")) ssnames[MAs$J] else tcall(PBSawatea)$Snames[MAs$J]
+	last=regexpr("-",names(MAs$MAobs))-1
+	MAsSurvNum=substring(names(MAs$MAobs),1,last)
+	#surveyHeadName=c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic")
+	#surveyHeadName=ssnames[MAs$J]
+	surveyHeadName=if (!exists("tcall")) ssnames[MAs$J] else tcall(PBSawatea)$Snames[MAs$J]
 
 	for ( i in 1:length(MAs$J)) #1:length(unique(MAsSurvNum)) )
 	{
-	ii  = MAs$J[i]
-	iii = substring(names(MAs$MAobs),1,last)
-	z   = is.element(iii,ii)
+	ii =MAs$J[i]
+	iii=substring(names(MAs$MAobs),1,last)
+	z  =is.element(iii,ii)
 	plot(MAs$Yr[z], MAs$MAobs[z], xlab="Year", ylab="Mean age", 
 		ylim=extendrange(c(MAs$MAobs[z],MAs$MAexp[z]),f=0.1), #ylim=c(0,max(MAs$MAobs[z],MAs$MAexp[z])),
 		mgp=c(2,0.75,0), pch=20, col="green4", cex=1.5)
@@ -2742,14 +2817,14 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   # xLimSR and yLimSR fixed here for YMR to have Run 26 and 27 figs
   #  on same scales. Use these first two values to scale to data:
   # xLimSR =c(0, max(obj$B$SB))
-  # yLimSR = c(0, max(obj$B$R, na.rm=TRUE))
-  #xLimSR = c(0, max(c(max(obj$B$SB),45000)))   # so it draw bigger if necessary
-  #yLimSR = c(0, max(c(max(obj$B$R, na.rm=TRUE),55000)))
-  xLimSR = c(0, 1.5*max(obj$B$SB,na.rm=TRUE))   # so it draw bigger if necessary
-  xxx = (seq(0, xLimSR[2], length.out=100))
-  yyy = srFun(xxx)
-  yLimSR = c(0, 1.1*max(c(yyy,obj$B$R),na.rm=TRUE))
-  postscript("stockRecruit.eps", height = 5, width = 6.2,
+  # yLimSR=c(0, max(obj$B$R, na.rm=TRUE))
+  #xLimSR=c(0, max(c(max(obj$B$SB),45000)))   # so it draw bigger if necessary
+  #yLimSR=c(0, max(c(max(obj$B$R, na.rm=TRUE),55000)))
+  xLimSR=c(0, 1.5*max(obj$B$SB,na.rm=TRUE))   # so it draw bigger if necessary
+  xxx=(seq(0, xLimSR[2], length.out=100))
+  yyy=srFun(xxx)
+  yLimSR=c(0, 1.1*max(c(yyy,obj$B$R),na.rm=TRUE))
+  postscript("stockRecruit.eps", height=5, width=6.2,
               horizontal=FALSE,  paper="special")
   plot(xxx, yyy, lwd=2, xlim=xLimSR,
        ylim=yLimSR, type="l",
@@ -2759,7 +2834,7 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
            italic(t), ",", italic(R)[t], " (1000s)"), sep="") )
   #points(obj$B$SB, obj$B$R)
   #text(obj$B$SB, obj$B$R, labels=substring(as.character(years), 3), cex=0.5)
-  text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels = substring(as.character(years), 3), cex = 0.5, col="blue")
+  text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels=substring(as.character(years), 3), cex=0.5, col="blue")
   dev.off()
   
   #windows()
@@ -2905,7 +2980,7 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
 
   if ( is.null(yLim) )
     # yLim <- range( result1 )
-    yLim = c(0, max( result1 ))
+    yLim=c(0, max( result1 ))
 
   # Reconstructed biomass.
   if ( is.null(projObj) )
@@ -2936,7 +3011,7 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
       pol <- policyList[j]
       result2[[j]] <- apply( projObj[[pol]],2,quantile,probs=p )
 
-      # cat( "\n\nQuantiles of projection for policy = ",
+      # cat( "\n\nQuantiles of projection for policy=",
       #   policyList[j],"\n" )
       # print( result2[[j]] )
 
@@ -3013,8 +3088,8 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
                   userPrompt=FALSE, save=TRUE, main="", cex.main="",
-                  tcl.val=-0.2, xaxis.by = 1, yaxis.by=10000,
-                  xaxis.lab = "Year", yaxis.lab= "Spawning biomass" )
+                  tcl.val=-0.2, xaxis.by=1, yaxis.by=10000,
+                  xaxis.lab="Year", yaxis.lab= "Spawning biomass" )
 {
   plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", med.col="black", ... )   #AME line.col="black", col is for filling rect med.col is for median
   {
@@ -3107,7 +3182,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
       pol <- policyList[j]
       result2[[j]] <- apply( projObj[[pol]],2,quantile,probs=p )
 
-      # cat( "\n\nQuantiles of projection for policy = ",
+      # cat( "\n\nQuantiles of projection for policy=",
       #   policyList[j],"\n" )
       # print( result2[[j]] )
 
@@ -3138,7 +3213,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
       abline( v=yrs2[1]-0.5, lty=2 )
       axis(1, at=seq(xLim[1], xLim[2], by=xaxis.by),
            tcl=tcl.val, labels=FALSE)
-      axis(2, at = seq(0, yLim[2], by=yaxis.by),
+      axis(2, at=seq(0, yLim[2], by=yaxis.by),
            tcl=tcl.val, labels=FALSE)
       
       # mfg <- par( "mfg" )
@@ -3232,7 +3307,7 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
                            main=NULL, yLim=NULL, xLim=xLim )
 {
   # Input is a data.frame with columns "Year", "stdRes", "Fit".
-  # cex.val = 1.2       # size of text, if want to shrink down
+  # cex.val=1.2       # size of text, if want to shrink down
   par( oma=c(1,1,2,1), mar=c(3,3,1,1), mfrow=c(3,1) )
 
   if ( is.null(yLim) )
@@ -3241,7 +3316,7 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
 
   # Plot the standardised residuals against time.
   plot( obj$Year, obj$stdRes, type="n", xlab="", ylab="", ylim=yLim,
-       xlim = xLim)
+       xlim=xLim)
   abline( h=0, lty=2 )
   points( obj$Year, obj$stdRes, cex=ptcex, pch=ptpch) #, bg="orange" )
   mtext( side=1, line=2, cex=0.8, "Year" )
@@ -3361,51 +3436,51 @@ importProj.ddiff <- function( yrVal="2006" )
 
 #msyCalc--------------------------------2012-10-16
 # To load in MSY.out and calculated the MSY.
-# Call this function with msy = msyCalc().
+# Call this function with msy=msyCalc().
 #----------------------------------------------AME
-msyCalc = 
-function (dir = getwd(), error.rep = 1) 
+msyCalc=
+function (dir=getwd(), error.rep=1) 
 {
 # rewriting msyCalc here to report the convergence numbers:
-	control = readLines(paste(dir, "/Yields.ctl", sep = ""))
-	maxProj = as.numeric(control[3])
-	tolerance = as.numeric(control[5])
-	test = read.table(paste(dir, "/MSY.out", sep = ""), header = TRUE, sep = "\t")
-	num.draws = dim(test)[1]
-	nProjIndex = grep("nProj", names(test))
-	nProjMat = test[, nProjIndex]   # matrix of number of projections
-	nProjMatTF = rowSums(nProjMat > maxProj - 1)   # sum by row
+	control=readLines(paste(dir, "/Yields.ctl", sep=""))
+	maxProj=as.numeric(control[3])
+	tolerance=as.numeric(control[5])
+	test=read.table(paste(dir, "/MSY.out", sep=""), header=TRUE, sep="\t")
+	num.draws=dim(test)[1]
+	nProjIndex=grep("nProj", names(test))
+	nProjMat=test[, nProjIndex]   # matrix of number of projections
+	nProjMatTF=rowSums(nProjMat > maxProj - 1)   # sum by row
 	if (error.rep == 1 & (sum(nProjMatTF) > 0)) {
 		stop(paste("Simulations reach maximum year for", sum(nProjMatTF), 
 			"of the", num.draws * dim(nProjMat)[2], "simulations, so need to run for longer or reduce tolerance to reach equilibrium"))
 	}
-	yieldIndex = grep("Yield", names(test))
-	yieldMat = test[, yieldIndex]
-	uIndex = grep("U", names(test))
-	uMat = test[, uIndex]
-	VBIndex = grep("VB_", names(test))
-	VBMat = test[, VBIndex]
-	SBIndex = grep("SB_", names(test))
-	SBMat = test[, SBIndex]
-	imsy = apply(yieldMat, 1, which.max)
+	yieldIndex=grep("Yield", names(test))
+	yieldMat=test[, yieldIndex]
+	uIndex=grep("U", names(test))
+	uMat=test[, uIndex]
+	VBIndex=grep("VB_", names(test))
+	VBMat=test[, VBIndex]
+	SBIndex=grep("SB_", names(test))
+	SBMat=test[, SBIndex]
+	imsy=apply(yieldMat, 1, which.max)
 	if (error.rep == 1 & max(imsy) == dim(yieldMat)[2]) {
 		stop("Need to use a higher max U to reach the MSY, for at least one draw")
 	}
-	msy = vector()
-	umsy = vector()
-	VBmsy = vector()
-	Bmsy = vector()
-	nProj = vector()
+	msy=vector()
+	umsy=vector()
+	VBmsy=vector()
+	Bmsy=vector()
+	nProj=vector()
 	for (i in 1:num.draws) {
-		ind = imsy[i]
-		msy[i] = yieldMat[i, ind]
-		umsy[i] = uMat[i, ind]
-		VBmsy[i] = VBMat[i, ind]
-		Bmsy[i] = SBMat[i, ind]
-		nProj[i] = nProjMat[i, ind]
+		ind=imsy[i]
+		msy[i]=yieldMat[i, ind]
+		umsy[i]=uMat[i, ind]
+		VBmsy[i]=VBMat[i, ind]
+		Bmsy[i]=SBMat[i, ind]
+		nProj[i]=nProjMat[i, ind]
 	}
-	return(list(yield = msy, u = umsy, VB = VBmsy, B = Bmsy, 
-		nProj = nProj, uMin=uMat[,1], uMax=uMat[,dim(uMat)[2]], imsy = imsy, maxUind = rep(dim(yieldMat)[2], num.draws),  maxProj = rep(maxProj, num.draws), tolerance = rep(tolerance, num.draws), nProjMatTF=nProjMatTF))
+	return(list(yield=msy, u=umsy, VB=VBmsy, B=Bmsy, 
+		nProj=nProj, uMin=uMat[,1], uMax=uMat[,dim(uMat)[2]], imsy=imsy, maxUind=rep(dim(yieldMat)[2], num.draws),  maxProj=rep(maxProj, num.draws), tolerance=rep(tolerance, num.draws), nProjMatTF=nProjMatTF))
 	# imsy is index of tested u's for which you get umsy, so
 	#  so if it's 1 or maxUind for an MCMC then that one 
 	#  reached the bounds of u. Report that below in Sweave.
@@ -3427,11 +3502,11 @@ refPoints <- function( mcmcObj=currentMCMC, projObj=currentProj,
                      msyObj=currentMSY, refLevels=c(0.4, 0.8, 1))
                      # refLevels are %age of msyObj
 {
-  refPlist = as.list(c("LRP", "URP", "Bmsy"))  # Can't have 0.4Bmsy
-  names(refPlist) = c("LRP", "URP", "Bmsy")   # as numeric at start. '0.4Bmsy'
+  refPlist=as.list(c("LRP", "URP", "Bmsy"))  # Can't have 0.4Bmsy
+  names(refPlist)=c("LRP", "URP", "Bmsy")   # as numeric at start. '0.4Bmsy'
   for(i in 1:length(refLevels))
     {
-    refPlist[[i]] = refLevels[i] * msyObj$B
+    refPlist[[i]]=refLevels[i] * msyObj$B
     }
   return(refPlist)
 }
@@ -3440,53 +3515,77 @@ refPointsB0 <- function( mcmcObj=currentMCMC, projObj=currentProj,
                      B0Obj=B0.MCMC, refLevels=B0refLevels,
                      refNames=B0refNames)
   {
-  refPlist = as.list(refNames)
-  names(refPlist) = c(refNames)
+  refPlist=as.list(refNames)
+  names(refPlist)=c(refNames)
   for(i in 1:length(refLevels))
     {
-    refPlist[[i]] = refLevels[i] * B0Obj
+    refPlist[[i]]=refLevels[i] * B0Obj
     }
   return(refPlist)
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPoints
+
+#refPointsHist--------------------------2013-09-27
+# Call from Sweave as  refPointsHist(HRP.YRS=ROL.HRP.YRS)
+# Originally implemented for Rock Sole 2013
+#-----------------------------------------------RH
+refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
+   #blimYrs=1966:2005, btarYrs=1977:1985, ulimYrs=NULL, utarYrs=1966:2005
+{
+	unpackList(HRP.YRS)
+	refPlist=list(blimHRP=NULL, btarHRP=NULL, ulimHRP=NULL, utarHRP=NULL)
+	# Find the minimum B during the limit years
+	if (!is.null(blimYrs))
+		refPlist[["blimHRP"]]=apply(mcmcObj$B[,as.character(blimYrs),drop=FALSE],1,min)
+	# Find the mean B during the target years
+	if (!is.null(btarYrs))
+		refPlist[["btarHRP"]]=apply(mcmcObj$B[,as.character(btarYrs),drop=FALSE],1,mean)
+	# Find the minimum U during the limit years
+	if (!is.null(ulimYrs))
+		refPlist[["ulimHRP"]]=apply(mcmcObj$U[,as.character(ulimYrs),drop=FALSE],1,min)
+	# Find the mean U during the target years
+	if (!is.null(utarYrs))
+		refPlist[["utarHRP"]]=apply(mcmcObj$U[,as.character(utarYrs),drop=FALSE],1,mean)
+	return(refPlist)
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
 
 
 #plotSnail------------------------------2012-08-17
 # Plot snail-trail plots for MCMC analysis.
 #   AME: replacing "2010" with as.character(currYear - 1)
 #----------------------------------------------AME
-plotSnail = function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lwd=2)
+plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lwd=2)
 {
-    BoverBmsy.med = apply(BoverBmsy, 2, median)
-    UoverUmsy.med = apply(UoverUmsy, 2, median)
-    BoverBmsy.med = BoverBmsy.med[-length(BoverBmsy.med)]
-    colPal = colorRampPalette(c("grey95", "grey30"))
-    n = length(BoverBmsy.med)
+    BoverBmsy.med=apply(BoverBmsy, 2, median)
+    UoverUmsy.med=apply(UoverUmsy, 2, median)
+    BoverBmsy.med=BoverBmsy.med[-length(BoverBmsy.med)]
+    colPal=colorRampPalette(c("grey95", "grey30"))
+    n=length(BoverBmsy.med)
     if (is.null(xLim)) {
-        xLim = c(0, max(c(BoverBmsy.med, quantile(currentMCMC$BoverBmsy[, 
+        xLim=c(0, max(c(BoverBmsy.med, quantile(currentMCMC$BoverBmsy[, 
             as.character(currYear - 1)], p[2]), 1)))
     }
     if (is.null(yLim)) {
-        yLim = c(0, max(c(UoverUmsy.med, quantile(currentMCMC$UoverUmsy[, 
+        yLim=c(0, max(c(UoverUmsy.med, quantile(currentMCMC$UoverUmsy[, 
             as.character(currYear - 1)], p[2]), 1)))
     }
-    plot(BoverBmsy.med, UoverUmsy.med, type = "l", xlim = xLim, 
-        ylim = yLim, xlab = expression(paste(B[t]/B[msy])), ylab = expression(paste(u[t]/u[msy])), 
-        col = "grey", lwd = Lwd)
-    points(BoverBmsy.med, UoverUmsy.med, type = "p", pch = 19, 
-        col = colPal(n))
-    points(BoverBmsy.med[1], UoverUmsy.med[1], pch = 19, col = "blue")
-    points(BoverBmsy.med[as.character(currYear - 1)], UoverUmsy.med[as.character(currYear - 1)], pch = 19, 
-        col = "red")
+    plot(BoverBmsy.med, UoverUmsy.med, type="l", xlim=xLim, 
+        ylim=yLim, xlab=expression(paste(B[t]/B[msy])), ylab=expression(paste(u[t]/u[msy])), 
+        col="grey", lwd=Lwd)
+    points(BoverBmsy.med, UoverUmsy.med, type="p", pch=19, 
+        col=colPal(n))
+    points(BoverBmsy.med[1], UoverUmsy.med[1], pch=19, col="blue")
+    points(BoverBmsy.med[as.character(currYear - 1)], UoverUmsy.med[as.character(currYear - 1)], pch=19, 
+        col="red")
     segments(quantile(BoverBmsy[, as.character(currYear - 1)], p[1]), UoverUmsy.med[as.character(currYear - 1)], 
         quantile(BoverBmsy[, as.character(currYear - 1)], p[2]), UoverUmsy.med[as.character(currYear - 1)], 
-        col = "red")
+        col="red")
     segments(BoverBmsy.med[as.character(currYear - 1)], quantile(UoverUmsy[, as.character(currYear - 1)], 
         p[1]), BoverBmsy.med[as.character(currYear - 1)], quantile(UoverUmsy[, as.character(currYear - 1)], 
-        p[2]), col = "red")
-    abline(h = 1, col = "grey", lwd = Lwd)
-    abline(v = 0.4, col = "grey", lwd = Lwd)
-    abline(v = 0.8, col = "grey", lwd = Lwd)
+        p[2]), col="red")
+    abline(h=1, col="grey", lwd=Lwd)
+    abline(v=0.4, col="grey", lwd=Lwd)
+    abline(v=0.8, col="grey", lwd=Lwd)
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotSnail
 
@@ -3495,29 +3594,29 @@ plotSnail = function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, 
 # Adding the prior automatically.
 #----------------------------------------------AME
 plotDensPOPparsPrior <-
-    function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TRUE, 
-    same.limits = FALSE, between = list(x = axes, y = axes), 
-    div = 1, log = FALSE, base = 10, main = NULL, xlab = NULL, 
-    ylab = NULL, cex.main = 1.2, cex.lab = 1, cex.strip = 0.8, 
-    cex.axis = 0.7, las = 0, tck = 0.5, tick.number = 5, lty.density = 1, 
-    lwd.density = 3, col.density = "black", lty.median = 2, lwd.median = 1, 
-    col.median = "darkgrey", lty.outer = 3, lwd.outer = 1, col.outer = "darkgrey", 
-    pch = "|", cex.points = 1, col.points = "black", plot = TRUE,
-    MPD.height = 0.04, mpd=mcmc[1,], ...)    # MPD.height, how far up to put MPD
+    function (mcmc, probs=c(0.025, 0.975), points=FALSE, axes=TRUE, 
+    same.limits=FALSE, between=list(x=axes, y=axes), 
+    div=1, log=FALSE, base=10, main=NULL, xlab=NULL, 
+    ylab=NULL, cex.main=1.2, cex.lab=1, cex.strip=0.8, 
+    cex.axis=0.7, las=0, tck=0.5, tick.number=5, lty.density=1, 
+    lwd.density=3, col.density="black", lty.median=2, lwd.median=1, 
+    col.median="darkgrey", lty.outer=3, lwd.outer=1, col.outer="darkgrey", 
+    pch="|", cex.points=1, col.points="black", plot=TRUE,
+    MPD.height=0.04, mpd=mcmc[1,], ...)    # MPD.height, how far up to put MPD
 {
     panel.dens <- function(x, ...) {
       if (any(is.finite(x)) && var(x) > 0) 
-          panel.densityplot(x, lty = lty.density, lwd = lwd.density, 
-                col.line = col.density, plot.points = points, 
-                pch = pch, cex = cex.points, col = col.points,
+          panel.densityplot(x, lty=lty.density, lwd=lwd.density, 
+                col.line=col.density, plot.points=points, 
+                pch=pch, cex=cex.points, col=col.points,
                 ...)
-      else panel.densityplot(x, type = "n", ...)
+      else panel.densityplot(x, type="n", ...)
 
-        panel.abline(v = quantile(x, probs = probs), lty = lty.outer, 
-            lwd = lwd.outer, col = col.outer)
-        panel.abline(v = median(x), lty = lty.median,
-            lwd = lwd.median, 
-            col = col.median)
+        panel.abline(v=quantile(x, probs=probs), lty=lty.outer, 
+            lwd=lwd.outer, col=col.outer)
+        panel.abline(v=median(x), lty=lty.median,
+            lwd=lwd.median, 
+            col=col.median)
         panel.xyplot(mpd[panel.number()], current.panel.limits()$ylim[2]*MPD.height,
             pch=19, col="red") # AME, MPD. 0.04 of way up
                                         #  assumes ..ylim[1]=0
@@ -3525,51 +3624,51 @@ plotDensPOPparsPrior <-
             pch=1, col="black") #AME
         # panel.curve(priorDistList[[panel.number()]], min=-1, current.panel.limits()$xlim[1], current.panel.limits()$xlim[2], col="blue")
         # panel.curve(priorDistList[[1]], col="blue")
-        #   panel.curve(priorDistList[[panel.number()]](x), from = max(priorBoundsList[[panel.number()]][1],
-        #      current.panel.limits()$xlim[1]), to = min(priorBoundsList[[panel.number()]][2], 
-        #      current.panel.limits()$xlim[2]), col = "blue") # need the bounds, from max of lower bound and panel xlim[1], to min of upper bound and panel xlim[2]
+        #   panel.curve(priorDistList[[panel.number()]](x), from=max(priorBoundsList[[panel.number()]][1],
+        #      current.panel.limits()$xlim[1]), to=min(priorBoundsList[[panel.number()]][2], 
+        #      current.panel.limits()$xlim[2]), col="blue") # need the bounds, from max of lower bound and panel xlim[1], to min of upper bound and panel xlim[2]
         panel.curve(priorDistList[[panel.number()]]
             (x, priorInput[panel.number(), ] ),
-            from = max(priorInput[panel.number(), 2] , 
+            from=max(priorInput[panel.number(), 2] , 
               current.panel.limits()$xlim[1]),
-            to = min(priorInput[panel.number(), 3],
+            to=min(priorInput[panel.number(), 3],
               current.panel.limits()$xlim[2]),
-            col = "blue")
+            col="blue")
     }
     relation <- if (same.limits) 
         "same"
     else "free"
     if (is.null(dim(mcmc))) {
         mcmc.name <- rev(as.character(substitute(mcmc)))[1]
-        mcmc <- matrix(mcmc, dimnames = list(NULL, mcmc.name))
+        mcmc <- matrix(mcmc, dimnames=list(NULL, mcmc.name))
     }
     mcmc <- if (log) 
-        log(mcmc/div, base = base)
+        log(mcmc/div, base=base)
     else mcmc/div
     mcmc <- as.data.frame(mcmc)
     n <- nrow(mcmc)
     p <- ncol(mcmc)
-    x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
-        names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
-    require(grid, quietly = TRUE, warn.conflicts = FALSE)
-    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
+    x <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
+        names(mcmc)), Draw=rep(1:n, p), Value=as.vector(as.matrix(mcmc)))
+    require(grid, quietly=TRUE, warn.conflicts=FALSE)
+    require(lattice, quietly=TRUE, warn.conflicts=FALSE)
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
-        trellis.device(color = FALSE)
+        trellis.device(color=FALSE)
     }
-    mymain <- list(label = main, cex = cex.main)
-    myxlab <- list(label = xlab, cex = cex.lab)
-    myylab <- list(label = ylab, cex = cex.lab)
-    myrot <- switch(as.character(las), `0` = 0, `1` = 0, `2` = 90, 
-        `3` = 90)
-    myscales <- list(y = list(draw = FALSE, relation = "free"), 
-        x = list(draw = axes, relation = relation, cex = cex.axis, 
-            tck = tck, tick.number = tick.number, rot = myrot))
-    mystrip <- list(cex = cex.strip)
-    graph <- densityplot(~Value | Factor, panel = panel.dens, 
-        data = x, as.table = TRUE, between = between, main = mymain, 
-        xlab = myxlab, ylab = myylab, par.strip.text = mystrip, 
-        scales = myscales, ...)
+    mymain <- list(label=main, cex=cex.main)
+    myxlab <- list(label=xlab, cex=cex.lab)
+    myylab <- list(label=ylab, cex=cex.lab)
+    myrot <- switch(as.character(las), `0`=0, `1`=0, `2`=90, 
+        `3`=90)
+    myscales <- list(y=list(draw=FALSE, relation="free"), 
+        x=list(draw=axes, relation=relation, cex=cex.axis, 
+            tck=tck, tick.number=tick.number, rot=myrot))
+    mystrip <- list(cex=cex.strip)
+    graph <- densityplot(~Value | Factor, panel=panel.dens, 
+        data=x, as.table=TRUE, between=between, main=mymain, 
+        xlab=myxlab, ylab=myylab, par.strip.text=mystrip, 
+        scales=myscales, ...)
     if (!log) {
         if (is.list(graph$y.limits)) 
             graph$y.limits <- lapply(graph$y.limits, function(y) {
@@ -3592,86 +3691,86 @@ plotDensPOPparsPrior <-
 #findTarget-----------------------------2013-02-20
 #  To derive decision tables for moving windows and find
 #  the times to achieve recovery with given confidence.
-#   Vmat   = matrix of projected B-values (MCMC projections x Year)
-#   yrP    = user-specified projection years
-#   yrG    = number of years for moving target window (e.g, 90y = 3 YMR generations). Might not work for all possibilities.
-#   ratio  = recovery target ratio
-#   target = recovery target values (e.g., B0, Bmsy).
-#            = B0.MCMC for ratios of B0
-#            = Bmsy.MCMC for ratios of Bmsy
-#            = Bt.MCMC for moving window
-#   conf   = confidence level required
-#   plotit = logical to plot the probability of Bt/target
-#   retVal = character name of object to return
+#   Vmat  =matrix of projected B-values (MCMC projections x Year)
+#   yrP   =user-specified projection years
+#   yrG   =number of years for moving target window (e.g, 90y=3 YMR generations). Might not work for all possibilities.
+#   ratio =recovery target ratio
+#   target=recovery target values (e.g., B0, Bmsy).
+#           =B0.MCMC for ratios of B0
+#           =Bmsy.MCMC for ratios of Bmsy
+#           =Bt.MCMC for moving window
+#   conf  =confidence level required
+#   plotit=logical to plot the probability of Bt/target
+#   retVal=character name of object to return
 #    retVal="N", look for the global object "Ttab" (number of years
 #     to acheive target)
 #    retVal="p.hi" gives global object "Ptab", a list of decision
 #     tables where row is the catch option and column is the year
 #     Values are probabilities of acheiving target.
-#  (2012-02-20) 'xhi = x>=r' change to 'xhi = x>r'
+#  (2012-02-20) 'xhi=x>=r' change to 'xhi=x>r'
 #-----------------------------------------------RH
-findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0.5, target=B0.MCMC,
+findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0.5, target=B0.MCMC,
     conf=0.95, plotit=FALSE, retVal="N") {
 	
-	# oldpar = par(no.readonly=TRUE);  on.exit(par(oldpar))
-	yrA    = as.numeric(dimnames(Vmat)[[2]])   # years available
-	yrP    = sort(intersect(yrA,yrU))          # years for proj
-	yr0    = yrP[1]; yrN = rev(yrP)[1]         # 
+	# oldpar=par(no.readonly=TRUE);  on.exit(par(oldpar))
+	yrA   =as.numeric(dimnames(Vmat)[[2]])   # years available
+	yrP   =sort(intersect(yrA,yrU))          # years for proj
+	yr0   =yrP[1]; yrN=rev(yrP)[1]         # 
 
-	vmat = Vmat[,is.element(dimnames(Vmat)[[2]],as.character(yrP))]             # include only yrP years
+	vmat=Vmat[,is.element(dimnames(Vmat)[[2]],as.character(yrP))]             # include only yrP years
 	if (is.data.frame(target) || is.matrix(target)) {
-		yrM   = yrP - yrG                                                        # moving target years
-		yrM1  = intersect(as.numeric(dimnames(target)[[2]]),yrM)                 # available target years from MCMC
+		yrM  =yrP - yrG                                                        # moving target years
+		yrM1 =intersect(as.numeric(dimnames(target)[[2]]),yrM)                 # available target years from MCMC
 		if (length(yrM1)==0) {                                                   # projection not long enough for any overlap with 3 generations
 			if (retVal=="N") return(NA)
-			else {p.hi = rep(NA,length(yrP)); names(p.hi)=yrP }; return(p.hi) }
-		yrMr  = range(yrM1)                                                      # range of years to use from MCMC
-		targM = target[,as.character(yrM1)]                                      # target data from MCMC
-		yrM2  = setdiff(yrM,yrM1)                                                # missing target years (can occur before and after the MCMC years)
+			else {p.hi=rep(NA,length(yrP)); names(p.hi)=yrP }; return(p.hi) }
+		yrMr =range(yrM1)                                                      # range of years to use from MCMC
+		targM=target[,as.character(yrM1)]                                      # target data from MCMC
+		yrM2 =setdiff(yrM,yrM1)                                                # missing target years (can occur before and after the MCMC years)
 #browser(); return()
 		if (length(yrM2)>0) {
-			nrow = dim(target)[1]
+			nrow=dim(target)[1]
 			if (any(yrM2<yrMr[1])) {
-				yrMo  = yrM2[yrM2<yrMr[1]]                                         # years of data older than MCMCs
-				ncol  = length(yrMo)
-				targ0 = matrix(rep(target[,as.character(yrM1[1])],ncol),
+				yrMo =yrM2[yrM2<yrMr[1]]                                         # years of data older than MCMCs
+				ncol =length(yrMo)
+				targ0=matrix(rep(target[,as.character(yrM1[1])],ncol),
 					nrow=nrow, ncol=ncol, dimnames=list(1:nrow,yrMo))               # repeat B0 (first column)
-				targM = cbind(as.data.frame(targ0),targM)                          # moving target
+				targM=cbind(as.data.frame(targ0),targM)                          # moving target
 			}
 			if (any(yrM2>yrMr[2])) {
-				yrMn  = yrM2[yrM2>yrMr[2]]                                         # years of data newer than MCMCs
-				ncol  = length(yrMn)
-				targN = vmat[,as.character(yrMn)]                                  # start using projections
-				targM = cbind(targM,targN)                                         # moving target
+				yrMn =yrM2[yrM2>yrMr[2]]                                         # years of data newer than MCMCs
+				ncol =length(yrMn)
+				targN=vmat[,as.character(yrMn)]                                  # start using projections
+				targM=cbind(targM,targN)                                         # moving target
 			}
 		}
-		rats = vmat/targM                                                        # matrix of ratios Bt/ moving target
+		rats=vmat/targM                                                        # matrix of ratios Bt/ moving target
 	}
 	else    # if it's a vector, so no moving window
-		rats = apply(vmat,2,function(x,targ){x/targ},targ=target)                # matrix of ratios Bt/ target (B0 or Bmsy)
-	p.hi = apply(rats,2,function(x,r){xhi=x>r; sum(xhi)/length(xhi)},r=ratio)  # vector of probabilities Bt/B0 > target ratio for each year.
+		rats=apply(vmat,2,function(x,targ){x/targ},targ=target)                # matrix of ratios Bt/ target (B0 or Bmsy)
+	p.hi=apply(rats,2,function(x,r){xhi=x>r; sum(xhi)/length(xhi)},r=ratio)  # vector of probabilities Bt/B0 > target ratio for each year.
 	# p.hi can become each row of a decision table (AME checked
 	#  the numbers for 0.4 Bmsy match my existing
 	#  independent calculations). Need to save this for moving window.
 #browser(); return()
-	z.hi = p.hi >= conf                                                         # logical: is p.hi >= confidence limit specified
+	z.hi=p.hi >= conf                                                         # logical: is p.hi >= confidence limit specified
 
-	if (all(z.hi))       yrT = yr0                      # all p.hi exceed the confidence level
-	else if (!any(z.hi)) yrT = yrN                      # no  p.hi exceed the confidence level
+	if (all(z.hi))       yrT=yr0                      # all p.hi exceed the confidence level
+	else if (!any(z.hi)) yrT=yrN                      # no  p.hi exceed the confidence level
 	else {
-		pdif = diff(p.hi)                                # one-year change in trend
-		z1 = diff(p.hi)>0                                # logical: trend increasing?
-		z2 = c(pdif[-1],FALSE)>0                         # logical: trend one period later increasing?
-		z3 = z.hi[-1]                                    # does the probability of equalling or exceeding the target ratio exceed the confidence level?
-		z  = z1 & z2 & z3                                # logical: potential years when target reached
-		if (!any(z)) yrT = yrN                           # target not reached within the projection period
-		else         yrT = as.numeric(names(z)[z][1])    # first year when target reached
+		pdif=diff(p.hi)                                # one-year change in trend
+		z1=diff(p.hi)>0                                # logical: trend increasing?
+		z2=c(pdif[-1],FALSE)>0                         # logical: trend one period later increasing?
+		z3=z.hi[-1]                                    # does the probability of equalling or exceeding the target ratio exceed the confidence level?
+		z =z1 & z2 & z3                                # logical: potential years when target reached
+		if (!any(z)) yrT=yrN                           # target not reached within the projection period
+		else         yrT=as.numeric(names(z)[z][1])    # first year when target reached
 	}
-	N = yrT - yr0                                       # number of years to reach target
+	N=yrT - yr0                                       # number of years to reach target
 	if (plotit) {
 		par(mar=c(4,5,0.5,0.5))
-		#ylim = c(0, max(p.hi,ratio))
-		ylim = c(min(p.hi,0.5),1)
+		#ylim=c(0, max(p.hi,ratio))
+		ylim=c(min(p.hi,0.5),1)
 		plot(yr0:yrN,p.hi,type="n",ylim=ylim,ylab="",mgp=c(2.0,0.75,0))
 		lines(yr0:yrN,p.hi,col="grey")
 		points(yr0:yrN,p.hi,pch=20,col="orange",cex=1.2)
@@ -3693,11 +3792,11 @@ findTarget = function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0
 # importProjRecAndy.r - extending importProjRec to include VB, to
 #  then calculate projected exploitation rates. 13th Feb 2013
 #----------------------------------------------AME
-importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE) 
+importProjRec=function (dir, info="", coda=FALSE, quiet=TRUE) 
 {
 	get.Policies <- function() {
 		if (!quiet) cat("Policies  ")
-		Policies <- read.table(paste(dir, "strategy.out", sep = "/"), skip = 1)
+		Policies <- read.table(paste(dir, "strategy.out", sep="/"), skip=1)
 		if (!quiet) cat("file...")
 		Policies <- unique(as.vector(as.matrix(Policies)))
 		if (!quiet) cat("unique...OK\n")
@@ -3705,17 +3804,17 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 	}
 	get.Years <- function() {
 		if (!quiet) cat("Years...")
-		Years <- read.table(paste(dir, "strategy.out", sep = "/"), nrows = 1)
+		Years <- read.table(paste(dir, "strategy.out", sep="/"), nrows=1)
 		if (!quiet) cat("file...")
 		Years <- unlist(strsplit(as.matrix(Years), "_"))
 		if (!quiet) cat("labels...")
-		Years <- unique(matrix(Years, nrow = 3)[2, ])
+		Years <- unique(matrix(Years, nrow=3)[2, ])
 		if (!quiet) cat("unique...OK\n")
 		return(Years)
 	}
 	get.B <- function(Policies, Years) {
 		if (!quiet) cat("Biomass   ")
-		B <- read.table(paste(dir, "projspbm.out", sep = "/"), header = TRUE)[, -c(1, 2)]
+		B <- read.table(paste(dir, "projspbm.out", sep="/"), header=TRUE)[, -c(1, 2)]
 		if (!quiet) cat("file...")
 		Blist <- list()
 		for (p in 1:length(Policies)) {
@@ -3731,7 +3830,7 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 	}
 	get.Y <- function(Policies, Years) {
 		if (!quiet) cat("Landings...")
-		Y <- read.table(paste(dir, "procatch.out", sep = "/"), header = TRUE)
+		Y <- read.table(paste(dir, "procatch.out", sep="/"), header=TRUE)
 		if (!quiet) cat("file...")
 		Ylist <- list()
 		for (p in 1:length(Policies)) {
@@ -3754,9 +3853,9 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 	#	obj$extra$residuals$p_log_RecDev[6]
 	get.eps <- function(Policies, Years) {
 		if (!quiet) cat("Recruitment...")
-		eps <- read.table(paste(dir, "RecRes.out", sep = "/"), header = FALSE, skip=1)
+		eps <- read.table(paste(dir, "RecRes.out", sep="/"), header=FALSE, skip=1)
 		if (!quiet) cat("file...")
-		nRow = dim(eps)[1] / length(Policies)
+		nRow=dim(eps)[1] / length(Policies)
 		epslist <- list()
 		for (p in 1:length(Policies)) {
 			rows <- (0:(nRow-1)) * length(Policies) + p 
@@ -3771,7 +3870,7 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
         # AME adding to load in Vulnerable Biomass, editing get.B
        	get.VB <- function(Policies, Years) {
 		if (!quiet) cat("Vulnerable Biomass   ")
-		VB <- read.table(paste(dir, "Projbiom.out", sep = "/"), header = TRUE)[, -c(1, 2)]
+		VB <- read.table(paste(dir, "Projbiom.out", sep="/"), header=TRUE)[, -c(1, 2)]
 		if (!quiet) cat("file...")
 		VBlist <- list()
 		for (p in 1:length(Policies)) {
@@ -3785,10 +3884,10 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 		if (!quiet) cat("list...OK\n")
 		return(VB)
 	}
-	files <- paste(dir, c("strategy.out", "projspbm.out", "procatch.out", "recres.out", "projbiom.out"), sep = "/")
+	files <- paste(dir, c("strategy.out", "projspbm.out", "procatch.out", "recres.out", "projbiom.out"), sep="/")
 	sapply(files, function(f) if (!file.exists(f)) 
-		stop("File ", f, " does not exist. Please check the 'dir' argument.", call. = FALSE))
-	if (!quiet) cat("\nParsing files in directory ", dir, ":\n\n", sep = "")
+		stop("File ", f, " does not exist. Please check the 'dir' argument.", call.=FALSE))
+	if (!quiet) cat("\nParsing files in directory ", dir, ":\n\n", sep="")
 	Policies <- get.Policies()
 	Years <- get.Years()
 	B <- get.B(Policies, Years)
@@ -3796,9 +3895,9 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 	eps <- get.eps(Policies, Years)
       	VB <- get.VB(Policies, Years)
 	if (!quiet) cat("\n")
-	output <- list(B = B, Y = Y, eps = eps, VB = VB)
+	output <- list(B=B, Y=Y, eps=eps, VB=VB)
 	if (coda) {
-		require(coda, quietly = TRUE, warn.conflicts = FALSE)
+		require(coda, quietly=TRUE, warn.conflicts=FALSE)
 		output <- lapply(output, function(x) lapply(x, mcmc))
 	}
 	attr(output, "call") <- match.call()
@@ -3818,7 +3917,7 @@ importProjRec = function (dir, info = "", coda = FALSE, quiet = TRUE)
 #  year but multiple MCMCs, as in first year of projections is based on 
 #  penultimate year of MCMC calcualtions.
 #----------------------------------------------AME
-srFun = function(spawners, h=h.mpd, R0=R0.mpd, B0=B0.mpd) {
+srFun=function(spawners, h=h.mpd, R0=R0.mpd, B0=B0.mpd) {
 # to input a vector of spawners in year t-1 and calculate recruits in year t 
 	4 * h * R0 * spawners / ( ( 1 - h) * B0 + (5 * h - 1) * spawners)
 }

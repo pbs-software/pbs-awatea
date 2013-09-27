@@ -506,8 +506,9 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
             })
         else graph$y.limits[1] <- 0
     }
+#browser()
     if (plot) {
-        print(graph)
+        print(graph) #panel.height=10, panel.width=10)
         invisible(x)
     }
     else {

@@ -59,7 +59,9 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-master.Snw",sep="/"))
 	tfile = masterSweave
 
-	# First, get rid of those annoying comments and disabled code
+	# First, get rid excess lines, annoying comments, and disabled code
+	if (length(grep("CUT HERE",tfile))>0)
+		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
 	notcode = union(grep("^%",tfile),grep("^#",tfile))
 	tfile = tfile[setdiff(1:length(tfile),notcode)]
 
@@ -146,8 +148,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	} else
 		tfile = gsub("\\\\input","%\\\\input",tfile)
 
-	if (length(grep("CUT HERE",tfile))>0)
-		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
+#browser();return()
 
 	localName   = paste(run.name,"-",rwtNo,sep="")
 	localSweave = paste(mpd.dir,"/",localName,".Snw",sep="")
