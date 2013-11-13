@@ -714,8 +714,11 @@ plotB2 <- function (model, what="d", series=NULL, years=NULL, axes=TRUE,
     Rframe$Value <- Rframe$Value/rep(div, length.out=2)[2]
     Yframe$Value <- Yframe$Value/div[1]
 
-    require(grid, quietly=TRUE, warn.conflicts=FALSE)
-    require(lattice, quietly=TRUE, warn.conflicts=FALSE)
+    mess = c(
+    "require(grid, quietly=TRUE, warn.conflicts=FALSE)",
+    "require(lattice, quietly=TRUE, warn.conflicts=FALSE)"
+    )
+    eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color=FALSE)
@@ -1140,9 +1143,12 @@ plotIndex2 <- function (model, what="c", series=NULL, axes=TRUE, same.limits=FAL
         x$Hi <- log(x$Hi, base=base)
         x$Lo <- log(x$Lo, base=base)
     }
-    require(grid, quietly=TRUE, warn.conflicts=FALSE)
-    require(Hmisc, quietly=TRUE, warn.conflicts=FALSE)
-    require(lattice, quietly=TRUE, warn.conflicts=FALSE)
+    mess = c(
+    "require(grid, quietly=TRUE, warn.conflicts=FALSE)",
+    "require(Hmisc, quietly=TRUE, warn.conflicts=FALSE)",
+    "require(lattice, quietly=TRUE, warn.conflicts=FALSE)"
+    )
+    eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color=FALSE)
@@ -2213,8 +2219,11 @@ plotChains=function (mcmc, nchains=3, pdisc=0.1,
 	p <- ncol(mcmc)
 	dat <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
 		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,f),p), Value=as.vector(as.matrix(mcmc)))
-	require(grid, quietly=TRUE, warn.conflicts=FALSE)
-	require(lattice, quietly=TRUE, warn.conflicts=FALSE)
+	mess = c(
+	"require(grid, quietly=TRUE, warn.conflicts=FALSE)",
+	"require(lattice, quietly=TRUE, warn.conflicts=FALSE)"
+	)
+	eval(parse(text=mess))
 	if (trellis.par.get()$background$col == "#909090") {
 		for (d in dev.list()) dev.off()
 		trellis.device(color=FALSE)
@@ -3650,8 +3659,11 @@ plotDensPOPparsPrior <-
     p <- ncol(mcmc)
     x <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
         names(mcmc)), Draw=rep(1:n, p), Value=as.vector(as.matrix(mcmc)))
-    require(grid, quietly=TRUE, warn.conflicts=FALSE)
-    require(lattice, quietly=TRUE, warn.conflicts=FALSE)
+    mess = c(
+    "require(grid, quietly=TRUE, warn.conflicts=FALSE)",
+    "require(lattice, quietly=TRUE, warn.conflicts=FALSE)"
+    )
+    eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color=FALSE)
@@ -3897,7 +3909,7 @@ importProjRec=function (dir, info="", coda=FALSE, quiet=TRUE)
 	if (!quiet) cat("\n")
 	output <- list(B=B, Y=Y, eps=eps, VB=VB)
 	if (coda) {
-		require(coda, quietly=TRUE, warn.conflicts=FALSE)
+		eval(parse(text="require(coda, quietly=TRUE, warn.conflicts=FALSE)"))
 		output <- lapply(output, function(x) lapply(x, mcmc))
 	}
 	attr(output, "call") <- match.call()

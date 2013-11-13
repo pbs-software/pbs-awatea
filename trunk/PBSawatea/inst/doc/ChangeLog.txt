@@ -4,7 +4,11 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
-0.12  2013-09-27
+0.12  2013-11-12
+  - SGR and ROL assessments finished. Cleaned up code and Rd files for incorporation into R-package. (RH 11/12)
+  - Sweave MCMC can now take in tex files of MPD results (that user prepares by extracting pieces from run-master.Snw build). (RH 11/4)
+  - Added a few more flags to determine if the Sweave file is meant to be a working paper or a ResDoc (`@rmresdoc` used for both). (RH 10/1)
+  - Revised the Sweave MCMC to allow the inclusion of a discussion file specific to a single run (e.g., `resultsMCMC-run22.tex`). (RH 9/30)
   - More updates and debugging, mostly for MCMC stuff. (RH 9/27)
   - Debugged problems in Sweave MCMC. (RH 9/20)
   - Revised `run-MasterSweave.Snw` and `runSweaveMCMC.r`. (RH 9/16)

@@ -31,7 +31,7 @@ runADMB = function(
 	on.exit(ciao())
 	if (locode) { 
 		getFile(gfcode,path=system.file("data",package="PBSawatea"))
-		require(PBSmodelling, quietly=TRUE)
+		eval(parse(text="require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)"))
 		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runSweave.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runSweaveMCMC.r",sep="/"),local=FALSE)
@@ -278,6 +278,7 @@ readAD = function(txt) {
 	#Gather some control variables from original text (otxt)
 	#-------------------------------------------------------
 	ctllabs=list(Nsex="Number of sexes", Nsurv="Number of survey series", Ncpue="Number of CPUE series",
+	likeCPUE="CPUE likelihood Type",
 	NsurvDP="Number of survey data points \\(all series\\)", NcpueDP="Number of CPUE data points \\(all series\\)",
 	NyrCAs="Number of years with survey C@A data", NyrCAc="Number of years with commercial C@A data", 
 	Nmethod="Number of commercial fishing gears", gear="Initial gear",
@@ -288,9 +289,10 @@ readAD = function(txt) {
 		strval = gsub("#","",otxt[grep(x,otxt)[1]+1])
 		as.numeric(strval)
 	},simplify=FALSE)
-
+	if (all(controls$likeCPUE==0)) controls$Ncpue=0   # discount dummy CPUE data if likelihood type = 0
+#browser()
 	cvpro = if (exists(".PBSmodEnv")) tcall(PBSawatea)$cvpro else PBSawatea$cvpro
-	Nsc   = controls$Nsurv + controls$Ncpue
+	Nsc   = controls$Nsurv + controls$Ncpue      # Ncpue always at least 1, even if just dummy data (Awatea quirk)
 	controls[["cvpro"]] = rep(cvpro,Nsc)[1:Nsc]  # expand cvpro to accommodate all series (user may only specify one value, or underestimate number of series)
 
 	Data=new("AWATEAdata",txtnam=txtnam, input=ntxt, vlst=vlst, dnam=dnam, 
@@ -494,14 +496,14 @@ setMethod("reweight", signature="AWATEAdata",
 		cpue$NR = NRfun(cpue$Obs,cpue$Fit,cpue$CV)
 		cpue$CVnew = rep(0,nrow(cpue))
 		for (u in names(Useries)) {
-			s = s + 1 # to index cvpro
+			s = s + 1 # to index cvpro; s continued from surveys above
 			uu=as.character(u)
 			zu = is.element(cpue$Series,u)
 			user = cpue[zu,]
 			SDNR[Useries[uu]] = sd(user[,"NR"])
-			if (cvpro && nrwt==0)
+			if (cvpro[1] && nrwt==0)
 				cpue$CVnew[zu] = sqrt(user$CV^2 + cvpro[s]^2)
-			else if (cvpro && nrwt>0)
+			else if (cvpro[1] && nrwt>0)
 				cpue$CVnew[zu] = user$CV
 			else
 				cpue$CVnew[zu] = user$CV * SDNR[Useries[uu]]

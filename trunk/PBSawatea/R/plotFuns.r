@@ -91,9 +91,9 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 	fout = paste("CompB0-",spp,"-(",paste(names(xBox),collapse=","),")",sep="")
 
 	for (f in figout) {
-		if (f=="eps"){    grDevices:::ps.options(horizontal = TRUE)
+		if (f=="eps"){    grDevices::ps.options(horizontal = TRUE)
 		                  postscript(file=paste(fout,".eps",sep=""),width=width,height=height,fonts="mono") }
-		if (f=="pdf"){    grDevices:::ps.options(horizontal = TRUE)
+		if (f=="pdf"){    grDevices::ps.options(horizontal = TRUE)
 		                  pdf(file=paste(fout,".pdf",sep=""),width=width,height=height,fonts="mono") }
 		else if (f=="pix") png(paste(fout,".png",sep=""), units="in", res=300, width=width, height=height)
 		else if (f=="wmf") win.metafile(paste(fout,".wmf",sep=""), width=width, height=height)
@@ -152,13 +152,15 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 		if (f!="win") dev.off()
 	}
 	invisible(list(BarBox=BarBox,xBox=xBox)) }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^compB0
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~compB0
 
-#compBmsy-------------------------------2011-12-19
+
+#compBmsy-------------------------------2013-10-31
 # Compare biomass posteriors relative to Bmsy.
 #-----------------------------------------------RH
 compBmsy = function(Bspp, spp="POP", Mnams=c("Est M","Fix M"),
-    ratios=c(0.4,0.8), t.yr=2011, figgy=FALSE, width=12, height=9, ...)
+   ratios=c(0.4,0.8), t.yr=2013, figgy=FALSE, width=12, height=9, 
+   spplabs=TRUE, ...)
 {
 	oldpar = par(no.readonly=TRUE); oldpso = grDevices::ps.options()
 	ciao = function() {
@@ -178,14 +180,14 @@ compBmsy = function(Bspp, spp="POP", Mnams=c("Est M","Fix M"),
 	for (i in spp) {
 		iBspp = Bspp[[i]]
 		if (is.null(Mnams)) Mnams = names(iBspp)
-		names(iBspp) = paste(i,"\n",Mnams,sep="")
+		names(iBspp) = if (spplabs) paste(i,"\n",Mnams,sep="") else Mnams
 		iBmsy = sapply(iBspp,function(x) { x[["Bt.MCMC"]] / x[["Bmsy.MCMC"]] }, simplify=FALSE) 
 		for (j in names(iBmsy))
 			Bmsy[[j]] = iBmsy[[j]]
 	}
 	Bmsy = Bmsy[rev(names(Bmsy))]
 
-	ylim=c(0,max(sapply(Bmsy,quantile,0.98)))
+	ylim=c(0,max(sapply(Bmsy,quantile,0.96)))
 	dots=list(...)
 	unpackList(dots)
 	if (!is.null(dots$medcol)) medcol=rev(medcol)
@@ -195,28 +197,33 @@ compBmsy = function(Bspp, spp="POP", Mnams=c("Est M","Fix M"),
 	fout = paste("CompBmsy-",paste(spp,collapse="+"),"-(",paste(gsub(" ","",Mnams),collapse=","),")",sep="")
 
 	for (f in figout) {
-		if (f=="eps"){    grDevices:::ps.options(horizontal = TRUE)
-		                  postscript(file=paste(fout,".eps",sep=""),width=width,height=height,fonts="mono") }
-		if (f=="pdf"){    grDevices:::ps.options(horizontal = TRUE)
-		                  pdf(file=paste(fout,".pdf",sep=""),width=width,height=height,fonts="mono") }
+		if (f=="eps"){    grDevices::ps.options(horizontal = FALSE)
+		                  postscript(file=paste(fout,".eps",sep=""),width=width*1.25,height=height,fonts="mono",paper="special") }
+		if (f=="pdf"){    grDevices::ps.options(horizontal = TRUE)
+		                  pdf(file=paste(fout,".pdf",sep=""),width=width*1.25,height=height*1.25,fonts="mono") }
 		else if (f=="pix") png(paste(fout,".png",sep=""), units="in", res=300, width=width, height=height)
-		else if (f=="wmf") win.metafile(paste(fout,".wmf",sep=""), width=width, height=height)
-		par(mar=c(4,5,1,1),cex=ifelse(f%in%c("pix","eps"),1,1.2),mgp=c(1.6,0.6,0))
+		else if (f=="wmf") win.metafile(paste(fout,".wmf",sep=""), width=width*1.25, height=height*1.25)
+		yaxis.space = (max(nchar(names(Bmsy)))-ifelse(spplabs,nchar(spp),0))^0.9
+		par(mar=c(4,yaxis.space,0.5,0.5),cex=ifelse(f%in%c("pix","eps"),1,1.2),mgp=c(1.6,0.6,0))
 		plotBox(Bmsy, horizontal=TRUE, las=1, xlim=c(0.5,nmods+1),ylim=ylim, cex.axis=1.2, yaxs="i", 
-			pars=list(boxwex=boxwidth,medlwd=2,whisklty=1))
+			pars=list(boxwex=boxwidth,medlwd=2,whisklty=1),quants=c(0.05,0.25,0.5,0.75,0.95))
 		abline(v=ratios,col=rep(c("red","green4","blue"),nrats)[1:nrats],lty=2,lwd=2)
 		plotBox(Bmsy, horizontal=TRUE, las=1, xlim=c(0.5,nmods+1),ylim=ylim, cex.axis=1.2, yaxs="i", 
-			pars=list(boxwex=boxwidth,medlwd=2,whisklty=1,medcol=medcol,boxfill=boxfill,...),add=TRUE)
-		y2 = par()$usr[4] - 0.175*diff(par()$usr[3:4])
-		text(c(0.2,0.6,1.2),rep(y2,3),c("Critical","Cautious","Healthy"),col=c("red","darkorange","green4"),font=2,cex=1.4,srt=90,adj=c(0,0.5))
-		axis(1,at=ratios,labels=paste(ratios,"",sep=""),tick=FALSE,cex.axis=1.2)
-		mess = paste("mtext(expression(italic(B)[",t.yr,"]/italic(B)[MSY]),side=1,line=2.5,cex=2)",sep="")
+			pars=list(boxwex=boxwidth,medlwd=2,whisklty=1,medcol=medcol,boxfill=boxfill,...),add=TRUE,quants=c(0.05,0.25,0.5,0.75,0.95))
+		y2 = par()$usr[4] - 0.2*diff(par()$usr[3:4])
+		text(c(0.2,0.6,1.2),rep(y2,3),c("Critical","Cautious","Healthy"),col=c("red","darkorange","green4"),font=2,cex=1.1,srt=90,adj=c(0,0.5))
+		#axis(1,at=ratios,labels=paste(ratios,"",sep=""),tick=FALSE,cex.axis=1.2,line=2)
+		text(ratios,par()$usr[3],labels=ratios,adj=c(1.1,-.5),col=c("red","green4"))
+		#mess = paste("mtext(expression(italic(B)[",t.yr,"]/italic(B)[MSY]),side=1,line=2.5,cex=2)",sep="")
+		mess = paste("mtext(expression(italic(B)[italic(t)]/italic(B)[MSY]),side=1,line=2.5,cex=1.5)",sep="")
+#browser();return()
 		eval(parse(text=mess))
 		if (f!="win") dev.off()
 	}
 	invisible(Bmsy)
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^compBmsy
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~compBmsy
+
 
 #cquantile------------------------------2010-10-20
 # cumulative quantile, from cumuplot
@@ -236,7 +243,8 @@ cquantile <- function(z, probs)
       width = 1, digits = 7), "%", sep = "")
   return(cquant)
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^cquantile
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cquantile
+
 
 #cquantile.vec--------------------------2010-10-20
 # AME doing this, just do one prob at a time 
@@ -252,7 +260,7 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
     }
   return(cquant)
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^cquantile.vec
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cquantile.vec
 
 
 #plotBars-------------------------------2013-09-11
@@ -410,7 +418,7 @@ plotBox = function (x, ..., range=1.5, width=NULL, varwidth=FALSE,
     }
     else z 
     invisible(x)}
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotBox
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBox
 
 
 #plotDensPOP----------------------------2010-10-19
@@ -471,8 +479,11 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
     # scan(); print(summary(x))
-    require(grid, quietly = TRUE, warn.conflicts = FALSE)
-    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
+    mess = c(
+    "require(grid, quietly = TRUE, warn.conflicts = FALSE)",
+    "require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
+    )
+    eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -515,7 +526,7 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
         invisible(graph)
     }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotDensPOP
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotDensPOP
 
 
 #plotDensPOPpars------------------------2010-10-26
@@ -566,8 +577,11 @@ plotDensPOPpars =
     p <- ncol(mcmc)
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
-    require(grid, quietly = TRUE, warn.conflicts = FALSE)
-    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
+    mess = c(
+    "require(grid, quietly = TRUE, warn.conflicts = FALSE)",
+    "require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
+    )
+    eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -601,7 +615,7 @@ plotDensPOPpars =
         invisible(graph)
     }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotDensPOPpars
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotDensPOPpars
 
 
 #plotTracePOP---------------------------2012-08-23
@@ -657,8 +671,11 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
     p <- ncol(mcmc)
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
-    require(grid, quietly = TRUE, warn.conflicts = FALSE)
-    require(lattice, quietly = TRUE, warn.conflicts = FALSE)
+    mess = c(
+    "require(grid, quietly = TRUE, warn.conflicts = FALSE)",
+    "require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
+    )
+    eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -685,7 +702,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
         invisible(graph)
     }
 }
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^plotTracePOP
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotTracePOP
 
 
 #==============H I D D E N========================
@@ -695,7 +712,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
 # The MCMCs are typically available in the Sweave routine.
 #-----------------------------------------------RH
 .compB0.get =function(run.iter, path) { 
-	require(PBSawatea)
+	#require(PBSawatea)
 	B = list() #as.list(rep(NA,length(run.iter))); names(B)=run.iter
 	for (i in run.iter) {
 		run = strsplit(i,split="\\.")[[1]][1]

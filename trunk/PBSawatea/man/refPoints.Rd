@@ -1,6 +1,7 @@
 \name{refPoints}
 \alias{refPoints}
 \alias{refPointsB0}
+\alias{refPointsHist}
 \title{
   Calculate Reference Points
 }
@@ -13,6 +14,8 @@ refPoints(mcmcObj=currentMCMC, projObj=currentProj,
 
 refPointsB0(mcmcObj=currentMCMC, projObj=currentProj,
           B0Obj=B0.MCMC, refLevels=B0refLevels, refNames=B0refNames)
+
+refPointsHist(mcmcObj=currentMCMC, HRP.YRS)
 }
 \arguments{
   \item{mcmcObj}{MCMC list object (\emph{e.g.}, \code{currentMCMC}).}
@@ -21,6 +24,8 @@ refPointsB0(mcmcObj=currentMCMC, projObj=currentProj,
   \item{refLevels}{reference levels relative to \eqn{B_{MSY}}{Bmsy} (or \eqn{B_0}{B0}).}
   \item{B0Obj}{vector of \eqn{B_0}{B0} MCMC values (\emph{e.g.}, \code{B0.MCMC}).}
   \item{refNames}{names of the \eqn{B_0}{B0} reference levels \code{refLevels}.}
+  \item{HRP.YRS}{list of limit and target years for \emph{B} (spawning biomass) and \emph{u} (exploitation rate); \cr
+    \code{names(HRP.YRS) = c("blimYrs", "btarYrs", "ulimYrs", "utarYrs")}.}
 }
 \value{
   List of reference points relative to either \eqn{B_{MSY}}{Bmsy} or \eqn{B_0}{B0}.

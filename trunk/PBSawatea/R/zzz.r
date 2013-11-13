@@ -30,7 +30,7 @@ Aotearoa, six months in a leaky boat...
 # No Visible Bindings
 # ===================
 if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
-	"B0.MCMC","B0.mpd","B0refLevels","B0refNames","boxwidth",
+	"B0.MCMC","B0.mpd","B0refLevels","B0refNames","blimYrs","boxwidth","btarYrs",
 	"cordat","currentMCMC","currentMSY","currentProj","currentRes","currYear",
 	"delim",
 	"evadat",
@@ -40,13 +40,14 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"J",
 	"likdat",
 	"MAexp","mainTitle","MAobs","maxgrad","mess","minCpueYr",
-	"N","npars",
+	"N","npars","Nsurv",
 	"obj",
-	"pardat","plt.ageResids","policy","priorBoundsList","priorDistList","priorInput",
-	"R0.mpd","refPointsList","refs","resFileList","rpType",
-	"Series","sigmaR","stddat",
-	"use.Pnames",
+	"pardat","PBSawatea","plt.ageResids","policy","priorBoundsList","priorDistList","priorInput",
+	"R0.mpd","refPointsList","refPointsHistList","refs","resFileList","rpType",
+	"Series","sexlab","sigmaR","stddat",
+	"ulimYrs","use.Pnames","utarYrs",
 	"variable","Vexp",
-	"years"
+	"years",
+	"z1z2"
 	), package="PBSawatea")
 

@@ -8,19 +8,21 @@
   species and model runs.
 }
 \usage{
-compBmsy(Bspp, spp="POP", Mnams=c("Est M","Fix M"), 
-    ratios=c(0.4,0.8), t.yr=2011, figgy=FALSE, width=12, height=9, ...)
+compBmsy(Bspp, spp="POP", Mnams=c("Est M","Fix M"),
+   ratios=c(0.4,0.8), t.yr=2013, figgy=FALSE, width=12, height=9, 
+   spplabs=TRUE, ...)
 }
 \arguments{
-  \item{Bspp}{list of species MCMC results, which are lists of model runs, 
+  \item{Bspp}{\emph{numeric}: list of species MCMC results, which are lists of model runs, 
     each listing data frames of \eqn{B_t}{Bt} and \eqn{B_{MSY}}{Bmsy}.}
-  \item{spp}{species code(s) (e.g., 3-letter), which are the first-level names of \code{Bspp}.}
-  \item{Mnams}{optional model names for the boxplots.}
-  \item{ratios}{reference levels of \eqn{B_{MSY}}{Bmsy} (usually 0.4 and 0.8).}
-  \item{t.yr}{numeric year that represents the time period for \eqn{B_t}{Bt}.}
-  \item{figgy}{logical: if \code{TRUE}, send figure to four output files (\code{.eps}, \code{.pdf}, \code{.png}, and \code{.wmf}).}
-  \item{width}{width of the output files in inches.}
-  \item{height}{height of the output files in inches.}
+  \item{spp}{\emph{character}: species code(s) (e.g., 3-letter), which are the first-level names of \code{Bspp}.}
+  \item{Mnams}{\emph{character}: optional model names for the boxplots.}
+  \item{ratios}{\emph{numeric}: reference levels of \eqn{B_{MSY}}{Bmsy} (usually 0.4 and 0.8).}
+  \item{t.yr}{\emph{numeric} year that represents the time period for \eqn{B_t}{Bt}.}
+  \item{figgy}{\emph{logical}: if \code{TRUE}, send figure to four output files (\code{.eps}, \code{.pdf}, \code{.png}, and \code{.wmf}).}
+  \item{width}{\emph{numeric}: width of the output files in inches.}
+  \item{height}{\emph{numeric}: height of the output files in inches.}
+  \item{spplabs}{\emph{logical}: if \code{TRUE}, use the species code when labelling the y-axis.}
   \item{\dots}{additional values for \code{\link[PBSawatea]{plotBox}}'s argument \code{pars}.}
 }
 \details{

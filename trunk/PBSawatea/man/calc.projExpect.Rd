@@ -4,6 +4,7 @@
 \alias{calc.projProbs}
 \alias{calc.projProbs2}
 \alias{calc.refProbs}
+\alias{calc.refProbsHist}
 \title{
   Calculate Expectations and Probabilities
 }
@@ -11,11 +12,12 @@
   Calculate the expectation of projection to reference, and probability of being greater than reference.
 }
 \usage{
-calc.projExpect ( obj, projObj, refYrs  )
-calc.projExpect2( obj, projObj, refList )
-calc.projProbs  ( obj, projObj, refYrs  )
-calc.projProbs2 ( obj, projObj, refList )
-calc.refProbs   ( projObj=currentProj$B, refPlist=refPointsList )
+calc.projExpect  ( obj, projObj, refYrs  )
+calc.projExpect2 ( obj, projObj, refList )
+calc.projProbs   ( obj, projObj, refYrs  )
+calc.projProbs2  ( obj, projObj, refList )
+calc.refProbs    ( projObj=currentProj$B, refPlist=refPointsList )
+calc.refProbsHist( projObj=currentProj$B, refPlist=refPointsHistList[c("blimHRP","btarHRP")] )
 }
 \arguments{
   \item{obj}{matrix of biomass MCMCs.}
@@ -33,6 +35,7 @@ calc.refProbs   ( projObj=currentProj$B, refPlist=refPointsList )
   \code{calc.projProbs2....}{Calculate the probability of being greater than \code{refYrs}.} \cr
   \code{...................}{Compare reference years to projection years.} \cr
   \code{calc.refProbs......}{Calculate the reference probabilities (based on \code{calc.projProbs2}).}
+  \code{calc.refProbsHist..}{Calculate the historical reference probabilities.}
 }
 \value{
   Decision tables

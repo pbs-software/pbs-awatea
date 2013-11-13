@@ -8,7 +8,7 @@
 }
 \usage{
 plotBars(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]), 
-    sex=c(2,1), age=NULL, fill=c("orange","cyan"), 
+    sex=c(2,1), age=NULL, fill=c("orange", "cyan", "green"), 
     eps=FALSE, pix=FALSE, win=TRUE, ...)
 }
 \arguments{

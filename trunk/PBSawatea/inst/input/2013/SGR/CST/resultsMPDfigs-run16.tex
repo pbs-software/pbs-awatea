@@ -1,0 +1,69 @@
+% Figures from MPD Run 16 Rwt 3
+\onefig{survIndSer2}{Survey index values (points) with 95\% confidence intervals (bars) and MPD model fits (curves) for the fishery-independent survey series.}
+
+\onefig{ageCommFemale1}{Observed and predicted commercial proportions-at-age for females. Note that years are not consecutive.}
+
+\onefig{ageCommMale1}{Observed and predicted commercial proportions-at-age for males. Note that years are not consecutive.}
+
+\clearpage 
+
+\twofig{ageSurvWCHGSynopticFemale1}{ageSurvWCHGSynopticMale1}{Observed and predicted proportions-at-age for WCHG synoptic survey.}
+
+\twofig{ageSurvHSSynopticFemale2}{ageSurvHSSynopticMale2}{Observed and predicted proportions-at-age for HS synoptic survey.}
+
+\twofig{ageSurvQCSoundSynopticFemale3}{ageSurvQCSoundSynopticMale3}{Observed and predicted proportions-at-age for QCSound synoptic survey.}
+
+\twofig{ageSurvWCVISynopticFemale4}{ageSurvWCVISynopticMale4}{Observed and predicted proportions-at-age for WCVI synoptic survey.}
+
+\clearpage
+
+\onefig{survResWCHGSynoptic}{Residuals of fits of model to WCHG synoptic survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+
+\onefig{survResHSSynoptic}{Residuals of fits of model to HS synoptic survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+
+\onefig{survResQCSoundSynoptic}{Residuals of fits of model to QCS synoptic survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+
+\clearpage
+
+\onefig{survResWCVISynoptic}{Residuals of fits of model to WCVI synoptic survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+
+\onefig{survResHistoricGBReed}{Residuals of fits of model to Historic GB Reed survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+
+\onefig{survResUSTriennial}{Residuals of fits of model to US Triennial survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+
+\onefig{commAgeResids}{Residual of fits of model to commercial proportions-at-age data (MPD values).  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give interquartile ranges, with bold lines representing medians and whiskers extending to the most extreme data point that is $<$1.5 times the interquartile range from the box. Bottom panel is the normal quantile-quantile plot for residuals, with the 1:1 line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for the total of 1550 residuals).}
+
+\clearpage
+
+\onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from WCHG synoptic survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -1) * 2
+
+\onefig{survAgeResSer2}{Residuals of fits of model to proportions-at-age data (MPD values) from HS synoptic survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -2) * 2
+
+\onefig{survAgeResSer3}{Residuals of fits of model to proportions-at-age data (MPD values) from QCS synoptic survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -3) * 2
+
+\onefig{survAgeResSer4}{Residuals of fits of model to proportions-at-age data (MPD values) from WCVI synoptic survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -4) * 2
+
+\onefig{meanAge}{Mean ages each year for the data (closed circles) and model estimates (joined open triangles) for the commercial and survey age data.}
+
+\clearpage
+
+\begin{figure}[htp]            %  label will be #1
+\centering
+\epsfxsize=6in
+\begin{tabular}{c}
+\vspace{-20mm}\\
+\epsfbox{stockRecruit.eps} \\   % \MPDfigdir/
+\vspace{-20mm} \\
+\epsfbox{recruits.eps}          % \MPDfigdir/
+\vspace{-3mm}        % To avoid footer
+\end{tabular}
+\caption{Top: Deterministic stock-recruit relationship (black curve) and observed values (labelled by year of spawning) using MPD values. Bottom: Recruitment (MPD values of age-1 individuals in year $t$) over time, in 1,000s of age-1 individuals, with a mean of 3,851.5.}
+\label{fig:stockRecruit}
+\end{figure}
+
+\twofig{recDev}{recDevAcf}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years 1961-1999 (determined as the first year of commercial age data minus the accumulator age class plus the age for which commercial selectivity for females is 0.5, to the final year that recruitments are calculated minus the age for which commercial selectivity for females is 0.5).}
+
+\onefig{selectivity}{Selectivities for commercial catch (labelled `Gear 1' here) and surveys (all MPD values), with maturity ogive for females indicated by `m'.}
+
+\onefig{exploit}{Exploitation rate (MPD) over time for Silvergray Rockfish along the BC coast.}
+
