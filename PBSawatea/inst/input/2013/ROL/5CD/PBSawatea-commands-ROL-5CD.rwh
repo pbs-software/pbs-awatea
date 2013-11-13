@@ -28,10 +28,10 @@ runSweaveMCMC(strSpp="ROL",filename="ROL-5CD-07.txt",runNo=7,rwtNo=3,Nsex=1,Ncpu
 out=runADMB("ROL-5CD-08.txt",strSpp="ROL",runNo=8,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.35,0.2,0.2,0.3),clean=TRUE,locode=TRUE)
 runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=8,rwts=3,Nsex=1,Ncpue=2,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(TRUE,TRUE),locode=TRUE)
 out=runADMB("ROL-5CD-08.txt",strSpp="ROL",runNo=8,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
-runSweaveMCMC(strSpp="ROL",filename="ROL-5CD-08.txt",runNo=8,rwtNo=3,Nsex=1,Ncpue=2,Nsurvey=2,SApos=c(TRUE,TRUE),histRP=TRUE,locode=TRUE)
+runSweaveMCMC(strSpp="ROL",filename="ROL-5CD-08.txt",runNo=8,rwtNo=3,Nsex=1,Ncpue=2,Nsurvey=2,SApos=c(TRUE,TRUE),histRP=TRUE,locode=TRUE,wpaper=TRUE,redo.Graphs=FALSE)
 
 # Run 11 (sensitivity 2)
-out=runADMB("ROL-5CD-11.txt",strSpp="ROL",runNo=11,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=c(0.35,0.2,0.2,0.3),clean=TRUE,locode=TRUE)
+out=runADMB("ROL-5CD-11.txt",strSpp="ROL",runNo=11,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.2,clean=TRUE,locode=TRUE)
 runMPD(strSpp="ROL",prefix=c("ROL","5CD"),runs=11,rwts=3,Nsex=1,Ncpue=2,Nsurvey=2,Snames=c("HS Assemblage","HS Synoptic"),SApos=c(TRUE,TRUE),locode=TRUE)
 out=runADMB("ROL-5CD-11.txt",strSpp="ROL",runNo=11,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
 runSweaveMCMC(strSpp="ROL",filename="ROL-5CD-11.txt",runNo=11,rwtNo=3,Nsex=1,Ncpue=2,Nsurvey=2,SApos=c(TRUE,TRUE),histRP=TRUE,locode=TRUE)

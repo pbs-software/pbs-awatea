@@ -183,9 +183,11 @@ Latest is \today, with \Sexpr{print(version$version.string)}.
 % \pagestyle{myheadings}
 % \markright{\Sexpr{paste("From ", model.name, ".txt", sep="")}}
 
-%\lhead{DRAFT -- Non-citable working paper}  % Omit for final ResDoc.
-\lhead{}
+\lhead{DRAFT -- Non-citable working paper}  % Omit for final ResDoc.
+%\lhead{}
 \rhead{\Sexpr{paste("From ", model.name, ".txt", sep="")}}
+\lfoot{MPD Results} 
+\rfoot{\Sexpr{paste("@sppname"," (",area.name,")",sep="")}} 
 %\lfoot{Pacific Ocean Perch}  
 %\rfoot{Area 3CD}
 
@@ -1041,7 +1043,7 @@ Bmpd[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
 	muvec.mpd=muvec.mpd,
 	logvC.mpd=logvC.mpd,
 	logvvec.mpd=logvvec.mpd,
-@rmsex 	deltaC.mpd=delta.mpd,
+@rmsex 	deltaC.mpd=deltaC.mpd,
 @rmsex 	deltavec.mpd=deltavec.mpd,
 	B0.mpd=B0.mpd, V0.mpd=V0.mpd  # simply first values in Bt and Vt
 	)

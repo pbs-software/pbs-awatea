@@ -1,35 +1,42 @@
-#runSweave------------------------------2013-09-24
+#runSweave------------------------------2013-11-12
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
 runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
-		filename="spp-area-00.txt",           # Name of Awatea .txt file in 'run.dir' to run
-		runNo = 1,
-		rwtNo = 0,
-		running.awatea=0,   # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
-		Nsex    = 2,                              # if 1 then Unisex, if 2 Males & Females
+		filename="spp-area-00.txt",  # name of Awatea .txt file in 'run.dir' to run
+		runNo   = 1,
+		rwtNo   = 0,
+		running.awatea=0,            # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
+		Nsex    = 2,                 # if 1 then Unisex, if 2 Males & Females
 		Ncpue   = 0,
 		Nsurvey = 3,
-		SApos   = rep(TRUE,Nsurvey),              # surveys with age composition data
-		mcsub = 1:1000,
-		delim = "-",
-		locode = FALSE,                          # if source as local code (for debugging)
+		SApos   = rep(TRUE,Nsurvey), # surveys with age composition data
+		mcsub   = 1:1000,
+		delim   = "-",
+		locode  = FALSE,             # source this function as local code (for development)
 		awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
-		codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-		histRP  =FALSE
+		codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+		histRP  = FALSE,             # historical reference points
+		wpaper  = FALSE,             # working paper
+		resdoc  = FALSE,             # research document
+		redo.Graphs = TRUE           # recreate all the figures (.eps, .wmf, .png)
 	) {
-	on.exit(setwd(wd))
+	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
+	on.exit(ciao(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC","awateaCode","toolsCode")),pos=1)
 	if (locode) { 
 		getFile(gfcode,path=system.file("data",package="PBSawatea"))
-		require(PBSmodelling, quietly=TRUE)
-		require(gplots, quietly=TRUE)
-		require(xtable, quietly=TRUE) 
-		require(lattice, quietly=TRUE)
-		require(scape, quietly=TRUE)     # Arni Magnusson's support functions for Awatea.
-		require(scapeMCMC, quietly=TRUE) # Arni Magnusson's support functions for Awatea MCMC.
-		require(gdata, quietly=TRUE)     # Data manipulation functions from CRAN.
+		mess = c(
+		"require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)",
+		"require(gplots, quietly=TRUE)",
+		"require(xtable, quietly=TRUE)",
+		"require(lattice, quietly=TRUE)",
+		"require(scape, quietly=TRUE)",     # Arni Magnusson's support functions for Awatea.
+		"require(scapeMCMC, quietly=TRUE)", # Arni Magnusson's support functions for Awatea MCMC.
+		"require(gdata, quietly=TRUE)"     # Data manipulation functions from CRAN.
+		)
+		eval(parse(text=mess))
 		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runADMB.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runSweave.r",sep="/"),local=FALSE)
@@ -50,6 +57,8 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	model.name = paste(prefix,runNoStr,rwtNoStr,sep=".")
 	mcname   = paste("MCMC",runNoStr,rwtNoStr,sep=".")
 	mc.dir   = paste(run.dir,mcname,sep="/")  # Directory where all the postscript crap happens
+	mpdname  = paste("MPD",runNoStr,rwtNoStr,sep=".")
+	mpd.dir  = paste(run.dir,mpdname,sep="/") # MPD directory with figures
 	msyname  = paste("MSY",runNoStr,rwtNoStr,sep=".")
 	msy.dir  = paste(mc.dir,msyname,sep="/")
 	prjname  = paste("PRJ",runNoStr,rwtNoStr,sep=".")
@@ -71,30 +80,38 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	tfile = tfile[setdiff(1:length(tfile),notcode)]
 #browser();return()
 
-	# Bring in the results file
-	if (any(grepl("@resultsMCMC",tfile))) {
-		rescode = grep("@resultsMCMC",tfile)[1]
-		resfile = paste(wd,"/resultsMCMC-run",runNoStr,".tex",sep="")
-		if (file.exists(resfile)) {
-			rfile = readLines(resfile)
-			tfile = c(tfile[1:(rescode-1)],rfile,tfile[(rescode+1):length(tfile)])
+	# Bring in the results files (if they exist)
+	rfiles=c("resultsMCMC","resultsMPDfigs","resultsMPDtabs","resultsMPD")
+	for (r in rfiles) {
+		if (any(grepl(paste("@",r,sep=""),tfile))) {
+			rescode = grep(paste("@",r,sep=""),tfile)[1]
+			resfile = paste(wd,"/",r,"-run",runNoStr,".tex",sep="")
+			if (file.exists(resfile)) {
+				rfile = readLines(resfile)
+				tfile = c(tfile[1:(rescode-1)],rfile,tfile[(rescode+1):length(tfile)])
+			}
+			else 
+				tfile = tfile[setdiff(1:length(tfile),rescode)]
 		}
-		else 
-			tfile = tfile[setdiff(1:length(tfile),rescode)]
 	}
-
+#browser();return()
 	tfile = gsub("@cwd",wd,tfile)
 	tfile = gsub("@model.name",model.name,tfile)
 	tfile = gsub("@run.dir",run.dir,tfile)
 	tfile = gsub("@fig.dir",mc.dir,tfile)
+	tfile = gsub("@mpd.dir",mpd.dir,tfile)
 	tfile = gsub("@msy.dir",msy.dir,tfile)
 	tfile = gsub("@prj.dir",prj.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
+	tfile = gsub("@redo.Graphs",redo.Graphs,tfile)
 	tfile = gsub("@mcsub",deparse(mcsub),tfile)
 	tfile = gsub("@nsex",Nsex,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
-	data(gfcode,package="PBSawatea")
-	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
+	if (!locode) data(gfcode,package="PBSawatea")
+	sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
+	sppname = sapply(sapply(strsplit(sppname," "),function(x){paste(toupper(substring(x,1,1)),tolower(substring(x,2)),sep="")},simplify=FALSE),paste,collapse=" ")
+	spplatin = gfcode[is.element(gfcode$code3,strSpp),"latin"]
+	tfile = gsub("@sppname", sppname ,tfile)
 	mcmc  = read.table("params.pst",header=TRUE)
 	ncol  = dim(mcmc)[2];  Nfigs = ceiling(ncol/6)
 
@@ -110,31 +127,44 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 				tfile[z12] = gsub("twofig","onefig",gsub("Female","Unisex",tfile[z12]))
 		}
 	} else {
-		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-Master.Snw`
+		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-MasterMCMC.Snw`
 	}
 	if (!cpue) {
 		z0    = grep("@rmcpue",tfile)
 		if (length(z0) > 0)
 			tfile = tfile[setdiff(1:length(tfile),z0)]
 	} else {
-		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-Master.Snw`
+		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-MasterMCMC.Snw`
 	}
 	if (!histRP) {
 		z0    = grep("@rmhrp",tfile)
 		if (length(z0) > 0)
 			tfile = tfile[setdiff(1:length(tfile),z0)]
 	} else {
-		tfile = gsub("@rmhrp ","",tfile) # assumes space after @rmhrp for readability in `run-Master.Snw`
+		tfile = gsub("@rmhrp ","",tfile) # assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
+	}
+	if (wpaper||resdoc) {
+		resdoc = TRUE
+		tfile = gsub("@resdoc",TRUE,tfile)
+		if (any(grepl("@rmresdoc",tfile))) {
+			z0 = grep("@rmresdoc",tfile)
+			tfile = tfile[setdiff(1:length(tfile),z0)] }
+		if (strSpp=="ROL" && any(grepl("@rmROL",tfile))) {   # Kendra-specific removals
+			z0 = grep("@rmROL",tfile)
+			tfile = tfile[setdiff(1:length(tfile),z0)] }
+	}
+	else {
+		resdoc = FALSE
+		tfile = gsub("@resdoc",FALSE,tfile)
+		tfile = gsub("@rmresdoc ","",tfile) # assumes space after @rmresdoc for readability in `run-MasterMCMC.Snw`
+		tfile = gsub("@rmROL ","",tfile) # assumes space after @rmresdoc for readability in `run-MasterMCMC.Snw`
 	}
 
 	# Start expanding lines using bites
 	SpriorBites = c("log_qsurvey_prior\\[1,]","surveySfull_prior\\[1,]","p_surveySfulldelta\\[1,]","log_surveyvarL_prior\\[1,]")
 	CpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]")
-	cpueBites = c("log q_999")
-	figBites =c("onefig\\{pairs1\\}")
-	#SpostBites  = c("currentMCMC\\$P\\$q_1","currentMCMC\\$P\\$mu_1","currentMCMC\\$P\\$Delta_1","currentMCMC\\$P\\$\"log v_1L\"") # replaced by a call to xtable
-	#CpostBites  = c("currentMCMC\\$P\\$mu_999","currentMCMC\\$P\\$Delta_999","currentMCMC\\$P\\$\"log v_999L\"") # replaced by a call to xtable
-	#MpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]") # would bite with Nmethods (if need be)
+	cpueBites   = c("log q_999")
+	figBites    = c("onefig\\{pairs1\\}")
 
 	biteMe = function(infile, bites, N) {
 		if (N==0) return(infile)
@@ -176,16 +206,17 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	#if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
 	#else tfile = tfile[-grep("^CAs 1",tfile)]
 
+#browser();return()
 	localHistory = paste(mc.dir,"/runHistory.tex",sep="")
 	if(file.exists(paste(wd,"/runHistory.tex",sep=""))) {
 		is.history=file.copy(paste(wd,"/runHistory.tex",sep=""),localHistory,overwrite=TRUE)
 	} else
 		tfile = gsub("\\\\input","%\\\\input",tfile)
 
-	# Final clean-up of empty lines ( cannot because paragraphs delineation is sqaushed)
+	# Final clean-up of empty lines ( cannot because paragraphs delineation is squashed)
 	#tfile = tfile[setdiff(1:length(tfile),grep("^$",tfile))]
-#browser();return()
 
+	mcname      = paste(mcname,ifelse(wpaper,"-Wpaper",ifelse(resdoc,"-ResDoc","")),sep="")
 	localName   = paste(mcname,".Snw",sep="")
 	localSweave = paste(mc.dir,"/",localName,sep="")
 
@@ -198,14 +229,25 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	invisible(tfile) }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweaveMCMC
 
-#runMCMC------------------------------ -2012-08-23
-# Wrapper to function 'runSweaveMCMC' for MCMCs.
+#runMCMC------------------------------ -2013-11-12
+# Wrapper to function 'runSweaveMCMC' for MCMCs. (not tested recently)
 #-----------------------------------------------RH
-runMCMC = function(strSpp="XYZ", prefix=c("spp","area"), runs=7, rewts=0:6, Nsex=2, Ncpue=0, Nsurvey=3, SApos=rep(TRUE,Nsurvey), delim="-", mcsub=1:1000) {
+runMCMC = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
+	# (...) pass in arguments specific to runSweaveMCMC if different from the defaults:
+	# If prefix=NULL, filename will be taken from (...) or set to the default.
+	dots = list(...)
+	if (is.null(dots$delim)) delim="-" else delim=dots$delim
 	for (i in runs) {
-		for (j in rewts) {
-			runSweaveMCMC(strSpp=strSpp,filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep=""),runNo=i,rwtNo=j,Nsex=Nsex,Ncpue=Ncpue,Nsurvey=Nsurvey,SApos=SApos,mcsub=mcsub)
+		if (!is.null(prefix)) filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep="")
+		for (j in rwts) {
+			runSweaveMCMC(filename=filename, runNo=i, rwtNo=j, ...)
 }	}	}
+
+#runMCMC = function(strSpp="XYZ", prefix=c("spp","area"), runs=7, rewts=0:6, Nsex=2, Ncpue=0, Nsurvey=3, SApos=rep(TRUE,Nsurvey), delim="-", mcsub=1:1000) {
+#	for (i in runs) {
+#		for (j in rewts) {
+#			runSweaveMCMC(strSpp=strSpp,filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep=""),runNo=i,rwtNo=j,Nsex=Nsex,Ncpue=Ncpue,Nsurvey=Nsurvey,SApos=SApos,mcsub=mcsub)
+#}	}	}
 
 #runMCMC(strSpp="POP",prefix=c("pop","wcvi"),runs=29,rewts=1,cpue=FALSE,estM=TRUE)
 #runMCMC(c(24:26),1,cpue=FALSE,estM=TRUE)

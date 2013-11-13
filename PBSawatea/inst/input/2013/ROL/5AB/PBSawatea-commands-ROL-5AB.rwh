@@ -25,7 +25,7 @@ runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=9,rwts=3,Nsex=1,Ncpue=2,Nsurvey=1
 out=runADMB("ROL-5AB-22.txt", strSpp="ROL", runNo=22, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.25, 0.2), clean=TRUE, locode=TRUE)
 runMPD(strSpp="ROL",prefix=c("ROL","5AB"),runs=22,rwts=3,Nsex=1,Ncpue=1,Nsurvey=1,Snames=c("QCS Synoptic"),SApos=c(TRUE),locode=TRUE)
 out=runADMB("ROL-5AB-22.txt",strSpp="ROL",runNo=22,rwtNo=3,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.801,stepStrat=0.001) # MSY calculations
-runSweaveMCMC(strSpp="ROL",filename="ROL-5AB-22.txt",runNo=22,rwtNo=3,Nsex=1,Ncpue=1,Nsurvey=1,SApos=c(TRUE),histRP=TRUE,locode=TRUE)
+runSweaveMCMC(strSpp="ROL",filename="ROL-5AB-22.txt",runNo=22,rwtNo=3,Nsex=1,Ncpue=1,Nsurvey=1,SApos=c(TRUE),histRP=TRUE,locode=TRUE,wpaper=TRUE,redo.Graphs=FALSE)
 
 # Run 23 (sensitivity 2)
 out=runADMB("ROL-5AB-23.txt", strSpp="ROL", runNo=23, doMPD=TRUE,N.reweight=3, mean.age=TRUE, cvpro=c(0.25, 0.2), clean=TRUE, locode=TRUE)

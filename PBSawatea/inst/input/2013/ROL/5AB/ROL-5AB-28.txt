@@ -1,0 +1,346 @@
+#Awatea 0.9 input sheet		
+#Fill out the next two sections and press the button to create the rest of the form		
+#Debugger (0=off; 1=on; 2=coleraxx.par)		
+#1st col for data 2nd for runtime 3rd to stop before exiting		
+0	0	0
+#Run Options		
+#Force exponentiated deviates to average 1 (0=no; 1=yes)		
+1		
+#Use W@A data (0=no; 1=yes)		
+0		
+#Max Exploitation Rate		
+0.8		
+#Penalty multiplier when max exploitation exceeded		
+10000		
+#Initial gear (0=read in; 1=gear 1 in start year; 2=gear 2 in start year...)		
+1		
+#Gear used in projections (0=read in; 1=use same gear proportions as last year of data)
+1
+#Dimensioning parameters
+#Number of CPUE series (NCPUE) (always use at least =1)
+2
+#Number of survey series  (always use at least =1)
+1
+#Start year of model
+1945
+#End year of model (i.e. last year of landed catch data)
+2013
+#Max age in model
+12
+#Age at which C@A data are pooled
+12
+#First age in C@A data (this always =1)
+1
+#First length in C@L data (use 1 if not fitting to C@L)
+1
+#Length increment in C@L data (use 1 if not fitting to C@L)
+1
+#Number of length classes in C@L data (use 1 if not fitting to C@L)
+1
+#Length at which C@L data are pooled (use 1 if not fitting to C@L)
+1
+#Number of commercial fishing gears
+1
+#Number of sexes
+1
+#Number of CPUE data points (all series) (min value =2)
+#47
+#Number of years with commercial C@A data (use 0 if none)
+#10
+#Number of years with commercial C@L data (use 0 if none)
+#0
+#Number of years with W@A data (incl. the year after landed catch history ends)  (use 0 if none)
+#0
+#Number of survey data points (all series) (min value =2)
+#7
+#Number of years with survey C@A data  (use 0 if none)
+#6
+#Number of years with survey C@L data  (use 0 if none)
+#0
+#Number of years with survey C@L pooled-sex data  (use 0 if none)
+#0
+#Survey selectivity type (1=age; 2=length)
+#1
+#Age at full maturity (only used to fill in maturity ogive and initial selectivity curve below)
+#6
+#Save this cell
+#Names for Gear and Index types (use column 1)
+#CPUE Indices
+#Early (66-95)
+#Late (96-12)
+#Survey Indices
+#QCSoundsyn
+#Commercial Gears
+#Trawl
+#Projection Parameters
+#Strategy Type (1=constant catch; 2=harvest rate)
+1
+#End year of projections
+2019
+#Start Strategy (lower bound of catch for projections)
+0						
+#End Strategy (upper bound of catch for projections)						
+1200						
+#Step Strategy (interval to use for catch projections)						
+100						
+#Strategy U Proportion (proportion of catch taken by method)						
+1						
+#Assessment cv (error in population size estimate)						
+0						
+#Assessment rho (autocorrelation in assessment error)						
+0						
+#Priors						
+#R0 (Recruitment in virgin condition)						
+1	100	100000	0	0	0	5000
+#h (steepness of spawner-recruit curve)						
+5	0.2	0.999	5	13.4	2.4	0.85
+#M (natural mortality)						
+4	0.05	0.5	1	0.2	0.04	0.2
+#Log init dev prior: deviates for initial age structure: uniform or normal only						
+-1	-15	15	1	0	0.6	0
+#log rec dev prior (uniform or normal only)						
+3	-15	15	1	0	0.6	0
+#Initial R ( = # 1-yr olds in yr 1/R0; unfished = 1)						
+-1	0	2	0	1	0.1	1
+#Intial u (exploitation rate for initial age structure; 0=unfished)						
+-1	0	0.1	0	0	0.1	0
+#Plus scale						
+-1	0	2	0	0	0.6	1
+#S fullest (commercial)						
+2	2	14	1	8.2	2.46	8.2
+#S full delta (for males as different from females) (commercial)						
+-1	-3	3	0	0	0.6	0
+#Log variance of left side of selectivity curve (for both sexes) (commercial)						
+2	-10	5	1	2	0.6	2
+#Log variance of righthand side of double normal selectivity curve (for both sexes) (commercial)						
+-1	-15	15	0	0	0.6	10
+#Error S full						
+-1	-15	15	1	0	0.1	0
+#Error variance L						
+-1	-15	15	1	0	0.1	0
+#Error variance R						
+-1	-15	15	1	0	0.1	0
+#Log q CPUE						
+1	-15	15	0	0	0.1	-1.609437912
+1	-15	15	0	0	0.1	-1.609437912
+#Log q CPUE error						
+-1	-5	5	0	0	0.6	0
+-1	-5	5	0	0	0.6	0
+#Log q Survey						
+1	-5	5	0	0	0.6	-1.6
+#Survey L full						
+2	1	10	1	7.3	2.2	7.3
+#Survey L full delta						
+-1	1	5	0	0	0.6	0
+#Survey variance L						
+2	-10	5	1	2.2	0.66	2.2
+#Survey variance R						
+-1	-15	15	0	0	0.6	10
+#Dummy variable--keep for error troubleshooting						
+-1	-15	15	0	0	0.6	2
+#Likelihoods (0=not used; 1= norm; 2 = normal-log; 3= lognormal; 12 = robust lognormal for proportions) 						
+#CPUE likelihood Type						
+3	3					
+#Commercial catch at age likelihood type						
+12
+#Commercial catch at length likelihood type 
+0
+#Survey abundance likelihood type
+3
+#Survey abundance units (1=biomass; 2=numbers)
+1
+#Survey vulnerability type (1=age; 2=length)
+1
+#Survey no-sex C@L likelihood type
+0
+#Survey catch at length likelihood type
+0
+#Survey catch at age likelihood type
+12
+#Fixed Parameters
+#Bi-scalar of length-weight relationship
+5.95153E-06
+#bii exponent of length-weight relationship
+3.21609159
+#L-infinity of the vonBertanlanffy growth equation
+53.080839
+#k of the vonBertanlanffy growth equation
+ 0.194171
+#t0 of the vonBertanlanffy growth equation
+0.197978
+#sigma L@A increases linearly with (1=age; 2=length --- ignore if W@A is supplied)
+1
+#Mean length of age 1 fish
+7.65476135512052
+#Length at oldest age
+47.7141973214662
+#S.d. of length at age of 1-year old fish											
+0.765476135512052											
+#S.d. of length at age of oldest fish											
+4.77141973214662											
+#Maturity ogive											
+0	0.030769231	0.06405694	0.166666667	0.395408163	0.584202928	0.791404525	0.946622704	1	1	1	1
+#Fraction recruiting of each sex (1 in a 1-sex model;  0.5 0.5 in a two-sex model)											
+1											
+#vinit											
+0	0	0	0	0	1	1	1	1	1	1	1
+#Ageing error matrix (true age in columns sums to 1 and estimated age in rows)											
+1	0	0	0	0	0	0	0	0	0	0	0
+0	1	0	0	0	0	0	0	0	0	0	0
+0	0	1	0	0	0	0	0	0	0	0	0
+0	0	0	1	0	0	0	0	0	0	0	0
+0	0	0	0	1	0	0	0	0	0	0	0
+0	0	0	0	0	1	0	0	0	0	0	0																																																
+0	0	0	0	0	0	1	0	0	0	0	0																																																
+0	0	0	0	0	0	0	1	0	0	0	0																																																
+0	0	0	0	0	0	0	0	1	0	0	0																																																
+0	0	0	0	0	0	0	0	0	1	0	0																																																
+0	0	0	0	0	0	0	0	0	0	1	0																																																
+0	0	0	0	0	0	0	0	0	0	0	1																																																
+#No. of weight-at-age data sets (1 row per year & sex)																																																											
+1																																																											
+#Weight at age on annual basis (year; sex; a1;a2;a3…)																																																											
+1968	1	1	1	1	1	1	1	1	1	1	1	1	1																																														
+#Data																																																											
+#Catch by method and year																																																											
+20.43481	1	55.28809	36.09804	33.71225	210.3644	171.0508	276.6479	95.01668	124.0611	213.3726	870.903	730.6879	919.5548	596.2113	957.1621	695.6355	781.5978	692.7691	688.0689	784.6081	1099.733	1033.741	830.5355	915.4199	440.4176	510.2681	423.6295	387.9264	460.6384	461.5794	568.91	292.8181	314.3403	441.7589	679.8906	358.9737	403.6175	350.9641	250.4731	244.4153	162.7266	280.5296	380.3128	331.7284	597.864	694.0725	699.3206	822.3204	665.3948	549.1109	346.0029	244.3176	239.0197	272.8368	330.2605	407.6645	658.5372	721.4106	647.3922	489.2152	360.1734	230.1269	74.45826	221.1595	532.1585	424.5397	328.7891	329.2791
+#Total NCPUE data points																																																											
+47																																																											
+#CPUE (Index; Method; Year; Value; CV)				
+1	1	1966	1.631151	0.087448	
+1	1	1967	1.289884	0.086521	
+1	1	1968	1.308654	0.084341	
+1	1	1969	0.880971	0.087313	
+1	1	1970	0.871852	0.09824	
+1	1	1971	0.849581	0.10941	
+1	1	1972	1.511716	0.13159	
+1	1	1973	0.903354	0.149582	
+1	1	1974	1.388738	0.156698	
+1	1	1975	0.980374	0.114594	
+1	1	1976	0.942512	0.102409	
+1	1	1977	0.972537	0.106703	
+1	1	1978	0.975868	0.098822	
+1	1	1979	1.028286	0.102175	
+1	1	1980	0.977077	0.082015	
+1	1	1981	1.033015	0.103247	
+1	1	1982	1.235492	0.096872	
+1	1	1983	1.35527	0.109017	
+1	1	1984	0.95534	0.132203	
+1	1	1985	0.682051	0.160403	
+1	1	1986	0.739428	0.133552	
+1	1	1987	0.940536	0.099332	
+1	1	1988	1.128222	0.096743	
+1	1	1989	1.012357	0.105202	
+1	1	1990	0.821034	0.094804	
+1	1	1991	0.850968	0.065424	
+1	1	1992	1.169666	0.052383	
+1	1	1993	1.111164	0.048365	
+1	1	1994	0.787386	0.049071	
+1	1	1995	0.520361	0.04863	
+2	1	1996	1.009052	0.087913	
+2	1	1997	0.961893	0.068473	
+2	1	1998	0.712564	0.042746	
+2	1	1999	0.542018	0.030594	
+2	1	2000	0.68944	0.03943	
+2	1	2001	1.044478	0.055896	
+2	1	2002	1.052741	0.048296	
+2	1	2003	1.558562	0.064137	
+2	1	2004	1.415322	0.064124	
+2	1	2005	1.256751	0.062247	
+2	1	2006	0.908099	0.052603	
+2	1	2007	0.410585	0.029209	
+2	1	2008	0.393123	0.041026	
+2	1	2009	1.113912	0.083124	
+2	1	2010	2.425451	0.155156	
+2	1	2011	2.031006	0.138953	
+2	1	2012	1.578183	0.117124	
+#Number of survey data points																
+7																
+#Survey abundance indices (series; year; value; CV)																
+1	2003	738.4	0.2489													
+1	2004	1517.7	0.3936													
+1	2005	1023.7	0.314													
+1	2007	651.3	0.4168													
+1	2009	787.3	0.3366													
+1	2011	949	0.2522													
+1	2013	815.2	0.3343													
+#Number of commercial catch at age data sets																
+10																
+#Commercial catch at age data (method; year; sample size; StartAge; EndAge; 1; 2 ; 3 …)																
+1	1992	3	4	12	0	0	0	0.01724443	0.229847748	0.236279683	0.13785455	0.06828028	0.150256386	0.044636082	0.023644198	0.091956645
+1	1993	3	4	12	0	0	0	0.01131014	0.028206482	0.038016768	0.183442428	0.138251918	0.16063436	0.132571823	0.063680599	0.243885482
+1	2001	8	4	12	0	0	0	0.110039985	0.296000024	0.345030083	0.089708702	0.035702377	0.017257742	0.052884191	0.026383256	0.02699364
+1	2002	8	4	12	0	0	0	0.145279857	0.428304294	0.220382428	0.09450987	0.052234499	0.020198799	0.018723663	0.004210161	0.016156428
+1	2003	14	4	12	0	0	0	0.371764237	0.416970617	0.10195206	0.012714533	0.046290428	0.025884823	0.006926674	0	0.017496628
+1	2004	15	4	12	0	0	0	0.224738288	0.419987617	0.221642856	0.058391947	0.0218891	0.017601895	0.017423273	0.009423796	0.008901228
+1	2005	11	4	12	0	0	0	0.067557039	0.290878085	0.418506444	0.135485204	0.027537362	0.003483464	0.013207835	0.022456556	0.020888011
+1	2006	6	4	12	0	0	0	0.080817724	0.149699043	0.286353337	0.256292387	0.145477459	0.049645517	0.000212555	0	0.031501979
+1	2007	3	4	12	0	0	0	0.015128266	0.118169344	0.29372312	0.14777506	0.329207134	0.059998172	0	0	0.035998903
+1	2010	5	4	12	0	0	0	0.407017327	0.248422748	0.150040974	0.045677377	0.041570109	0.048579078	0.025495798	0.033196588	0
+#Number of years with survey C@A data																
+6																
+#Survey C@A data (series; year; sample size; StartAge; EndAge; a1; a2; a3...)																
+1	2003	12	1	12	0	0	0.139702472	0.315390787	0.146302085	0.060315128	0.075972052	0.025430693	0.034171164	0.028045699	0	0.17466992
+1	2004	11	1	12	0.000329276	0.001558756	0.056433596	0.250361224	0.222532637	0.117683674	0.039254381	0.04307374	0.071867505	0.005438572	0.00985126	0.181615381
+1	2005	7	1	12	0	0	0.043988686	0.070790389	0.147949744	0.244142747	0.158948462	0.074252026	0.06836057	0.092690864	0.016761555	0.082114957
+1	2007	9	1	12	0	0.011462292	0.043356072	0.085231458	0.148927032	0.097088829	0.227439483	0.133124071	0.119652296	0.020946941	0.057160467	0.055611061
+1	2009	11	1	12	0	0.016445577	0.057635916	0.059563473	0.071513878	0.204077961	0.141496655	0.067469793	0.072724079	0.133233368	0.069013091	0.106826209
+1	2011	11	1	12	0	0	0.141751179	0.205343375	0.181893766	0.152699878	0.081941968	0.047362505	0.026362309	0.06507477	0.053410505	0.044159747
+#Number of years with commercial C@L data				
+2				
+#DUMMY DATA: Commercial C@L data (gear; year; sample size; StartLength; EndLength; l1; l2; l3...)				
+1	1956	1	1	1	1
+1	1957	1	1	1	1
+#Number of years with survey C@L				
+2				
+#DUMMY DATA: Survey C@L data (series; year; sample size; StartLength; EndLength; ll1; l2; l3...)				
+1	1956	1	1	1	1
+1	1957	1	1	1	1
+#Number of years with survey C@L pooled-sex data				
+2				
+#DUMMY DATA: Survey C@L pooled-sex data (series; year; sample size; StartLength; EndLength; ll1; l2; l3...)				
+1	1956	1	1	1	1
+1	1957	1	1	1	1
+#Length at age 1				
+-2	20	60	1	47.41246766	11.85311691	7.65476135512052
+#L_An (Average length of last age)  (by sex)						
+-2	100	200	1	162.5523724	40.63809311	47.7141973214662
+#k (von bert parameter)						
+-2	0.01	0.3	1	0.1	0.025	 0.194171
+#Length-at-age likelihood type (by sex)						
+0						
+#CV of Length-at-MinAge (by sex)						
+-2	0.03	2	0	0.65	0.3	0.1
+#CV of Length-at-MaxAge (by sex)						
+-2	0.03	2	0	0.65	0.3	0.1
+#LogBetaCPUE (CPUE POW)  (1 to NCPUE)						
+-2	-2	2	1	0.7075	1.0446	0
+-2	-2	2	1	0.7075	1.0446	0
+#Commercial Selectivity Type (1 for double norm 2 for logistic)						
+1						
+#Survey Selectivity Type (1 for double norm 2 for logistic)	
+1	
+#Set maturity to commercial selectivity (0 for separate 'n' is the default method to set it to - [mat2sel])	
+0	
+#Which surveys have selectivity forced equal to maturity (1 to NSurveys)	
+0	
+#Prop of natural mortality removed before removing catch then calculating CPUE (1 to NCPUE)	
+0.5	0.5
+#Prop of catch removed before calcualting CPUE (1 to NCPUE)	
+0.5	0.5
+#Prop of natural mortality removed before removing catch then calculating Commercial Catch@Age (1 to NMethods)	
+0.5	
+#Prop of catch removed before calculating Commercial Catch@Age (1 to NMethods)	
+0.5	
+#Prop of natural mortality removed before removing catch then calculating Survey Catch@Age (1 to NSurveys)	
+0.5	
+#Prop of catch removed before calculating Survey Catch@Age (1 to NSurveys)						
+0.5						
+#rec_seed						
+1211						
+#assessment_seed						
+8811						
+#AgeM2 (start age for second M: not estimable//by sex)						
+20						
+#M2 (2nd natural mortality; estimable/by sex)						
+-3	0.01	0.5	0	0	0	0.2

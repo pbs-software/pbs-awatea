@@ -1,20 +1,20 @@
-#runSweave------------------------------2013-09-11
+#runSweave------------------------------2013-10-28
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
 runSweave = function( wd = getwd(), strSpp="XYZ",
-		filename = "spp-area-00.txt",             # Name of Awatea .txt file in 'run.dir' to run
+		filename = "spp-area-00.txt", # Name of Awatea .txt file in 'run.dir' to run
 		runNo   = 1,
 		rwtNo   = 0,
-		running.awatea =0,                        # 0 if just loading previous '.rep'; 1 if rerunning Awatea
-		Nsex    = 2,                              # if 1 then Unisex, if 2 Males & Females
+		running.awatea =0,           # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+		Nsex    = 2,                 # if 1 then Unisex, if 2 then Males & Females
 		Ncpue   = 0,
 		Nsurvey = 3,
 		Snames  = paste("Ser",1:Nsurvey,sep=""),  # survey names (w/out spaces)
-		SApos   = rep(TRUE,Nsurvey),              # surveys with age composition data
+		SApos   = rep(TRUE,Nsurvey), # surveys with age composition data
 		delim   = "-",
 		debug   = FALSE,
-		locode  = FALSE,                          # if source as local code (for debugging)
+		locode  = FALSE,             # source this function as local code (for development)
 		awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
 		codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
 		sexlab  = c("Females","Males")
@@ -22,14 +22,17 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","awateaCode","toolsCode")),pos=1)
 	if (locode) { 
-		getFile(gfcode,path=system.file("data",package="PBSawatea"))
-		require(PBSmodelling, quietly=TRUE)
-		require(gplots, quietly=TRUE)
-		require(xtable, quietly=TRUE) 
-		require(lattice, quietly=TRUE)
-		require(scape, quietly=TRUE)     # Arni Magnusson's support functions for Awatea.
-		require(scapeMCMC, quietly=TRUE) # Arni Magnusson's support functions for Awatea MCMC.
-		require(gdata, quietly=TRUE)     # Data manipulation functions from CRAN.
+		#getFile(gfcode,path=system.file("data",package="PBSawatea"))
+		mess = c(
+		"require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)",
+		"require(gplots, quietly=TRUE)",
+		"require(xtable, quietly=TRUE)",
+		"require(lattice, quietly=TRUE)",
+		"require(scape, quietly=TRUE)",     # Arni Magnusson's support functions for Awatea.
+		"require(scapeMCMC, quietly=TRUE)", # Arni Magnusson's support functions for Awatea MCMC.
+		"require(gdata, quietly=TRUE)"     # Data manipulation functions from CRAN.
+		)
+		eval(parse(text=mess))
 		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runADMB.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runSweaveMCMC.r",sep="/"),local=FALSE)
@@ -72,9 +75,19 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = gsub("@running.awatea",running.awatea,tfile)
 	tfile = gsub("@sexlab",deparse(sexlab),tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
-	if (!locode) data(gfcode)
-	tfile = gsub("@sppname", gfcode[is.element(gfcode$code3,strSpp),"name"],tfile)
+	if (locode) {
+		if (any(strSpp==c("POP","pop","396"))) sppname = "Pacific Ocean Perch"
+		else if (any(strSpp==c("YMR","ymr","440"))) sppname = "Yellowmouth Rockfish"
+		else if (any(strSpp==c("ROL","rol","621"))) sppname = "Rock Sole"
+		else if (any(strSpp==c("SGR","sgr","405"))) sppname = "Silvergray Rockfish"
+		else "Unspecified species"
+	} else {
+		data(gfcode,package="PBSawatea")
+		sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
+	}
+	tfile = gsub("@sppname", sppname, tfile)
 #browser();return()
+
 	packList(stuff=c("Snames"), target="PBSawatea")
 	#if (exists("tput")) tput(Snames)
 	snames = rep(Snames,Nsurvey)[1:Nsurvey] # enforce same number of names as surveys

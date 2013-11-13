@@ -1,4 +1,4 @@
-% RH: Modified for Rock Sole (1 sex) and Silvergray Rockfish (2013-09-23)
+% RH: Modified for Rock Sole (1 sex) and Silvergray Rockfish (2013-10-01)
 % AME: Adding in formatting for resDocSty.sty, from master.tex (2012-08-24).
 % From Rowan's run-masterMCMC-rh14aug12.Snw. 
 % ymrrun-masterMCMC.Snw - just doing MCMC output (MCMC lines were 
@@ -17,6 +17,7 @@
 % From resDoc master.tex:
 \documentclass[11pt]{book}   
 \usepackage{resDocSty}      % Res Doc .sty file
+\captionsetup{figurewithin=none,tablewithin=none} %RH: This works for resetting figure and table numbers for book class though I don't know why. Set fig/table start number to n-1.
 \usepackage{graphicx}
 
 \usepackage{Sweave}   % andy add3ed
@@ -28,24 +29,27 @@
 % \usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry} 
 % Last is in resDoc.sty
 
-
-\newcommand{\popQCS}{Edwards-etal:2012pop}
-\newcommand{\ymr}{Edwards-etal:2012ymr}
-\newcommand{\area}{3CD}    % NOT automated in Sweave, but will
-\newcommand{\other}{5DE}   %  be set in master latex file.
-\newcommand{\otherCite}{Edwards-etal:20135DE}
+%\newcommand{\popQCS}{Edwards-etal:2012pop}
+%\newcommand{\ymr}{Edwards-etal:2012ymr}
+%\newcommand{\area}{3CD}    % NOT automated in Sweave, but will
+%\newcommand{\other}{5DE}   %  be set in master latex file.
+%\newcommand{\otherCite}{Edwards-etal:20135DE}
 
 % \newcommand{\eb}{\begin{eqnarray}}
 % \newcommand{\ee}{\end{eqnarray}}
 % \renewcommand{\baselinestretch}{1.0}
 \newcommand{\Bmsy}{B_\mathrm{MSY}}
 \newcommand{\umsy}{u_\mathrm{MSY}}
+\newcommand{\super}[1]{$^\mathrm{#1}$}
 
 % For write up
 %\def\AppLet{G}                   % Appendix letter
 %\renewcommand{\theequation}{\AppLet.\arabic{equation}}
 %\renewcommand{\thefigure}{\AppLet.\arabic{figure}}
-\def\StartP{1}                   % page start
+\def\startP{1}                   % page start (default=1)
+\def\startF{0}                   % figure start counter (default=0)
+\def\startT{0}                   % table start counter (default=0)
+\def\bfTh{{\bf \Theta}}  % bold Theta
 
 \renewcommand{\rmdefault}{phv}   % Arial
 \renewcommand{\sfdefault}{phv}   % Arial
@@ -53,7 +57,7 @@
 % You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
 % Apparently shouldn't have just one argument.
 \newcommand\onefig[2]{    % filename is #1, text is #2
-  \begin{figure}[htp]
+  \begin{figure}[!htp]
   \begin{center}
 	\includegraphics[width=6in,height=7in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
   %\epsfxsize=6in
@@ -62,11 +66,11 @@
   \caption{#2 }
   \label{fig:#1} 
   \end{figure}
-  \clearpage
+  %\clearpage
 }
 
 \newcommand\twofig[3]{   % figure #1 under #2, caption text #3
-  \begin{figure}[htp]     %  label will be #1
+  \begin{figure}[!htp]     %  label will be #1
   \centering
 %  \epsfxsize=6in
 %  \epsfysize=3.5in
@@ -83,7 +87,7 @@
 }
 
 \newcommand\threefig[4]{    % figure #1 then #2 then #3, 
-  \begin{figure}[htp]       %  caption text #4, label will be #1
+  \begin{figure}[!htp]       %  caption text #4, label will be #1
   \centering
   \begin{tabular}{c}
 	\includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
@@ -99,6 +103,7 @@
   \caption{#4}
   \label{fig:#1}
   \end{figure}
+  \clearpage
 }
 
 \SweaveOpts{pdf=FALSE}        % keep.source=TRUE, 
@@ -123,26 +128,36 @@
 %  It will set this for the rest of document 
 %  [doesn't width do that in the above?]
 
+
 \begin{document}
-\setcounter{page}{\StartP}
+\setcounter{page}{\startP}
+\setcounter{figure}{\startF}
+\setcounter{table}{\startT}
 \setcounter{secnumdepth}{3}    % To number subsubheadings-ish
 
-\setcounter{chapter}{6}  % temporary for standalone chapters
+\newcounter{prevchapter}
+%\setcounter{prevchapter}{5}
+\setcounter{chapter}{5}    % temporary for standalone chapters 9=(5=F, 6=G)
+\setcounter{prevchapter}{\value{chapter}}
+%\addtocounter{prevchapter}{-1}
 \renewcommand{\thechapter}{\Alph{chapter}} % ditto
-%\appendix           % Everything from now on will be an Appendix (activate when appendices stitched together)
+%\newcommand{\eqnchapter}{E}
+\newcommand{\eqnchapter}{\Alph{prevchapter}}
 
+
+%\appendix           % Everything from now on will be an Appendix (activate when appendices stitched together)
 % Now want to number sections, tables etc. as A.1, A.2, etc.
 \renewcommand{\thesection}{\thechapter.\arabic{section}}   
 \renewcommand{\thetable}{\thechapter.\arabic{table}}    
 \renewcommand{\thefigure}{\thechapter.\arabic{figure}}  
 \renewcommand{\theequation}{\thechapter.\arabic{equation}}
-
+\renewcommand{\thepage}{\thechapter\arabic{page}}
 
 % First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
 cwd    = "@cwd"  # Top level directory; all models occur below this one. 
 sigdig = 4       # Number of significant digits to output in tables
-redo.Graphs = FALSE #TRUE  # whether to redo the graphs or not (set to FALSE if just editing the text).
+redo.Graphs = @redo.Graphs  # whether to redo the graphs or not (set to FALSE if just editing the text).
 @ 
 
 % '@variables' replaced by function 'runSweave' to create individual Sweaves for runs and reweightings.
@@ -150,49 +165,57 @@ redo.Graphs = FALSE #TRUE  # whether to redo the graphs or not (set to FALSE if 
 model.name  = "@model.name"
 spp.name    = strsplit(model.name,split="[-\\.]")[[1]][1]
 area.name   = strsplit(model.name,split="[-\\.]")[[1]][2]
+if (any(spp.name=="ROL")) {
+	in.area   = if (area.name=="CST") " along the BC coast" else paste(" in Area",area.name)
+	for.area  = if (area.name=="CST") " for the BC coast" else paste(" for Area",area.name)
+	from.area = if (area.name=="CST") " from the coastwide assessment" else paste(" from the Area",area.name,"assessment")
+} else {
+	in.area = for.area = from.area = ""
+}
 run.dir     = "@run.dir"
 fig.dir     = "@fig.dir"
+mpd.dir     = "@mpd.dir"
 msy.dir     = "@msy.dir"
 prj.dir     = "@prj.dir"
 # running.awatea = @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea. 
 mcsub       = @mcsub
 Nsex        = @nsex
+resdoc      = @resdoc
 @ 
 
 % \pagestyle{myheadings}
 % \markright{\Sexpr{paste("From MCMC", model.name, sep="")}}
 
 \lhead{DRAFT -- Non-citable working paper}  % Omit for final ResDoc.
-\rhead{\Sexpr{paste("From MCMC", model.name, sep="")}}
+\rhead{\Sexpr{paste("From MCMC ", model.name, sep="")}}
 \lfoot{Appendix \thechapter ~-- Model Results} 
-\rfoot{@sppname}  
+\rfoot{\Sexpr{paste("@sppname"," (",area.name,")",sep="")}} 
 
 
 %\chapter{POP 3CD MCMC WORKING RESULTS}
-\chapter{MCMC WORKING RESULTS FOR @sppname (\Sexpr{area.name})}
+%\chapter{MCMC Working Results for @sppname\Sexpr{in.area}}
+\chapter{Model Results}
+
+%\subsection{Area \Sexpr{area.name}}
 
 %{\bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
-{\bf Paul J. Starr and Rowan Haigh}
+@rmresdoc {\bf Paul J. Starr and Rowan Haigh}
 
-Latest is \today, with \Sexpr{print(version$version.string)}.  % $
+@rmresdoc Latest is \today, with \Sexpr{print(version$version.string)}.  % $
 
-Plotting MCMC output for model {\tt \Sexpr{model.name}}. 
+@rmresdoc Plotting MCMC output for model {\tt \Sexpr{model.name}}. 
 
-Graphs ARE \Sexpr{if(!redo.Graphs) paste("NOT")} re-plotted during this document build.
+@rmresdoc Graphs ARE \Sexpr{if(!redo.Graphs) paste("NOT")} re-plotted during this document build.
 
-*** To Paul/Rowan: The text to go into Appendix G is after the figures and tables. Anything with *** is to be manually done in the final write-up, and I'll manually delete the unnecessary rows of the table of parameter estimtes.  Any ? or ?? are references/citations that will get automatically sorted in the final write up. 
+@rmresdoc *** To Paul/Rowan: The text to go into Appendix~\thechapter{} is after the figures and tables. Anything with *** is to be manually done in the final write-up, and I'll manually delete the unnecessary rows of the table of parameter estimtes.  Any ? or ?? are references/citations that will get automatically sorted in the final write up. 
 
-\section{History of Runs}
+@rmresdoc \section{History of Runs}
 
-\input{\Sexpr{paste(run.dir, "/../runHistory", sep="")}}
+@rmresdoc \input{\Sexpr{paste(run.dir, "/../runHistory", sep="")}}
 
-%Not fully automated: 
-%- Table of summary statistics (switches fine if $M_s$ and/or $h$ are fixed/estimated, but won't add extra parameters in (fine for 3CD, will have to tweak for 5DE). 
-% RH automated as much as possible Sep 2013
+@rmresdoc @rmhrp {\bf Note:} Historical reference points have been reported in this document. Output tables typically report $B_\mathrm{Lim}$ (biomass lower limit), $B_\mathrm{Tar}$ (biomass target), and $u_\mathrm{Tar}$ (exploitation rate target). Exploitation rate lower limit ($u_\mathrm{Lim}$) is often not defined.
 
-@rmhrp {\bf Note:} Historical reference points have been reported in this document. Output tables only reflect $B_\mathrm{Lim}$ (biomass lower limit) and $B_\mathrm{Tar}$ (biomass target). Exploitation rates $u_\mathrm{Lim}$ and $u_\mathrm{Tar}$ have not been reported, though they may have been computed (see HRF.YRS in MCMC Sweave document).
-
-\medskip
+@rmresdoc \medskip
 
 % For final write-up, need to (at least):
 %  manually check things with *** next to them
@@ -254,12 +277,12 @@ names(currentMCMC$R) = as.integer(names(currentMCMC$R)) + 1
 # **** AME hard-wiring cannot work; RH attempt to fix: ***
 #==========================================================
 # Get the commercial and survey index series
-Cser=unique(currentRes$CPUE$Series);   NCser=length(Cser)
+Cser=unique(currentRes$CPUE$Series);   Ncpue=NCser=length(Cser)
 # There has to be a dummy CPUE series in the input, but the 
 #  likelihood switch says whether it is being fitted. Seems
 #  that the calculated likelihood is 0 if not fitted:
-if(all(currentRes$extra$likelihoods$CPUE==0)) { NCser = 0 }
-%if(NCser > 1) stop("priorInput construction assumes one CPUE series so needs updating in run-masterMCMC.Snw")
+if(all(currentRes$extra$likelihoods$CPUE==0)) { Ncpue.actual = 0 }
+%if(Ncpue > 1) stop("priorInput construction assumes one CPUE series so needs updating in run-masterMCMC.Snw")
 
 Sser = unique(currentRes$Survey$Series)
 Sser = Sser[currentRes$extra$likelihoods$Survey_Index!=0]
@@ -268,21 +291,24 @@ NSser= length(Sser)
 # Get the commercial and survey age series
 # These might also need fixing if there are dummy data that
 #  aren't being fitted.
-CAser=unique(currentRes$CAc$Series);   NCAser=length(CAser)
+CAser=unique(currentRes$CAc$Series);   Ncomm=NCAser=length(CAser)
 SAser=unique(currentRes$CAs$Series);   NSAser=length(SAser)
 
-Ncomm = max(NCser,NCAser) # number of commercial series w/ data/ages
+NCOMM = max(Ncpue,Ncomm)  # number of commercial series w/ data/ages
 Nsurv = max(NSser,NSAser) # number of survey series with data/ages
 
 Pnames = names(currentMCMC$P)
 # can take out paste once get updated PBSawatea.
 new.Pnames = gsub("M1_2",paste("M_",2,sep=""),sub("M1_1",paste("M_",1,sep=""),sub("R0","R_0",Pnames)))
+for (i in 1:Ncpue) {
+	ii = i + Nsurv
+	new.Pnames = sub(paste("log_qCPUE_",i,sep=""),paste("log q_",ii,sep=""),new.Pnames)
+}
 for (i in 1:Ncomm) {
 	ii = i + Nsurv
 	new.Pnames = sub(paste("Sfullest_",i,sep=""),paste("mu_",ii,sep=""),new.Pnames)
 	new.Pnames = sub(paste("log_varLest_",i,sep=""),paste("log v_",ii,"L",sep=""),new.Pnames)
 	new.Pnames = sub(paste("Sfulldelta_",i,sep=""),paste("Delta_",ii,sep=""),new.Pnames)
-	new.Pnames = sub(paste("log_qCPUE_",i,sep=""),paste("log q_",ii,sep=""),new.Pnames)
 }
 for (i in 1:Nsurv) {
 	ii = Sser[i]
@@ -301,10 +327,10 @@ new.Pnames = sub("log_BetaCPUE","log beta",new.Pnames)
 #  we haven't thought of here. This is the global list in the
 #  desired order. If >5 surveys then expand this, and expand 
 #  priorInput function below. 
-# log_q should really go to Nsurv+NCser, but will get fixed by
+# log_q should really go to Nsurv+Ncpue, but will get fixed by
 #  use.Pnames.
 tab.Pnames = c("R_0","M_1","M_2","h",
-  paste("log q_",1:(Nsurv+Ncomm),sep=""),"log beta", 
+  paste("log q_",1:(Nsurv+Ncpue),sep=""),"log beta", 
   paste("mu_",1:(Nsurv+Ncomm),sep=""),
   paste("Delta_",1:(Nsurv+Ncomm),sep=""),
   paste("log v_",1:(Nsurv+Ncomm),"L",sep=""))
@@ -908,8 +934,9 @@ for(i in 1:length(refProbsHistList))
 		colnames(refProbsHist90[[i]]) =  as.numeric(colnames(refProbsHist90[[i]])) - currYear
 		names(refProbsHist90)[i] = names(refProbsHistList)[i] }
 	}
-
 @ 
+
+\newcommand{\currYear}{\Sexpr{currYear}} % so can include in captions. 
 
 <<plottingFigs, results=hide, echo=FALSE>>=
 # Moved from above, as now have currentMCMC$U calcs
@@ -924,15 +951,15 @@ nPolicy    = length(projPolicy)
 onePos     = round(approx(projPolicy,y=1:nPolicy,xout=meanCatch)$y)
 if (is.na(onePos)) stop("projPolicy range does not cover recent mean catch")
 nPanel     = 6    # assume 6 panels in plot
-incPos     = round(nPolicy/6)
+incPos     = floor(nPolicy/nPanel)
 prjPos = onePos #starting point
-while(length(prjPos)!=(nPanel-1)) {
+while(length(prjPos)!=(nPanel)) {
 	if (min(prjPos)-incPos > 0) prjPos = c(min(prjPos)-incPos,prjPos)
 	if (max(prjPos)+incPos <= nPolicy) prjPos = c(prjPos,max(prjPos)+incPos)
-	if (length(prjPos)>(nPanel-1)) prjPos=prjPos[1:(nPanel-1)]
+	if (length(prjPos)>(nPanel)) prjPos=prjPos[1:(nPanel)]
 print(prjPos)
 }
-prjPos = c(1,prjPos) # always have 0-catch policy
+prjPos[1] = 1 # always have 0-catch policy
 onePolicy  = projPolicy[onePos]
 plotPolicy = projPolicy[prjPos]
 
@@ -992,24 +1019,21 @@ qqtab = function(xx.MCMC, dig=3)     # dig is number sig digits
                                   big.mark=",")), 
          sep="", collapse=""))
   }  
-
-
-
 # not saving for YMR for now (don't have all these variables, though
-#  just MPDs so don't need MCMC output).  [These were from MCMC's]
+# just MPDs so don't need MCMC output).  [These were from MCMC's]
 # save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
- # 
 # save.image(file="run23all.RData")
 
 # See popScape2.r for pairs plots, from:
 # Copy and run this for pairs plots        to
 # text(currentRes$B$SB, currentRes$B$U, 1:72)
 
-
-# Want to report the mean of the median recruitments for past and
-#  projections.
+# Want to report the mean of the median recruitments for past and projections.
 recMed = apply(currentMCMC$R, 2, median)
 meanRecMed = mean(recMed)
+
+muMed = apply(currentMCMC$P[grep("mu_",names(currentMCMC$P))],2,median)
+
 # Do for one policy
 # recProjMed1500 = apply(currentProj$R$'1500', 2, median)
 # meanRecProjMed1500 = mean(recProjMed1500)
@@ -1018,14 +1042,40 @@ meanRecMed = mean(recMed)
 CAfirstYear = min(min(currentRes$CAc$Year), min(currentRes$CAs$Year))
 @ 
 
-\onefig{traceParams}{MCMC traces for the estimated parameters. Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative median (up to that sample), and dashed lines show the cumulative 2.5 and 97.5 quantiles.  Red circles are the MPD estimates. Except for $M_1$ and $M_2$, subscripts 1 to \Sexpr{Nsurv}*** correspond to the fishery-independent surveys ****, and subscript \Sexpr{Nsurv+1}*** to the commercial fishery.}
-% Check***
+<<getMPDfigs, results=hide, echo=FALSE>>=
+if (resdoc) {
+	if (is.element(spp.name,c("SGR","POP","YMR"))) {
+		mpdfigs = c("survIndSer2","meanage","commAgeResids","stockRecruit","recruits","selectivity","exploit")
+		mpdfigs = paste(mpdfigs,".eps",sep="")
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("ageComm")))
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("ageSurv")))
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("survRes")))
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("survAgeResSer")))
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("recDev")))
+	}
+	if (is.element(spp.name,c("ROL"))) {
+		mpdfigs = c("survIndSer2","CPUEser","commAgeResids")
+		mpdfigs = paste(mpdfigs,".eps",sep="")
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("ageComm")))
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("ageSurv")))
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("survRes")))
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("survAgeResSer")))
+		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("recDev")))
+	}
+	file.copy(from=paste(mpd.dir,mpdfigs,sep="/"),to=fig.dir,overwrite=TRUE)
+}
+@
+@resultsMPD
+@resultsMPDfigs % RH: MPD figures will be inserted here from the working directory (e.g., from `resultsMPDfigs-run16.tex`)
 
-\onefig{splitChain}{Diagnostic plot obtained by dividing the MCMC chain of \numMCMC~MCMC samples into three segments, and overplotting the cumulative distributions of the first segment (green), second segment (red) and final segment (blue).}
+%======================START FIGURES=======================
+\onefig{traceParams}{MCMC traces for the estimated parameters\Sexpr{print(in.area)}. Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative median (up to that sample), and dashed lines show the cumulative 2.5 and 97.5 quantiles.  Red circles are the MPD estimates. For parameters other than $M$ (if estimated), subscripts $\leq \Sexpr{Nsurv}$ correspond to fishery-independent surveys, and subscripts $\geq \Sexpr{Nsurv+Ncomm}$ denote the commercial fishery. Parameter notation is described in Appendix~\eqnchapter.}
+
+\onefig{splitChain}{Diagnostic plot\Sexpr{from.area} obtained by dividing the MCMC chain of \numMCMC~MCMC samples into three segments, and overplotting the cumulative distributions of the first segment (green), second segment (red) and final segment (blue).}
 % overplotting the cumulative distributions, removing the first 100, then plotting the cumulative distributions for samples 101-400 (green), 301-700 (red) and 701-1000 (blue). }
 
 %=======This line will be expanded to accomodate multiple pairs plots=======
-\onefig{pairs1}{Pairs plot of \numMCMC~MCMC samples for 1$^\text{st}$ six parameters. Numbers are the absolute values of the correlation coefficients.}
+\onefig{pairs1}{Pairs plot\Sexpr{from.area} of \numMCMC~MCMC samples for 1$^\text{st}$ six parameters. Numbers are the absolute values of the correlation coefficients.}
 
 
 % Need a switch here along the lines of
@@ -1048,15 +1098,14 @@ CAfirstYear = min(min(currentRes$CAc$Year), min(currentRes$CAs$Year))
 
 % \onefig{pairs5}{Pairs plot of \numMCMC~MCMC samples for ** parameters for run.}
 
-\onefig{traceBiomass}{MCMC traces for female spawning biomass estimates at five-year intervals.  Note that vertical scales are different for each plot (to show convergence of the MCMC chain, rather than absolute differences in annual values). Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative  median (up to that sample), and dashed lines show the cumulative  2.5 and 97.5 quantiles.  Red circles are the MPD estimates.}
+@rmROL \onefig{traceBiomass}{MCMC traces\Sexpr{from.area} for female spawning biomass estimates at five-year intervals.  Note that vertical scales are different for each plot (to show convergence of the MCMC chain, rather than absolute differences in annual values). Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative  median (up to that sample), and dashed lines show the cumulative  2.5 and 97.5 quantiles.  Red circles are the MPD estimates.}
 
-\onefig{traceRecruits}{MCMC traces for recruitment estimates at five-year intervals. Note that vertical scales are different for each plot (to show convergence of the MCMC chain, rather than absolute differences in annual recruitment). Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative  median (up to that sample), and dashed lines show the cumulative  2.5 and 97.5 quantiles.  Red circles are the MPD estimates.}
+@rmROL \onefig{traceRecruits}{MCMC traces\Sexpr{from.area} for recruitment estimates at five-year intervals. Note that vertical scales are different for each plot (to show convergence of the MCMC chain, rather than absolute differences in annual recruitment). Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative  median (up to that sample), and dashed lines show the cumulative  2.5 and 97.5 quantiles.  Red circles are the MPD estimates.}
 
-\onefig{pdfParameters}{Marginal posterior densities (thick black curves) and prior density functions (thin blue curves) for the estimated parameters. Vertical lines represent the 2.5, 50 and 97.5 percentiles, and red filled circles are the MPD estimates. [Distributions are hardwired:] For $R_0$ the prior is a uniform distribution on the range [\Sexpr{priorInput["R_0",2]}, \Sexpr{priorInput["R_0",3]}], and is at too low a value to show up on the graph. The priors for $q_g$ are uniform on a log-scale, and so the probability density function is $1/(x(b-a))$ on a linear scale (where $a$ and $b$ are the bounds on the log scale).}
+\onefig{pdfParameters}{Marginal posterior densities (thick black curves) and prior density functions (thin blue curves) for the estimated parameters\Sexpr{from.area}. Vertical lines represent the 2.5, 50 and 97.5 percentiles, and red filled circles are the MPD estimates. For $R_0$ the prior is a uniform distribution on the range [\Sexpr{priorInput["R_0",2]}, \Sexpr{priorInput["R_0",3]}]. The priors for $q_g$ are uniform on a log-scale, and so the probability density function is $1/(x(b-a))$ on a linear scale (where $a$ and $b$ are the bounds on the log scale).}
 % such that half of the weight of the prior distribution lies $>0.03$ [**for the parameters used in YMR], which is not obvious from the graphs. 
 
 \clearpage
-
 % \onefig{selectivityMCMC}{**** Rowan's favourite figure.*** MCMC selectivity figure will go here, haven't calculated yet (started in {\tt plotSelMCMC.r}---- couldn't find that anywhere, so just see prior calculation folder rprogs/POP12/Mprior).}
 
 % Not using these posterior densities now - get most of the info from
@@ -1079,14 +1128,20 @@ CAfirstYear = min(min(currentRes$CAc$Year), min(currentRes$CAs$Year))
 
 % To go into main docco (except summary table to stay in App G).
 
-\onefig{VBcatch}{Estimated vulnerable biomass (boxplots) and commercial catch (vertical bars), in tonnes, over time. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. Catch is shown to compare its magnitude to the estimated vulnerable biomass.}
+\onefig{VBcatch}{Estimated vulnerable biomass (boxplots) and commercial catch (vertical bars), in tonnes, over time\Sexpr{for.area}. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. Catch is shown to compare its magnitude to the estimated vulnerable biomass.}
 
-\onefig{BVBnorm}{Changes in $B_t / B_0$ and $V_t / V_0$ (spawning and vulnerable biomass relative to unfished equilibrium levels) over time, shown as the medians of the MCMC posteriors.}
+\onefig{BVBnorm}{Changes in $B_t / B_0$ and $V_t / V_0$ (spawning and vulnerable biomass relative to unfished equilibrium levels) over time\Sexpr{for.area}, shown as the medians of the MCMC posteriors.}
 
-\onefig{recruitsMCMC}{Marginal posterior distribution of recruitment in 1,000's of age-1 fish plotted over time. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. Note that the first year for which there are age data is \Sexpr{CAfirstYear}, and the plus-age class is \Sexpr{A}, such that there are no direct data concerning age-1 fish before \Sexpr{CAfirstYear-A+1}. Also, the final few years have no direct age-data from which to estimate recruitment, because fish are not fully selected until age *** by the commercial vessels or age *** by surveys (using the MCMC median ages of full selectivity for commercial catch, $\mu_{\Sexpr{Nsurv+Ncomm}}$, and survey *** $\mu_{***}$).}
+<<muIndex, results=hide, echo=FALSE>>=
+muCI = findPat((Nsurv+1):(Nsurv+Ncomm),names(muMed))
+names(muCI) = sapply(strsplit(muCI,"_"),function(x){x[2]})
+muSI=findPat(1:Nsurv,names(muMed))
+names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
+@
 
+\onefig{recruitsMCMC}{Marginal posterior distribution of recruitment in 1,000s of age-1 fish plotted over time\Sexpr{for.area}. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. Note that the first year for which there are age data is \Sexpr{CAfirstYear}, and the plus-age class is \Sexpr{A}, such that there are no direct data concerning age-1 fish before \Sexpr{CAfirstYear-A+1}. Also, the final few years have no direct age-data from which to estimate recruitment, because fish are not fully selected until age \Sexpr{round(mean(muMed[muCI]),1)} by the commercial vessels or age \Sexpr{round(mean(muMed[muSI]),1)} by surveys (mean of the MCMC median ages at full selectivity for commercial catch, $\mu_{\Sexpr{paste(names(muCI),collapse=",")}}$, and survey $\mu_{\Sexpr{paste(names(muSI),collapse=",")}}$, respectively).}
 
-\onefig{exploitMCMC}{Marginal posterior distribution of exploitation rate plotted over time. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results.}
+\onefig{exploitMCMC}{Marginal posterior distribution of exploitation rate\Sexpr{in.area} plotted over time. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results.}
 
 % **** ADD in in latex  ****
 %\begin{figure}[htp]
@@ -1099,16 +1154,16 @@ CAfirstYear = min(min(currentRes$CAc$Year), min(currentRes$CAs$Year))
 %\label{fig:compBmsy} 
 %\end{figure}
 
-\onefig{snail}{Phase plot through time of the medians of the ratios $B_t / B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_t / u_\mathrm{MSY}$ (the exploitation rate in year $t$ relative to $u_\mathrm{MSY}$). Blue filled circle is the starting year (\Sexpr{startYear}). Years then proceed from light grey through to dark grey with the final year (\Sexpr{currYear - 1}) as a filled red circle, and the red lines represent the 10\% and 90\% percentiles of the posterior distributions for the final year. Vertical grey lines indicate the Precautionary Approach provisional limit and upper stock reference points of 0.4$B_\mathrm{MSY}$ and 0.8$B_\mathrm{MSY}$, and horizontal grey line indicates $u_\mathrm{MSY}$.}
+\onefig{snail}{Phase plot through time of the medians of the ratios $B_t / B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_t / u_\mathrm{MSY}$ (the exploitation rate in year $t$ relative to $u_\mathrm{MSY}$)\Sexpr{for.area}. Blue filled circle is the starting year (\Sexpr{startYear}). Years then proceed from light grey through to dark grey with the final year (\Sexpr{currYear - 1}) as a filled red circle, and the red lines represent the 10\% and 90\% percentiles of the posterior distributions for the final year. \Sexpr{ if(spp.name!="ROL") paste("Vertical grey lines indicate the Precautionary Approach provisional limit and upper stock reference points (0.4, 0.8 $B$msy), and horizontal grey line indicates $u$ at MSY.")}}% of 0.4$B_\\mathrm\{MSY\}$ and 0.8$B_\\mathrm\{MSY\}$, and horizontal grey line indicates $u_\\mathrm\{MSY\}$.")}}
 
-\onefig{Bproj}{Projected biomass (t) under different constant catch strategies (t); boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. For each of the \numMCMC~samples from the MCMC posterior, the model was run forward in time (red, with medians in black) with a constant catch, and recruitment was simulated from the stock-recruitment function with lognormal error (see equation \ref{Rteqn}). For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.}
+\onefig{Bproj}{Projected biomass (t) under different constant catch strategies (t)\Sexpr{for.area}; boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. For each of the \numMCMC~samples from the MCMC posterior, the model was run forward in time (red, with medians in black) with a constant catch, and recruitment was simulated from the stock-recruitment function with lognormal error (see Appendix~\eqnchapter). For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.}
 
 \clearpage 
 
 % Commenting out for WG meeting, plus not so useful for short 
 %  projections. Though now doing 10 years, and I think's useful to 
 %  raise caution about how the projections are done. 
-\onefig{Rproj}{Projected recruitments (red) under different constant catch strategies (boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results; historical recruitments in black).}
+@rmresdoc \onefig{Rproj}{Projected recruitments (red) under different constant catch strategies (boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results; historical recruitments in black).}
 % xx = apply(currentProj$R$'0', 2, max)
 % summary(xx)
   
@@ -1120,17 +1175,28 @@ CAfirstYear = min(min(currentRes$CAc$Year), min(currentRes$CAs$Year))
 % yy = apply(currentMCMC$R, 2, median)
 % mean(yy)
 
+%======================START TABLES=======================
 \clearpage     % to get tables at end
+@resultsMPDtabs % RH: MPD tables will be inserted here from the working directory (e.g., from `resultsMPDtabs-run16.tex`)
 
 <<tabmcmc, results=tex, echo=FALSE>>=
 	tabdigits = 3      # number of decimal places to give
 	tabmcmc  = t(sapply(currentMCMC$P,quantile,c(0.05,0.50,0.95)))
 	if (exists("formatCatch")) { tabmcmc = formatCatch(tabmcmc,N=4) } else { tabmcmc["R_0",] = round(tabmcmc["R_0",]) }
-	rownames(tabmcmc) =  paste(rep("$",nrow(tabmcmc)),gsub("mu","\\\\mu",rownames(tabmcmc)),rep("$",nrow(tabmcmc)),sep="")
+	names.mcmc = rownames(tabmcmc)
+	names.mcmc = gsub("mu","\\\\mu",names.mcmc)
+	names.mcmc = gsub("Delta","\\\\Delta",names.mcmc)
+	names.mcmc = gsub("log","\\\\mathrm{log}",gsub("v_","v_{",gsub("L","L}",names.mcmc)))
+	rownames(tabmcmc) =  paste(rep("$",nrow(tabmcmc)),names.mcmc,rep("$",nrow(tabmcmc)),sep="")
 	xtabmcmc = xtable(tabmcmc, align="crrr",
 		label   = "tab:MCMCpar", digits = if (exists("formatCatch")) NULL else tabdigits,
-		caption = "Summary statistics of MCMC results for estimated parameters (defined in Appendix F)." )
-	print(xtabmcmc, caption.placement="top",sanitize.rownames.function=function(x){x}) 
+		caption = paste("The 5\\super{th}, 50\\super{th}, and 95\\super{th} percentiles for model parameters derived via MCMC estimation (defined in Appendix~\\eqnchapter)",for.area,".",sep="") )
+		#caption = "Summary statistics of MCMC results for estimated parameters (defined in Appendix~\eqnchapter)." )
+	print(xtabmcmc, caption.placement="top",
+		sanitize.rownames.function=function(x){x},
+		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]"))
+	)
+ 
 @
 % Want to automate this, best to do by changing the qtab function
 %  to print out the whole row (including $q_4$ etc.), and do it
@@ -1141,7 +1207,7 @@ CAfirstYear = min(min(currentRes$CAc$Year), min(currentRes$CAs$Year))
 %\begin{table}[tp]
 %\centering
 %\caption{\label{tab:MCMCpar} 
-%Summary statistics of MCMC results for estimated parameters (defined in Appendix F). Parameter values are: ****[fill this in], then can delete this: Except for $M_1$ and $M_2$, subscripts 1 to \Sexpr{Nsurv}**** correspond to the fishery-independent surveys, and subscript \Sexpr{Nsurv+1}*** to the commercial fishery.****} % Check rows for write-up***
+%Summary statistics of MCMC results for estimated parameters (defined in Appendix~\eqnchapter). Parameter values are: ****[fill this in], then can delete this: Except for $M_1$ and $M_2$, subscripts 1 to \Sexpr{Nsurv}**** correspond to the fishery-independent surveys, and subscript \Sexpr{Nsurv+1}*** to the commercial fishery.****} % Check rows for write-up***
 % Fiddling for now, need to generalise. ***
 %\begin{tabular}{lrrr} 
 %\hline
@@ -1178,11 +1244,11 @@ CAfirstYear = min(min(currentRes$CAc$Year), min(currentRes$CAs$Year))
 %=====TABLE: MCMC QUANTILES=====
 \begin{table}[tp]
 \centering
-\caption{\label{tab:MCMCderived} The 5$^\mathrm{th}$, 50$^\mathrm{th}$ and 95$^\mathrm{th}$ percentiles of MCMC-derived quantities from the \numMCMC~samples of the MCMC posterior. Definitions are: $B_0$ -- unfished equilibrium spawning biomass (mature females), $V_0$ -- unfished equilibrium vulnerable biomass (males and females), $B_{\Sexpr{currYear}}$ -- spawning biomass at the start of $\Sexpr{currYear}$, $V_{\Sexpr{currYear}}$ -- vulnerable biomass in the middle of \Sexpr{currYear}, $u_{\Sexpr{currYear-1}}$ -- exploitation rate (ratio of total catch to vulnerable biomass) in the middle of \Sexpr{currYear-1}, $u_\mathrm{max}$ -- maximum exploitation rate (calculated for each sample as the maximum exploitation rate from 1940-\Sexpr{as.numeric(rev(names(currentMCMC$U[1,]))[1])}), $\Bmsy$ -- equilibrium spawning biomass at MSY (maximum sustainable yield), $u_\mathrm{MSY}$ -- equilibrium exploitation rate at MSY, $V_\mathrm{MSY}$ -- equilibrium vulnerable biomass at MSY. 
+\caption{\label{tab:MCMCderived} The 5$^\mathrm{th}$, 50$^\mathrm{th}$ and 95$^\mathrm{th}$ percentiles of MCMC-derived quantities from the \numMCMC~samples of the MCMC posterior\Sexpr{from.area}. Definitions are: $B_0$ -- unfished equilibrium spawning biomass (mature females), $V_0$ -- unfished equilibrium vulnerable biomass (males and females), $B_{\Sexpr{currYear}}$ -- spawning biomass at the start of $\Sexpr{currYear}$, $V_{\Sexpr{currYear}}$ -- vulnerable biomass in the middle of \Sexpr{currYear}, $u_{\Sexpr{currYear-1}}$ -- exploitation rate (ratio of total catch to vulnerable biomass) in the middle of \Sexpr{currYear-1}, $u_\mathrm{max}$ -- maximum exploitation rate (calculated for each sample as the maximum exploitation rate from 1940-\Sexpr{as.numeric(rev(names(currentMCMC$U[1,]))[1])}), $\Bmsy$ -- equilibrium spawning biomass at MSY (maximum sustainable yield), $u_\mathrm{MSY}$ -- equilibrium exploitation rate at MSY, $V_\mathrm{MSY}$ -- equilibrium vulnerable biomass at MSY. 
 @rmhrp The values $B_\mathrm{Lim}$ and $B_\mathrm{Tar}$ denote historical limit and target reference points min($B_{\Sexpr{paste(range(HRP.YRS$blimYrs),collapse="-")}}$) and mean($B_{\Sexpr{paste(range(HRP.YRS$btarYrs),collapse="-")}}$), respectively. The historical target exploitation rate is expressed as the mean($u_{\Sexpr{paste(range(HRP.YRS$utarYrs),collapse="-")}}$).
 All biomass values (and MSY) are in tonnes. For reference, the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) is \Sexpr{round(recentCatchMean, dig=0)}~t.}
 \begin{tabular}{lrrr} 
-\hline
+\\[-1.0ex]\hline
 Value & \multicolumn{3}{c}{Percentile}\\
 \cline{2-4}
  & 5\% & 50\% & 95\% \\
@@ -1236,10 +1302,6 @@ $u_{\Sexpr{currYear-1}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.MCMC / umsy.MCMC
 %\cline{2-7}
 %strategy & 2011 & 2012 & 2013 & 2014 & 2015 & 2016 \\
 
-\newcommand{\currYear}{\Sexpr{currYear}} 
-                                % so can include in captions. 
-                                %  Should really do earlier.
-
 <<tables, results=tex, echo=FALSE>>=
 tabdigits = 2      # number of decimal places to give
 
@@ -1251,11 +1313,36 @@ if (exists("refProbs10") || exists("refProbs5")) {
 		refProbs = refProbs5
 	}
 	# it didn't like \Sexpr in caption="" - need eval(paste
-	print(xtable(refProbs$LRP, label="tab:LRP",  caption=eval(paste("Decision table concerning the limit reference point $0.4 \\Bmsy$ for 1-",projYearsNum-1," year projections for a range of constant catch strategies (in tonnes). Values are P$(B_t > 0.4 \\Bmsy)$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > 0.4 \\Bmsy$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top") 
+	xtabLRP = xtable(refProbs$LRP, label="tab:LRP", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the limit reference point $0.4 \\Bmsy$ for 1-",projYearsNum-1," year projections for a range of constant catch strategies (in tonnes). Values are P$(B_t > 0.4 \\Bmsy)$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > 0.4 \\Bmsy$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")) )
+	print(xtabLRP, table.placement="!ht", caption.placement="top",
+		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 
-	print(xtable(refProbs$URP, label="tab:URP",  caption=eval(paste("Decision table for the upper reference point $0.8 \\Bmsy$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.8 \\Bmsy)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top") 
+	xtabURP = xtable(refProbs$URP, label="tab:URP", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the upper reference point $0.8 \\Bmsy$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.8 \\Bmsy)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")) )
+	print(xtabURP, table.placement="!ht", caption.placement="top",
+		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 
-	print(xtable(refProbs$Bmsy,label="tab:Bmsy", caption=eval(paste("Decision table for the reference point $\\Bmsy$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > \\Bmsy)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top") 
+	xtabBmsy = xtable(refProbs$Bmsy, label="tab:Bmsy", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the reference point $\\Bmsy$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > \\Bmsy)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")) )
+	print(xtabBmsy, table.placement="!ht", caption.placement="top",
+		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
+}
+
+#=====TABLE: P(Bt>Bcurr) & P(Ut>Ucurr)=====
+if (exists("refProbs3GenList") && !is.null(refProbs3GenList$Bcurr)) {
+	xtabBcurr = xtable(refProbs3GenList$Bcurr, label="tab:Bcurr", digits=tabdigits, 
+		caption=eval(paste("Decision table",for.area," for comparing the projected biomass to the current biomass, given by probabilities P$(B_t > B_{\\currYear})$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")) )
+	print(xtabBcurr, table.placement="!ht", caption.placement="top",
+		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+}
+if (exists("refProbs3GenList.u") && !is.null(refProbs3GenList.u$umsy)) {
+	xtabUmsy = xtable(refProbs3GenList.u$umsy, label="tab:umsy", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," for comparing the projected exploitation rate to that at MSY, such that values are P$(u_t > u_\\mathrm{MSY})$, i.e.~the probability of the exploitation rate in the middle of year $t$ being greater than that at MSY. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")))
+	print(xtabUmsy, table.placement="!ht", caption.placement="top",
+		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
 }
 
 #=====TABLE: ALTERNATIVE B0 REFERENCE POINTS=====
@@ -1265,18 +1352,21 @@ if (exists("refProbsB010") || exists("refProbsB010")) {
 	} else {
 		refProbsB0 = refProbsB05
 	}
-	print(xtable(refProbsB0$B00.2, label="tab:B0_0.2", caption=eval(paste("Decision table for the alternative limit reference point $0.2 B_0$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.2 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top")
-
-	print(xtable(refProbsB0$B00.4, label="tab:B0_0.4", caption=eval(paste("Decision table for the alternative upper reference point $0.4 B_0$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.4 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top")
 }
+if (!is.element(spp.name,c("ROL","rol","621"))) {
+	if (exists("refProbsB0")) {
+		xtabB020 = xtable(refProbsB0$B00.2, label="tab:B0_0.2", digits=tabdigits, 
+			caption=eval(paste("Decision table for the alternative limit reference point $0.2 B_0$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.2 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")) )
+		print(xtabB020, table.placement="!ht", caption.placement="top",
+			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 
-#=====TABLE: P(Bt>Bcurr) & P(Ut>Ucurr)=====
-if (exists("refProbs3GenList") && !is.null(refProbs3GenList$Bcurr))
-	print(xtable(refProbs3GenList$Bcurr, label="tab:Bcurr", caption=eval(paste("Decision table for comparing the projected biomass to the current biomass, given by probabilities P$(B_t > B_{\\currYear})$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top")
-
-if (exists("refProbs3GenList.u") && !is.null(refProbs3GenList.u$umsy))
-	print(xtable(refProbs3GenList.u$umsy, label="tab:umsy", caption=eval(paste("Decision table for comparing the projected exploitation rate to that at MSY, such that values are P$(u_t > u_\\mathrm{MSY})$, i.e.~the probability of the exploitation rate in the middle of year $t$ being greater than that at MSY. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top") 
-
+		xtabB040 = xtable(refProbsB0$B00.4, label="tab:B0_0.4", digits=tabdigits,
+			caption=eval(paste("Decision table for the alternative upper reference point $0.4 B_0$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.4 B_0)$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")) )
+		print(xtabB040, table.placement="!ht", caption.placement="top",
+			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+		cat(" \\clearpage \\pagebreak ")
+	}
+}
 #=====TABLE: ROCK SOLE HISTORICAL REFERENCE POINTS=====
 if (is.element(spp.name,c("ROL","rol","621"))) {
 	if (projYearsNum >= 10) {
@@ -1285,18 +1375,34 @@ if (is.element(spp.name,c("ROL","rol","621"))) {
 		refProbsHist = refProbsHist5
 	}
 	# it didn't like \Sexpr in caption="" - need eval(paste
-	print(xtable(refProbsHist$blimHRP, label="tab:blimHRP",  caption=eval(paste("Decision table concerning the historical limit reference point min($B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections for a range of constant catch strategies (in tonnes). Values are P$(B_t > min(B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"}))$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the historical limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > min(B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"})$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top") 
+	xtabBlim = xtable(refProbsHist$blimHRP, label="tab:blimHRP", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the historical limit reference point min($B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections for a range of constant catch strategies (in tonnes). Values are P$(B_t > min(B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"}))$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the historical limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > min(B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"})$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")) )
+	print(xtabBlim, table.placement="!ht", caption.placement="top",
+		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 
-	print(xtable(refProbsHist$btarHRP, label="tab:btarHRP",  caption=eval(paste("Decision table for the historical target reference point mean($B_{",paste(range(HRP.YRS$btarYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(B_t > mean(B_{",paste(range(HRP.YRS$btarYrs),collapse="-"),"}))$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top") 
+	xtabBtar = xtable(refProbsHist$btarHRP, label="tab:btarHRP", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the historical target reference point mean($B_{",paste(range(HRP.YRS$btarYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(B_t > mean(B_{",paste(range(HRP.YRS$btarYrs),collapse="-"),"}))$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")) )
+	print(xtabBtar, table.placement="!ht", caption.placement="top",
+		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
 
-	if(!is.null(refProbsHistList$ulimHRP))
-		print(xtable(refProbsHistList$ulimHRP, label="tab:ulimHRP", caption=eval(paste("Decision table for the historical limit reference point min($U_{",paste(range(HRP.YRS$ulimYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(U_t > min(U_{",paste(range(HRP.YRS$ulimYrs),collapse="-"),"}))$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top") 
+	if(!is.null(refProbsHistList$ulimHRP)) {
+		xtabUlim = xtable(refProbsHistList$ulimHRP, label="tab:ulimHRP", digits=tabdigits,
+			caption=eval(paste("Decision table",for.area," concerning the historical limit reference point min($u_{",paste(range(HRP.YRS$ulimYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(u_t > min(u_{",paste(range(HRP.YRS$ulimYrs),collapse="-"),"}))$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")))
+		print(xtabUlim, table.placement="!ht", caption.placement="top",
+			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	}
 
-	if(!is.null(refProbsHistList$utarHRP))
-		print(xtable(refProbsHistList$utarHRP, label="tab:utarHRP",  caption=eval(paste("Decision table for the historical target reference point mean($U_{",paste(range(HRP.YRS$utarYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(U_t > mean(U_{",paste(range(HRP.YRS$utarYrs),collapse="-"),"}))$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")), digits=tabdigits), caption.placement="top") 
+	if(!is.null(refProbsHistList$utarHRP)) {
+		xtabUtar = xtable(refProbsHistList$utarHRP, label="tab:utarHRP", digits=tabdigits,
+			caption=eval(paste("Decision table",for.area," concerning the historical target reference point mean($u_{",paste(range(HRP.YRS$utarYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(u_t > mean(u_{",paste(range(HRP.YRS$utarYrs),collapse="-"),"}))$. For reference, the average catch over the last ", num.recentCatchYears, " years (", as.numeric(names(recentCatch)[1]), "-", as.numeric(rev(names(recentCatch))[1]), ") is ", round(recentCatchMean, dig=0), "~t.", sep="")))
+		print(xtabUtar, table.placement="!ht", caption.placement="top",
+			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	}
 } else { 
 	refProbsHist = NULL
 }
+@
 
 <<savingTables, results=hide, echo=FALSE>>=
 # see saving.r in YMR11 for details of tables. Or just look
@@ -1304,10 +1410,23 @@ if (is.element(spp.name,c("ROL","rol","621"))) {
 save(refProbs, refProbsB0, refProbsHist, refProbs3GenList, refProbs3GenList.u, Ttab0.5, Ttab0.8, Ttab0.95,  file=paste(model.name, "Tables.RData", sep=""))
 @ 
 
-<<savingTables, results=hide, echo=FALSE>>=
+<<savingObjects, results=hide, echo=FALSE>>=
 Bmcmc <- list()
 SA=strsplit(model.name,split="-")  # Species & Area
-Bmcmc[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(B0.MCMC=B0.MCMC,Bt.MCMC=Bcurr.MCMC,Bmsy.MCMC=Bmsy.MCMC,Blim.MCMC=refPointsHistList$blimHRP,Btar.MCMC=refPointsHistList$btarHRP)
+Bmcmc[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
+	B0.MCMC        = B0.MCMC,
+	Bt.MCMC        = Bcurr.MCMC,
+	Bmsy.MCMC      = Bmsy.MCMC,
+	Blim.MCMC      = refPointsHistList$blimHRP,
+	Btar.MCMC      = refPointsHistList$btarHRP,
+	P.MCMC         = currentMCMC$P,
+	B.MCMC         = currentMCMC$B,
+	R.MCMC         = currentMCMC$R,
+	VB.MCMC        = currentMCMC$VB,
+	U.MCMC         = currentMCMC$U,
+	UoverUmsy.MCMC = currentMCMC$UoverUmsy,
+	BoverBmsy.MCMC = currentMCMC$BoverBmsy
+	)
 save("Bmcmc",file=paste("Bmcmc-",model.name,".rda",sep=""))
 while(dev.cur() > 1)  dev.off()
 @ 
@@ -1317,9 +1436,7 @@ while(dev.cur() > 1)  dev.off()
 @resultsMCMC % RH: Results discussion will be inserted here from the working directory (e.g., from `resultsMCMC-run08.tex`)
 
 %\input{\Sexpr{paste(run.dir, "/../resultsMCMC", sep="")}} # Sexpr don't seem to function when brought in from a separate document. 
-
 \end{document}
-
 % CUT HERE 
 
 # COSEWIC-type Tables. Not needed for POP 3CD and 5DE assessments.
@@ -1345,13 +1462,13 @@ while(dev.cur() > 1)  dev.off()
 
 \clearpage
 
-\section{For Appendix G}
+\section{For Appendix~\thechapter}
 
 \section{BAYESIAN MCMC RESULTS}
 
 The MCMC procedure performed 5,000,000 iterations, sampling every 5,000th to give 1,000 MCMC samples.  The 1,000 samples were used with no burn-in period (because the MCMC searches started from the MPD values).  MCMC traces show good convergence properties (no trend with increasing sample number) for the estimated parameters (Figure \ref{fig:traceParams}), as does a diagnostic analysis that splits the samples into three segments (Figure \ref{fig:splitChain}).  Pairs plots of the estimated parameters (Figures ***-***) show no undesirable correlations between parameters.  In particular, steepness, $h$, and the natural mortality parameters, $M_1$ and $M_2$ (if a two-sex model), show little correlation, suggesting there are sufficient data to estimate them simultaneously.  Trace plots of the derived quantities 'female spawning biomass' (Figure \ref{fig:traceBiomass}) and recruitment (Figure \ref{fig:traceRecruits}) also show good convergence properties.  Thus, the MCMC computations seem satisfactory.
 
-Marginal posterior distributions and corresponding priors for the estimated parameters are shown in Figure \ref{fig:pdfParameters}. For most parameters, it appears that there is enough information in the data to move the posterior distribution away from the prior. The estimates of natural mortality, $M_1$ and $M_2$, did not move too far from their priors, which were based on our previous Queen Charlotte Sound POP assessment \citep{\popQCS}; see Appendix F. Corresponding summary statistics for the estimated parameters are given in Table \ref{tab:MCMCpar}.
+Marginal posterior distributions and corresponding priors for the estimated parameters are shown in Figure \ref{fig:pdfParameters}. For most parameters, it appears that there is enough information in the data to move the posterior distribution away from the prior. The estimates of natural mortality, $M_1$ and $M_2$, did not move too far from their priors, which were based on our previous Queen Charlotte Sound POP assessment \citep{\popQCS}; see Appendix~\eqnchapter. Corresponding summary statistics for the estimated parameters are given in Table \ref{tab:MCMCpar}.
 
 %*** natural mortality bit - change for 5DE.
 
@@ -1368,6 +1485,10 @@ The lower bound of $u_t$ was reached for \Sexpr{sum(currentMSY$imsy == 1)} of th
 
 % End of Appendix G
 
+%\clearpage
+%\section{Bayesian MCMC Results}
+@resultsMCMC % RH: Results discussion will be inserted here from the working directory (e.g., from `resultsMCMC-run08.tex`)
+
 
 \section{For main docco}
 
@@ -1375,7 +1496,7 @@ The lower bound of $u_t$ was reached for \Sexpr{sum(currentMSY$imsy == 1)} of th
 
 \section{MODEL RESULTS}
 
-The model run had credible fits to the data, as demonstrated by visual examination of the MPD fits to the data and the patterns of residuals (results in Appendix G). The MCMC results showed satisfactory convergence of the MCMC search process (Appendix G). Priors and marginal posteriors of the estimated parameters are also given in Appendix G, along with the values of the estimated parameters (Table \ref{tab:MCMCpar}). The remaining MCMC results, of more general interest, are given here.
+The model run had credible fits to the data, as demonstrated by visual examination of the MPD fits to the data and the patterns of residuals (results in Appendix~\thechapter). The MCMC results showed satisfactory convergence of the MCMC search process (Appendix~\thechapter). Priors and marginal posteriors of the estimated parameters are also given in Appendix~\thechapter, along with the values of the estimated parameters (Table \ref{tab:MCMCpar}). The remaining MCMC results, of more general interest, are given here.
 
 Figure \ref{fig:VBcatch} shows the MCMC results for the vulnerable biomass, together with the reconstructed historical catches, and Figure \ref{fig:BVBnorm} shows the estimated medians of vulnerable and spawning (mature females) biomass relative to their unfished values. (The full MCMC results for spawning biomass are shown later in Figure \ref{fig:Rproj} concerning projections). These demonstrate a slight decline in biomass from 1940 to 1960 with the onset of fishing, followed by a very sharp decline in the 1960s due to the heavy fishing (primarily by foreign fleets). After the cessation of foreign fishing, the stock increased through the 1970s. The stock then declined through the 1980s until the mid-1990s, and has since increased, with median values of relative biomasses returning to the 1980 values (Figure \ref{BVBnorm}). 
 
@@ -1421,7 +1542,7 @@ Other agencies and jurisdictions often use 'proxy' reference points that are exp
 
 \subsection{PROJECTION RESULTS AND DECISION TABLES}
 
-Projections were made to evaluate the future behaviour of the population under different levels of constant catch, given the model assumptions.  The projections, starting with the biomass at the beginning of \Sexpr{currYear}, were made over a range of constant catch strategies (\Sexpr{min(as.numeric(row.names(refProbs$LRP)))}-\Sexpr{prettyNum(max(as.numeric(row.names(refProbs$LRP))), big.mark=",")}~t) for each of the \numMCMC~MCMC samples in the posterior, generating future biomass trends by assuming random recruitment deviations.  Future recruitments were generated through the stock-recruitment function using recruitment deviations drawn randomly from a lognormal distribution with zero mean and constant standard deviation (see Appendix F for full details). Projections were made for \Sexpr{dim(refProbs$LRP)[2]-1} years, as agreed upon with N.~Davis (pers.~comm.). This time frame was considered as long enough to satisify the 'long-term' requirement of the Request for Science Information and Advice (Appendix A), yet short enough for the projected recruitments to be mainly based on individuals spawned before \Sexpr{currYear} (and hence already estimated by the model).
+Projections were made to evaluate the future behaviour of the population under different levels of constant catch, given the model assumptions.  The projections, starting with the biomass at the beginning of \Sexpr{currYear}, were made over a range of constant catch strategies (\Sexpr{min(as.numeric(row.names(refProbs$LRP)))}-\Sexpr{prettyNum(max(as.numeric(row.names(refProbs$LRP))), big.mark=",")}~t) for each of the \numMCMC~MCMC samples in the posterior, generating future biomass trends by assuming random recruitment deviations.  Future recruitments were generated through the stock-recruitment function using recruitment deviations drawn randomly from a lognormal distribution with zero mean and constant standard deviation (see Appendix~\eqnchapter{} for full details). Projections were made for \Sexpr{dim(refProbs$LRP)[2]-1} years, as agreed upon with N.~Davis (pers.~comm.). This time frame was considered as long enough to satisify the 'long-term' requirement of the Request for Science Information and Advice (Appendix A), yet short enough for the projected recruitments to be mainly based on individuals spawned before \Sexpr{currYear} (and hence already estimated by the model).
 
 % **** edit for 5DE ****
 Resulting projections of spawning biomass are shown for selected catch strategies (Figure \ref{fig:Bproj}). These suggest that the recent increase in spawning biomass would most likely continue for a catch of 600~t, which is larger than the recent average catch. 

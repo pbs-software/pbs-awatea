@@ -51,7 +51,8 @@
 %  Then have to refresh FNDB: Start-Programs-MikTex-Settings.
 
 \usepackage{nccmath}    % from web for fleqn
-\usepackage{natbib}     % need for bibliography 
+\usepackage{natbib}     % need for bibliography; I think affects how
+                        %  references are cited in the text.
 \usepackage[pagewise]{lineno}     % if you want to add line numbers in
 \usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry} 
 			%  page margins
@@ -60,6 +61,7 @@
   			% to change settings, see caption-eng.pdf.
 \usepackage{tocloft}        % Table of Contents
 
+% \captionsetup[figure]{skip=5pt}   % Maybe play with this to close up
 \captionsetup[table]{position=above, skip=5pt}
 			% To have less whitespace after Table
 			%  caption. 'above' tells it to put the 
@@ -116,6 +118,7 @@
 {-3.5ex \@plus -1ex \@minus -.2ex}% beforeskip
 {2.3ex \@plus.2ex}                % afterskip
 {\centering\normalfont\large\bfseries\MakeUppercase}} % style
+% See below for help
 
 \renewcommand{\section}{\@startsection
 {section}{1}{0mm}                 % name, level, indent
@@ -146,6 +149,32 @@
 
 % \renewcommand{\chaptername}{Appendix}   % - never worked
 % It doesn't like \subsubsubsection.
+
+
+% http://stackoverflow.com/questions/1321721/how-do-i-change-the-amount-of-whitespace-between-sections-in-latex   :
+%\makeatletter
+% \renewcommand\section{\@startsection {section}{1}{\z@}%
+%     {-2.5ex \@plus -1ex \@minus -.2ex}%
+%     {1.3ex \@plus.2ex}%
+%    {\centering\bfseries}}
+% \@startsection {NAME}{LEVEL}{INDENT}{BEFORESKIP}{AFTERSKIP}{STYLE} 
+%            optional * [ALTHEADING]{HEADING}
+%    Generic command to start a section.  
+%    NAME       : e.g., 'subsection'
+%    LEVEL      : a number, denoting depth of section -- e.g., chapter=1,
+%                 section = 2, etc.  A section number will be printed if
+%                 and only if LEVEL gt or eq the value of the secnumdepth
+%                 counter.
+%    INDENT     : Indentation of heading from left margin
+%    BEFORESKIP : Absolute value = skip to leave above the heading.  
+%                 If negative, then paragraph indent of text following 
+%                 heading is suppressed.
+%    AFTERSKIP  : if positive, then skip to leave below heading,
+%                       else - skip to leave to right of run-in heading.
+%    STYLE      : commands to set style
+%  If '*' missing, then increments the counter.  If it is present, then
+%  there should be no [ALTHEADING] argument.  A sectioning command
+%  is normally defined to \@startsection + its first six arguments.
 
 
 
