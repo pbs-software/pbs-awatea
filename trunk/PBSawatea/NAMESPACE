@@ -1,10 +1,13 @@
 # PBSawatea
 
-# Import all packages listed as Imports or Depends
-import(
-  PBSmodelling, scape, scapeMCMC, xtable
-  #PBSmodelling, scape, scapeMCMC, lattice, xtable, gdata, gplots
-)
+# Packages declared in the 'Depends' field should not also be in the 'Imports' field (from R-exts.pdf).
+import(methods, scape, scapeMCMC, xtable, gplots)
+
+#importFrom(foo, f, g)
+importFrom(PBSmodelling, view)
+
+#import(PBSmodelling, scape, scapeMCMC, xtable, gplots)
+#PBSmodelling, scape, scapeMCMC, lattice, xtable, gdata, gplots
 
 # Export all functions that do NOT begin with a dot (period)
 exportPattern("^[^\\.]")
@@ -12,5 +15,6 @@ exportPattern("^[^\\.]")
 # Export dot functions by action (explicit list just to keep track)
 exportPattern("^\\.comp")
 exportPattern("^\\.flush")
+exportPattern("^\\.PBS")
 
 

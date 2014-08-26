@@ -1,26 +1,27 @@
-#runSweave------------------------------2013-11-12
+#runSweave------------------------------2014-08-26
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
 runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
-		filename="spp-area-00.txt",  # name of Awatea .txt file in 'run.dir' to run
-		runNo   = 1,
-		rwtNo   = 0,
-		running.awatea=0,            # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
-		Nsex    = 2,                 # if 1 then Unisex, if 2 Males & Females
-		Ncpue   = 0,
-		Nsurvey = 3,
-		SApos   = rep(TRUE,Nsurvey), # surveys with age composition data
-		mcsub   = 1:1000,
-		delim   = "-",
-		locode  = FALSE,             # source this function as local code (for development)
-		awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
-		codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-		histRP  = FALSE,             # historical reference points
-		wpaper  = FALSE,             # working paper
-		resdoc  = FALSE,             # research document
-		redo.Graphs = TRUE           # recreate all the figures (.eps, .wmf, .png)
+   filename="spp-area-00.txt",  # name of Awatea .txt file in 'run.dir' to run
+   runNo   = 1,
+   rwtNo   = 0,
+   running.awatea=0,            # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
+   Nsex    = 2,                 # if 1 then Unisex, if 2 Males & Females
+   Ncpue   = 0,
+   Nsurvey = 3,
+   SApos   = rep(TRUE,Nsurvey), # surveys with age composition data
+   mcsub   = 1:1000,
+   delim   = "-",
+   locode  = FALSE,             # source this function as local code (for development)
+   awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
+   codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+   histRP  = FALSE,             # historical reference points
+   wpaper  = FALSE,             # working paper
+   resdoc  = FALSE,             # research document
+   redo.Graphs = TRUE,          # recreate all the figures (.eps, .wmf, .png)
+   skip.last.year = TRUE        # remove last year of projections (set to FALSE for POP 5ABC in 2010)
 	) {
 	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
 	on.exit(ciao(wd))
@@ -104,6 +105,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	tfile = gsub("@prj.dir",prj.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
 	tfile = gsub("@redo.Graphs",redo.Graphs,tfile)
+	tfile = gsub("@skip.last.year",skip.last.year,tfile)
 	tfile = gsub("@mcsub",deparse(mcsub),tfile)
 	tfile = gsub("@nsex",Nsex,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)

@@ -340,13 +340,12 @@ ages = sort(unique(currentRes$CAc$Age))
 selgeqComm = currentRes$Sel[currentRes$Sel$"Series" == "Gear 1",] 
     # comm sel, selgeq4 for POP, presumably would be 6 for YMR as
     #  5 surveyrs, so just write Comm
-#mat = currentRes$Sel[currentRes$Sel$"Series" == "Maturity" & currentRes$Sel$"Sex" == "Female",]      # Female maturity
-mat = currentRes$Sel[is.element(currentRes$Sel$"Series","Maturity") & is.element(currentRes$Sel$"Sex",c("Female","Unisex")),]  # Female maturity
+mat = currentRes$Sel[currentRes$Sel$"Series" == "Maturity" & currentRes$Sel$"Sex" == "Female",]      # Female maturity
 # M1 = currentMCMC$P[1,"M_1"]           # MPD is first line of MCMC
 # M2 = currentMCMC$P[1,"M_2"]           # MPD is first line of MCMC
-#Rt = currentRes$B$R[-length(currentRes$B$R)]   # Remove final NA for 2011, # Not needed now, as fixed early on.
-
-Rt.mpd = currentRes$B$R # for Kendra
+# Rt = currentRes$B$R[-length(currentRes$B$R)]   
+                                        # Remove final NA for 2011,
+                                # Not needed now, as fixed early on.
 
 # For confirmation:
 # R0.mpd = currentMCMC$P[1,"R_0"] #Matches numbers from Ro_So_VB.pst,
@@ -480,8 +479,9 @@ ptab = function(xx)
 
 # not saving for YMR for now (don't have all these variables, though
 #  just MPDs so don't need MCMC output).  [These were from MCMC's]
-#save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
-#save.image(file="run23all.RData")
+# save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
+# 
+# save.image(file="run23all.RData")
 
 # See popScape2.r for pairs plots, from:
 # Copy and run this for pairs plots        to
@@ -819,19 +819,17 @@ postscript("recDevAcf.eps", horizontal=FALSE, paper="special", height = 4, width
 # par(mfrow=c(2,1))
 
 ageHalfFemSelComm = round(muC.mpd - sqrt(exp(logvC.mpd) * log(2) ))
-    # Take selectivity equation and find a which satisifies
-    #   s_{ag1} = 0.5. Working out saved in POP12 folder.
-    # This may be 1 year off, given I've now fixed the recruitment
-    #  indexing issue.
-yearsForACF = max((firstYearOfAgeData - A + ageHalfFemSelComm), years[1]) : (as.numeric(max(names(logRecDev.mpd))) - ageHalfFemSelComm)  
-    # max() to start no earlier than first year of model
-
+         # Take selectivity equation and find a which satisifies
+         #   s_{ag1} = 0.5. Working out saved in POP12 folder.
+  # This may be 1 year off, given I've now fixed the recruitment
+  #  indexing issue.
+yearsForACF = (firstYearOfAgeData - A + ageHalfFemSelComm): (as.numeric(max(names(logRecDev.mpd))) - ageHalfFemSelComm)
 logRecDevForACF = logRecDev.mpd[as.character(yearsForACF)]
 if (all(logRecDevForACF==0)) {
 	plot(0,0,type="n",axes=FALSE,xlab="",ylab="")
 	text(0,0,"No ACF plot.\nAll recruitment deviations = 0",cex=1.5,col="red")
 } else {
-	acf(logRecDevForACF, lag.max=30, main="", ylab="Auto-correlation function of epsilon_t", na.action=na.pass)
+	acf(logRecDevForACF, lag.max=30, main="", ylab="Auto-correlation function of epsilon_t")
 }
 dev.off()
 @ 
@@ -865,7 +863,8 @@ if (nsex==1) {
 
 <<bubbleplots, results=hide, echo=FALSE>>=
 # Should redo as a function in scape program, but quicker for now:
-CAcObsFem = matrix(currentRes$CAc$Obs[is.element(currentRes$CAc$Sex, c("Female","Unisex"))], nrow=length(ages))  
+CAcObsFem = matrix(currentRes$CAc$Obs[is.element(currentRes$CAc$Sex,
+  c("Female","Unisex"))], nrow=length(ages))  
 yrCAc = sort(unique(currentRes$CAc$Year))
 dimnames(CAcObsFem)[[1]] = ages
 dimnames(CAcObsFem)[[2]] = yrCAc
@@ -918,18 +917,7 @@ plotBubbles(CAcFitMale, dnam=TRUE, size=0.10, hide0=TRUE,
 # abline(a=-1976, b=1)   # to follow cohort 
 dev.off()
 }
-
-CAsFitFem = as.list(SAser); names(CAsFitFem)=SAser
-for (i in names(CAsFitFem)) {
-	iCAs= currentRes$CAs[is.element(currentRes$CAs$Series,i),]
-	CAsFitFem[[i]] = matrix(iCAs$Fit[is.element(iCAs$Sex, c("Female","Unisex"))], nrow=length(ages))
-	yrCAs = sort(unique(iCAs$Year))
-	dimnames(CAsFitFem[[i]])[[1]] = ages
-	dimnames(CAsFitFem[[i]])[[2]] = yrCAs
-}
-residsCAs = sapply(CAsFitFem,function(x){prod(dim(x)+c(-1,0))*2})
 @
-
 
 % \onefig{catch}{Commercial catch data.}   % No need to repeat for every model run, and it shows up later.
 
@@ -986,7 +974,7 @@ residsCAs = sapply(CAsFitFem,function(x){prod(dim(x)+c(-1,0))*2})
 %  data * 2 sexes.
 
 %=======Next line will be expanded to accomodate multiple surveys=======
-\onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from @survey1 survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of \Sexpr{residsCAs[1]} residuals.} % number of years of survey age data * (number age classes -1) * 2
+\onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from @survey1 survey series. Details as for Figure \ref{fig:commAgeResids}, for a total of *** residuals.} % number of years of survey age data * (number age classes -1) * 2
 
 % \onefig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
 
@@ -1007,7 +995,7 @@ residsCAs = sapply(CAsFitFem,function(x){prod(dim(x)+c(-1,0))*2})
 \label{fig:stockRecruit}
 \end{figure}
 
-\twofig{recDev}{recDevAcf}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]}. The start of this range is calculated as the first year of commercial age data (\Sexpr{firstYearOfAgeData}) minus the accumulator age class ($A=$\Sexpr{A}) plus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}); if the result is earlier than the model start year (\Sexpr{years[1]}), then the model start year is used. The end of the range is the final year that recruitments are calculated (\Sexpr{as.numeric(max(names(logRecDev.mpd)))}) minus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}).}
+\twofig{recDev}{recDevAcf}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]} (determined as the first year of commercial age data minus the accumulator age class plus the age for which commercial selectivity for females is 0.5, to the final year that recruitments are calculated minus the age for which commercial selectivity for females is 0.5).}
 
 % \twofig{recDev}{recruits}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1000's of age 1 fish; mean recruitment is \Sexpr{signif(mean(currentRes$B$R), sigdig)}.}
 
@@ -1041,12 +1029,11 @@ residsCAs = sapply(CAsFitFem,function(x){prod(dim(x)+c(-1,0))*2})
 Bmpd <- list()
 SA=strsplit(model.name,split="-")  # Species & Area
 Bmpd[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
-	years=years, ages=ages, Ct=Ct, mat=mat, 
-	Nats.mpd=Nats.mpd,
-	B0.mpd=B0.mpd, Bt.mpd=Bt.mpd,
-	V0.mpd=V0.mpd, Vt.mpd=Vt.mpd,
-	R0.mpd=R0.mpd, Rt.mpd=Rt.mpd,
+	years=years, ages=ages, Ct=Ct,
+	Bt.mpd=Bt.mpd,
+	Vt.mpd=Vt.mpd,
 	ut.mpd = ut.mpd,
+	R0.mpd=R0.mpd,
 	M1.mpd=M1.mpd,
 @rmsex 	M2.mpd=M2.mpd, # remember: need at least one space (not tab) after @rmsex, @rmcpue, etc.
 	h.mpd=h.mpd,
@@ -1058,11 +1045,10 @@ Bmpd[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
 	logvvec.mpd=logvvec.mpd,
 @rmsex 	deltaC.mpd=deltaC.mpd,
 @rmsex 	deltavec.mpd=deltavec.mpd,
-	logRecDev.mpd=logRecDev.mpd
+	B0.mpd=B0.mpd, V0.mpd=V0.mpd  # simply first values in Bt and Vt
 	)
 save("Bmpd",file=paste("Bmpd-",model.name,".rda",sep=""))
-#save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
-@
+@ 
 
 
 \end{document}

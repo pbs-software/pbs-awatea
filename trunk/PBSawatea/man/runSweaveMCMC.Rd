@@ -8,23 +8,24 @@
 }
 \usage{
 runSweaveMCMC (wd=getwd(), strSpp="XYZ",
-   filename="spp-area-00.txt",  # name of Awatea .txt file in 'run.dir' to run
+   filename="spp-area-00.txt",
    runNo   = 1,
    rwtNo   = 0,
-   running.awatea=0,            # if 0 then load prev. '.rep'; if 1 then rerun Awatea
-   Nsex    = 2,                 # if 1 then Unisex, if 2 then Females & Males
+   running.awatea=0,
+   Nsex    = 2,
    Ncpue   = 0,
    Nsurvey = 3,
-   SApos   = rep(TRUE,Nsurvey), # surveys with age composition data
+   SApos   = rep(TRUE,Nsurvey),
    mcsub   = 1:1000,
    delim   = "-",
-   locode  = FALSE,             # source function as local code (for development)
+   locode  = FALSE,
    awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
    codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-   histRP  = FALSE,             # historical reference points
-   wpaper  = FALSE,             # working paper
-   resdoc  = FALSE,             # research document
-   redo.Graphs = TRUE           # recreate all the figures (.eps, .wmf, .png)
+   histRP  = FALSE,
+   wpaper  = FALSE,
+   resdoc  = FALSE,
+   redo.Graphs = TRUE,
+   skip.last.year = TRUE
 )
 }
 \arguments{
@@ -51,6 +52,7 @@ runSweaveMCMC (wd=getwd(), strSpp="XYZ",
     prefix \code{@rmresdoc} (denoting either working paper or research document), otherwise the lines are activated.
     Note that both \code{wpaper} and \code{resdoc} change the output file name.}
   \item{redo.Graphs}{\emph{logical}: if \code{TRUE}, recreate all the figures (\code{.eps}, \code{.wmf}, \code{.png}).}
+  \item{skip.last.year}{\emph{logical}: if \code{TRUE}, remove the last year of projections (set to FALSE for POP 5ABC in 2010).}
 }
 \details{
   The values specified by the some of the arguments (and derived variables) are directly 
@@ -96,7 +98,7 @@ runSweaveMCMC (wd=getwd(), strSpp="XYZ",
 }
 \note{
   Example Sweave files (\code{run-masterMCMC.Snw}) can be found in the library directory: \cr
-  \code{.../R/.../library/PBSawatea/snw/}
+  \code{paste0(system.file(package="PBSawatea"),"/snw")}
 }
 \seealso{
   \code{\link[PBSawatea]{runMCMC}}, \code{\link[PBSawatea]{runSweave}}, \code{\link[PBSawatea]{runADMB}}

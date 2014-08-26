@@ -2342,21 +2342,21 @@ function (mcmcObj, projObj, save=FALSE,
           xlim.snail=NULL, ylim.snail=NULL,
           plotPolicies=names(projObj$Y[1:6]),
           onePolicy=names(projObj$Y[2]), mpd=list(),
-          SAR.width=7.5, SAR.height=4)
+          SAR.width=7.5, SAR.height=4, trevObj)
 # plotPolicies is 6 policies projections to plot *AME*
 # onePolicy is one to use for some figures *AME*
 #*AME*xlim.pdfrec was =c(0, 200000). Put options for others
 #  that will be useful if want to scale two model runs
 #  to the same ylim. If NULL then fits ylim automatically.
 {
-	panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
+	panel.cor <- function(x, y, digits=2, prefix="",...)
 	{
 		usr <- par("usr"); on.exit(par(usr))
 		par(usr=c(0, 1, 0, 1))
 		r <- abs(cor(x, y))
 		txt <- format(c(r, 0.123456789), digits=digits)[1]
 		txt <- paste(prefix, txt, sep="")
-		text(0.5, 0.5, txt, cex=1.4)
+		text(0.5, 0.5, txt, cex=1.75)
 	}
 
     postscript("recruitsMCMC.eps", width=6.2, height=5, horizontal=FALSE, paper="special")
@@ -2502,13 +2502,23 @@ function (mcmcObj, projObj, save=FALSE,
       if (i<npp) ii=(1:npr)+(i-1)*npr
       else ii=(nuP-npr+1):nuP 
       postscript(paste("pairs",i,".eps",sep=""), width=7, height=7, horizontal=FALSE, paper="special")
-      pairs(currentMCMC$P[, ii], pch=20, cex=0.2, gap=0, lower.panel=panel.cor)
+      pairs(currentMCMC$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
       dev.off()
       png(paste("pairs",i,".png",sep=""), width=7, height=7, units="in", res=72)
-      pairs(currentMCMC$P[, ii], pch=20, cex=0.2, gap=0, lower.panel=panel.cor)
+      pairs(currentMCMC$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
       dev.off()
     }
-  while(dev.cur() > 1)  dev.off()    # tidy up any remainingfrom the %d.eps
+
+		#trevObj=trevorMCMC
+		names(trevObj) = gsub("_","",names(trevObj))
+		postscript(file="pairsMSY.eps", width=7, height=7, horizontal=FALSE, paper="special")
+		pairs(trevObj, col="grey25", pch=20, cex=.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
+		dev.off()
+		png(filename="pairsMSY.png", width=7, height=7, units="in", res=72)
+		pairs(trevObj, col="grey25", pch=20, cex=.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
+		dev.off()
+
+	while(dev.cur() > 1)  dev.off()    # tidy up any remainingfrom the %d.eps
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.mcmcGraphs
 
@@ -2833,19 +2843,21 @@ plt.mpdGraphs <- function( obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
   xxx=(seq(0, xLimSR[2], length.out=100))
   yyy=srFun(xxx)
   yLimSR=c(0, 1.1*max(c(yyy,obj$B$R),na.rm=TRUE))
-  postscript("stockRecruit.eps", height=5, width=6.2,
-              horizontal=FALSE,  paper="special")
-  plot(xxx, yyy, lwd=2, xlim=xLimSR,
-       ylim=yLimSR, type="l",
-       xlab=expression(paste("Spawning biomass in year ",
-           italic(t), "-1, ", italic(B)[t-1], " (t)", sep="")),
-       ylab=expression(paste("Recruitment in year ",
-           italic(t), ",", italic(R)[t], " (1000s)"), sep="") )
-  #points(obj$B$SB, obj$B$R)
-  #text(obj$B$SB, obj$B$R, labels=substring(as.character(years), 3), cex=0.5)
+  postscript("stockRecruit.eps", height=5, width=6.2, horizontal=FALSE,  paper="special")
+  par(mfrow=c(1,1), mar=c(5,5,1,1))
+  plot(xxx, yyy, lwd=2, xlim=xLimSR, ylim=yLimSR, type="l",
+       xlab=expression( paste("Spawning biomass ",  italic(B)[italic(t)-1], " (t) in year ", italic(t), "-1", sep="") ),
+       ylab=expression( paste("Recruitment ", italic(R)[italic(t)], " (1000s) in year ", italic(t), sep="") ) )
   text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels=substring(as.character(years), 3), cex=0.5, col="blue")
   dev.off()
-  
+  win.metafile("stockRecruit.wmf", height=5, width=6.2)
+  par(mfrow=c(1,1), mar=c(5,5,1,1))
+  plot(xxx, yyy, lwd=2, xlim=xLimSR, ylim=yLimSR, type="l",
+       xlab=expression( paste("Spawning biomass ",  italic(B)[italic(t)-1], " (t) in year ", italic(t), "-1", sep="") ),
+       ylab=expression( paste("Recruitment ", italic(R)[italic(t)], " (1000s) in year ", italic(t), sep="") ) )
+  text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels=substring(as.character(years), 3), cex=0.5, col="blue")
+  dev.off()
+
   #windows()
   #plt.lengthResids( stdRes.CL( obj$CLs ),
   #  main=paste("Survey",mainTitle,"Series",i) )

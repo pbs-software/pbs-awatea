@@ -15,15 +15,15 @@ setClass ("AWATEAdata",
 # Run AD Model Builder code for Awatea
 #-----------------------------------------------RH
 runADMB = function(
-		filename.ext, wd=getwd(), 
-		strSpp="XYZ", runNo=1, rwtNo=0,
-		doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
-		doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
-		doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
-		delim="-", clean=FALSE, locode=FALSE, 
-		awateaPath="C:/Users/haighr/Files/Projects/ADMB/Coleraine",
-		codePath="C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-		...
+   filename.ext, wd=getwd(), 
+   strSpp="XYZ", runNo=1, rwtNo=0,
+   doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
+   doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
+   doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
+   delim="-", clean=FALSE, locode=FALSE, 
+   awateaPath="C:/Users/haighr/Files/Projects/ADMB/Coleraine",
+   codePath="C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+   ...
 	) {
 
 	ciao = function(){setwd(cwd); Sys.setenv(PATH=syspath0); gc(verbose=FALSE)} # exit function
@@ -287,10 +287,13 @@ readAD = function(txt) {
 
 	controls=sapply(ctllabs,function(x){
 		strval = gsub("#","",otxt[grep(x,otxt)[1]+1])
-		as.numeric(strval)
+		# sometimes need to get rid of pesky tab characters
+		strvec = strsplit(strval,"\t")[[1]]
+		strvec = strvec[strvec!="" & !is.na(strvec)]
+		as.numeric(strvec)
 	},simplify=FALSE)
-	if (all(controls$likeCPUE==0)) controls$Ncpue=0   # discount dummy CPUE data if likelihood type = 0
 #browser()
+	if (all(controls$likeCPUE==0)) controls$Ncpue=0   # discount dummy CPUE data if likelihood type = 0
 	cvpro = if (exists(".PBSmodEnv")) tcall(PBSawatea)$cvpro else PBSawatea$cvpro
 	Nsc   = controls$Nsurv + controls$Ncpue      # Ncpue always at least 1, even if just dummy data (Awatea quirk)
 	controls[["cvpro"]] = rep(cvpro,Nsc)[1:Nsc]  # expand cvpro to accommodate all series (user may only specify one value, or underestimate number of series)

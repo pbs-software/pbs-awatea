@@ -11,12 +11,12 @@
 \usage{
 plt.mpdGraphs(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""))
 plt.mcmcGraphs(mcmcObj, projObj, save=FALSE, 
-          ylim.recruitsMCMC = NULL, ylim.exploitMCMC = NULL,
-          ylim.VBcatch = NULL, ylim.BVBnorm = NULL,
-          xlim.snail = NULL, ylim.snail = NULL,
-          plotPolicies = names(projObj$Y[1:6]),
-          onePolicy=names(projObj$Y[2]), mpd = list(),
-          SAR.width=7.5, SAR.height=4)
+          ylim.recruitsMCMC=NULL, ylim.exploitMCMC=NULL,
+          ylim.VBcatch=NULL, ylim.BVBnorm=NULL,
+          xlim.snail=NULL, ylim.snail=NULL,
+          plotPolicies=names(projObj$Y[1:6]),
+          onePolicy=names(projObj$Y[2]), mpd=list(),
+          SAR.width=7.5, SAR.height=4, trevObj)
 }
 \arguments{
   \item{obj}{an Awatea results object (\emph{e.g.}, \code{currentRes})}
@@ -35,6 +35,8 @@ plt.mcmcGraphs(mcmcObj, projObj, save=FALSE,
   \item{mpd}{list of MPD values for parameters, biomass, and recruitment}
   \item{SAR.width}{width (inches) of an output WMF file for SAR figures}
   \item{SAR.height}{height (inches) of an output WMF file for SAR figures}
+  \item{trevObj}{various MCMC values suggested by Trevor Davies (Dalhousie) for comparison: \cr
+    \code{c("h", "M_1", "M_2", "B0", "MSY", "Bmsy", "umsy")}. }
 }
 \details{
   Creates a whole heap o' postscript or windows meta files.
