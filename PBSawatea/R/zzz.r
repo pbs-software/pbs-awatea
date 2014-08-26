@@ -1,3 +1,6 @@
+# Taking cue from Roger Bivand's maptools:
+.PBSawaEnv <- new.env(FALSE, parent=globalenv())  # be sure to exportPattern("^\\.PBS") in NAMESPACE
+
 .onAttach <- function(lib,pkg)
 {
 	pkg_info = utils::sessionInfo( package="PBSawatea" )$otherPkgs$PBSawatea
@@ -27,6 +30,10 @@ Aotearoa, six months in a leaky boat...
 
 ")
 }
+.onUnload <- function(libpath) {
+	rm(.PBSawaEnv)
+}
+
 # No Visible Bindings
 # ===================
 if(getRversion() >= "2.15.1") utils::globalVariables(names=c(

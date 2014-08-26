@@ -4,6 +4,12 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
+0.13  2014-08-26
+  - Added vignette to briefly describe the package and past DFO assessments using Awatea. (AME/RH 8/26)
+  - Modified function `runSweaveMCMC' to include a new argument `skip.last.year' for compatibility with older 2010 POP 5ABC assessment. (RH 8/26)
+  - Modified Sweave master documents `run-master.Snw' and `run-masterMCMC.Snw' for compatibility with older 2010 POP 5ABC assessment. (AME 8/25)
+  - Added 2010 POP 5ABC input files. (AME 8/25)
+
 0.12  2013-11-12
   - SGR and ROL assessments finished. Cleaned up code and Rd files for incorporation into R-package. (RH 11/12)
   - Sweave MCMC can now take in tex files of MPD results (that user prepares by extracting pieces from run-master.Snw build). (RH 11/4)

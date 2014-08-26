@@ -1,0 +1,194 @@
+\documentclass[letter]{article}
+%\VignetteIndexEntry{Introduction to PBSawatea}
+%\VignettePackage{PBSawatea}
+
+% For colors
+\usepackage{color}
+\definecolor{red}{rgb}{0.8039216,0.2156863,0}
+\definecolor{green}{rgb}{0, 1, 0}
+\definecolor{blue}{rgb}{0, 0, 1}
+
+% Definitions
+\newcommand{\slan}{{\tt S}}
+\newcommand{\rlan}{{\tt R}}
+\newcommand{\pbsa}{{\bf PBSawatea}}
+\newcommand{\tcl}{{\tt Tcl/Tk}}
+\newcommand{\code}[1]{{\tt #1}}
+\newcommand{\ital}[1]{{\it #1}}
+\newcommand{\bold}[1]{{\bf #1}}
+\newcommand{\pkg}[1]{{\bf #1}}
+\newcommand{\red}[1]{{\textcolor{red} {#1}}}
+
+\usepackage{verbatim}
+\usepackage{hyperref}
+
+\usepackage{natbib}  %Bibliography package
+
+\bibliographystyle{apalike3}
+
+% Keep on one page
+\textheight 9.0in \topmargin -1.0in
+
+\begin{document}
+
+\title{Introduction to PBSawatea}
+\author{Andrew M. Edwards, Rowan Haigh and Paul J. Starr}
+\maketitle
+
+
+%----------------------------------------------------------------
+\section{What is \pbsa?}
+
+\pbsa{} provides tools for running population models using Awatea, a variant of Coleraine, which is maintained by Allan Hicks (Northwest Fisheries Science Center, Seattle WA). This is a non-public package -- lots of code has been taken and modified from other packages and R code, including \code{rScape.r} by Rob Kronlund and Paul Starr (modified by Allan Hicks), and Arni Magnusson and Ian Taylor's \pkg{scape} and \pkg{scapeMCMC} packages. We apologise for not fully crediting the original sources of functions etc.~that we have modified. 
+
+In this package, we introduce a \code{Sweave} approach, which, via \LaTeX, produces a single \code{.pdf} file that contains multiple figures and tables of output. This enables easy comparison of stock assessment model runs, as well as direct insertion of the results and tables (with automated captions) into the final stock assessment document.
+
+
+%----------------------------------------------------------------
+\section{What is PBS?}
+
+The initials \bold{PBS} refer to the Pacific Biological Station, a major fisheries laboratory operated by by Fisheries and Oceans Canada on the Pacific coast in Nanaimo, British Columbia, Canada. For more information, see:\\
+\url{http://www.pac.dfo-mpo.gc.ca/science/facilities-installations/pbs-sbp/index-eng.html}.
+
+\section{Where is the User's Guide?}
+
+The R directory \code{.../library/PBSawatea/doc} includes a User's Guide \code{PBSawatea-UG.pdf}; however, this is not meant to be thorough and for now just automatically documents the functions.
+
+
+%----------------------------------------------------------------
+\section{Running the code}
+
+First
+
+\code{require("PBSawatea")}
+
+%require("gplots")}
+
+\noindent and install any further packages as necessary.
+
+See the \code{PBSawatea-commands....rwh} file in each folder for the actual functions (and options) to run. Basically there are five stages (examples here are for \code{pop-5ABC-04.txt}):\\
+
+
+\noindent 1.~Run Awatea and automatically put MPD results into a new folder (have \code{pop-5ABC-04.txt} in a folder \code{../POP/5ABC}, a new folder \code{POPrun04} with results will get created:\\
+
+\code{out=runADMB("pop-5ABC-04.txt",strSpp="POP",runNo=4,doMPD=TRUE,
+  
+  N.reweight=0,mean.age=TRUE,cvpro=0.2,clean=TRUE)}\\
+
+
+\noindent 2.~Run Sweave on those results to generate figures, tables and create single postscript and pdf files containing all the results:\\
+
+\code{runMPD(strSpp="POP",prefix=c("pop","5ABC"),runs=4,rwts=0,
+  
+  Ncpue=0,Nsurvey=3,Snames=c("GIG.historical","QCS.synoptic","QCS.shrimp"),
+  
+  SApos=c(TRUE,TRUE,FALSE),delim="-")}\\
+
+
+\noindent 3.~We usually run the MCMC calculations on a stand-alone power desktop. Then copy the resulting \code{.pst}, \code{.out}, \code{Awatea.psv}, etc. files into new folders (you seem to need any file that was created the same time as \code{Awatea.psv} and the set that are created later by 5-20 or so minutes):\\
+
+\code{POPrun04/MCMC.04.00} and \code{POPrun04/MCMC.04.00/PRJ.04.00}\\
+
+
+\noindent 4. Do maximum sustainable yield (MSY) calculations:\\
+
+\code{out=runADMB("pop-5ABC-04.txt",strSpp="POP",runNo=4,rwtNo=0,
+  
+  doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001)}\\
+
+
+\noindent 5. Create MCMC \code{MCMC.04.00/MCMC.04.00.pdf} file using Sweave that contains all the MCMC results:\\
+
+\code{runSweaveMCMC(strSpp="POP", filename="pop-5ABC-04.txt", runNo=4, rwtNo=0,  skip.last.year=FALSE)}
+
+\medskip
+
+\emph{Note}: For assessments after 2010 POP 5ABC, the argument \code{skip.last.year} 
+should be set to \code{TRUE}, which is the default for the function \code{runSweaveMCMC}.
+
+
+%----------------------------------------------------------------
+\section{Previous assessments}
+
+Input \code{.txt} files are available for recent assessments, enabling reproduction of the results (including figures and tables). Directory years indicate the year of the assessment review meeting (not the year of publication).
+
+The original saved results are available (from Andrew Edwards or Rowan Haigh at present) as compressed archives (either \code{.zip} or \code{.7z} files), that may also contain \code{.RData} or \code{.rda} files containing the outputs in \code{R} format.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Pacific Ocean Perch area 5ABC, \cite{esh12}}
+
+Area 5ABC covers Queen Charlotte Sound (QCS) and lower Hecate Strait.
+Four model runs were presented in the CSAS Research Document. These are in directory \code{.../library/PBSawatea/input/2010/POP/5ABC/} as:\newline
+
+\code{pop-5ABC-04.txt}: fixed steepness $h$ and fixed natural mortalities $M_s$, \newline  
+
+\code{pop-5ABC-11.txt}: fixed steepness $h$ and estimated natural mortalities $M_s$, \newline  
+
+\code{pop-5ABC-16.txt}: estimated steepness $h$ and fixed natural mortalities $M_s$, \newline  
+
+\code{pop-5ABC-23.txt}: estimated steepness $h$ and estimated natural mortalities $M_s$. \newline  
+
+The latter two (that estimated steepness $h$) were put forward for advice in the resulting Science Advisory Report. We recommend the final one (that also estimated natural mortalities) for use in future work, since the mortalities could be estimated by the model (and this approach was used in the later Pacific Ocean Perch assessments).
+
+Much of the \pkg{PBSawatea} software was written after this assessment. Re-running the MPD results (August 2014) yields exactly the same results as the original runs. Using the \code{runSweaveMCMC} function to generate figures and tables from the original MCMC results yields quantiles of parameter values and variables that agree almost exactly with the original published results. The slight differences most likely arise because the original results were tabulated as quantiles using the software platform \code{Stata}, whereas these are using the \code{R} platform, and there are different options for generating quantiles -- see the \code{R} help for \code{quantile()}.  
+
+Full results (including MCMC) from original model runs are available from AE or RH in \code{POP-5ABC-ResDoc2011-111.zip}, where 2011/111 is the Research Document number.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Yellowmouth Rockfish coastwide, \cite{ehs12}}
+
+This was a coastwide stock assessment and recovery potential assessment (that used criteria from COSEWIC, the Committee on the Status of Endangered Wildlife in Canada). Two model runs were presented in the Research Document (and accepted for the resulting Science Advisory Report). These are in directory \code{.../library/PBSawatea/input/2011/YMR/CST/} as:\newline
+
+\code{input29-ymr.txt}: estimates steepness $h$ and natural mortalities $M_s$, \newline  
+
+\code{input30-ymr.txt}: estimates steepness $h$ and fixes natural mortalities $M_s$. \newline  
+
+These analyses were done before \pkg{PBSawatea} converted to the a standardised input  filename convection using a three-letter code for species followed by an area code and a run number (e.g., \code{YMR-CST-01.txt}). However, this assessment was the first to  implement an automatic re-weighting scheme between abundance data and age structure data in \pkg{PBSawatea}. The analyses could likely be re-run, but we advise changing the input file names using the convention outlined above. (If necessary, ask AE or RH to look into their \code{ymrrun-master.Snw} and \code{ymrrun-masterMCMC.Snw} (or similar) files that were used at the time.)
+
+Full results (including MCMC) from original model runs are available from AE or RH in \code{YMR-CST-ResDoc2012-095.zip}.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Pacific Ocean Perch area 3CD, \cite{ehs14area3CD}}
+
+Area 3CD covers the west coast of Vancouver Island (WCVI).
+One model run was presented in the CSAS Research Document, in directory \code{.../library/PBSawatea/input/2012/POP/3CD/} as:\newline
+
+\code{pop-3CD-20.txt}\\
+
+See \code{runHistory-POP-3CD.tex} for details of sensitivity runs, and \code{PBSawatea-commands-pop-3CD.rwh} for the commands to re-run the code in \code{R}.
+
+Full results (including MCMC) from original model runs are available from AE or RH in \code{POP-3CD-ResDoc2013-093.zip}.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Pacific Ocean Perch area 5DE, \cite{ehs14area5DE}}
+
+Area 5DE covers the north and west coasts of Haida Gwaii (WCHG).
+One model run was presented in the CSAS Research Document, in directory \code{.../library/PBSawatea/input/2012/POP/5DE/} as:\newline
+
+\code{pop-5DE-20.txt}\\
+
+See \code{runHistory-POP-5DE.tex} for details of sensitivity runs, and \code{PBSawatea-commands-pop-5DE.rwh} for the commands to re-run the code in \code{R}.
+
+Full results (including MCMC) from original model runs are available from AE or RH in \code{POP-5DE-ResDoc2013-092.zip}.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Silvergray Rockfish, coastwide, Starr et al.~(in press)}
+
+See directory \code{.../library/PBSawatea/input/2013/SGR/CST/} and the \code{runHistory.tex} and \code{PBSawatea-commands-SGR-CST.rwh} files within.
+
+In this assessment and the following, \pkg{PBSawatea} first implemented a number of switches in the Sweave code to deal with variations in the number of sexes and surveys, and whether CPUE and historical reference points are used.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Rock Sole, 5AB and 5CD, Holt et al.~(in press)}
+
+See directories \code{.../library/PBSawatea/input/2013/ROL/5AB/} and
+
+\noindent \code{.../library/PBSawatea/input/2013/ROL/5CD/} and the \code{runHistory.tex} and \code{PBSawatea-commands-ROL-**.rwh} files within.
+
+%\vspace*{4ex} \noindent {\bf \Large Reference}
+
+%\vspace*{2ex} \noindent Edwards, A.M., Haigh, R. and Starr, P.J. 2014. \pbsa : User's Guide.
+
+\bibliography{PBSawatea}
+
+\end{document}
