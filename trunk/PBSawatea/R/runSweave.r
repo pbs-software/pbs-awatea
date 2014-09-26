@@ -1,26 +1,29 @@
-#runSweave------------------------------2013-10-28
+#runSweave------------------------------2014-09-18
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
 runSweave = function( wd = getwd(), strSpp="XYZ",
-		filename = "spp-area-00.txt", # Name of Awatea .txt file in 'run.dir' to run
-		runNo   = 1,
-		rwtNo   = 0,
-		running.awatea =0,           # 0 if just loading previous '.rep'; 1 if rerunning Awatea
-		Nsex    = 2,                 # if 1 then Unisex, if 2 then Males & Females
-		Ncpue   = 0,
-		Nsurvey = 3,
-		Snames  = paste("Ser",1:Nsurvey,sep=""),  # survey names (w/out spaces)
-		SApos   = rep(TRUE,Nsurvey), # surveys with age composition data
-		delim   = "-",
-		debug   = FALSE,
-		locode  = FALSE,             # source this function as local code (for development)
-		awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
-		codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-		sexlab  = c("Females","Males")
-	) {
+   filename = "spp-area-00.txt",      # Name of Awatea .txt file in 'run.dir' to run
+   runNo   = 1,
+   rwtNo   = 0,
+   running.awatea =0,  # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+   Nsex    = 2,        # if 1 then Unisex, if 2 then Males & Females
+   Ncpue   = 0,
+   Nsurvey = 3,
+   Ngear   = 1,                       # number of commercial gear types
+   Snames  = paste0("Ser",1:Nsurvey), # survey names (w/out spaces)
+   SApos   = rep(TRUE,Nsurvey),       # surveys with age composition data
+   Cnames  = paste0("Gear",1:Ngear),  # survey names (w/out spaces)
+   CApos   = rep(TRUE,Ngear),         # commercial gears with age composition
+   delim   = "-",
+   debug   = FALSE,
+   locode  = FALSE,    # source this function as local code (for development)
+   awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
+   codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+   sexlab  = c("Females","Males")
+) {
 	on.exit(setwd(wd))
-	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","awateaCode","toolsCode")),pos=1)
+	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","Rcode","Scode","qu","so",".First")),pos=1)
 	if (locode) { 
 		#getFile(gfcode,path=system.file("data",package="PBSawatea"))
 		mess = c(
@@ -80,7 +83,10 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		else if (any(strSpp==c("YMR","ymr","440"))) sppname = "Yellowmouth Rockfish"
 		else if (any(strSpp==c("ROL","rol","621"))) sppname = "Rock Sole"
 		else if (any(strSpp==c("SGR","sgr","405"))) sppname = "Silvergray Rockfish"
-		else "Unspecified species"
+		else if (any(strSpp==c("YTR","ytr","418"))) sppname = "Yellowtail Rockfish"
+		else if (any(strSpp==c("RBR","rbr","401"))) sppname = "Redbanded Rockfish"
+		else if (any(strSpp==c("ARF","arf","602"))) sppname = "Arrowtooth Flounder"
+		else sppname="Unspecified species"
 	} else {
 		data(gfcode,package="PBSawatea")
 		sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
@@ -88,7 +94,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = gsub("@sppname", sppname, tfile)
 #browser();return()
 
-	packList(stuff=c("Snames"), target="PBSawatea")
+	packList(stuff=c("Snames","SApos","Cnames","CApos"), target="PBSawatea")
 	#if (exists("tput")) tput(Snames)
 	snames = rep(Snames,Nsurvey)[1:Nsurvey] # enforce same number of names as surveys
 	snames = gsub(" ","",snames)
@@ -114,31 +120,37 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	}
 
 	# Start expanding lines using bites
+	# IMPORTANT: each element string below must be a unique match to a place in `run-Master.Smw'
 	priorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]","logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
-	figBites   = c("survIndSer4-1","ageSurv","survRes","survAgeRes")
+	figBites   = c("survIndSer4-1","twofig\\{ageSurv","onefig\\{survRes","onefig\\{survAgeResSer1}",
+		"onefig\\{survAgeResSer1Female}", "onefig\\{survAgeResSer1Male}")
 	cpueBites  = c("logqCPUE\\.prior\\[1,]","CPUE 1")
 	survBites  = c("Survey 1") 
-	# note assume only one method, otherwise need to expand "CAc 1"
+	#gearBits   = c("onefig\\{commAgeResSer1}") #change only first `1'
+	gearBites  = c("Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]",
+		"onefig\\{ageCommMale1}","onefig\\{ageCommFemale1}","onefig\\{commAgeResSer1}","onefig\\{commAgeResSer1Female}","onefig\\{commAgeResSer1Male}")
 
-	biteMe = function(infile, bites, N) {
+	biteMe = function(infile, bites, N, allsub=TRUE) {
 		if (N==0) return(infile)
+		if (allsub) subfun =gsub else subfun=sub
 		for (b in bites) {
 			Nline = grep(b,infile)
 			if (length(Nline)==0) next
 			aline = infile[ Nline ]
 			alines=NULL
+#browser()
 			NApos = 0
 			for ( i in 1:N) {
 				NApos = NApos + as.numeric(SApos[i])
 				if ((grepl("[Aa]ge",b) || grepl("CAs",b)) && !SApos[i]) next
 				#if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("muvec",b)) && !SApos[i]) next
-				#if (N==1 && !any(b==figBites)) alines=c(alines,gsub("\\[1,]","",aline))
+				#if (N==1 && !any(b==figBites)) alines=c(alines,subfun("\\[1,]","",aline))
 				if (grepl("CAs",b) && SApos[i]){
-					bline = gsub("1",i,aline)
-					alines = c(alines, gsub(paste("\\[",i,"]",sep=""),paste("\\[",NApos,"]",sep=""),bline))
+					bline = subfun("1",i,aline)
+					alines = c(alines, subfun(paste("\\[",i,"]",sep=""),paste("\\[",NApos,"]",sep=""),bline))
 				}
-				else if (N==1) alines=c(alines,gsub("\\[1,]","",aline))
-				else alines=c(alines,gsub("1",i,aline))
+				else if (N==1) alines=c(alines,subfun("\\[1,]","",aline))
+				else alines=c(alines,subfun("1",i,aline))
 			}
 			infile=c(infile[1:(Nline-1)],alines,infile[(Nline+1):length(infile)])
 		}
@@ -148,8 +160,13 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = biteMe(tfile,figBites,Nsurvey)
 	tfile = biteMe(tfile,cpueBites,Ncpue)
 	tfile = biteMe(tfile,survBites,Nsurvey)
+	#tfile = biteMe(tfile,gearBits,Ngear,allsub=FALSE) # only change the first instance of `1' when expanding
+	tfile = biteMe(tfile,gearBites,Ngear)
 	if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
 	else tfile = tfile[-grep("^CAs 1",tfile)]
+	if (any(CApos)) tfile = biteMe(tfile,"CAc 1",Ngear)
+	else tfile = tfile[-grep("^CAc 1",tfile)]
+	tfile = gsub("@one","1",tfile)  # to restore true values of `1' in expanded lines
 #browser();return()
 
 	for (i in 1:Nsurvey)
@@ -217,3 +234,9 @@ runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 #=== SGR CST 2013 ===
 #runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=1,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","US Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)
 #runMPD(strSpp="SGR",prefix=c("SGR","CST"),runs=2,rwts=3,Nsex=2,Ncpue=0,Nsurvey=6,Snames=c("Historic GB Reed","WCHG Synoptic","HS Synoptic","QC Sound Synoptic","US Triennial","WCVI Synoptic"),SApos=c(FALSE,TRUE,TRUE,TRUE,FALSE,TRUE),locode=TRUE)
+
+#=== YTR CST 2014 ===
+#outdat=runMPD(strSpp="YTR",prefix=c("YTR","CST"),runs=2,rwts=1,Nsex=2,Ncpue=0,Nsurvey=7,Ngear=2,Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial","WCVI Shrimp"),SApos=c(T,T,T,F,F,F,F), Cnames=c("Bottom Trawl","Midwater Trawl"),locode=T)
+#outdat=runMPD(strSpp="YTR",prefix=c("YTR","CST2F"),runs=5,rwts=2,Nsex=2,Ncpue=0,Nsurvey=6,Ngear=2,Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial"),SApos=c(T,T,T,F,F,F), Cnames=c("Bottom Trawl","Midwater Trawl"),locode=T)
+
+

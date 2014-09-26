@@ -7,25 +7,29 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
    filename="spp-area-00.txt",  # name of Awatea .txt file in 'run.dir' to run
    runNo   = 1,
    rwtNo   = 0,
-   running.awatea=0,            # running.awatea=0 : load previous '.rep'; =1 : rerun Awatea
-   Nsex    = 2,                 # if 1 then Unisex, if 2 Males & Females
+   running.awatea=0,      # =0 : load previous '.rep'; =1 : rerun Awatea
+   Nsex    = 2,           # if 1 then Unisex, if 2 Males & Females
    Ncpue   = 0,
    Nsurvey = 3,
-   SApos   = rep(TRUE,Nsurvey), # surveys with age composition data
+   Ngear   = 1,                       # number of commercial gear types
+   Snames  = paste0("Ser",1:Nsurvey), # survey names (w/out spaces)
+   SApos   = rep(TRUE,Nsurvey),       # surveys with age composition data
+   Cnames  = paste0("Gear",1:Ngear),  # survey names (w/out spaces)
+   CApos   = rep(TRUE,Ngear),         # commercial gears with age composition
    mcsub   = 1:1000,
    delim   = "-",
-   locode  = FALSE,             # source this function as local code (for development)
+   locode  = FALSE,       # source this function as local code (for development)
    awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
    codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-   histRP  = FALSE,             # historical reference points
-   wpaper  = FALSE,             # working paper
-   resdoc  = FALSE,             # research document
-   redo.Graphs = TRUE,          # recreate all the figures (.eps, .wmf, .png)
-   skip.last.year = TRUE        # remove last year of projections (set to FALSE for POP 5ABC in 2010)
-	) {
+   histRP  = FALSE,       # historical reference points
+   wpaper  = FALSE,       # working paper
+   resdoc  = FALSE,       # research document
+   redo.Graphs = TRUE,    # recreate all the figures (.eps, .wmf, .png)
+   skip.last.year = TRUE  # remove last year of projections (set to FALSE for POP 5ABC in 2010)
+) {
 	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
 	on.exit(ciao(wd))
-	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC","awateaCode","toolsCode")),pos=1)
+	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC","Rcode","Scode","qu","so",".First")),pos=1)
 	if (locode) { 
 		getFile(gfcode,path=system.file("data",package="PBSawatea"))
 		mess = c(
@@ -53,8 +57,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	run.dir  = paste(wd,run.name,sep="/")
 	ext      = sapply(strsplit(filename,"\\."),tail,1)
 	prefix   = substring(filename,1,nchar(filename)-nchar(ext)-1)
-	#prefix   = gsub(runNoStr,"",prefix)      # get rid of superfluous run number in name
-	prefix   = gsub(paste(delim,runNoStr,sep=""),"",prefix)        # get rid of superfluous run number in name
+	prefix   = gsub(paste(delim,runNoStr,sep=""),"",prefix)  # get rid of superfluous run number in name
 	model.name = paste(prefix,runNoStr,rwtNoStr,sep=".")
 	mcname   = paste("MCMC",runNoStr,rwtNoStr,sep=".")
 	mc.dir   = paste(run.dir,mcname,sep="/")  # Directory where all the postscript crap happens
@@ -69,10 +72,14 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	else {
 		stop(paste("MCMC directory << ",mc.dir," >> does not exist.\n",sep="")) }
 		#dir.create(mc.dir); setwd(mc.dir) }
+	input.name = paste0(model.name,".txt") # Just in case I need this in future;
+	infile   = readAD(input.name)          # assumes user has included this input file with MCMC results
+
 	if (!file.exists("run-masterMCMC.Snw"))
 		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-masterMCMC.Snw",sep=""),wd)
 	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-masterMCMC.Snw",sep="/"))
 	tfile = masterSweave
+#browser();return()
 
 	# First, get rid excess lines, annoying comments, and disabled code
 	if (length(grep("CUT HERE",tfile))>0)
@@ -108,6 +115,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	tfile = gsub("@skip.last.year",skip.last.year,tfile)
 	tfile = gsub("@mcsub",deparse(mcsub),tfile)
 	tfile = gsub("@nsex",Nsex,tfile)
+	tfile = gsub("@ngear",Ngear,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
 	if (!locode) data(gfcode,package="PBSawatea")
 	sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
@@ -115,7 +123,13 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	spplatin = gfcode[is.element(gfcode$code3,strSpp),"latin"]
 	tfile = gsub("@sppname", sppname ,tfile)
 	mcmc  = read.table("params.pst",header=TRUE)
-	ncol  = dim(mcmc)[2];  Nfigs = ceiling(ncol/6)
+	ncol  = dim(mcmc)[2]
+	Nfigs = ceiling(ncol/6)
+	#years = infile@controls$YrStart:(infile@controls$YrEnd+1)
+	#yrsub = intersect(seq(1900,3000,5),years)
+	#Nyrsub = length(yrsub)
+
+	packList(stuff=c("Snames","SApos","Cnames","CApos"), target="PBSawatea")
 
 	if (Nsex==1) {
 		z0    = grep("@rmsex",tfile)
@@ -159,13 +173,17 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		resdoc = FALSE
 		tfile = gsub("@resdoc",FALSE,tfile)
 		tfile = gsub("@rmresdoc ","",tfile) # assumes space after @rmresdoc for readability in `run-MasterMCMC.Snw`
-		tfile = gsub("@rmROL ","",tfile) # assumes space after @rmresdoc for readability in `run-MasterMCMC.Snw`
+		tfile = gsub("@rmROL ","",tfile)    # assumes space after @rmROL for readability in `run-MasterMCMC.Snw`
 	}
 
 	# Start expanding lines using bites
 	SpriorBites = c("log_qsurvey_prior\\[1,]","surveySfull_prior\\[1,]","p_surveySfulldelta\\[1,]","log_surveyvarL_prior\\[1,]")
 	CpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]")
 	cpueBites   = c("log q_999")
+	gearBites   = c("mu_999","Delta_999","log v_999L",
+		"qtab\\(VB0.MCMC\\[,1])","qtab\\(VBcurr.MCMC\\[,1])","qtab\\(upenult.MCMC\\[,1],dig=3)",
+		"qtab\\(VBcurr.MCMC\\[,1]/VB0.MCMC\\[,1]", "qtab\\(VBmsy.MCMC/VB0.MCMC\\[,1]", 
+		"qtab\\(upenult.MCMC\\[,1]/umsy.MCMC", "qtab\\(upenult.MCMC\\[,1]/refPointsHistList$utarHRP")
 	figBites    = c("onefig\\{pairs1\\}")
 
 	biteMe = function(infile, bites, N) {
@@ -198,7 +216,8 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		return(infile)
 	}
 	tfile = biteMe(tfile,SpriorBites,Nsurvey)
-	tfile = biteMe(tfile,CpriorBites,1)
+	tfile = biteMe(tfile,CpriorBites,Ngear)
+	tfile = biteMe(tfile,gearBites,Ngear)
 	if (cpue)
 		tfile = biteMe(tfile,cpueBites,Ncpue)
 #browser();return()
@@ -263,3 +282,6 @@ runMCMC = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 
 # If need to use a higher U, do
 # sum(currentMSY$u > 0.2999)      # to see for how many (automate into function when time)
+
+#===YTR===
+#outMCM = runSweaveMCMC(strSpp="YTR",filename="YTR-CST2F-05.txt", runNo=5, rwtNo=2, Nsex=2, Ncpue=0, Nsurvey=6, Ngear=2, Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial"), SApos=c(T,T,T,F,F,F), Cnames=c("Bottom Trawl","Midwater Trawl"), locode=T, wpaper=F, redo.Graphs=T)

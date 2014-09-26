@@ -9,23 +9,15 @@
   \eqn{B_0}{B0} and \eqn{V_0}{V0}, respectively.
 }
 \usage{
-plotBVBnorm(mcmcObj, 
-            p=c(0.025,0.25,0.5,0.75,0.975), 
-            xyType="quantBox", 
-            lineType=c(3,2,1,2,3), 
-            refLines=NULL, xLim=NULL, yLim=NULL, 
-            userPrompt=FALSE, save=TRUE, xLeg=0.7, yLeg=0.9, 
-            yaxis.by=0.02, tcl.val=-0.2, 
-            B.col="black", VB.col="black", ...)
+plotBVBnorm(mcmcObj,
+   p=c(0.025,0.25,0.5,0.75,0.975),
+   xyType="quantBox",
+   lineType=c(3,2,1,2,3),
+   refLines=NULL, xLim=NULL, yLim=NULL,
+   userPrompt=FALSE, save=TRUE, xLeg=0.05, yLeg=0.2, 
+   yaxis.by=0.05, tcl.val=-0.2,
+   B.col="black", VB.col="black", ngear=1, ...)
 }
-%plotVBnorm( mcmcObj,
-%            p=c(0.025,0.25,0.5,0.75,0.975),
-%            xyType="quantBox",
-%            lineType=c(3,2,1,2,3),
-%            refLines=NULL, xLim=NULL, yLim=NULL,
-%            userPrompt=FALSE, save=TRUE, xLeg=0.7, yLeg=0.9,
-%            yaxis.by=0.02, tcl.val=-0.2,
-%            B.col="black", VB.col="black", ...)
 
 \arguments{
   \item{mcmcObj}{MCMC list object (\code{currentMCMC}).}
@@ -43,6 +35,7 @@ plotBVBnorm(mcmcObj,
   \item{tcl.val}{tick length.}
   \item{B.col}{colour for spawning biomass.}
   \item{VB.col}{colour for vulnerable biomass.}
+  \item{ngear}{number of commercial gear codes}
   \item{\dots}{\bold{not used}}
 }
 \author{
@@ -52,7 +45,7 @@ plotBVBnorm(mcmcObj,
   AME: tried in separate file, but then changed that to
   lattice and wouldn't be good format for Arni's boxplots.
 
-  Based on plotVBcatch (tweaking some). \cr
+  Based on \code{\link{plotVBcatch}} (with some twerking). \cr
   \code{currentRes1} is local \code{currentRes}.
 }
 \seealso{

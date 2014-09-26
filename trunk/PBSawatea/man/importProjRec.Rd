@@ -9,13 +9,14 @@
   are random normals \eqn{N(0,1)}).
 }
 \usage{
-importProjRec(dir, info="", coda=FALSE, quiet=TRUE)
+importProjRec(dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 }
 \arguments{
   \item{dir}{directory where MCMC projections reside.}
   \item{info}{user-supplied information, if desired.}
   \item{coda}{logical: if \code{TRUE}, use the function \code{mcmc}
     in the package \pkg{coda} to generate MCMCs.}
+  \item{ngear}{number of commercial gears}
   \item{quiet}{logical: if \code{TRUE}, print progress messages to the R console.}
 }
 \details{

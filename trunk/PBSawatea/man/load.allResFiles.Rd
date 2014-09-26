@@ -14,7 +14,7 @@ load.allResFiles(resList = NULL)
     sets the pattern to \code{"results.dat$"}; probably deprecated.}
 }
 \value{
-  List of multiple calls to \code{\link{importCol2}}.
+  List of multiple calls to \code{\link{importRes}}.
 }
 \author{
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
@@ -23,7 +23,7 @@ load.allResFiles(resList = NULL)
   If deprecated, remove from package \pkg{PBSawatea}.
 }
 \seealso{
-  \code{\link{importCol2}}
+  \code{\link{importRes}}
 }
 \keyword{list}
 

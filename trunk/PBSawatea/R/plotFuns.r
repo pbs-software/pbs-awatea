@@ -305,8 +305,8 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 #browser();return()
 	for (k in names(figs)){
 		if (!figs[k]) next
-		if (k=="eps") postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", height=2.5*nrow, width=6.75)
-		else if (k=="pix") png(paste(fnam,"png",sep="."), width=1300, height=nrow*600, units="px", pointsize=16)
+		if (k=="eps") postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", width=6.5, height=2.5*nrow)
+		else if (k=="pix") png(paste(fnam,"png",sep="."), res=100, width=6.75*100, height=2.5*100*nrow, pointsize=12)
 		else resetGraph()
 		par(mfcol=c(nrow,ncol),mgp=c(2,0.5,0),las=1,xaxs="i",
 			mar = if(nyear==1) c(4,6,1,1) else c(4,3,1,1),
@@ -527,6 +527,10 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
     }
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotDensPOP
+#mcmcObj=currentMCMC
+#plotDensPOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, xlab="Female spawning biomass, Bt (1000 t)", 
+#	between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, #panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
+#	same.limits=TRUE, lty.outer=2, mpd=mpd.B[getYrIdx(names(mcmcObj$B))]/1000) #, layout=c(4,5)) 
 
 
 #plotDensPOPpars------------------------2010-10-26
@@ -624,7 +628,6 @@ plotDensPOPpars =
 # Trying to add in the MPD as a big circle for
 # trace plots. 20th Oct 2010 (20/10/2010!)
 #----------------------------------------------AME
-
 plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list(x = axes, 
     y = axes), div = 1, span = 1/4, log = FALSE, base = 10, main = NULL, 
     xlab = NULL, ylab = NULL, cex.main = 1.2, cex.lab = 1, cex.strip = 0.8, 
@@ -703,6 +706,241 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
     }
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotTracePOP
+
+
+#plt.catch------------------------------2014-09-25
+# Small catch figures
+# transferred from Sweave `run-master.Snw'
+# <<catch, results=hide, echo=FALSE>>=
+#-------------------------------------------AME/RH
+plt.catch = function(years, Ct, xint=5, yint=250,
+   ptypes=c("eps","png"), pngres=150)
+{
+	x = years[-length(years)]; xlim = range(x); xsmall = intersect(seq(1900,2100,xint),x)
+	if (is.null(dim(Ct))) y = matrix(Ct,ncol=1) else y=Ct
+	ylim = c(0,max(y)); ysmall = seq(yint,ylim[2],yint)
+	ngear=ncol(y)
+	pchGear=seq(21,20+ngear,1)
+	colGear=rep(c("black","blue"),ngear)[1:ngear]
+	for (p in ptypes) {
+		if (p=="eps") postscript("catch.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("catch.png", res=pngres, width=6.5*pngres, height=4.5*pngres)
+		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		#plot(x, y, type="h", xlim=xlim, ylim=ylim, xlab="Year", ylab="Catch (t)")
+		xy = barplot(t(y),space=0.5,beside=FALSE,col=colGear,border="gainsboro",xlab="Year", ylab="Catch (t)",yaxs="i",names.arg=rep("",length(x)))
+		lines(c(xy[1],rev(xy)[1]),c(0,0))
+		axis(1, at=xy[match(xsmall,x)], tcl=-0.2, labels=xsmall,pos=0)
+		axis(2, at=ysmall, tcl=-0.2, labels=FALSE)
+		if (ngear>1) addLegend(0.05,0.80,fill=colGear,Cnames[1:ngear],yjust=0,bty="n")
+#browser();return()
+		dev.off()
+	}
+	for (p in ptypes) {
+		if (p=="eps") postscript("catchSmall.eps", width=6, height=3, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("catchSmall.png", res=pngres, width=6*pngres, height=3*pngres)
+		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		plot(x, apply(y,1,sum), type="h", xlab="Year", ylab="Catch (t)")
+		dev.off()
+	}
+}
+
+#plt.biomass----------------------------2014-09-15
+# Small biomass figures
+# transferred from Sweave `run-master.Snw'
+#<<Btplot, results=hide, echo=FALSE>>=
+#<<BtB0plot, results=hide, echo=FALSE>>=
+#-------------------------------------------AME/RH
+plt.biomass = function(years, Bt, xint=5, yint=2500,
+   ptypes=c("eps","png"), pngres=150, 
+   pname="Bt", xlab="Year", ylab="Spawning biomass (t), Bt")
+{
+	#pname = gsub("\\.mpd","",as.character(substitute(Bt)))
+	x = years; xlim = range(x); xsmall = intersect(seq(1900,2100,xint),x)
+	if (is.null(dim(Bt))) y = matrix(Bt,ncol=1) else y=Bt
+	ylim = c(0,max(y)); ysmall = seq(yint,ylim[2],yint)
+	ngear=ncol(y)
+	pchGear=seq(21,20+ngear,1)
+	colGear=rep(c("black","blue"),ngear)[1:ngear]
+	for (p in ptypes) {
+		if (p=="eps") postscript(paste0(pname,".eps"), width=6, height=5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png(paste0(pname,".png"), res=pngres, width=6*pngres, height=5*pngres)
+		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		plot(0,0, xlim=xlim, ylim=ylim, type="n", xlab=xlab, ylab=ylab)
+		sapply(1:ngear, function(g,x,y){
+			points(x, y[,g], pch=pchGear[g], col=colGear[g], bg="white", cex=0.8) }, x=x,y=y)
+		tcl.val = -0.2
+		axis(1, at=xsmall, tcl=tcl.val, labels=FALSE)
+		axis(2, at=ysmall, tcl=tcl.val, labels=FALSE)
+		dev.off()
+	}
+}
+
+#plt.cpue-------------------------------2014-09-16
+# Crude CPUE figure 
+# transferred from Sweave `run-master.Snw'
+#<<CPUEfig, results=hide, echo=FALSE>>=    # Crude for now
+#-------------------------------------------AME/RH
+plt.cpue = function(cpueObj, #xint=5, yint=2.5,
+   ptypes=c("eps","png"), pngres=150 )
+{
+	zobs = !is.na(cpueObj$Obs)
+	xlim = range(cpueObj$Year[zobs])
+	ylim = range(c(cpueObj$Obs[zobs],cpueObj$Fit[zobs]))
+	for (p in ptypes) {
+		if (p=="eps") postscript("CPUEfit.eps", width=6, height=6, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("CPUEfit.png", res=pngres, width=6*pngres, height=5*pngres)
+		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		plot(cpueObj$Year, cpueObj$Obs, xlim=xlim, ylim=ylim, type="n", xlab="Year",ylab="CPUE: Observed & Fit")
+		series = unique(cpueObj$Series)
+		nseries = length(series)
+		for (i in 1:nseries) {
+			ii = series[i]; z = is.element(cpueObj$Series,ii)
+			points(cpueObj$Year[z], cpueObj$Obs[z], pch=21, bg=i+1, cex=1.2)
+			lines(cpueObj$Year[z], cpueObj$Fit[z], col=i+1, lwd=2)
+		}
+		legend("topright",bty="n",col=(1:nseries)+1,lwd=2,legend=gsub("Series","CPUE",series),cex=0.8)
+		dev.off()
+	}
+}
+
+#plt.recdev-----------------------------2014-09-16
+# Log recruitment deviations figure 
+# transferred from Sweave `run-master.Snw'
+#<<recdevplot, results=hide, echo=FALSE>>=
+#-------------------------------------------AME/RH
+plt.recdev = function(logRecDev, xint=5, #yint=0.1,
+   ptypes=c("eps","png"), pngres=150 )
+{
+	x = as.numeric(names(logRecDev)); xlim = range(x); xsmall = intersect(seq(1900,2100,xint),x)
+	for (p in ptypes) {
+		if (p=="eps") postscript("recDev.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("recDev.png", res=pngres, width=6*pngres, height=4*pngres)
+		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		plot(x, logRecDev, xlab="Year", ylab="Log recruitment deviations, epsilon_t")
+		abline(h=0, col="grey")
+		tcl.val = -0.2
+		axis(1, at=xsmall, tcl=tcl.val, labels=FALSE)
+		dev.off()
+	}
+}
+
+#plt.recdevacf--------------------------2014-09-16
+# Auto-correlation function of the log recruitment deviations
+# transferred from Sweave `run-master.Snw'
+#<<recdevacf, results=hide, echo=FALSE>>=
+#-------------------------------------------AME/RH
+plt.recdevacf = function(logRecDev, muC, logvC, A, years, yr1, 
+   ptypes=c("eps","png"), pngres=150 )
+{
+	ageHalfFemSelComm = min(round(muC - sqrt(exp(logvC) * log(2) ))) # take the min when Ngears>1
+	assign("ageHalfFemSelComm", ageHalfFemSelComm, pos=1)
+	# Take selectivity equation and find a which satisifies s_{ag1} = 0.5. 
+	# Working out saved in POP12 folder.
+	# This may be 1 year off, given I've now fixed the recruitment indexing issue.
+	yearsForACF = max((yr1 - A + ageHalfFemSelComm), years[1]) : (as.numeric(max(names(logRecDev))) - ageHalfFemSelComm)
+	assign("yearsForACF", yearsForACF, pos=1)
+	# max() to start no earlier than first year of model
+	logRecDevForACF = logRecDev[as.character(yearsForACF)]
+	for (p in ptypes) {
+		if (p=="eps") postscript("recDevAcf.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("recDevAcf.png", res=pngres, width=6*pngres, height=5*pngres)
+		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		if (all(logRecDevForACF==0)) {
+			plot(0,0,type="n",axes=FALSE,xlab="",ylab="")
+			text(0,0,"No ACF plot.\nAll recruitment deviations = 0",cex=1.5,col="red")
+		} else {
+			acf(logRecDevForACF, lag.max=30, main="", ylab="Auto-correlation function of epsilon_t", na.action=na.pass)
+		}
+		dev.off()
+	}
+}
+
+#plt.initagedev-------------------------2014-09-16
+# Initial age deviations figure
+# transferred from Sweave `run-master.Snw'
+#<<initagedevplot, results=hide, echo=FALSE>>=
+#-------------------------------------------AME/RH
+plt.initagedev = function(logInitAgeDev, 
+   ptypes=c("eps","png"), pngres=150 )
+{
+	for (p in ptypes) {
+		if (p=="eps") postscript("initAgeDev.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("initAgeDev.png", res=pngres, height=5*pngres, width=6*pngres)
+		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		plot(names(logInitAgeDev), logInitAgeDev, xlab="Age", ylab="Log initial age deviations")
+		abline(h=0, col="grey")
+		dev.off()
+	}
+}
+
+#plt.bubbles----------------------------2014-09-18
+# Bubble plots of observed and fitted ages
+# transferred from Sweave `run-master.Snw'
+#<<bubbleplots, results=hide, echo=FALSE>>=
+#-------------------------------------------AME/RH
+plt.bubbles = function(mpdObj, nsex=2,
+   ptypes=c("eps","png"), pngres=150 )
+{
+	blow.bubbles = function(obj, cac, mod, sex, surnames=NULL) {
+		series = sort(unique(obj[[cac]][["Series"]]))
+		ages   = sort(unique(obj[[cac]][["Age"]]))
+		CAlist = as.list(series); names(CAlist)=series
+		for (i in names(CAlist)) {
+			iCA = obj[[cac]][is.element(obj[[cac]][["Series"]],i),]
+			CAlist[[i]] = matrix(iCA[[mod]][is.element(iCA[["Sex"]], sex)], nrow=length(ages))
+			yrCA = sort(unique(iCA[["Year"]]))
+			dimnames(CAlist[[i]])[[1]] = ages
+			dimnames(CAlist[[i]])[[2]] = yrCA
+		}
+		if (!is.null(surnames) && length(surnames)==length(CAlist))
+			names(CAlist) = surnames
+		return(CAlist)
+	}
+	# These next two lines are't strictly necessary as they are now globally available
+	SAnames   = tcall("PBSawatea")$Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
+	CAnames   = tcall("PBSawatea")$Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
+	CAcObsFem = blow.bubbles(mpdObj,"CAc","Obs",c("Female","Unisex"),surnames=CAnames)
+	CAcFitFem = blow.bubbles(mpdObj,"CAc","Fit",c("Female","Unisex"),surnames=CAnames)
+	CAsObsFem = blow.bubbles(mpdObj,"CAs","Obs",c("Female","Unisex"),surnames=SAnames)
+	CAsFitFem = blow.bubbles(mpdObj,"CAs","Fit",c("Female","Unisex"),surnames=SAnames)
+	if (nsex >1) {
+		CAcObsMale = blow.bubbles(mpdObj,"CAc","Obs","Male",surnames=CAnames)
+		CAcFitMale = blow.bubbles(mpdObj,"CAc","Fit","Male",surnames=CAnames)
+		CAsObsMale = blow.bubbles(mpdObj,"CAs","Obs","Male",surnames=SAnames)
+		CAsFitMale = blow.bubbles(mpdObj,"CAs","Fit","Male",surnames=SAnames)
+	}
+
+	for (i in c("CAc","CAs")) {
+		if (i=="CAc") { nr = length(CAnames); inames = CAnames }
+		else          { nr = length(SAnames); inames = SAnames }
+		for (j in c("Obs","Fit")) {
+			if (nsex>1) kk = c("Fem","Male") else kk = "Fem"
+			for (k in kk) {
+				ijk = paste0(i,j,k); ijk.list = get(ijk)
+				assign(ijk, ijk.list, pos=1)
+				for (p in ptypes) {
+					if (p=="eps") postscript(paste0(ijk,".eps"), width=6, height=ifelse(nr==1,6,8), horizontal=FALSE,  paper="special")
+					else if (p=="png") png(paste0(ijk,".png"), res=pngres, width=6*pngres, height=ifelse(nr==1,6,8)*pngres)
+					par(mfrow=c(nr,1), mar=c(2,3.5,2,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+					junk=sapply(1:nr,function(s,x,n){ # nr = no. rows = ngear or nsurv
+						plotBubbles(x[[s]], dnam=TRUE, size=0.10, hide0=TRUE, main=n[s], prettyaxis=TRUE, las=1)
+						mtext("Age",side=2,line=2,cex=1.2)},
+						x=ijk.list, n=inames)
+					dev.off()
+				}
+			}
+		}
+	}
+	assign("residsCAcFem",sapply(CAcFitFem,function(x){prod(dim(x)+c(-1,0))}), pos=1)
+	assign("residsCAsFem",sapply(CAsFitFem,function(x){prod(dim(x)+c(-1,0))}), pos=1)
+	if (nsex>1) {
+		assign("residsCAcMale",sapply(CAcFitMale,function(x){prod(dim(x)+c(-1,0))}), pos=1)
+		assign("residsCAsMale",sapply(CAsFitMale,function(x){prod(dim(x)+c(-1,0))}), pos=1)
+	}
+	#browser();return()
+	invisible()
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.bubbles
 
 
 #==============H I D D E N========================

@@ -1,5 +1,6 @@
 \name{runSweave}
 \alias{runSweave}
+\alias{runMPD}
 \title{
   Run Customised Sweave Files for Awatea MPD Runs
 }
@@ -7,23 +8,27 @@
   Create and run customised Sweave files for \code{Awatea} MPD runs.
 }
 \usage{
-runSweave( wd = getwd(), strSpp = "XYZ",
-   filename = "spp-area-00.txt", # Name of Awatea .txt file in 'run.dir' to run
+runSweave( wd = getwd(), strSpp="XYZ",
+   filename = "spp-area-00.txt",      # Name of Awatea .txt file in 'run.dir' to run
    runNo   = 1,
    rwtNo   = 0,
-   running.awatea = 0,          # 0 if just loading previous '.rep'; 1 if rerunning Awatea
-   Nsex    = 2,                 # if 1 then Unisex, if 2 then Males & Females
+   running.awatea =0,  # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+   Nsex    = 2,        # if 1 then Unisex, if 2 then Males & Females
    Ncpue   = 0,
    Nsurvey = 3,
-   Snames  = paste("Ser",1:Nsurvey,sep=""),  # survey names (w/out spaces)
-   SApos   = rep(TRUE,Nsurvey), # surveys with age composition data
+   Ngear   = 1,                       # number of commercial gear types
+   Snames  = paste0("Ser",1:Nsurvey), # survey names (w/out spaces)
+   SApos   = rep(TRUE,Nsurvey),       # surveys with age composition data
+   Cnames  = paste0("Gear",1:Ngear),  # survey names (w/out spaces)
+   CApos   = rep(TRUE,Ngear),         # commercial gears with age composition
    delim   = "-",
    debug   = FALSE,
-   locode  = FALSE,             # source this function as local code (for development)
+   locode  = FALSE,    # source this function as local code (for development)
    awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
-   codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+   codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
    sexlab  = c("Females","Males")
 ) 
+runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
 }
 \arguments{
   \item{wd}{\emph{character}: working directory in which Awatea input files occur.}
@@ -37,19 +42,38 @@ runSweave( wd = getwd(), strSpp = "XYZ",
   \item{Ncpue}{\emph{numeric}: number of CPUE series; if \eqn{>=1} then the routine will 
     activate Sweave lines with the prefix \code{@rmcpue}, otherwise the lines are removed.}
   \item{Nsurvey}{\emph{numeric}: number of survey series.}
+  \item{Ngear}{\emph{numeric}: number of commercial gear series.}
   \item{Snames}{\emph{character}: survey names for figure labelling and image creation.}
   \item{SApos}{\emph{logical} vector of length \code{Nsurvey} denoting which surveys have ageing data.}
+  \item{Cnames}{\emph{character}: gear names for figure labelling and image creation.}
+  \item{CApos}{\emph{logical} vector of length \code{Ngear} denoting which commercial gears have ageing data.}
   \item{delim}{\emph{character} that delimits the components of the \code{filename} prefix.}
   \item{debug}{\emph{logical}: if \code{TRUE}, function only builds the target \code{.Snw} file but does not execute it.}
   \item{locode}{\emph{logical}: if \code{TRUE}, source local code located at \code{codePath}.}
   \item{awateaPath}{\emph{character}: system path to the \code{Awatea.exe} executable (using path delimiter `/`).}
   \item{codePath}{\emph{character}: system path to \pkg{PBSawatea} source code (using path delimiter `/`).}
   \item{sexlab}{\emph{character}: labels for the sexes in figures.}
+
+  \item{prefix}{\emph{character} vector of \code{filename} prefix components delimited by \code{delim}.}
+  \item{runs}{\emph{numeric} vector of run number(s) for \code{runNo} in \code{runSweave}.}
+  \item{rwts}{\emph{numeric} vector of reweight number(s) for \code{rwtNo} in \code{runSweave}.}
+  \item{...}{arguments passed on to the function \code{runSweave}.}
 }
 \details{
   The values specified by the arguments (or derived variables) are directly 
-  substituted into the Sweave file wherever similarly named variables 
-  preceded by the \code{@} symbol occur.
+  substituted into the Sweave file \code{run-master.Snw} wherever similarly named variables 
+  preceded by the \code{@} symbol occur. 
+  Some primary substitutions when building the temporary Sweave file (\code{tfile}):
+  \preformatted{
+   tfile = gsub("@cwd",wd,tfile)
+   tfile = gsub("@model.name",model.name,tfile)
+   tfile = gsub("@run.dir",run.dir,tfile)
+   tfile = gsub("@fig.dir",mpd.dir,tfile)
+   tfile = gsub("@running.awatea",running.awatea,tfile)
+   tfile = gsub("@sexlab",deparse(sexlab),tfile)
+   tfile = gsub("@sppcode",strSpp,tfile)
+   }
+
   
   Additionally, if Sweave lines are preceded by the following control variables (prefixed \sQuote{\code{@rm}}),
   the lines are either activated or removed depending on function argument inputs.
@@ -58,10 +82,15 @@ runSweave( wd = getwd(), strSpp = "XYZ",
     \code{@rmsex}    \tab \code{Nsex}   \tab \code{>1}   \tab \code{1} \cr
     \code{@rmcpue}   \tab \code{Ncpue}  \tab \code{>0}   \tab \code{0} 
   }
+
+  The wrapper function \code{runMPD} essentially loops through \code{runSweave} 
+  using \code{(i in runs)} and \code{(j in rwts)}.
 }
 \value{
   A customised Sweave file for \code{runNo} and \code{rwtNo} is created in a subdirectory \cr
   (e.g., \code{./PSARC13/SGR/Data/Awatea/CST/SGRrun11/MPD.11.03}) from where it is run.
+
+  \code{runMPD} produces multiple Sweave documents and PDF files.
 }
 \author{
   Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
@@ -71,7 +100,7 @@ runSweave( wd = getwd(), strSpp = "XYZ",
   \code{.../R/.../library/PBSawatea/snw/}
 }
 \seealso{
-  \code{\link[PBSawatea]{runMPD}}, \code{\link[PBSawatea]{runSweaveMCMC}}, \code{\link[PBSawatea]{runADMB}}
+  \code{\link[PBSawatea]{runSweaveMCMC}}, \code{\link[PBSawatea]{runADMB}}
 }
 \keyword{character}
 \keyword{manip}

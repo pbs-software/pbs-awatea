@@ -180,12 +180,13 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		# BUG FIX: Appears should call readMatrix to accommodate multiple gear series.
 		#          Then, sum over the gears to get total catch.
 		y <- readMatrix( "Total_Catch_by_Method_and_Year", nrow=ngears )
-		y <- apply( y,2,sum,na.rm=T )
-		y <- c( y,NA )
+		#y <- apply( y,2,sum,na.rm=T )
+		#y <- c( y,NA )
+		y <- cbind( y, rep(NA,nrow(y)) )
 
-		B <- as.data.frame( cbind(years, t(vb), sb, y, t(U)) )
+		B <- as.data.frame( cbind(years, t(vb), sb, t(y), t(U)) )
 		names(B) <- if (ngears == 1) c("Year", "VB", "SB", "Y", "U")
-		else c("Year", paste("VB", gears, sep = "."), "SB", "Y", paste("U",gears,sep=".") )
+		else c("Year", paste0("VB.",gears), "SB", paste0("Y.",gears), paste0("U.",gears) )
 		if (!quiet) .flush.cat("OK\n")
 		return(B)
 	}

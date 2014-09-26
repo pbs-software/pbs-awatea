@@ -78,9 +78,14 @@ runADMB = function(
 	if (doMPD) {
 		.flush.cat("Reweighting surveys and proportions-at-age...\n")
 		if (!file.exists(filename.ext)) stop("Specified input file does not exist")
-		cvpro = readAD(filename.ext)@controls$cvpro  # expanded cvpro determined by number of surveys and number of cpue series
+		file.controls = readAD(filename.ext)@controls
+		Ncpue = file.controls$Ncpue
+		Nsurv = file.controls$Nsurv
+		cvpro = file.controls$cvpro # expanded cvpro determined by number of surveys and number of cpue series
 		sdnrfile = paste(prefix,runNoStr,"sdnr",sep=".")
-		cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
+		#cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
+		header = paste0("#SDNR -- ",ifelse(Nsurv>0,paste0("Surveys(",Nsurv,"), "),""),ifelse(Ncpue>0,paste0("CPUE(",Ncpue,"), "),""),"CAcomm, CAsurv\n")
+		cat(header,file=sdnrfile)
 		cat("CVpro:",cvpro,"\n",file=sdnrfile,append=TRUE,sep=" ")
 #browser();return()
 		#file0 = gsub(paste("\\.",ext,sep=""),paste(".000.",ext,sep=""),filename.ext)
@@ -622,4 +627,8 @@ setMethod("reweight", signature="AWATEAdata",
 
 #=== SGR CST 2013 ===
 #out=runADMB("SGR-CST-01.txt",strSpp="SGR",runNo=1,doMPD=TRUE,N.reweight=3,mean.age=TRUE,cvpro=0.35,clean=TRUE)
+
+#=== YTR CST 2014 ===
+#out=runADMB("YTR-CST2F-05.txt",strSpp="YTR",runNo=5,doMPD=T,N.reweight=2,mean.age=T,cvpro=c(0.5, 0.15, 0.5, 0.6, 0.6, 0.6),clean=T, locode=T)
+
 

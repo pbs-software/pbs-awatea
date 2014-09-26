@@ -69,7 +69,7 @@ utilMenu()
     \code{Landscape graphsheet}
 }
 \seealso{
-  \code{\link{get.resFile}}, \code{\link{importCol2}}
+  \code{\link{get.resFile}}, \code{\link{importRes}}
 }
 \keyword{interface}
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

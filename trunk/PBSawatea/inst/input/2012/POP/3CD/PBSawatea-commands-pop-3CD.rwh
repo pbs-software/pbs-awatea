@@ -86,6 +86,14 @@ runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=15,rwts=0:1,cpue=FALSE,Nsurvey=3,
 # Run20 -- New base case, as for Run14 but using USSR catch from Ketchen (1980a) and Japanese catch from Ketchen (1980b).
 out=runADMB("pop-3CD-20.txt",strSpp="POP",runNo=20,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=20,rwts=0:1,cpue=FALSE,Nsurvey=3,Snames=c("WCVI.Synoptic","NMFS.Triennial","GB.Reed"),SApos=c(T,F,F),delim="-")
+out=runADMB("pop-3CD-20.txt",strSpp="POP",runNo=20,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-3CD-20.txt",runNo=20,rwtNo=1,cpue=FALSE)  # estM parameter no longer used
+
+# Run21 -- Sensitivity 1: Dropping the early GB Reed survey series.
+out=runADMB("pop-3CD-21.txt",strSpp="POP",runNo=21,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=21,rwts=0:1,cpue=FALSE,Nsurvey=2,Snames=c("WCVI.Synoptic","NMFS.Triennial"),SApos=c(T,F),delim="-")
+out=runADMB("pop-3CD-21.txt",strSpp="POP",runNo=21,rwtNo=1,doMSY=TRUE,msyMaxIter=15000,msyTolConv=0.01,endStrat=0.301,stepStrat=0.001) # MSY calculations
+runSweaveMCMC(strSpp="POP",filename="pop-3CD-21.txt",runNo=21,rwtNo=1,cpue=FALSE)
 
 # Run22 -- Sensitivity 2: incrementing catches 1987-1990 (+20%), 1991-1992 (+40%), 1993-1995 (+60%)
 out=runADMB("pop-3CD-22.txt",strSpp="POP",runNo=22,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
