@@ -23,7 +23,7 @@ get.resFile(resFile=NULL)
   \code{load.allResFiles}. Previously, trouble occurred when overwriting.
 }
 \seealso{
-  \code{\link{mainMenu}}, \code{\link{importCol2}}
+  \code{\link{mainMenu}}, \code{\link{importRes}}
 }
 \keyword{IO}
 \keyword{file}% __ONLY ONE__ keyword per line

@@ -1,15 +1,16 @@
 \name{plotSnail}
 \alias{plotSnail}
 \title{
-  Plot Snail Trails of Exploitation vs. Biomass
+  Phase Plot of Exploitation vs. Biomass
 }
 \description{
   Plot the historical progression of the ratio \eqn{u_t/u_{MSY}}{ut/umsy}
-  against \eqn{B_t/B_{MSY}}{Bt/Bmsy}.
+  against \eqn{B_t/B_{MSY}}{Bt/Bmsy}. Traditionally known as \sQuote{phase plots},
+  some wine connoiseurs call these plots \emph{snail trails}.
 }
 \usage{
 plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9), 
-          xLim=NULL, yLim=NULL, Lwd=2)
+   xLim=NULL, yLim=NULL, Lwd=2, ngear=1)
 }
 \arguments{
   \item{BoverBmsy}{numeric matrix of \eqn{B_t}{Bt} over \eqn{B_{MSY}}{Bmsy}.}
@@ -18,6 +19,7 @@ plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9),
   \item{xLim}{limits of the x-axis.}
   \item{yLim}{limits of the y-axis.}
   \item{Lwd}{line width of the snail trail.}
+  \item{ngear}{number of commercial gears}
 }
 \details{
   The graph attempts to show the time history of the exploitation rate 

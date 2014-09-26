@@ -21,7 +21,7 @@ stdRes.index(obj, label=NULL, prt=TRUE)
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \seealso{
-  \code{\link{stdRes.CA}}, \code{\link{importCol2}}, \code{\link{reweight}}
+  \code{\link{stdRes.CA}}, \code{\link{importRes}}, \code{\link{reweight}}
 }
 \keyword{distribution}
 

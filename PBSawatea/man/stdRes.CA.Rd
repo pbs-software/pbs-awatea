@@ -25,7 +25,7 @@ stdRes.CA(obj, trunc=3, myLab="Age Residuals", prt=TRUE)
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
 }
 \seealso{
-  \code{\link{stdRes.index}}, \code{\link{importCol2}}, \code{\link{reweight}}
+  \code{\link{stdRes.index}}, \code{\link{importRes}}, \code{\link{reweight}}
 }
 \keyword{robust}
 \keyword{distribution}

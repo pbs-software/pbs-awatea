@@ -38,7 +38,7 @@ Aotearoa, six months in a leaky boat...
 # ===================
 if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"B0.MCMC","B0.mpd","B0refLevels","B0refNames","blimYrs","boxwidth","btarYrs",
-	"cordat","currentMCMC","currentMSY","currentProj","currentRes","currYear",
+	"Cnames","CAnames","cordat","currentMCMC","currentMSY","currentProj","currentRes","currYear",
 	"delim",
 	"evadat",
 	"fval",
@@ -51,7 +51,8 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"obj",
 	"pardat","PBSawatea","plt.ageResids","policy","priorBoundsList","priorDistList","priorInput",
 	"R0.mpd","refPointsList","refPointsHistList","refs","resFileList","rpType",
-	"Series","sexlab","sigmaR","stddat",
+	"Series","Snames","SAnames","sexlab","sigmaR","stddat",
+	"trevorMCMC",
 	"ulimYrs","use.Pnames","utarYrs",
 	"variable","Vexp",
 	"years",

@@ -1,26 +1,26 @@
 \name{plotBmcmcPOP}
 \alias{plotBmcmcPOP}
 \title{
-  Plot Spawning and Vulnerable Biomass
+  [DOA] Plot Spawning and Vulnerable Biomass
 }
 \description{
   Plot spawning and vulnerable biomass from posterior as boxplots, and
-  add catch bars on same graph.
+  add catch bars on same graph. (Not fully functional).
 }
 \usage{
 plotBmcmcPOP( obj, currentRes1=currentRes, 
-              p=c(0.025,0.25,0.5,0.75,0.975),
-              xyType="quantBox",
-              lineType=c(3,2,1,2,3),
-              refLines=NULL, xLim=NULL, yLim=NULL,
-              userPrompt=FALSE, save=TRUE, xLab=c(1939,1939,1939),
-              yLab=c(10000,70000,170000),
-              textLab=c("catch","spawning","vulnerable"),
-              yaxis.by=10000, tcl.val=-0.2, ...)
+   p=c(0.025,0.25,0.5,0.75,0.975),
+   xyType="quantBox",
+   lineType=c(3,2,1,2,3),
+   refLines=NULL, xLim=NULL, yLim=NULL,
+   userPrompt=FALSE, save=TRUE, xLab=c(1939,1939,1939),
+   yLab=c(10000,70000,170000),
+   textLab=c("catch","spawning","vulnerable"),
+   yaxis.by=10000, tcl.val=-0.2, ...)
 }
 \arguments{
   \item{obj}{MCMC data frame of \eqn{B} (\code{currentMCMC$B}).}
-  \item{currentRes1}{list/scape object created by \code{\link{importCol2}}.}
+  \item{currentRes1}{list/scape object created by \code{\link{importRes}}.}
   \item{p}{quantiles to use in \code{quantBox}.}
   \item{xyType}{type of plot (currently only uses \code{quantBox}).}
   \item{lineType}{line types to use in \code{quantBox}.}
@@ -50,6 +50,11 @@ plotBmcmcPOP( obj, currentRes1=currentRes,
   though it creates 2x3 plots. The object should be the specific MCMC 
   posterior by year (so just a data frame), \emph{e.g.}, \code{currentMCMC$B}. \cr
   \code{currentRes1} is local \code{currentRes}.
+}
+\section{Dead or Alive?}{
+  The function needs work to be truly useful. 
+  It appears to have been used as a template for other functions like \code{\link{plotVBcatch}}
+  and is not currently used in \pkg{PBSawatea}.
 }
 \seealso{
   \code{\link{plotVBcatch}}, \code{\link{plotB2}}

@@ -85,10 +85,17 @@ runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=16,rwts=0:1,cpue=FALSE,Nsurvey=1,
 out=runADMB("pop-5DE-20.txt",strSpp="POP",runNo=20,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=20,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
 
-# Run22 -- Sensitivity 2 decreasing catches: 1984 (-19%), 1985 (-18%), 1986 (-27%), 1987 (-10%), 1988 (-11%), 1989 (-15%)
+# Run21 -- Remove the 1997 Ocean Selector index and but NOT age data from the WCHG survey series.
+out=runADMB("pop-5DE-21.txt",strSpp="POP",runNo=21,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=21,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
+
+# Run22 -- Sensitivity 2: Reduce catches: 1984 (-19%), 1985 (-18%), 1986 (-27%), 1987 (-10%), 1988 (-11%), 1989 (-15%)
 out=runADMB("pop-5DE-22.txt",strSpp="POP",runNo=22,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
 runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=22,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
 
+# Run23 -- Sensitivity 1: Remove the 1997 Ocean Selector index and age data from the WCHG survey series.
+out=runADMB("pop-5DE-23.txt",strSpp="POP",runNo=23,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
+runMPD(strSpp="POP",prefix=c("pop","5DE"),runs=23,rwts=0:1,cpue=FALSE,Nsurvey=1,Snames=c("WCHG.Synoptic"),SApos=c(T),delim="-")
 
 #--testing--
 out=runADMB("pop-5DE-99.txt",strSpp="POP",runNo=99,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)

@@ -155,14 +155,7 @@
 \renewcommand{\thepage}{\arabic{page}}
 
 % First set up workspace:
-
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
-# get some names created by `runSweave()'
-Cnames  = tcall("PBSawatea")$Cnames        # names of commercial gear
-CAnames = Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
-Snames  = tcall("PBSawatea")$Snames        # names of surveys
-SAnames = Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
-
 cwd    = "@cwd"  # Top level directory; all models occur below this one. 
 sigdig = 4       # Number of significant digits to output in tables
 redo.Graphs = @redo.Graphs  # whether to redo the graphs or not (set to FALSE if just editing the text).
@@ -189,7 +182,6 @@ prj.dir     = "@prj.dir"
 # running.awatea = @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea. 
 mcsub       = @mcsub
 Nsex        = @nsex
-Ngear       = @ngear
 resdoc      = @resdoc
 @ 
 
@@ -286,9 +278,7 @@ names(currentMCMC$R) = as.integer(names(currentMCMC$R)) + 1
 #  write up, and change to the same order. See POPscape2.r .
 # **** AME hard-wiring cannot work; RH attempt to fix: ***
 #==========================================================
-# Get the CPUE, commercial, and survey index series
-
-#CPUE series
+# Get the commercial and survey index series
 Cser=unique(currentRes$CPUE$Series);   Ncpue=NCser=length(Cser)
 # There has to be a dummy CPUE series in the input, but the 
 #  likelihood switch says whether it is being fitted. Seems
@@ -296,19 +286,18 @@ Cser=unique(currentRes$CPUE$Series);   Ncpue=NCser=length(Cser)
 if(all(currentRes$extra$likelihoods$CPUE==0)) { Ncpue.actual = 0 }
 %if(Ncpue > 1) stop("priorInput construction assumes one CPUE series so needs updating in run-masterMCMC.Snw")
 
-# Survey series
 Sser = unique(currentRes$Survey$Series)
 Sser = Sser[currentRes$extra$likelihoods$Survey_Index!=0]
 NSser= length(Sser)
 
 # Get the commercial and survey age series
-# These might also need fixing if there are dummy data that aren't being fitted.
+# These might also need fixing if there are dummy data that
+#  aren't being fitted.
 CAser=unique(currentRes$CAc$Series);   Ncomm=NCAser=length(CAser)
 SAser=unique(currentRes$CAs$Series);   NSAser=length(SAser)
 
 NCOMM = max(Ncpue,Ncomm)  # number of commercial series w/ data/ages
 Nsurv = max(NSser,NSAser) # number of survey series with data/ages
-GI    = (1:Ngear)+Nsurv # gear indices in model (could have been defined earlier, but tough)
 
 Pnames = names(currentMCMC$P)
 # can take out paste once get updated PBSawatea.
@@ -365,28 +354,15 @@ mpd.R = currentMCMC$R[1,]
 currentMCMC <- sapply(currentMCMC,function(x,s){x[s,]},s=mcsub,simplify=FALSE)
 assign( "currentMCMC", currentMCMC, pos=1 ) # you do need the assign (maybe because you are jumping from code chunk to code chunk)
 num.MCMC = dim(currentMCMC$P)[1]     # number of MCMC samples
-
-#--- Vulnerable biomass ----------------------------------------------
-# Also have to import vulnerable biomass from vulnBiom.pst, as it's
-#  not done in importMCMC. Can just do as a data table. Has columns
-#  representing years, and each of 1000 rows is an MCMC sample. Same
-#  size as currentMCMC$B. It is
-#  calculated as denominator of (D.11) in QCS POP model appendix.
-
-vbMCMC = read.table("vulnBiom.pst", header=TRUE)
-#names(vbMCMC) = names(currentMCMC$B)      # to make them simply years (only works if Ngear=1)
-names(vbMCMC) = paste(rep(names(currentMCMC$B),Ngear),rep(1:Ngear,each=dim(currentMCMC$B)[2]),sep="_") # standardise names to "year_gear"
-currentMCMC[["VB"]] = vbMCMC[mcsub,]
-  # Add to currentMCMC so that it gets called into functions.
 @
 
 \newcommand{\numMCMC}{\Sexpr{prettyNum(num.MCMC, big.mark=",")}}
 
-
 <<priors, results=hide, echo=FALSE>>=
 
 # Importing and defining prior functions for general model runs.
-# If change tab.Pnames above then change some of priorInput.
+#  If change tab.Pnames above then change some of priorInput.
+
 # Unlogging q's at the end
 
 priorFunc = function(input.prior) 
@@ -419,15 +395,15 @@ for(i in 1:length(use.Pnames))
 @rmcpue       "log beta" = currentRes$extra$priors$log_BetaCPUE_prior[1,],
 #=======Next line will be expanded to accomodate multiple surveys=======
        "mu_1" = currentRes$extra$priors$surveySfull_prior[1,],
-#=======Next line will be expanded to accomodate multiple gears=======
+#=======Next line will be expanded to accomodate multiple CPUE series=======
        "mu_999" = currentRes$extra$priors$p_Sfullest[1,],
 #=======Next line will be expanded to accomodate multiple surveys=======
 @rmsex       "Delta_1" = currentRes$extra$priors$p_surveySfulldelta[1,],
-#=======Next line will be expanded to accomodate multiple gears=======
+#=======Next line will be expanded to accomodate multiple CPUE series=======
 @rmsex       "Delta_999" = currentRes$extra$priors$p_Sfulldelta[1,],
 #=======Next line will be expanded to accomodate multiple surveys=======
        "log v_1L" = currentRes$extra$priors$log_surveyvarL_prior[1,],
-#=======Next line will be expanded to accomodate multiple gears=======
+#=======Next line will be expanded to accomodate multiple CPUE series=======
        "log v_999L" = currentRes$extra$priors$log_varLest_prior[1,],
      )
      priorDistList[[i]] = priorFunc(priorInput[i,])
@@ -437,11 +413,13 @@ names(priorDistList) = use.Pnames
 
 # confused that after running, those two have q_1 etc. but use.Pnames does not.
 
-# Now going to use q_1, q_2, q_3, not log q_1 etc. So rename and then change values:
+# Now going to use q_1, q_2, q_3, not log q_1 etc. So rename
+#  and then change values:
 qnames = use.Pnames[grep("log q_",use.Pnames)]
 for (i in qnames) {
 	currentMCMC$P[,i] = exp(currentMCMC$P[,i])
-	mpd.P[i] = exp(mpd.P[i])  # exponentiates the MCMC values
+	mpd.P[i] = exp(mpd.P[i])
+        # exponentiates the MCMC values
 }
 names(currentMCMC$P)[is.element(names(currentMCMC$P),qnames)] = substring(qnames,5)
 names(mpd.P)[is.element(names(mpd.P),qnames)] = substring(qnames,5)
@@ -457,7 +435,8 @@ for(i in qnames) {
       #  plot uses them automatically to define the range. So change
       #  the priorInput bound values here, and change priorDistList 
       #  to use those because that's what will get called.
-  priorInput[i,c(2,3,7)] = exp(priorInput[i,c(2,3,7)])   # 7 is init cdtn
+  priorInput[i,c(2,3,7)] = exp(priorInput[i,c(2,3,7)])   
+                                   # 7 is init cdtn
   priorDistList[[i]] = function(x, input.prior) 
     {   # log x uniform between a and b, then pdf for x is
         #  1/(x (b-a)) between exp(a) and exp(b). Equivalently
@@ -470,16 +449,24 @@ row.names(priorInput)[is.element(row.names(priorInput),qnames)] = substring(qnam
 names(priorDistList)[is.element(names(priorDistList),qnames)] = substring(qnames,5)
 
 
-# AME - I'd thought have to fix for beta also, but that's set to 0 for now
+# AME - I'd thought have to fix for beta also, but that's set to 0now
 #  I think (had thought it was q, but it's the power).
 
 # End RH fix
 #==========================================================
-@ % end <<priors>> chunk
-
-<<projections, results=hide, echo=FALSE>>=
 
 # Deleting lots of commented out code, 20th August 2012.
+
+# Also have to import vulnerable biomass from vulnBiom.pst, as it's
+#  not done in importMCMC. Can just do as a data table. Has columns
+#  representing years, and each of 1000 rows is an MCMC sample. Same
+#  size as currentMCMC$B. It is
+#  calculated as denominator of (D.11) in QCS POP model appendix.
+
+vbMCMC = read.table("vulnBiom.pst", header=TRUE)
+names(vbMCMC) = names(currentMCMC$B)      # to make them simply years
+currentMCMC[["VB"]] = vbMCMC[mcsub,]
+       # Add to currentMCMC so that it gets called into functions.
 
 # Awatea projection.
 # The importProj function loads a list with elements "B" and "Y" for 
@@ -507,11 +494,9 @@ names(priorDistList)[is.element(names(priorDistList),qnames)] = substring(qnames
 # currentProj <- importProj( dir=".", quiet=FALSE )
 
 # source("../../importProjRecAndy.r")   # adding VB to importProjRec
-currentProj <- importProjRec( dir=prj.dir, ngear=Ngear, quiet=FALSE )  # RH added `ngear' to deal with multiple Virgin VBs
+currentProj <- importProjRec( dir=prj.dir, quiet=FALSE )
    # importProjRec includes epsilons for recruitments
    # Then below we calcualte the actual recruitments.
-   # RH: Note that only one VB series is projected because input file specifies:
-   # Gear used in projections (0=read in; 1=use same gear proportions as last year of data)
 
 currentProj <- sapply(currentProj,function(X){sapply(X,function(x,s){x[s,]},s=mcsub,simplify=FALSE)},simplify=FALSE)
 assign( "currentProj", currentProj, pos=1 )
@@ -551,25 +536,25 @@ for(i in catchProj)
 #  extinct. Check  sapply(currentProj$U, min)   only has 0 for 0 
 #  catch policy.
 
-@ %end <<projections>> chunk
-
-<<MSY, results=hide, echo=FALSE>>=
 
 # Awatea MSY.
-currentMSY = msyCalc( dir=msy.dir, error.rep = 0 )  # reports if MSY not converged
-
+currentMSY = msyCalc( dir=msy.dir, error.rep = 0 )  # reports if
+    # MSY not converged
 # Next line now doesn't work with the scalars in the list, so 
 #  replacing with an error for now as we're using all mcsub values
 #  for POP 3CD and 5DE.
+currentMSY = sapply(currentMSY,function(x,s){x[s]},s=mcsub,simplify=FALSE)       # mcsub subsets the MCMC samples
 
-currentMSY = sapply(currentMSY,function(x,s){x[s]},s=mcsub,simplify=FALSE)  # mcsub subsets the MCMC samples
+assign( "currentMSY", currentMSY, pos=1 )      # Forces it global (or something)
 
-assign( "currentMSY", currentMSY, pos=1 )  # Forces it global (or something)
-
-# Do these for ease of showing statistics in tables. 
-# Each should be a vector with value for each MCMC draw
+# Do these for ease of showing statistics in tables. Each should be a vector with value 
+#  for each MCMC draw
 
 if(currentRes$extra$priors$Rinit_prior[1] > 0 & currentRes$extra$priors$Rinit_prior[7] != 1) stop("Not starting from unfished equilibrium, so need to fix B0 values")
+B0.MCMC = currentMCMC$B[,1]
+# To calculate trajectory for Bt/B0 MCMC's, do:
+# BoverB0 = currentMCMC$B / B0.MCMC     # B/B0  each chain
+# BoverB0med = apply(BoverB0, 2, median)         # median each year
 
 # AME changing RH's Year to currYearChar
 currYearChar = rev(dimnames(currentMCMC$B)[[2]])[1]      
@@ -582,24 +567,17 @@ startYear = as.numeric(startYearChar)
 #Ypro  = dimnames(currentProj$B[[1]])[[2]]        # character available projection years
 #Ypr0  = as.numeric(Ypro)                         # numeric available projection years
 
-# To calculate trajectory for Bt/B0 MCMC's, do:
-# BoverB0 = currentMCMC$B / B0.MCMC     # B/B0  each chain
-# BoverB0med = apply(BoverB0, 2, median)         # median each year
-
-B0.MCMC     = currentMCMC$B[,1,drop=FALSE]
-Bcurr.MCMC  = currentMCMC$B[,currYearChar,drop=FALSE]
-VB0.MCMC    = currentMCMC$VB[,grep(startYearChar,names(currentMCMC$VB)),drop=FALSE]
-VBcurr.MCMC = currentMCMC$VB[,grep(currYearChar,names(currentMCMC$VB)),drop=FALSE]
-
-# MSY procedure appears to only calculate one VB and U per MCMC sample
-Bmsy.MCMC   = currentMSY$B
-VBmsy.MCMC  = currentMSY$VB # only one VB is calculated in projections
-msy.MCMC    = currentMSY$yield
-umsy.MCMC   = currentMSY$u
+Bcurr.MCMC = currentMCMC$B[,currYearChar]
+VB0.MCMC = currentMCMC$VB[,1]
+VBcurr.MCMC = currentMCMC$VB[,currYearChar]
+Bmsy.MCMC = currentMSY$B
+VBmsy.MCMC = currentMSY$VB
+msy.MCMC = currentMSY$yield
+umsy.MCMC = currentMSY$u
 
 # gather MCMC values suggested by Trevor Davies (Dalhousie) for comparison
 trevorMCMC = currentMCMC$P[,c("h","M_1","M_2")[is.element(c("h","M_1","M_2"),names(currentMCMC$P))],drop=FALSE]
-trevorMCMC = data.frame(trevorMCMC, B0=B0.MCMC[,1], MSY=msy.MCMC, Bmsy=Bmsy.MCMC, umsy=umsy.MCMC)
+trevorMCMC = data.frame(trevorMCMC, B0=B0.MCMC, MSY=msy.MCMC, Bmsy=Bmsy.MCMC, umsy=umsy.MCMC)
 
 # To calculate the actual projected recruitments (from the eps)
 currentProj$R = list()
@@ -618,6 +596,7 @@ projYearsNum   = length(projYearsNames)
 Bpen.MCMC = currentMCMC$B[, rev(names(currentMCMC$B))[2]]
      # spawning biomass for penultimate year of MCMC
 
+
 # Need a vector of h for projections, so if h not estimated
 #  make hForProj just replicate the mpd value:
 
@@ -634,9 +613,9 @@ stochMult = exp(currentProj$eps$'0' - sigmaR^2/2)
 for(j in 1:length(currentProj$eps) )    # loop over policies
   {
   junk = apply(NN, 2, function(i, B, R0, h, B0) {
-   srFun(as.numeric(B[i,]), h = h[i], R0=R0[i], B0=B0[1] ) },
+   srFun(as.numeric(B[i,]), h = h[i], R0=R0[i], B0=B0[i] ) },
    B = currentProj$B[[j]],
-   R0 = currentMCMC$P$R_0, h = hForProj, B0=B0.MCMC[,1])  # RH: I changed B0.MCMC to be a one-column matrix above to be comparable with VB0.MCMC
+   R0 = currentMCMC$P$R_0, h = hForProj, B0=B0.MCMC)
        # Rowan's trick for using apply on each row.
   junk = t(junk)
   junk = as.data.frame(junk)
@@ -654,11 +633,6 @@ for(j in 1:length(currentProj$eps) )    # loop over policies
   }
 names(currentProj$R) = names(currentProj$eps)
 
-@ %end <<MSY>> chunk
-
-<<refpoints, results=hide, echo=FALSE>>=
-
-#================================================================
 # Bmsy Reference points (could move this to scape at some point):
 # Need 10 year projections for 2012 POP 3CD 5DE assessment. Think
 #  the calculations are done automatically (because we specified
@@ -668,14 +642,11 @@ names(currentProj$R) = names(currentProj$eps)
 # Can probably remove these calculations, now that everything
 #  seems to be done in Rowan's findTarget call below. Keeping
 #  for now as these are what are used in Sweave for POP 3CD and 5DE.
-#================================================================
 
-refPointsList = refPoints(currentMCMC, currentProj, currentMSY, refLevels=c(0.4, 0.8, 1))  # default DFO settings (located in `PBSscape.r')
-# See refPointsB0 for B0
-refProbsList = calc.refProbs(currentProj$B, refPlist=refPointsList)  # default settings (located in `PBSscape.r')
-
-# That's a list, each element is the full table for P > LRP, URP or Bmsy,
-#  rows are const catch scenarios and columns are years.
+refPointsList = refPoints()  # ONLY set up for default 0.4, 0.8  #  and 1 Bmsy at the moment. See refPointsB0 for B0.
+refProbsList = calc.refProbs() # currentMCMC$B, currentProj$B, refPointsList)
+# That's a list, each element is the full table for P> LRP, URP or Bmsy, rows are 
+#  const catch scenarios and columns are years.
 # Full ymr calc is: 
 # row.names(temp$LRP)
 # [1] "0"    "250"  "500"  "750"  "1000" "1250" "1500" "1750" "2000" "2250"
@@ -702,7 +673,7 @@ for(i in 1:length(refProbsList))
 	if (projYearsNum>=10) {
 		refProbs10[[i]] = refProbsList[[i]][,tenYears]
 		names(refProbs10)[i] = names(refProbsList)[i] }
-	if (projYearsNum>=20) {
+        if (projYearsNum>=20) {
 		refProbs20[[i]] = refProbsList[[i]][,twentyYears]
 		names(refProbs20)[i] = names(refProbsList)[i] }
 	if (projYearsNum>=90) {
@@ -717,12 +688,11 @@ for(i in 1:length(refProbsList))
 # B0 Reference points, not doing moving window here yet 
 #  (could move this to scape at some point):
 
-# B0 reference points (NZ and US)
 B0refLevels=c(0.2, 0.4, 0.5, 0.7)
 B0refNames = paste("B0", B0refLevels, sep="")
-refPointsB0List = refPointsB0(currentMCMC, currentProj, B0.MCMC, B0refLevels, B0refNames)  # Above two lines are defaults (function in `PBSscape.r')
+refPointsB0List = refPointsB0()     # Above two lines are defaults
 
-refProbsB0List = calc.refProbs(currentProj$B, refPlist=refPointsB0List) # function in `PBSscape.r'
+refProbsB0List = calc.refProbs(refPlist = refPointsB0List)
 # That's a list, each element is the full table for P> each ref point,
 #  rows are const catch scenarios and columns are years.
 # Check, should get:
@@ -756,7 +726,7 @@ for(i in 1:length(refProbsB0List))
 # To give 0, 15 ... as colnames for decision tables
  
 
-# Moving window reference points from Rowan's findTarget.r code (`PBSscape.r'),
+# Moving window reference points from Rowan's findTarget.r code,
 #  which also calculates 0.4 Bmsy and others.
 
 refProbs3GenList = list()        # Probabilities for decision tables
@@ -765,17 +735,19 @@ refProbs3GenList = list()        # Probabilities for decision tables
 #list of targets:
 Tlst = list(list(ratio=0.4,target=Bmsy.MCMC),
   list(ratio=0.8,target=Bmsy.MCMC),
-  list(ratio=0.2,target=B0.MCMC[,1]),
-  list(ratio=0.4,target=B0.MCMC[,1]),
+  list(ratio=0.2,target=B0.MCMC),
+  list(ratio=0.4,target=B0.MCMC),
   list(ratio=0.5,target=currentMCMC$B),
   list(ratio=0.7,target=currentMCMC$B),
-  list(ratio=1.0,target=Bcurr.MCMC[,1]))
+  list(ratio=1.0,target=Bcurr.MCMC))
 names(Tlst)=c("0.4Bmsy","0.8Bmsy","0.2B0","0.4B0","0.5Gen3","0.7Gen3", "Bcurr")
 
 
 refProbs3GenList = sapply(Tlst,function(x){sapply(currentProj$B,
-  findTarget,ratio=x$ratio,target=x$target,retVal="p.hi")}, simplify=FALSE)
-refProbs3GenList = sapply(refProbs3GenList,t,simplify=FALSE) # transpose matrices
+  findTarget,ratio=x$ratio,target=x$target,retVal="p.hi")},
+  simplify=FALSE)
+refProbs3GenList = sapply(refProbs3GenList,t,simplify=FALSE) 
+                                        # transpose matrices
 
 # And have to do separately for u_t > u_MSY:
 Tlst.u = list(list(ratio=1,target=umsy.MCMC))
@@ -783,12 +755,11 @@ Tlst.u = list(list(ratio=1,target=umsy.MCMC))
 names(Tlst.u)=c("umsy") # , "umsyDummy")
 
 # create table for u > umsy
-#refProbs3GenList.u = list()  # RH: I keep forgetting that project U combines both commercial gears (I think)
-#for (i in 1:Ngear) {
 refProbs3GenList.u = sapply(Tlst.u,function(x){sapply(currentProj$U,
-  findTarget,ratio=x$ratio,target=x$target,retVal="p.hi")}, simplify=FALSE)
-refProbs3GenList.u = sapply(refProbs3GenList.u,t,simplify=FALSE) # transpose matrices
-
+  findTarget,ratio=x$ratio,target=x$target,retVal="p.hi")},
+  simplify=FALSE)
+refProbs3GenList.u = sapply(refProbs3GenList.u,t,simplify=FALSE) 
+                                        # transpose matrices
 # If need 5/90 years then have to add in below:
 
 # To just get probabilities for 5 or 90 years (if available)
@@ -813,36 +784,32 @@ Ttab0.5 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,ratio=x$ratio,
 Ttab0.8 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,ratio=x$ratio,target=x$target,conf=0.8,retVal="N")})
 Ttab0.95 = sapply(Tlst,function(x){sapply(currentProj$B,findTarget,ratio=x$ratio,target=x$target,conf=0.95,retVal="N")})
 
-# Need to calculate exploitation rates over time for MCMC (MPD's are included in `currentRes', but nothing in `currentMCMC'.
-# Going to add currentMCMC$U to currentMCMC. 
-# After doing this realised it was sort of done in popScapeRuns2.r, but only internally for plotting figures.
+# Need to calculate exploitation rates over time for MCMC (MPD's are
+#  included in currentRes, but nothing in currentMCMC. Going to add
+#  currentMCMC$U to currentMCMC. After doing this realised it was
+#  sort of done in popScapeRuns2.r, but only internally for plotting
+#  figures.
 
-catch = currentRes$B[,-1][,grep("Y",names(currentRes$B[,-1])),drop=FALSE]
-if ( !all(is.na(catch[nrow(catch),])) ) stop("Check catch =   and  currentMCMC$U =     in run-masterMCMC.Snw") 
-#if(!is.na( currentRes$B$Y[length(currentRes$B$Y)] )) stop("Check catch =   and  currentMCMC$U =     in run-masterMCMC.Snw") 
-#catch = currentRes$B$Y[-length(currentRes$B$Y)]   # take off final NA
-#names(catch) = years[-length(years)]
-catch = catch[-nrow(catch),,drop=FALSE]
-row.names(catch) = years[-length(years)]
-CATCH = apply(catch,1,sum)
-
-#currentMCMC$U = currentMCMC$VB[,-dim(currentMCMC$VB)[2]] # Don't want final, as no catch; already subset because VB was subset
-currentMCMC$U = currentMCMC$VB[,grep(currYearChar,names(currentMCMC$VB),invert=TRUE)] # RH need to be tricky when Ngear>1
+if(!is.na( currentRes$B$Y[length(currentRes$B$Y)] )) stop("Check
+  catch =   and  currentMCMC$U =     in run-masterMCMC.Snw") 
+catch = currentRes$B$Y[-length(currentRes$B$Y)]   # take off final NA
+names(catch) = years[-length(years)]
+   
+currentMCMC$U = currentMCMC$VB[,-dim(currentMCMC$VB)[2]] # Don't want final, as no catch; already subset because VB was subset
 names.cmu = names(currentMCMC$U)
 
-#VBcatch = rep(catch,Ngear); names(VBcatch)=names.cmu
-VBcatch = unlist(catch); names(VBcatch)=names.cmu
-currentMCMC$U = as.data.frame(t(apply(currentMCMC$U, 1, function(x,y){ y/x }, y=VBcatch)))    # Need transpose to get right way round again
+currentMCMC$U = t(apply(currentMCMC$U, 1, function(x,y){ y/x }, y=catch))    # Need transpose to get right way round again
+names(currentMCMC$U) = names.cmu
 # So currentMCMC$U is now exploitation rate for MCMC output.
 
-#upenult.MCMC = currentMCMC$U[,as.character(currYear-1)]
-upenult.MCMC = currentMCMC$U[,grep(as.character(currYear-1),names(currentMCMC$U))]
+upenult.MCMC = currentMCMC$U[,as.character(currYear-1)]
 umax.MCMC = apply(currentMCMC$U, 1, max)
 
-# From Rowan - quantiles for every year, then manually find the maximum median. 
-# Not quite what I did above.
+# From Rowan - quantiles for every year, then manually find the
+#   maximum median. Not quite what I did above.
 # Uquant = apply(currentMCMC$U,2,quantile,c(0.05,.5,0.95))
 # Umean16 = apply(Uquant[,as.character(1997:2012)],1,mean)
+
 
 # Catch for last num.recentCatchYears years of data:
 num.recentCatchYears = 5
@@ -851,36 +818,38 @@ num.recentCatchYears = 5
 #   { stop("lastFiveCatch in run-masterMCMC.Snw assumes final year 
 #       equals penultimate, but this isn't the case here so fix it") }
 
-if( diff(range(rev(CATCH)[1:2])) < 0.7 )  # for 5DE the 2012
+
+if( diff(range(rev(catch)[1:2])) < 0.7 )  # for 5DE the 2012
   {                                       #  was set to 2011 rounded 
-    recentCatch = rev(rev(CATCH)[2:(2+num.recentCatchYears-1)])
+    recentCatch = rev(rev(catch)[2:(2+num.recentCatchYears-1)])
               # The last num.recentCatchYears without the final year
               #  as have assumed that's not real data
   } else
-  {  recentCatch = rev(rev(CATCH)[1:num.recentCatchYears])
+  {  recentCatch = rev(rev(catch)[1:num.recentCatchYears])
   }
 
 recentCatchMean = mean(recentCatch)
 lab.recentCatchYears = paste(names(recentCatch)[c(1,num.recentCatchYears)],collapse="-")
 refCatSentence = paste("For reference, the average ", catch.type, " catch over the last ", num.recentCatchYears, " years (", lab.recentCatchYears, ") is ", round(recentCatchMean, dig=0), "~t. ",sep="")
 
-maxCatch = max(CATCH)
-maxCatchYear = as.numeric(names(CATCH)[grep(maxCatch,CATCH)[1]])
+maxCatch = max(catch)
+maxCatchYear = as.numeric(names(catch)[grep(maxCatch,catch)[1]])
 if (any(spp.name=="ROL")){
 	maxCatSentence = paste("The maximum historical female catch estimate in Area ", area.name, "  was ", round(maxCatch), "~t in ", maxCatchYear,". ",sep="")
 } else { maxCatSentence = "" }
 
 # u.MCMC.med = apply(currentMCMC$U, 2, median)  # median for each year
 # For snail plots:
-currentMCMC$UoverUmsy = as.data.frame(apply(currentMCMC$U, 2, function(x,y){ x/y },  y=umsy.MCMC))    # No transpose
+currentMCMC$UoverUmsy = apply(currentMCMC$U, 2, function(x,y){ x/y },  y=umsy.MCMC)    # No transpose
 UoverUmsy.med = apply(currentMCMC$UoverUmsy, 2, median)
 #  qtab(currentMCMC$UoverUmsy[,"2010"], dig=3 )    agrees with values
 #   below in the table
 
-currentMCMC$BoverBmsy = as.data.frame(apply(currentMCMC$B, 2, function(x,y){ x/y },  y=Bmsy.MCMC))    # No transpose, also agrees with table below
+currentMCMC$BoverBmsy = apply(currentMCMC$B, 2, function(x,y){ x/y },  y=Bmsy.MCMC)    # No transpose, also agrees with table below
 BoverBmsy.med = apply(currentMCMC$BoverBmsy, 2, median)
 
-# Did this to check MPD's closely matched the medians, they more or less do:
+# Did this to check MPD's closely matched the medians, they more or 
+#  less do:
 # plot(apply(currentMCMC$U, 2, median))
 # points(currentRes$B$U, col="red")
 
@@ -918,21 +887,23 @@ selgeqComm = currentRes$Sel[currentRes$Sel$"Series" == "Gear 1",]
     #  5 surveyrs, so just write Comm
 #mat = currentRes$Sel[currentRes$Sel$"Series" == "Maturity" & currentRes$Sel$"Sex" == "Female",]      # Female maturity
 mat = currentRes$Sel[is.element(currentRes$Sel$"Series","Maturity") & is.element(currentRes$Sel$"Sex",c("Female","Unisex")),]  # Female maturity
-# M1 = currentMCMC$P[1,"M_1"]                 # MPD is first line of MCMC
-# M2 = currentMCMC$P[1,"M_2"]                 # MPD is first line of MCMC
-Rt = currentRes$B$R[-length(currentRes$B$R)]  # Remove final NA for the last year,
-Rt.mpd = Rt       # don't think Rt gets used elsewhere, but leave it valid just in case.
+# M1 = currentMCMC$P[1,"M_1"]           # MPD is first line of MCMC
+# M2 = currentMCMC$P[1,"M_2"]           # MPD is first line of MCMC
+Rt = currentRes$B$R[-length(currentRes$B$R)]   
+                                        # Remove final NA for 2011,
+Rt.mpd = Rt       # don't think Rt gets used elsewhere, but leave
+                  #  it valid just in case.
 # For confirmation:
 # R0.mpd = currentMCMC$P[1,"R_0"] #Matches numbers from Ro_So_VB.pst,
                                   # but wasn't going to use that 
                                   #  before?
 # h.mpd = currentMCMC$P[1,"h"]
 Nats.mpd = currentRes$N
-#ut.mpd = currentRes$B$U[-length(currentRes$B$U)]  # remove final NA for the last year
-ut.mpd = currentRes$B[1:(nrow(currentRes$B)-1),grep("U",names(currentRes$B)),drop=FALSE]  # RH: need in case Ngear > 1
-Bt.mpd = currentRes$B[,"SB",drop=FALSE]
-B0.mpd = Bt.mpd[1,1]       #****CHANGE*** if change init cdts.
-Vt.mpd = currentRes$B[,grep("V",names(currentRes$B)),drop=FALSE]  # RH: need in case Ngear > 1
+ut.mpd = currentRes$B$U[-length(currentRes$B$U)]  
+                                  # remove final NA for 2011
+Bt.mpd = currentRes$B$SB
+B0.mpd = Bt.mpd[1]       #****CHANGE*** if change init cdts.
+Vt.mpd = currentRes$B$V
 logRecDev.mpd = currentRes$Dev$Annual
 # Also equals currentRes$extra$parameters$log_RecDev from Rowan's 'extra' sublist  in currentRes.
 
@@ -955,8 +926,8 @@ if (is.element(spp.name,c("ROL","rol","621"))) {
 		Btar = refPointsHistList$btarHRP,
 		utar = refPointsHistList$utarHRP ) }
 
-hrp.B = calc.refProbsHist(currentProj$B,refPointsHistList[c("blimHRP","btarHRP")]) # default values (function in `PBSscape.r')
-hrp.U = calc.refProbsHist(currentProj$U,refPointsHistList[c("ulimHRP","utarHRP")]) # function in `PBSscape.r'
+hrp.B = calc.refProbsHist() # currentMCMC$B
+hrp.U = calc.refProbsHist(currentProj$U,refPointsHistList[c("ulimHRP","utarHRP")])
 refProbsHistList = c(hrp.B,hrp.U)
 
 # That's a list, each element is the full table for P> LRP, URP or Bmsy, rows are const catch scenarios and columns are years.
@@ -989,8 +960,7 @@ for(i in 1:length(refProbsHistList))
 		colnames(refProbsHist90[[i]]) =  as.numeric(colnames(refProbsHist90[[i]])) - currYear
 		names(refProbsHist90)[i] = names(refProbsHistList)[i] }
 	}
-@  % end of <<refpoints>> chunk
-
+@ 
 
 \newcommand{\currYear}{\Sexpr{currYear}} % so can include in captions. 
 
@@ -1020,14 +990,12 @@ onePolicy  = projPolicy[onePos]
 plotPolicy = projPolicy[prjPos]
 
 if(redo.Graphs)
-	plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, mpdObj=currentRes, save=TRUE, 
-		ptypes = c("eps","png"), pngres=150, ngear=Ngear,
+	plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, save=TRUE, 
 		plotPolicies = as.character(plotPolicy), #plotPolicies = names(currentProj$Y[1:6]),
 		onePolicy    = as.character(onePolicy),  #onePolicy = names(currentProj$Y[2]), 
 		mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R),
 		trevObj = trevorMCMC
 	)
-# plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, save=TRUE, ptypes = c("eps","png"), pngres=150, ngear=Ngear, plotPolicies = as.character(plotPolicy), onePolicy = as.character(onePolicy), mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R), trevObj = trevorMCMC) # for debugging only
 # Change policy options if want other catch policies shown.
 # Set up for length(plotPolicies)=6
 # See help for other options.
@@ -1128,7 +1096,7 @@ if (resdoc) {
 @resultsMPDfigs % RH: MPD figures will be inserted here from the working directory (e.g., from `resultsMPDfigs-run16.tex`)
 
 %======================START FIGURES=======================
-\onefig{traceParams}{MCMC traces for the estimated parameters\Sexpr{print(in.area)}. Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative median (up to that sample), and dashed lines show the cumulative 2.5 and 97.5 quantiles.  Red circles are the MPD estimates. For parameters other than $M$ (if estimated), subscripts $\leq \Sexpr{Nsurv}$ correspond to fishery-independent surveys, and subscripts $\geq \Sexpr{Nsurv+1}$ denote the commercial fishery. Parameter notation is described in Appendix~\eqnchapter.}
+\onefig{traceParams}{MCMC traces for the estimated parameters\Sexpr{print(in.area)}. Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative median (up to that sample), and dashed lines show the cumulative 2.5 and 97.5 quantiles.  Red circles are the MPD estimates. For parameters other than $M$ (if estimated), subscripts $\leq \Sexpr{Nsurv}$ correspond to fishery-independent surveys, and subscripts $\geq \Sexpr{Nsurv+Ncomm}$ denote the commercial fishery. Parameter notation is described in Appendix~\eqnchapter.}
 
 \onefig{splitChain}{Diagnostic plot\Sexpr{from.area} obtained by dividing the MCMC chain of \numMCMC~MCMC samples into three segments, and overplotting the cumulative distributions of the first segment (green), second segment (red) and final segment (blue).}
 % overplotting the cumulative distributions, removing the first 100, then plotting the cumulative distributions for samples 101-400 (green), 301-700 (red) and 701-1000 (blue). }
@@ -1138,7 +1106,27 @@ if (resdoc) {
 
 \onefig{pairsMSY}{Pairs plot\Sexpr{from.area} of \numMCMC~MCMC samples comparing reference points. Numbers are the absolute values of the correlation coefficients.}
 
-\clearpage
+
+
+% Need a switch here along the lines of
+%  # if(length(use.Pnames) > xx)     if not having 3 figures,
+%  as plt.mcmcGraphs won't produce pairs2 or pairs3 (and will go
+%  up to pairs5). May not be easily generalisable, given
+%  Latex will depend on R - but can just comment out or add more in.
+% This didn't work, so just do manually.
+% <<pairsPlots, results=tex, echo=FALSE>>=
+% if(length(use.Pnames) > 6 )
+%   { print(paste(" \\onefig{pairs2}{Pairs plot for second six parameters.}")) }
+% @ 
+
+%\onefig{pairs2}{Pairs plot for second set of six parameters.}
+%\onefig{pairs3}{Pairs plot for third set of six parameters.}
+
+%\onefig{pairs3}{Pairs plot of \numMCMC~MCMC samples for third set of parameters.}
+
+% \onefig{pairs4}{Pairs plot of \numMCMC~MCMC samples for ** parameters for run.}
+
+% \onefig{pairs5}{Pairs plot of \numMCMC~MCMC samples for ** parameters for run.}
 
 @rmROL \onefig{traceBiomass}{MCMC traces\Sexpr{from.area} for female spawning biomass estimates at five-year intervals.  Note that vertical scales are different for each plot (to show convergence of the MCMC chain, rather than absolute differences in annual values). Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative  median (up to that sample), and dashed lines show the cumulative  2.5 and 97.5 quantiles.  Red circles are the MPD estimates.}
 
@@ -1152,12 +1140,21 @@ if (resdoc) {
 
 % Not using these posterior densities now - get most of the info from
 %  the boxplots anyway, and these take up several pages.
+% \onefig{pdfBiomass1}{Marginal posterior densities for beginning year female spawning biomass (1,000 tonnes) for years 1940-1963 for run \Sexpr{model.name}. Horizontal axes are all to same scale. Note that vertical axes are not to the same scale, but each is scaled to the peak of the density; with the area under each curve integrating to 1.0. Vertical lines are 2.5, 50 and 97.5 percentiles, and filled red circle indicates MPD value.  [**Years not generalised yet.]}
 
-@rmresdoc \onefig{pdfBiomass}{Marginal posterior densities for beginning year female spawning biomass (1,000 tonnes) every 5 years starting in \Sexpr{startYear} for run \Sexpr{model.name}. Horizontal axes are all to same scale. Note that vertical axes are not to the same scale, but each is scaled to the peak of the density; with the area under each curve integrating to 1.0. Vertical lines are 2.5, 50 and 97.5 percentiles, and filled red circle indicates MPD value.}
+% \onefig{pdfBiomass2}{As for Figure \ref{fig:pdfBiomass1} for years 1964-1987.}
 
-@rmresdoc \onefig{pdfRecruitment}{Marginal posterior densities for recruitment every 5 years starting in \Sexpr{startYear} for run \Sexpr{model.name}. Horizontal axes are all to same scale, such that large recruitments in certain large years can be seen. Note that vertical axes are not to the same scale, but each is scaled to the peak of the density; areas under each curve will integrate to 1.0. Vertical lines are 2.5, 50 and 97.5 percentiles, and filled red circle indicates MPD value. }
+% \onefig{pdfBiomass3}{As for Figure \ref{fig:pdfBiomass1} for years 1988-2011.}
 
-\clearpage
+% \onefig{pdfBiomass4}{As for Figure \ref{fig:pdfBiomass1} for years 2012-\Sexpr{currYear}.}
+
+% \onefig{pdfRecruitment1}{Marginal posterior densities for recruitment for years 1940-1963 for run \Sexpr{model.name}. Horizontal axes are all to same scale, such that large recruitments in certain large years can be seen. Note that vertical axes are not to the same scale, but each is scaled to the peak of the density; areas under each curve will integrate to 1.0. Vertical lines are 2.5, 50 and 97.5 percentiles, and filled red circle indicates MPD value. }
+
+%\onefig{pdfRecruitment2}{As for Figure \ref{fig:pdfRecruitment1} for years 1964-1987.}
+
+%\onefig{pdfRecruitment3}{As for Figure \ref{fig:pdfRecruitment1} for years 1988-2011.}
+
+%\onefig{pdfRecruitment4}{As for Figure \ref{fig:pdfRecruitment1} for years 2012-\Sexpr{currYear-1}.}
 
 % To go into main docco (except summary table to stay in App G).
 
@@ -1187,7 +1184,7 @@ names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
 %\label{fig:compBmsy} 
 %\end{figure}
 
-\onefig{snail}{Phase plot through time of the medians of the ratios $B_t / B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_t / u_\mathrm{MSY}$ (the exploitation rate in year $t$ relative to $u_\mathrm{MSY}$)\Sexpr{for.area}. Blue filled circle is the starting year (\Sexpr{startYear}). Years then proceed from light grey through to dark grey with the final year (\Sexpr{currYear - 1}) as a filled red circle, and the red lines represent the 10\% and 90\% percentiles of the posterior distributions for the final year. \Sexpr{ if(spp.name!="ROL") paste("Vertical grey lines indicate the Precautionary Approach provisional limit and upper stock reference points (0.4, 0.8 $B$msy), and horizontal grey line indicates $u$ at MSY.")}} % Cannot have braces {} within an \Sexpr{} (stupid)
+\onefig{snail}{Phase plot through time of the medians of the ratios $B_t / B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_t / u_\mathrm{MSY}$ (the exploitation rate in year $t$ relative to $u_\mathrm{MSY}$)\Sexpr{for.area}. Blue filled circle is the starting year (\Sexpr{startYear}). Years then proceed from light grey through to dark grey with the final year (\Sexpr{currYear - 1}) as a filled red circle, and the red lines represent the 10\% and 90\% percentiles of the posterior distributions for the final year. \Sexpr{ if(spp.name!="ROL") paste("Vertical grey lines indicate the Precautionary Approach provisional limit and upper stock reference points (0.4, 0.8 $B$msy), and horizontal grey line indicates $u$ at MSY.")}}% of 0.4$B_\\mathrm\{MSY\}$ and 0.8$B_\\mathrm\{MSY\}$, and horizontal grey line indicates $u_\\mathrm\{MSY\}$.")}}
 
 \onefig{Bproj}{Projected biomass (t) under different constant catch strategies (t)\Sexpr{for.area}; boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. For each of the \numMCMC~samples from the MCMC posterior, the model was run forward in time (red, with medians in black) with a constant catch, and recruitment was simulated from the stock-recruitment function with lognormal error (see Appendix~\eqnchapter). \Sexpr{refCatSentence}}
 
@@ -1196,9 +1193,7 @@ names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
 % Commenting out for WG meeting, plus not so useful for short 
 %  projections. Though now doing 10 years, and I think's useful to 
 %  raise caution about how the projections are done. 
-
 @rmresdoc \onefig{Rproj}{Projected recruitments (red) under different constant catch strategies (boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results; historical recruitments in black).}
-
 % xx = apply(currentProj$R$'0', 2, max)
 % summary(xx)
   
@@ -1231,6 +1226,7 @@ names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
 		sanitize.rownames.function=function(x){x},
 		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]"))
 	)
+ 
 @
 % Want to automate this, best to do by changing the qtab function
 %  to print out the whole row (including $q_4$ etc.), and do it
@@ -1284,7 +1280,7 @@ names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
  $B_{\Sexpr{currYear}}$ -- spawning biomass at the start of $\Sexpr{currYear}$, 
  $V_{\Sexpr{currYear}}$ -- vulnerable biomass in the middle of \Sexpr{currYear}, 
  $u_{\Sexpr{currYear-1}}$ -- exploitation rate (ratio of total catch to vulnerable biomass) in the middle of \Sexpr{currYear-1}, 
- $u_\mathrm{max}$ -- maximum exploitation rate (calculated for each sample as the maximum exploitation rate from \Sexpr{substring(names(currentMCMC$U[1,])[1],1,4)}-\Sexpr{substring(rev(names(currentMCMC$U[1,]))[1],1,4)}), 
+ $u_\mathrm{max}$ -- maximum exploitation rate (calculated for each sample as the maximum exploitation rate from \Sexpr{as.numeric(names(currentMCMC$U[1,])[1])}-\Sexpr{as.numeric(rev(names(currentMCMC$U[1,]))[1])}), 
  $\Bmsy$ -- equilibrium spawning biomass at MSY (maximum sustainable yield), 
  $u_\mathrm{MSY}$ -- equilibrium exploitation rate at MSY, 
  $V_\mathrm{MSY}$ -- equilibrium vulnerable biomass at MSY. 
@@ -1298,19 +1294,15 @@ Value & \multicolumn{3}{c}{Percentile}\\
 \hline 
  & & & \\
 & \multicolumn{3}{c}{From model output}\\
-$B_0$                  & \Sexpr{qtab(B0.MCMC[,1])} \\
-%=======Next line will be expanded to accomodate multiple gears=======
-$V_{0,g=\Sexpr{GI[1]}}$                  & \Sexpr{qtab(VB0.MCMC[,1])} \\
-$B_{\Sexpr{currYear}}$             & \Sexpr{qtab(Bcurr.MCMC[,1])} \\
-%=======Next line will be expanded to accomodate multiple gears=======
-$V_{\Sexpr{currYear},g=\Sexpr{GI[1]}}$             & \Sexpr{qtab(VBcurr.MCMC[,1])} \\
+$B_0$                  & \Sexpr{qtab(B0.MCMC)} \\
+$V_0$                  & \Sexpr{qtab(VB0.MCMC)} \\
+$B_{\Sexpr{currYear}}$             & \Sexpr{qtab(Bcurr.MCMC)} \\
+$V_{\Sexpr{currYear}}$             & \Sexpr{qtab(VBcurr.MCMC)} \\
 
-$B_{\Sexpr{currYear}} / B_0$       & \Sexpr{qtab(Bcurr.MCMC[,1] / B0.MCMC[,1], dig=3)} \\
-%=======Next line will be expanded to accomodate multiple gears=======
-$V_{\Sexpr{currYear},g=\Sexpr{GI[1]}} / V_{0,g=\Sexpr{GI[1]}}$     & \Sexpr{qtab(VBcurr.MCMC[,1]/VB0.MCMC[,1], dig=3)} \\
+$B_{\Sexpr{currYear}} / B_0$       & \Sexpr{qtab(Bcurr.MCMC / B0.MCMC, dig=3)} \\
+$V_{\Sexpr{currYear}} / V_0$     & \Sexpr{qtab(VBcurr.MCMC / VB0.MCMC, dig=3)} \\
 
-%=======Next line will be expanded to accomodate multiple gears=======
-$u_{\Sexpr{currYear-1},g=\Sexpr{GI[1]}}$             & \Sexpr{qtab(upenult.MCMC[,1],dig=3)} \\
+$u_{\Sexpr{currYear-1}}$             & \Sexpr{qtab(upenult.MCMC, dig=3)} \\
 $u_\mathrm{max}$       & \Sexpr{qtab(umax.MCMC, dig=3)} \\
 \hline
  & & & \\
@@ -1319,26 +1311,23 @@ $\mathrm{MSY}$                    & \Sexpr{qtab(msy.MCMC)} \\
 $B_\mathrm{MSY}$       &  \Sexpr{qtab(Bmsy.MCMC)} \\
 $0.4 B_\mathrm{MSY}$   &  \Sexpr{qtab(0.4*Bmsy.MCMC)} \\
 $0.8 B_\mathrm{MSY}$   &  \Sexpr{qtab(0.8*Bmsy.MCMC)} \\
-$B_{\Sexpr{currYear}} / B_\mathrm{MSY}$ & \Sexpr{qtab(Bcurr.MCMC[,1] / Bmsy.MCMC, dig=3)} \\
-$B_\mathrm{MSY} / B_0$ &  \Sexpr{qtab(Bmsy.MCMC / B0.MCMC[,1], dig=3)} \\
+$B_{\Sexpr{currYear}} / B_\mathrm{MSY}$ & \Sexpr{qtab(Bcurr.MCMC / Bmsy.MCMC, dig=3)} \\
+$B_\mathrm{MSY} / B_0$ &  \Sexpr{qtab(Bmsy.MCMC / B0.MCMC, dig=3)} \\
 %
 $V_\mathrm{MSY}$       & \Sexpr{qtab(VBmsy.MCMC)} \\
-%=======Next line will be expanded to accomodate multiple gears=======
-$V_\mathrm{MSY} / V_{0,g=\Sexpr{GI[1]}}$ & \Sexpr{qtab(VBmsy.MCMC/VB0.MCMC[,1], dig=3)} \\
+$V_\mathrm{MSY} / V_0$ & \Sexpr{qtab(VBmsy.MCMC / VB0.MCMC, dig=3)} \\
 %
 $u_\mathrm{MSY}$       & \Sexpr{qtab(umsy.MCMC, dig=3)} \\
-%=======Next line will be expanded to accomodate multiple gears=======
-$u_{\Sexpr{currYear-1},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.MCMC[,1]/umsy.MCMC, dig=3)} \\
+$u_{\Sexpr{currYear-1}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.MCMC / umsy.MCMC, dig=3)} \\
 \hline
 @rmhrp  & & & \\
 @rmhrp & \multicolumn{3}{c}{History-based quantities}\\
 @rmhrp $B_\mathrm{Lim}$  & \Sexpr{qtab(refPointsHistList$blimHRP)} \\
 @rmhrp $B_\mathrm{Tar}$  & \Sexpr{qtab(refPointsHistList$btarHRP)} \\
-@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Lim}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$blimHRP, dig=3)} \\
-@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Tar}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$btarHRP, dig=3)} \\
-@rmhrp $u_\mathrm{Tar}$       & \Sexpr{qtab(refPointsHistList$utarHRP, dig=3)} \\  % note to future: should this have Ngear dimensions?
-@rmhrp %=======Next line will be expanded to accomodate multiple gears=======
-@rmhrp $u_{\Sexpr{currYear-1}} / u_\mathrm{Tar}$ & \Sexpr{qtab(upenult.MCMC[,1]/refPointsHistList$utarHRP, dig=3)} \\
+@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Lim}$  & \Sexpr{qtab(Bcurr.MCMC / refPointsHistList$blimHRP, dig=3)} \\
+@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Tar}$  & \Sexpr{qtab(Bcurr.MCMC / refPointsHistList$btarHRP, dig=3)} \\
+@rmhrp $u_\mathrm{Tar}$       & \Sexpr{qtab(refPointsHistList$utarHRP, dig=3)} \\
+@rmhrp $u_{\Sexpr{currYear-1}} / u_\mathrm{Tar}$ & \Sexpr{qtab(upenult.MCMC / refPointsHistList$utarHRP, dig=3)} \\
 @rmhrp \hline
 \end{tabular}
 \end{table}
@@ -1461,30 +1450,23 @@ save(refProbs, refProbsB0, refProbsHist, refProbs3GenList, refProbs3GenList.u, T
 @ 
 
 <<savingObjects, results=hide, echo=FALSE>>=
-processObj = function(x) {
-	if (is.null(dim(x))) return(x)
-	else {
-		dimx = dim(x); nr=dimx[1]; nc=dimx[2]
-		return(x[1:nr,1:nc])
-	}
-}
 Bmcmc <- list()
 SA=strsplit(model.name,split="-")  # Species & Area
 Bmcmc[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
-	B0.MCMC        = processObj(B0.MCMC),
-	Bt.MCMC        = processObj(Bcurr.MCMC),
-	Bmsy.MCMC      = processObj(Bmsy.MCMC),
-	Blim.MCMC      = processObj(refPointsHistList$blimHRP),
-	Btar.MCMC      = processObj(refPointsHistList$btarHRP),
-	Utar.MCMC      = processObj(refPointsHistList$utarHRP),
-	P.MCMC         = processObj(currentMCMC$P),
-	B.MCMC         = processObj(currentMCMC$B),
-	R.MCMC         = processObj(currentMCMC$R),
-	VB.MCMC        = processObj(currentMCMC$VB),
-	U.MCMC         = processObj(currentMCMC$U),
-	UoverUmsy.MCMC = processObj(currentMCMC$UoverUmsy),
-	BoverBmsy.MCMC = processObj(currentMCMC$BoverBmsy),
-	MSY.MCMC       = processObj(msy.MCMC)
+	B0.MCMC        = B0.MCMC,
+	Bt.MCMC        = Bcurr.MCMC,
+	Bmsy.MCMC      = Bmsy.MCMC,
+	Blim.MCMC      = refPointsHistList$blimHRP,
+	Btar.MCMC      = refPointsHistList$btarHRP,
+	Utar.MCMC      = refPointsHistList$utarHRP,
+	P.MCMC         = currentMCMC$P,
+	B.MCMC         = currentMCMC$B,
+	R.MCMC         = currentMCMC$R,
+	VB.MCMC        = currentMCMC$VB,
+	U.MCMC         = currentMCMC$U,
+	UoverUmsy.MCMC = currentMCMC$UoverUmsy,
+	BoverBmsy.MCMC = currentMCMC$BoverBmsy,
+	MSY.MCMC       = msy.MCMC
 	)
 save("Bmcmc",file=paste("Bmcmc-",model.name,".rda",sep=""))
 while(dev.cur() > 1)  dev.off()
@@ -1495,7 +1477,6 @@ while(dev.cur() > 1)  dev.off()
 @resultsMCMC % RH: Results discussion will be inserted here from the working directory (e.g., from `resultsMCMC-run08.tex`)
 
 %\input{\Sexpr{paste(run.dir, "/../resultsMCMC", sep="")}} # Sexpr don't seem to function when brought in from a separate document. 
-
 \end{document}
 % CUT HERE 
 
