@@ -30,7 +30,7 @@ runADMB = function(
 	cwd  = getwd(); syspath0  = Sys.getenv()["PATH"]
 	on.exit(ciao())
 	if (locode) { 
-		getFile(gfcode,path=system.file("data",package="PBSawatea"))
+		load(paste0(system.file("data",package="PBSawatea"),"/gfcode.rda"))
 		eval(parse(text="require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)"))
 		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runSweave.r",sep="/"),local=FALSE)
@@ -394,7 +394,7 @@ setMethod("write", signature(x = "AWATEAdata"),
 	invisible(nvec) } )
 #----------------------------------setMethod.write
 
-#setMethod.reweight---------------------2013-09-09
+#setMethod.reweight---------------------2014-09-29
 # Set the method for 'reweight' when using an AWATEA class.
 # Calculates reweighted values and populates S4 object.
 #-----------------------------------------------RH
@@ -469,7 +469,7 @@ setMethod("reweight", signature="AWATEAdata",
 			z = is.element(jvec,jj); zNoVar = is.element(Vexp,0); zNoVal = is.element(MAexp,0) & zNoVar
 			# Only use values in series jj with non-zero variance and with fitted values
 			zUse = z&!zNoVar&!zNoVal
-			if (!any(zUse)) next
+			if (!any(zUse) || sum(zUse)<=1) next
 			w[j] = 1 / var((MAobs[zUse]-MAexp[zUse])/((Vexp[zUse]/N[zUse])^0.5) )  
 			wN[zUse] = N[zUse] * w[j]
 			}
@@ -555,6 +555,7 @@ setMethod("reweight", signature="AWATEAdata",
 		#SDNR["spa"] = NA  # No formulae appropriate for composition-data likelihoods due to correlations (Francis 2011, Appendix B, CJFAS)
 		wtemp = Ws$w; names(wtemp)=paste("spa-",names(wtemp),sep="")
 		wj = c(wj,wtemp)
+#browser();return()
 	}
 	else
 		wNspa  = eNfun(spa$Series,spa$Year,spa$Obs,spa$Fit)
@@ -631,4 +632,5 @@ setMethod("reweight", signature="AWATEAdata",
 #=== YTR CST 2014 ===
 #out=runADMB("YTR-CST2F-05.txt",strSpp="YTR",runNo=5,doMPD=T,N.reweight=2,mean.age=T,cvpro=c(0.5, 0.15, 0.5, 0.6, 0.6, 0.6),clean=T, locode=T)
 
-
+#=== RBR CST 2014 ===
+#outADM=runADMB("RBR-CST2F-01.txt", strSpp="RBR", runNo=1, doMPD=T, N.reweight=1, mean.age=T, cvpro=c(0.2,0.3,0.2,0.2,0.2,0.2,0.2,0.2),clean=T, locode=T)

@@ -318,14 +318,14 @@ mcmcMenu <- function()
         # currentExpt <- calc.projExpect( currentMCMC$B, currentProj$B, c(1940, 1990) )
       },
       {
-        scapeMCMC::plotDens( currentMCMC$B[,getYrIdx(
+        plotMCMC::plotDens( currentMCMC$B[,getYrIdx(
           names(currentMCMC$B))],
           tick.number=5,
           xlab="Biomass", xlim=c(range(currentMCMC$B)),
           ylab="Posterior density" )
       },
       {
-       #  scapeMCMC::plotDens( currentMCMC$R[,getYrIdx(
+       #  plotMCMC::plotDens( currentMCMC$R[,getYrIdx(
        #    names(currentMCMC$R))],
        #    xlab="Recruitment", xlim=c(range(currentMCMC$R)) )
        # AME replacing with:
@@ -337,7 +337,7 @@ mcmcMenu <- function()
       },
       {
         idx <- apply( currentMCMC$P,2,allEqual )
-        scapeMCMC::plotDens( currentMCMC$P[,!idx] )
+        plotMCMC::plotDens( currentMCMC$P[,!idx] )
       }, 
       {
         if ( length( getYrIdx(names(currentMCMC$B)) ) <= 9 )
@@ -370,17 +370,17 @@ mcmcMenu <- function()
         }
       },
       {
-        scapeMCMC::plotTrace( currentMCMC$R[,getYrIdx(
+        plotMCMC::plotTrace( currentMCMC$R[,getYrIdx(
           names(currentMCMC$R))],axes=TRUE,
           xlab="Recruitment" )
         windows()
         par( oma=c(2,2,1,1), mar=c(2,2,2,1), mfrow=mfRow )
-        scapeMCMC::plotTrace( currentMCMC$B[,getYrIdx(
+        plotMCMC::plotTrace( currentMCMC$B[,getYrIdx(
           names(currentMCMC$B))],axes=TRUE,
           xlab="Biomass" )
         windows()
         idx <- apply( currentMCMC$P,2,allEqual )
-        scapeMCMC::plotTrace( currentMCMC$P[,!idx], axes=TRUE )
+        plotMCMC::plotTrace( currentMCMC$P[,!idx], axes=TRUE )
       },
       {
         plt.allTraces( currentMCMC )
@@ -394,7 +394,7 @@ mcmcMenu <- function()
 utilMenu <- function()
 {
   menuItems <- c( "scape Help",
-                  "scapeMCMC Help",
+                  "plotMCMC Help",
                   "Portrait graphsheet",
                   "Landscape graphsheet" )
 
@@ -405,7 +405,7 @@ utilMenu <- function()
     choice <- menu( menuItems )
     switch( choice,
       print( help( "scape", help_type="html" ) ),
-      print( help( "scapeMCMC", help_type="html" ) ),
+      print( help( "plotMCMC", help_type="html" ) ),
       graphics( view="portrait" ),
       graphics( view="landscape" )
     )

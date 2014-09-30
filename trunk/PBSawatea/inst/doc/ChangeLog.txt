@@ -4,8 +4,13 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
-0.13  2014-09-26
-  - Revised R code and Sweave code to deal with more than one commercial gear type. (RH 9/26)
+0.13  2014-09-30
+  - Transferred code that builds MPD fits to proportions-at-age from body of `plt.mpdGraphs' to new function `plotAges'. (RH 9/30)
+  - Revised function `plotIndexNotLattice' to clean up output files and generate PNGs as well as EPSs. (RH 9/29)
+  - Changed Table 3 of `run-master.Snw' to a longtable so that it doen't print off the bottom of the page. (RH 9/29)
+  - Fixed a small bug in the weighting subfunction `wfun' in `runADMB' that crashed when calculating variance of a single number. (RH 9/29)
+  - Switched dependency from package `scapeMCMC' to `plotMCMC' as Arni now separates Coleraine functions form plotting functions. (RH 9/29)
+  - Revised R code and Sweave code extensively to deal with more than one commercial gear type. (RH 9/26)
   - Added vignette to briefly describe the package and past DFO assessments using Awatea. (AME/RH 8/26)
   - Modified function `runSweaveMCMC' to include a new argument `skip.last.year' for compatibility with older 2010 POP 5ABC assessment. (RH 8/26)
   - Modified Sweave master documents `run-master.Snw' and `run-masterMCMC.Snw' for compatibility with older 2010 POP 5ABC assessment. (AME 8/25)
