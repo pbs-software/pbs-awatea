@@ -14,7 +14,7 @@
 \usepackage{Sweave}      % andy add3ed
 % \usepackage{epsfig}
 \usepackage{rotating}    % for sideways table
-\usepackage{longtable}
+\usepackage{longtable,array}
 % \usepackage{placeins}
 % \usepackage{nccmath}
 % \usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry} 
@@ -132,7 +132,7 @@ sigdig = 5              # Number of significant digits to output in tables
 # Arni Magnusson's support functions for Awatea.
 #library(scape)
 # Arni Magnusson's support functions for Awatea MCMC.
-#library(scapeMCMC)
+#library(plotMCMC)
 # Data manipulation functions from CRAN.
 #library(gdata)
 
@@ -555,7 +555,7 @@ ptab = function(xx)
 
 \clearpage
 
-
+%---Table 1-----------------------------
 \begin{table}[!t]
 \caption{\label{tab:biomass} Estimated biomass, spawning ($B$) and vulnerable ($V$), in \Sexpr{years[length(years)]} and relative to virgin biomass ($B_0$, $V_0$) in \Sexpr{years[1]}.}
 \begin{tabular}{cccc} 
@@ -573,6 +573,7 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 
 \qquad % or \hspace{2em}
 
+%---Table 2-----------------------------
 % Remove for Appendix G write-up.
 \begin{table}[!h]
 \caption{\label{tab:parest} Priors and MPD estimates for estimated parameters. Prior information -- distributions: 0~=~uniform, 1~=~normal, 2~=~lognormal, 5~=~beta}
@@ -638,20 +639,25 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 
 \clearpage
 
-\begin{table}[!h]
-%\caption{\label{tab:parest2} Table \ref{tab:parest} continued.}
-\caption{\label{tab:parest2} Priors and MPD estimates for index $g$ (survey and commercial).}
-% Parameter & Awatea input name & Awatea export name & Value\\ 
-%\multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
-%\begin{tabular}{llllll} 
-%\hline
-%\multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
+%---Table 3-----------------------------
+\begin{longtable}{cccccccc}
+\caption{Priors and MPD estimates for index $g$ (survey and commercial).}
+\label{tab:parest2}\\ 
+\hline\\[-1.5ex] {\bf Index $g$} & {\bf Phase} & {\bf Range} & {\bf Type} & {\bf (Mean,SD)} & {\bf Initial} & {\bf MPD} & {\bf exp~(MPD)}
+\\[0.2ex]\hline  \endfirsthead  
+\multicolumn{8}{l}{{\tablename\ \thetable{} -- continued from previous page}}\\  \hline 
+{\bf Index $g$} & {\bf Phase} & {\bf Range} & {\bf Type} & {\bf (Mean,SD)} & {\bf Initial} & {\bf MPD} & {\bf exp~(MPD)}
+\\[0.2ex]\hline  \endhead  \hline\\[-2.2ex]  \multicolumn{8}{r}{{\footnotesize \emph{Continued on next page}}}\\  \endfoot  \hline \endlastfoot 
+
+
 %Phase & Range & Prior & Parameters & Initial & MPD \\
+%\begin{table}[!h]
+%\caption{\label{tab:parest2} Priors and MPD estimates for index $g$ (survey and commercial).}
 %\hline 
-\begin{tabular}{cccccccc} 
-\hline \\ [-1.5ex]
-{\bf Index $g$} & {\bf Phase} & {\bf Range} & {\bf Type} & {\bf (Mean,SD)} & {\bf Initial} & {\bf MPD} & {\bf exp~(MPD)}  \\ [1ex]
-\hline \\ [-1.5ex]
+%\begin{tabular}{cccccccc} 
+%\hline \\ [-1.5ex]
+%{\bf Index $g$} & {\bf Phase} & {\bf Range} & {\bf Type} & {\bf (Mean,SD)} & {\bf Initial} & {\bf MPD} & {\bf exp~(MPD)}  \\ [1ex]
+%\hline \\ [-1.5ex]
 
 @rmcpue \multicolumn{8}{l}{\bf CPUE catchability mode~~($\log q_g$ where $g=\Sexpr{Nsurv+1},...\Sexpr{Nsurv+Ncomm}$)} \\
 %@rmcpue \multicolumn{5}{l}{\bf $\log q_{\Sexpr{Nsurv+1}}$, Log q CPUE, log\_qCPUE} & \\
@@ -711,22 +717,19 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 \\ [-1.5ex]
 
 @rmsex \multicolumn{8}{l}{\bf Shift in commercial selectivity for males~~($\Delta_g$, where $g=\Sexpr{paste0((Nsurv+1):(Nsurv+Ngears),collapse=",")}$)} \\ 
-@rmsex %=======Next line will be expanded to accomodate multiple gears=======
+%=======Next line will be expanded to accomodate multiple gears=======
 @rmsex \Sexpr{Nsurv+1} & \Sexpr{ptab(deltaC.prior[1,])} & \Sexpr{signif(deltaC.mpd[1],sigdig)} &  \\
 @rmsex \\ [-1.5ex]
 
 @rmsex \multicolumn{8}{l}{\bf Shift in survey selectivity for males~~($\Delta_g$, where $g=1,...,\Sexpr{Nsurv}$)} \\ 
-@rmsex %=======Next line will be expanded to accomodate multiple surveys=======
+%=======Next line will be expanded to accomodate multiple surveys=======
 @rmsex 1 & \Sexpr{ptab(deltavec.prior[1,])} & \Sexpr{signif(deltavec.mpd[1],sigdig)} & \\
 @rmsex \\ [-1.5ex]
 
-%$\Delta_1$ & Survey L full delta & surveySfulldeltaest\_1 & \\
-%$\Delta_2$ & Survey L full delta & surveySfulldeltaest\_2 & \\
-%% $\Delta_3$ & Survey L full delta & surveySfulldeltaest\_3 & \\
-%$\Delta_4$ & S fullest & Sfulldelta\_1 & \\
-\hline
-\end{tabular}	
-\end{table}
+%\hline
+%\end{tabular}	
+%\end{table}
+\end{longtable}
 
 \clearpage
 
@@ -738,6 +741,7 @@ like.Surveys.rnd = c(like.Surveys.rnd, NA, NA, NA, NA)
                   # To automatically put NA's into table.
 @ 
 
+%---Table 4-----------------------------
 % Move to the end when putting in Appendix G.
 % Get numbers from chunk above
 \begin{table}[!p]
@@ -768,7 +772,6 @@ Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right)
 \hline
 \end{tabular}
 \end{table}
-
 
 \clearpage
 
@@ -848,7 +851,7 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 
 % Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
 %=======Next line will be expanded to accomodate multiple surveys=======
-\twofig{ageSurv@survey1Female1}{ageSurv@survey1Male1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
+\twofig{ageSurvFemale1}{ageSurvMale1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
 
 \onefig{meanAge}{Mean ages each year for the data (solid circles) and model estimates (joined open squares) for the commercial and survey age data.}
 

@@ -1,4 +1,4 @@
-#runSweave------------------------------2014-09-18
+#runSweave------------------------------2014-09-29
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
@@ -25,14 +25,13 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","Rcode","Scode","qu","so",".First")),pos=1)
 	if (locode) { 
-		#getFile(gfcode,path=system.file("data",package="PBSawatea"))
 		mess = c(
 		"require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)",
 		"require(gplots, quietly=TRUE)",
 		"require(xtable, quietly=TRUE)",
 		"require(lattice, quietly=TRUE)",
 		"require(scape, quietly=TRUE)",     # Arni Magnusson's support functions for Awatea.
-		"require(scapeMCMC, quietly=TRUE)", # Arni Magnusson's support functions for Awatea MCMC.
+		"require(plotMCMC, quietly=TRUE)", # Arni Magnusson's plot functions for Awatea MCMC.
 		"require(gdata, quietly=TRUE)"     # Data manipulation functions from CRAN.
 		)
 		eval(parse(text=mess))
@@ -239,4 +238,5 @@ runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 #outdat=runMPD(strSpp="YTR",prefix=c("YTR","CST"),runs=2,rwts=1,Nsex=2,Ncpue=0,Nsurvey=7,Ngear=2,Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial","WCVI Shrimp"),SApos=c(T,T,T,F,F,F,F), Cnames=c("Bottom Trawl","Midwater Trawl"),locode=T)
 #outdat=runMPD(strSpp="YTR",prefix=c("YTR","CST2F"),runs=5,rwts=2,Nsex=2,Ncpue=0,Nsurvey=6,Ngear=2,Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial"),SApos=c(T,T,T,F,F,F), Cnames=c("Bottom Trawl","Midwater Trawl"),locode=T)
 
-
+#=== RBR CST 2014 ===
+#outMPD=runSweave(strSpp="RBR",filename="RBR-CST2F-01.txt",runNo=1,rwtNo=1,Nsex=2,Ncpue=0,Nsurvey=8,Ngear=2,Snames=c("QC Sound Synoptic","WCVI Synoptic","QC Sound Shrimp","WCHG Synoptic","HS Synoptic","US Triennial","Historic GB Reed","IPHC Longline"),SApos=c(T,T,T,F,F,F,F,F),Cnames=c("Bottom Trawl","Longline"),locode=T)

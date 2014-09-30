@@ -31,14 +31,14 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	on.exit(ciao(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC","Rcode","Scode","qu","so",".First")),pos=1)
 	if (locode) { 
-		getFile(gfcode,path=system.file("data",package="PBSawatea"))
+		load(paste0(system.file("data",package="PBSawatea"),"/gfcode.rda"))
 		mess = c(
 		"require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)",
 		"require(gplots, quietly=TRUE)",
 		"require(xtable, quietly=TRUE)",
 		"require(lattice, quietly=TRUE)",
 		"require(scape, quietly=TRUE)",     # Arni Magnusson's support functions for Awatea.
-		"require(scapeMCMC, quietly=TRUE)", # Arni Magnusson's support functions for Awatea MCMC.
+		"require(plotMCMC, quietly=TRUE)", # Arni Magnusson's support functions for Awatea MCMC.
 		"require(gdata, quietly=TRUE)"     # Data manipulation functions from CRAN.
 		)
 		eval(parse(text=mess))

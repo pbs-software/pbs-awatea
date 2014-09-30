@@ -1,6 +1,6 @@
 #PBSscape-------------------------------2013-09-13
 #  Modified functions from Arni Magnussen's 
-#  packages 'scape' and 'scapeMCMC'
+#  packages 'scape' and 'plotMCMC'
 #-------------------------------------------AME/RH
 
 #---History---------------------------------------
@@ -98,7 +98,7 @@
 # rsScape.r : Graphical analyses for rocksole Coleraine ouput.       #
 # Developers: A.R. Kronlund, P.J. Starr                              #
 # Modified by Allan C. Hicks to use output of Awatea forSPO7         #
-# Required libraries: gdata, scape, scapeMCMC, PBSmodelling          #
+# Required libraries: gdata, scape, plotMCMC, PBSmodelling          #
 #                                                                    #
 # Date Revised:                                                      #
 # 08-Nov-05  Initial implementation.                                 #
@@ -178,12 +178,12 @@
 #          fishery series.
 
 #rm(list=ls())
-#require("PBSmodelling")  # Doing it here before scapeMCMC, as both
+#require("PBSmodelling")  # Doing it here before plotMCMC, as both
                          #  have plotDens(). Though if already loaded
-                         #  scapeMCMC that won't always work, so
+                         #  plotMCMC that won't always work, so
                          #  replacing plotDens with
-                         #  scapeMCMC::plotDens throughout code
-                         # scapeMCMC::plotTrace() also
+                         #  plotMCMC::plotDens throughout code
+                         # plotMCMC::plotTrace() also
 #source("plotDensPOP.r")  # AME's version that modifies defaults
                          #  to give better recruitment and Bt plots
 #source("plotDensPOPpars.r")  # AME's version to add MPD for params
@@ -1989,160 +1989,156 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.idx
 
 
-#plotIndexNotLattice--------------------2013-09-12
+#plotIndexNotLattice--------------------2014-09-29
 # Taking some of plt.idx, but doing plot.Index NOT as lattice
 # YMR - have five survey series, so adapting as required.
-#----------------------------------------------AME
-plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
-    ssnames=paste("Ser",1:9,sep=""), ...)
+#-------------------------------------------AME/RH
+plotIndexNotLattice <- function(obj, main="", save=NULL,
+   bar=1.96, ssnames=paste("Ser",1:9,sep=""),
+   ptypes = c("eps","png"), pngres=150, ...)
 {
 	cvcol="slategrey"
-	# obj=obj$Survey, objCPUE=obj$CPUE
-	seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
+	objSurv=obj$Survey; objCPUE=obj$CPUE
+	seriesList <- sort( unique( objSurv$Series ) )   # sort is risky if not always in same order
 	nseries=length(seriesList)
-	# surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
-	#surveyHeadName=c("GIG historical", "QCS synoptic", "QCS shrimp", "WCHG synoptic", "WCVI synoptic", "NMFS Triennial") # Appears again below
-	#surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
 	surveyHeadName=if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
 	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
 
-	postscript("survIndSer.eps", height=8.0, width=6.0,  horizontal=FALSE,  paper="special")   # height was 6 for POP
-	par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) # Do c(3,2) for 6 surveys
-	par(mai=c(0.3,0.25,0.4,0.1))          # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
-	par(omi=c(0.4,0.3,0,0.1))             # Outer margins of whole thing, inch
-	#yrTicks=as.numeric( obj$Year)         # Haven't a clue why AME is doing this
-	yrTicks=min(obj$Year):max(obj$Year)
-
-	for ( i in 1:nseries )
-	{
-		idx <- seriesList[i]==obj$Series
-		seriesVals=obj[idx,]
-		# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
-		seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
-		seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
-
-		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
-		# yearsPlot=min(yearsnotNA):max(yearsnotNA)
-		xLim=range(yearsnotNA)
-		if(i==1)
-		  xLimAll=xLim    # range to use in next plot
-		xLimAll=range(xLim, xLimAll)    # range to use in next plot
-		yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
-		# postscript(surveyFigName[i],  height=4, width=3.2,
-		#     horizontal=FALSE,  paper="special")
-		#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-		plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo,
-			xlim=xLim, ylim=yLim, xlab="", ylab="", gap=0, pch=19) # restrict years for plot, does error bars
-		lines(seriesVals$Year, seriesVals$Fit, lwd=2)
-		axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-		mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
-		addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,0),cex=0.8,col=cvcol)
-		if(i==nseries) {
-			mtext(side=2, line=0.5, cex=1, outer=TRUE,"Relative biomass")
-			mtext(side=1, line=0.5, cex=1.2, outer=TRUE, "Year")
+	# (1) Plot the survey indices 
+	yrTicks=min(objSurv$Year):max(objSurv$Year)
+	rc = .findSquare(nseries)
+	for (p in ptypes) {
+		if (p=="eps") postscript("survIndSer.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("survIndSer.png", res=pngres, width=6.5*pngres, height=8.5*pngres)
+		par(mfrow=c(rc[1],rc[2]), mar=c(2,2,1,0.5), oma=c(1.5,2,1,0.5), mgp=c(1.75,0.5,0))
+		for ( i in 1:nseries ) {
+			idx <- seriesList[i]==objSurv$Series
+			seriesVals=objSurv[idx,]
+			# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
+			seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
+			seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
+			yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+			# yearsPlot=min(yearsnotNA):max(yearsnotNA)
+			xLim=range(yearsnotNA)
+			if(i==1)
+				xLimAll=xLim    # range to use in next plot
+			xLimAll=range(xLim, xLimAll)    # range to use in next plot
+			yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
+			plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo,
+				xlim=xLim, ylim=yLim, xlab="", ylab="", gap=0, pch=19) # restrict years for plot, does error bars
+			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
+			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
+			mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+			addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,1),cex=0.8,col=cvcol)
+			if(i==nseries) {
+				mtext(side=2, line=0, cex=1, outer=TRUE,"Relative biomass")
+				mtext(side=1, line=0, cex=1.2, outer=TRUE, "Year")
+			}
 		}
+		dev.off()
 	}  # cex was 0.8 for POP
-	dev.off()
 
-	# And again, but with the same year axis for each. Think will be instructive to see
-	postscript("survIndSer2.eps", height=8.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
-	par(mfrow=c(nseries,1),mgp=c(2,0.75,0)) #  do c(3,2) for 6 series, and change axes labelling
-	par(mar=c(0,3,0,3))         # RH changed space & below; JAE changed for each figure # was for POP 0.45, 0.5, 0.3, 0.2
-	par(oma=c(4,3,0,0))           # Outer margins of whole thing, inch
-	#yrTicks=as.numeric( obj$Year)
+	# (2) And again, but with the same year axis for each. Think will be instructive to see
 	ymaxsurvIndSer3=0           # For ymaxsurvIndSer3.eps
 	xLimmaxsurvIndSer3=NA
-	for ( i in 1:length(seriesList) )
-	{
-		idx <- seriesList[i]==obj$Series
-		yrTicks=as.numeric( obj$Year[idx])           # all years
-		YrTicks=intersect(seq(1900,2100,10),yrTicks) # decadal ticks
-		seriesVals=obj[idx,]
-		# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
-		seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
-		seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
-
-		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
-		# yearsPlot=min(yearsnotNA):max(yearsnotNA)
-		# xLim=range(yearsnotNA)
-		yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
-		# For axis for survIndSer3.eps:
-		ymaxsurvIndSer3=max(ymaxsurvIndSer3, max(seriesVals$Obs, na.rm=TRUE)/ mean(seriesVals$Obs, na.rm=TRUE) )
-		xLimmaxsurvIndSer3=range(xLimmaxsurvIndSer3, yearsnotNA, na.rm=TRUE)     # setting xLimmaxsurvIndSer3=NA above
-
-		#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-		plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, xaxt="n", xlim=xLimAll, ylim=yLim, xlab="", ylab="", gap=0, pch=19)
-		# restrict years for plot, does error bars
-		lines(seriesVals$Year, seriesVals$Fit, lwd=2)
-		axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
-		axis( side=1, at=YrTicks, tcl=-0.4, labels=FALSE)
-		mtext(side=4, line=0.5, cex=0.8, outer=FALSE, surveyHeadName[i])
-		addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,1),cex=.8+(.05*(nseries-1)),col=cvcol)
-		if(i==nseries) {
+	for (p in ptypes) {
+		if (p=="eps") postscript("survIndSer2.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("survIndSer2.png", res=pngres, width=6.5*pngres, height=8.5*pngres)
+		par(mfrow=c(nseries,1), mar=c(0,2,0,3), oma=c(3.2,2,0.5,0), mgp=c(1.75,0.5,0))
+		for ( i in 1:length(seriesList) ) {
+		idx <- seriesList[i]==objSurv$Series
+			yrTicks=as.numeric( objSurv$Year[idx])           # all years
+			YrTicks=intersect(seq(1900,2100,10),yrTicks) # decadal ticks
+			seriesVals=objSurv[idx,]
+			# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
+			seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
+			seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
+			yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+			# yearsPlot=min(yearsnotNA):max(yearsnotNA)
+			# xLim=range(yearsnotNA)
+			yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
+			# For axis for survIndSer3.eps:
+			ymaxsurvIndSer3=max(ymaxsurvIndSer3, max(seriesVals$Obs, na.rm=TRUE)/ mean(seriesVals$Obs, na.rm=TRUE) )
+			xLimmaxsurvIndSer3=range(xLimmaxsurvIndSer3, yearsnotNA, na.rm=TRUE)     # setting xLimmaxsurvIndSer3=NA above
+			#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+			plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, xaxt="n", xlim=xLimAll, ylim=yLim, xlab="", ylab="", gap=0, pch=19)
+			# restrict years for plot, does error bars
+			lines(seriesVals$Year, seriesVals$Fit, lwd=2, col="blue")
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
-			axis( side=1, at=YrTicks, tcl=-0.4, labels=TRUE)
-			mtext(side=1, line=2, cex=1.2, outer=TRUE, "Year")
-			mtext(side=2, line=0, cex=1, outer=TRUE,"Relative biomass")
-		}
-	}                         # cex was 0.8 for POP
-	dev.off()
-  
-  # And again, but all series on same plot, normalised to their means to see trends. Maybe add CPUE also.
+			axis( side=1, at=YrTicks, tcl=-0.4, labels=FALSE)
+			mtext(side=4, line=1.5, cex=0.8, outer=FALSE, paste0(strwrap(surveyHeadName[i],10),collapse="\n"))
+			addLabel(0.025,0.075,paste("+ CV process error ",cvpro[i],sep=""),adj=c(0,0),cex=.8+(.05*(nseries-1)),col=cvcol)
+			if(i==nseries) {
+				axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
+				axis( side=1, at=YrTicks, tcl=-0.4, labels=TRUE)
+				mtext(side=1, line=2, cex=1.2, outer=TRUE, "Year")
+				mtext(side=2, line=0, cex=1, outer=TRUE,"Relative biomass")
+			}
+		}  # cex was 0.8 for POP
+		dev.off()
+	}
+
+	# (3) And again, but all series on same plot, normalised to their means to see trends. Maybe add CPUE also.
 	# Calculate max of normalised surveys and CPUEs
-	objsurv=obj[!is.na(obj$Obs),]
+	objsurv=objSurv[!is.na(objSurv$Obs),]
 	norsurv=sapply(split(objsurv$Obs,objsurv$Series),function(x){xx=x[!is.na(x)]; if (length(xx)==0) 0 else xx/mean(xx)},simplify=FALSE)
 	maxsurv=max(sapply(norsurv,max))
 	yrssurv=range(objsurv$Year); yrsspan=yrssurv[1]:yrssurv[2]
 	objcpue=objCPUE[is.element(objCPUE$Year,yrsspan),]
 	norcpue=sapply(split(objcpue$Obs,objcpue$Series),function(x){xx=x[!is.na(x)]; if (length(xx)==0) 0 else xx/mean(xx)},simplify=FALSE)
 	maxcpue=max(sapply(norcpue,max))
-#browser();return()
 
-	postscript("survIndSer3.eps", height=6.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
-	#yrTicks=as.numeric( obj$Year)  # Haven't a clue why AME is doing this
-	yrTicks=yrsspan
-	YrTicks=intersect(seq(1900,2100,10),yrTicks) # decadal ticks
-	NSL=1:length(seriesList)
-	# Set up plot
-	plot(NA, xlim=yrssurv, ylim=c(0, max(maxsurv,maxcpue)), xlab="Years", ylab="Survey indices normalised by means", xaxt="n")
-	abline(h=1, col="grey")
-	axis(1,at=yrTicks,tck=-0.01,labels=FALSE)
-	axis(1,at=YrTicks,tck=-0.02,labels=TRUE)
-	for ( i in NSL )
-	{
-		idx <- is.element(objsurv$Series,seriesList[i])
-		seriesVals=objsurv[idx,]
-		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
-		points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, na.rm=TRUE), pch=i, col=i, type="o")
+	for (p in ptypes) {
+		if (p=="eps") postscript("survIndSer3.eps", width=6.5, height=6.5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("survIndSer3.png", res=pngres, width=6.5*pngres, height=6.5*pngres)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		#postscript("survIndSer3.eps", height=6.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
+		yrTicks=yrsspan
+		YrTicks=intersect(seq(1900,2100,10),yrTicks) # decadal ticks
+		NSL=1:length(seriesList)
+		CLRS=c("black","blue","red","green4","orange","purple","navy","salmon")
+		clrs=rep(CLRS,max(NSL))[NSL]
+		# Set up plot
+		plot(NA, xlim=yrssurv, ylim=c(0, max(maxsurv,maxcpue)), xlab="Years", ylab="Survey indices normalised by means", xaxt="n")
+		abline(h=1, col="grey")
+		axis(1,at=yrTicks,tck=-0.01,labels=FALSE)
+		axis(1,at=YrTicks,tck=-0.02,labels=TRUE)
+		for ( i in NSL ) {
+			idx <- is.element(objsurv$Series,seriesList[i])
+			seriesVals=objsurv[idx,]
+			yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+			points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, na.rm=TRUE), pch=i, col=clrs[i], type="o")
+		}
+		legtxt=if (exists(".PBSmodEnv")) tcall(PBSawatea)$Snames else PBSawatea$Snames
+		# Now draw on CPUE series also:
+		nseries=length(seriesList)  #  Need nseries from surveys for col
+		seriesListCPUE <- sort( unique( objcpue$Series ) )
+		ncpue=length(seriesListCPUE)
+		cpue = as.logical(obj$extra$likelihoods$CPUE)
+		# sort risky if not always in same order.
+		lty=rep(1,length(NSL))
+		if(cpue) {
+			lty=c(lty,rep(2,ncpue))
+			NSL=c(NSL, (max(NSL)+1):(max(NSL)+ncpue))
+			clrs=c(clrs,rep(CLRS,ncpue)[1:ncpue])
+			legtxt=c(legtxt, gsub("Series","CPUE",seriesListCPUE))
+			for ( i in 1:ncpue ) {
+				idx <- is.element(objcpue$Series,seriesListCPUE[i])
+				seriesVals=objcpue[idx,]
+				yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+				if (length(yearsnotNA)>0)
+					points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, 
+						na.rm=TRUE), pch=i+nseries, col=clrs[i+nseries], type="o", lty=2)
+			}
+		}
+		addLegend(0.075,0.975,bty="n",col=clrs,pch=NSL,legend=legtxt,cex=0.8)
+		dev.off()
 	}
-	legtxt=if (exists(".PBSmodEnv")) tcall(PBSawatea)$Snames else PBSawatea$Snames
 
-	# Now draw on CPUE series also:
-	nseries=length(seriesList)  #  Need nseries from surveys for col
-	seriesListCPUE <- sort( unique( objcpue$Series ) )
-	ncpue=length(seriesListCPUE)
-	# sort risky if not always in same order.
-	lty=c(rep(1,length(NSL)),rep(2,ncpue))
-	NSL=c(NSL, (max(NSL)+1):(max(NSL)+ncpue))
-	legtxt=c(legtxt, gsub("Series","CPUE",seriesListCPUE))
-	for ( i in 1:ncpue )
-	{
-		idx <- is.element(objcpue$Series,seriesListCPUE[i])
-		seriesVals=objcpue[idx,]
-		yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
-		if (length(yearsnotNA)>0)
-			points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, 
-				na.rm=TRUE), pch=i+nseries, col=i+nseries, type="o", lty=2)
-	}
-	legend("topright",bty="n",col=NSL,pch=NSL,legend=legtxt,cex=0.8)
-	dev.off()
-#browser();return()
-
-	# And again, but big figures for ease of viewing. 
-	for ( i in 1:length(seriesList) )
-	{
-		idx <- seriesList[i]==obj$Series
-		seriesVals=obj[idx,]
+	# (4) And again, but big figures for ease of viewing. 
+	for ( i in 1:length(seriesList) ) {
+		idx <- seriesList[i]==objSurv$Series
+		seriesVals=objSurv[idx,]
 		# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
 		seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
 		seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
@@ -2150,16 +2146,18 @@ plotIndexNotLattice <- function( obj,objCPUE,main="",save=NULL,bar=1.96,
 		# yearsPlot=min(yearsnotNA):max(yearsnotNA)
 		xLim=range(yearsnotNA)
 		yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
-		postscript(paste("survIndSer4-", i, ".eps", sep=""), height=6.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
-		#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-		par( oma=c(0,0,0,0), mar=c(3,3,2,1), mgp=c(1.8,0.5,0))
-		plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, 
-			xlim=xLim, ylim=yLim, xlab="Year", ylab="Relative biomass", gap=0, pch=19)
-		lines(seriesVals$Year, seriesVals$Fit, lwd=2)
-		axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-		mtext( side=3, line=0.25, cex=1, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
-		addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,0),cex=0.8,col=cvcol)
-		dev.off()
+		for (p in ptypes) {
+			if (p=="eps") postscript(paste0("survIndSer4-", i, ".eps"), width=6.5, height=6.5, horizontal=FALSE,  paper="special")
+			else if (p=="png") png(paste0("survIndSer4-", i, ".png"), res=pngres, width=6.5*pngres, height=6.5*pngres)
+			par(mfrow=c(1,1), mar=c(3,3,2,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, 
+				xlim=xLim, ylim=yLim, xlab="Year", ylab="Relative biomass", gap=0, pch=19, cex.lab=1.25)
+			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
+			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
+			mtext( side=3, line=0.25, cex=1.5, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+			addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,0),cex=0.8,col=cvcol)
+			dev.off()
+		}
 	}  # cex was 0.8 for POP
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotIndexNotLattice
@@ -2645,159 +2643,14 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
   #       series given a list of character vectors in series.
   #         ACH: I'm not sure if this applies to CL
 
-	seriesList <- sort( unique( obj$CAc$Series) )
-	maxcol=4
-	CAc.yrs=sapply(split(obj$CAc$Year,obj$CAc$Series),unique,simplify=FALSE)
-	CAc.nyrs=sapply(CAc.yrs,length)
+#browser();return()
 
-	for ( i in 1:length(seriesList) )  {
-		# AME dividing years into 4 groups - note no 1985, 86,
-		#  or 88 data - see below, doing more automatically saving as .eps
-		# windows()
-		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c" )
-		# if ( save )
-		#   savePlot( paste("catchAgeComm",i,sep=""), type="png" )
-		# windows()
-		# AME trying to do two on one, from Paul Murrel's chap4:
-		# HERE
-		# plot1 <-  plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-		# plot2 <-  plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-		# print(plot1, position=c(0,0.2,1,1), more=TRUE)  #didn't work.
-		# ----
-		#par(mfrow=c(2,1))
-		#plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-		# if(0==1) {   # these were four files total, now doing less per page below:
-		# windows()
-		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-		# if ( save )
-		# savePlot( paste("catchAgeComm",i,sep=""), type="png" )
-		#   savePlot( paste("catchAgeComm1"), type="png" ) # AME took out i
-		# windows()
-		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i, "(no 1985, 86 or 88)"), what="c", years=1985:1994 )  # no 85, 86 or 88
-		# if ( save )
-		#		savePlot( paste("catchAgeComm2"), type="png" ) # AME took out i
-		# windows()
-		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1995:2001 )
-		# if ( save )
-		#   savePlot( paste("catchAgeComm3"), type="png" ) # AME took out i
-		# 
-		# windows()
-		# plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=2002:2009 )
-		# if ( save )
-		#   savePlot( paste("catchAgeComm4"), type="png" ) # AME took out i
-		#} # end if(0==1)
-		# unique(currentRes$CAc$Year) is, do four a page:
-		# 1978 1979 1980 1981 1982 1983 1984 1987 1989 1990 1991 1992 1993 1994 1995
-		#  1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009
-		# uniqueCAcyears=unique(currentRes$CAc$Year)  # length=29, so do groups of 4
-		# numpanels=4
-		# for(jj in 0:7) { 
-		#    windows()
-		#    startyr=uniqueCAcyears[jj*4 + 1]
-		#    # print(startyr)
-		#    endyr=uniqueCAcyears[(jj+1)*4]
-		#      if(jj == 7) {endyr=uniqueCAcyears[length(uniqueCAcyears)]}
-		#    plotCA( obj, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=startyr:endyr )
-		# browser()
-		#  if ( save )
-		# savePlot( paste("catchAgeComm",i,sep=""), type="png" )
-		#    savePlot( paste("catchAgeComm", jj, sep=""), type="png" ) # AME took out i
-		# } # end for jj in 0:7
-		# END of AME manually doing multiple plots. This is much easier:
-		# AME doing again, but more automatically, saving as .eps as for plotDens
-		#  as multiple pages. Starting writing plotCAPOP, but could do all
-		#  by changing arguments to plotCA(...). Haven't referred to i here, as for
-		#  POP there's only one commercial set of data.
-		CA.key=list(text=list(lab= c("Observed", "Predicted")),
-			lines=list(col= c("black", "red"),  cex= c(0.3, 0.3)),
-			type=c("p", "l"), x=0.78, y=-0.04, pch=c(20,20), lwd=1, between=0.3)
-			# pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
-		CAc.sex=unique(obj$CAc$Sex)
-		for(plot.sex in CAc.sex) {
-			ii=grep(plot.sex,CAc.sex)
-			# For YMR, changing height from 4.5, and layout from c(4,4), to put all on one
-			age.layout = rev(c(ceiling(CAc.nyrs[i]/maxcol),maxcol)) # backwards in stupid lattice
-			pheight    = switch(age.layout[2],4,6,9,9,9,9,9,9,9)
-			for (p in ptypes) {
-				pname = paste0("ageComm", plot.sex,i)
-				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=pheight, horizontal=FALSE,  paper="special", onefile=FALSE)
-				else if (p=="png") png(paste0(pname,".png"), res=pngres, width=6.5*pngres, height=pheight*pngres)
-				par(mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0)) # this line may have no effect on `plotCA'
-				plotCA( obj, what="c", ylab="Proportion", xlab="Age class", sex=plot.sex, layout= age.layout, key=CA.key, 
-					main=sexlab[ii], pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 ,series=i)
-				# col.lines otherwise boys are blue
-				# Tried using rbind to add dummy data for 1985, 1986 and 1988, but didn't work:
-				# add=c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
-				# xxx$CAc=rbind(xxx$CAc, add)
-				dev.off()
-			}
-		} # end of plot.sex loop
-	} # end of seriesList loop
-
-  # AME adding - plotting the CA survey data for all three series.
-  #  doing .eps below
-    # {
-      #if ( exists( "currentRes" ) )
-      #{
-      #  seriesList <- sort( unique( obj$CAs$Series) )
-        # for ( i in 1:length(seriesList) )
-        # {
-        #   windows()
-        #   plotCA( currentRes, series=i, main=paste("Survey",mainTitle,"Series",i), what="s" )
-        #   if(save)
-        #     savePlot( paste("catchAgeSurvey", i, sep=""), type="png" )
-        #  }
-      #}
-      # }
-
-  # AME adding - CA survey data for all three (no fitting for 3)
-  #   postscript files.
-  #      seriesList <- sort( unique( obj$CAs$Series) )
-  #      for ( i in 1:length(seriesList) )
-  #      {
-  #        windows()
-  #        plotCA( currentRes, series=i, main=paste("Survey",mainTitle,"Series",i), what="s" )
-  #        if(save)
-  #          savePlot( paste("catchAgeSurvey", i, sep=""), type="png" )
-  #        }
-
-	# Survey Age Fits (modified by RH 2012-08-01)
-	# AME: pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
-	CAs.sex=unique(obj$CAs$Sex)
-	#ageSurveyFigName =c("ageSurvGIG", "ageSurvQCSsyn", "ageSurvQCSshr")
-	age.height=c(3.0, 2.8, 3) # For .eps figs:
-	age.width=c(3.5, 7, 3)    # For .eps figs:
-	seriesList <- sort( unique( obj$CAs$Series) )
-	ageSurveyFigName=paste("ageSurv",ssnames[seriesList],sep="") # friggin nightmare
-	ageSurveyFigName=gsub(" ","",ageSurveyFigName)               # perhaps redundant but just to be sure
-	#age.layout=list(); age.layout[[1]]=c(2,1); age.layout[[2]]=c(4,1)
-	for ( i in 1:length(seriesList) ) {
-		ii=seriesList[i]; zi=is.element(obj$CAs$Series,ii)
-		if (!any(zi)) next
-		iyr=unique(obj$CAs$Year[zi]); nyr=length(iyr)
-		ncol=min(nyr,maxcol); nrow=ceiling(nyr/ncol)
-		# Shifting the key here down slightly (RH: variable y-shift depending on nrow)
-		CAs.key=list(text=list(lab=c("Obs","Pred")), lines=list(col=c("black","red"),
-			cex= c(0.3,0.3)), type=c("p","l"), x=0.78, y=ifelse(nrow==1,-0.16,-0.08), pch=c(20,20), lwd=1, between=0.3)
-		for(plot.sex in CAs.sex) {
-			jj=grep(plot.sex,CAs.sex)
-			for (p in ptypes) {
-				pname = paste0(ageSurveyFigName[i], plot.sex,ii)
-				if (p=="eps") postscript(paste0(pname,".eps"), width=1.5*ncol, height=2*nrow+1.5, horizontal=FALSE,  paper="special", onefile=FALSE)
-				else if (p=="png") png(paste0(pname,".png"), res=pngres, width=(1.5*ncol)*pngres, height=(2*nrow+1.5)*pngres)
-				par(mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0)) # this line may have no effect on `plotCA'
-				plotCA( obj, what="s", series=ii, ylab="Proportion",
-					#xlab="Age class", sex=plot.sex, layout=age.layout[[i]], key=CAs.key, main=plot.sex, # RH disabled
-					xlab="Age class", sex=plot.sex, layout=c(ncol,nrow), key=CAs.key, main=sexlab[jj], # RH: Stupid trellis appears to take (columns,rows) for the layout.
-					pch=20, cex.points=0.5, col.lines=c("red", "red"), lwd.lines=2 )
-				# AME: col.lines otherwise boys are blue
-				# AME: Tried using rbind to add dummy data for 1985, 1986, and 1988, but didn't work:
-				#      add=c(1, 1985, 0, "Female", 1, 60, 60, 0, 0)
-				#      xxx$CAc=rbind(xxx$CAc, add)
-				dev.off()
-			}
-		}  # end of plot.sex loop
-	}     # end of seriesList loop
+	# RH: Removed a bunch of commented text and code by AME
+	#   Also transferred code manipulation for plotting MPD age fits
+	#   into a new function called `plotAges' (located in `plotFuns.r')
+	#   to handle both commercial and survey age fits.
+	plotAges(obj, what="c", maxcol=4, sexlab=sexlab, ptypes=ptypes, pngres=pngres)
+	plotAges(obj, what="s", maxcol=4, sexlab=sexlab, ptypes=ptypes, pngres=pngres)
   
   
   # Plot the fishery index (CPUE data I think)
@@ -2815,7 +2668,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
   #   savePlot( "surveyIndex", type="png" )
   
   # Now do on one plot as postscript:
-  plotIndexNotLattice(obj$Survey, obj$CPUE, ssnames=ssnames)
+  plotIndexNotLattice(obj, ssnames=ssnames, ptypes=ptypes, pngres=pngres ) # survey indices
 
   # Single plot of CPUE:
   plotCPUE(obj$CPUE, yLim=c(0, 200))
@@ -3490,7 +3343,7 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
 
 #importMCMC.ddiff-----------------------2011-08-31
 #  Import Functions for PJS Delay Difference Model
-# Purpose is to make an scapeMCMC object identical in format to
+# Purpose is to make an plotMCMC object identical in format to
 # the result of importMCMC from PJS delay difference model output.
 # The difference is that B is biomass defined by ddiff model.
 #----------------------------------------------AME
@@ -3512,7 +3365,7 @@ importMCMC.ddiff <- function()
   # with headers "rdev_yyyy".
   R <- params[ ,rdevID ]
 
-  # Now rename with year only as per scapeMCMC projection object.
+  # Now rename with year only as per plotMCMC projection object.
   names( R ) <- gsub( "rdev_","",names(R) )
 
   result <- list( L=L, P=P, B=B, R=R )
@@ -3522,7 +3375,7 @@ importMCMC.ddiff <- function()
 
 
 #importProj.ddiff-----------------------2011-08-31
-# Purpose is to make an scapeMCMC object identical in format to
+# Purpose is to make an plotMCMC object identical in format to
 # the result of importProj from PJS delay difference model output.
 # The difference is that B is biomass defined by ddiff model.
 #----------------------------------------------AME

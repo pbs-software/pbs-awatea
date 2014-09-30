@@ -6,8 +6,8 @@
 #  cquantile.vec    : get one probability at a time.
 #  plotBars         : barplots of specific year age proportions
 #  plotBox          : modified boxplot with quantile whiskers.
-#  plotDensPOP      : edited scapeMCMC::plotDens function.
-#  plotDensPOPpars  : edited scapeMCMC::plotDens for parameters.
+#  plotDensPOP      : edited plotMCMC::plotDens function.
+#  plotDensPOPpars  : edited plotMCMC::plotDens for parameters.
 #  plotTracePOP     : plot traces with running median.
 #===============================================================================
 
@@ -422,7 +422,7 @@ plotBox = function (x, ..., range=1.5, width=NULL, varwidth=FALSE,
 
 
 #plotDensPOP----------------------------2010-10-19
-#  editing scapeMCMC::plotDens function to have
+#  editing plotMCMC::plotDens function to have
 #  less whitesapce, not repeat x axis labels, and make y axes
 #  the same scales. Can't just do through options. For Recruits
 #  and Biomass. See plotDensPOPpar.r for parameters.
@@ -534,7 +534,7 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
 
 
 #plotDensPOPpars------------------------2010-10-26
-# editing scapeMCMC::plotDens for parameters,
+# editing plotMCMC::plotDens for parameters,
 #  to put MPDs on. AME. 26th Oct 2010.
 #----------------------------------------------AME
 plotDensPOPpars =
@@ -941,6 +941,47 @@ plt.bubbles = function(mpdObj, nsex=2,
 	invisible()
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.bubbles
+
+#plotAges-------------------------------2014-09-30
+#  Plot the MPD model fits to age data (commercial
+#  or survey) using the scape function `plotCA'.
+#-------------------------------------------AME/RH
+plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
+   ptypes = c("eps","png"), pngres=150)
+{
+	seriesType = paste0("CA",what)
+	seriesList = sort( unique( obj[[seriesType]][["Series"]]) )
+	if (what=="c") seriesName = tcall(PBSawatea)$Cnames[tcall(PBSawatea)$CApos]
+	else           seriesName = tcall(PBSawatea)$Snames[tcall(PBSawatea)$SApos]
+	CA.yrs  = sapply(split(obj[[seriesType]][["Year"]], obj[[seriesType]][["Series"]]), unique, simplify=FALSE)
+	CA.nyrs = sapply(CA.yrs,length)
+
+	for ( i in 1:length(seriesList) )  {
+		ncols   = min(maxcol,max(CA.nyrs[i],1))
+		nrows   = ceiling(CA.nyrs[i]/ncols)
+		age.layout = rev(c(nrows,ncols)) # backwards in stupid lattice
+		pwidth  = switch(ncols,4,6,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5)
+		pheight = switch(nrows,4,6,9,9,9,9,9,9,9,9,9,9)
+		CA.sex = unique(obj[[seriesType]][["Sex"]])
+		for(plot.sex in CA.sex) {
+			j = grep(plot.sex,CA.sex)
+			# legend key:
+			CA.key = list(text=list(lab=c("Obs","Pred")), lines=list(col=c("black",ifelse(plot.sex=="Male","blue","red")),
+				cex = c(0.5,0.5)), type=c("p","l"), x=0.78, y=ifelse(nrows==1,-0.10,-0.03), pch=c(20,20), lwd=1, between=0.3)
+			# pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
+			for (p in ptypes) {
+				pname = paste0(ifelse(what=="c","ageComm","ageSurv"), plot.sex, i)
+				if (p=="eps") postscript(paste0(pname,".eps"), width=pwidth, height=pheight, horizontal=FALSE,  paper="special", onefile=FALSE)
+				else if (p=="png") png(paste0(pname,".png"), res=pngres, width=pwidth*pngres, height=pheight*pngres)
+				par(mar=c(5,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.5,0)) # this line may have no effect on `plotCA'
+				plotCA( obj, what=what, ylab="Proportion", xlab="Age class", sex=plot.sex, layout= age.layout, key=CA.key, 
+					main=paste0(seriesName[i]," - ",sexlab[j]), pch=20, cex.points=0.5, col.lines=ifelse(plot.sex=="Male","blue","red"), lwd.lines=2 ,series=i)
+				if (p %in% c("eps","png")) dev.off()
+			} # end of plot type loop
+		} # end of plot.sex loop
+	} # end of seriesList loop
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotAges
 
 
 #==============H I D D E N========================
