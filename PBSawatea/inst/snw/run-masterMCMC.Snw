@@ -599,7 +599,7 @@ umsy.MCMC   = currentMSY$u
 
 # gather MCMC values suggested by Trevor Davies (Dalhousie) for comparison
 trevorMCMC = currentMCMC$P[,c("h","M_1","M_2")[is.element(c("h","M_1","M_2"),names(currentMCMC$P))],drop=FALSE]
-trevorMCMC = data.frame(trevorMCMC, B0=B0.MCMC[,1], MSY=msy.MCMC, Bmsy=Bmsy.MCMC, umsy=umsy.MCMC)
+trevorMCMC = data.frame(trevorMCMC, B0=B0.MCMC[,1], MSY=msy.MCMC, Bmsy=Bmsy.MCMC, umsy=umsy.MCMC, f=currentMCMC$L$f)
 
 # To calculate the actual projected recruitments (from the eps)
 currentProj$R = list()
@@ -836,7 +836,7 @@ currentMCMC$U = as.data.frame(t(apply(currentMCMC$U, 1, function(x,y){ y/x }, y=
 # So currentMCMC$U is now exploitation rate for MCMC output.
 
 #upenult.MCMC = currentMCMC$U[,as.character(currYear-1)]
-upenult.MCMC = currentMCMC$U[,grep(as.character(currYear-1),names(currentMCMC$U))]
+upenult.MCMC = currentMCMC$U[,grep(as.character(currYear-1),names(currentMCMC$U)),drop=FALSE]
 umax.MCMC = apply(currentMCMC$U, 1, max)
 
 # From Rowan - quantiles for every year, then manually find the maximum median. 
