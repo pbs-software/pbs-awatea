@@ -366,10 +366,8 @@ Rt.mpd = currentRes$B$R # for Kendra
 # R0.mpd = currentMCMC$P[1,"R_0"] #Matches numbers from Ro_So_VB.pst,
                                   # but wasn't going to use that 
                                   #  before?
-# h.mpd = currentMCMC$P[1,"h"]
+# h.mpd  = currentMCMC$P[1,"h"]
 Nats.mpd = currentRes$N
-ut.mpd = currentRes$B$U[-length(currentRes$B$U)]  
-                                  # remove final NA for 2011
 if(currentRes$extra$priors$Rinit_prior[1] > 0 & currentRes$extra$priors$Rinit_prior[7] != 1) stop("Not starting from unfished equilibrium, so need to fix B0 values")
 
 # Virgin_Spawning_Biomass  Change if get above error message
@@ -378,18 +376,23 @@ B0.mpd = Bt.mpd[1]                # = currentRes$extra$biomass$Virgin_Spawning_B
 By.mpd = Bt.mpd[length(Bt.mpd)]   # final year spawning biomass
 ByB0.mpd = By.mpd/B0.mpd          # depletion spawning biomass
 
-# Virgin_Vulnerable_Biomass (one for each gear type)
+# Virgin_Vulnerable_Biomass (one for each gear type, retain matrix sructure)
 Ngears = currentRes$extra$general$Nmethods
 Vt.mpd = currentRes$B[,grep("VB",names(currentRes$B)),drop=FALSE] # need to use `drop' argument for Ngears=1
-V0.mpd = Vt.mpd[1,]               # = currentRes$extra$biomass$Virgin_Vulnerable_Biomass
-Vy.mpd = Vt.mpd[nrow(Vt.mpd),]    # final year vulnerable biomass
-VyV0.mpd = Vy.mpd/V0.mpd          # depletion vulnerable biomass
+V0.mpd = Vt.mpd[1,,drop=FALSE]             # = currentRes$extra$biomass$Virgin_Vulnerable_Biomass
+Vy.mpd = Vt.mpd[nrow(Vt.mpd),,drop=FALSE]  # final year vulnerable biomass
+VyV0.mpd = Vy.mpd/V0.mpd                   # depletion vulnerable biomass
 VtV0.mpd = sapply(1:Ngears,function(g,x,y){x[,g]/y[,g]},x=Vt.mpd,y=V0.mpd) # Vt relative to V0
 
-logRecDev.mpd = currentRes$Dev$Annual    # epsilon_t
+# Exploitation rate (retain matrix structure in case there is more than one gear)
+#ut.mpd   = currentRes$B$U[-length(currentRes$B$U)]  # remove final NA (RH: only works for one gear)
+ut.mpd = currentRes$B[,grep("U",names(currentRes$B)),drop=FALSE] 
+ut.mpd = ut.mpd[-nrow(ut.mpd),,drop=FALSE] # need to use `drop' argument for Ngears=1
+
+logRecDev.mpd = currentRes$Dev$Annual      # epsilon_t
     # = currentRes$extra$parameters$log_RecDev
     #   mean is 0.  Haven't had to tweak when tweaking R index
-logInitAgeDev.mpd = currentRes$Dev$Initial  # deviations for initial age structure, ages 2+ mean is 0
+logInitAgeDev.mpd = currentRes$Dev$Initial # deviations for initial age structure, ages 2+ mean is 0
 
 # From Rowan's extra function, to give the mpd's:
 R0.mpd = currentRes$extra$parameters$R0
