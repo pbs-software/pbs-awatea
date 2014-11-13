@@ -24,7 +24,6 @@ runSweave( wd = getwd(), strSpp="XYZ",
    delim   = "-",
    debug   = FALSE,
    locode  = FALSE,    # source this function as local code (for development)
-   awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
    codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
    sexlab  = c("Females","Males")
 ) 
@@ -50,7 +49,6 @@ runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
   \item{delim}{\emph{character} that delimits the components of the \code{filename} prefix.}
   \item{debug}{\emph{logical}: if \code{TRUE}, function only builds the target \code{.Snw} file but does not execute it.}
   \item{locode}{\emph{logical}: if \code{TRUE}, source local code located at \code{codePath}.}
-  \item{awateaPath}{\emph{character}: system path to the \code{Awatea.exe} executable (using path delimiter `/`).}
   \item{codePath}{\emph{character}: system path to \pkg{PBSawatea} source code (using path delimiter `/`).}
   \item{sexlab}{\emph{character}: labels for the sexes in figures.}
 

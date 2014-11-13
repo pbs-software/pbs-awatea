@@ -4,8 +4,11 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
-0.13  2014-10-17
+0.13  2014-11-13
+  - Removed argument `awateaPath' from `runSweave' and `runSweaveMCMC' as it is only used in `runADMB'. (RH 11/13)
+  - Fixed a bug in subfunction `biteMe' in `runSweave' and `runSweaveMCMC' to properly handle CApos (not just SApos). (RH 11/12)
   - Compressed input files by year into 7z-archives (ASCII files were taking up a lot of space). (RH 10/17)
+  - Added in some appendix info to `run-master.Snw' in case the MPD is to be used as an appendix (Rob needed it for YTR). (RH 10/6)
   - Debugged a few things in `run-master.Snw' and `run-masterMCMC.Snw' that were broken for 1-gear situation. (RH 10/6)
   - Transferred code that builds MPD fits to proportions-at-age from body of `plt.mpdGraphs' to new function `plotAges'. (RH 9/30)
   - Revised function `plotIndexNotLattice' to clean up output files and generate PNGs as well as EPSs. (RH 9/29)

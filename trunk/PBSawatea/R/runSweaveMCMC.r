@@ -1,4 +1,4 @@
-#runSweave------------------------------2014-08-26
+#runSweave------------------------------2014-11-13
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
@@ -19,7 +19,6 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
    mcsub   = 1:1000,
    delim   = "-",
    locode  = FALSE,       # source this function as local code (for development)
-   awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
    codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
    histRP  = FALSE,       # historical reference points
    wpaper  = FALSE,       # working paper
@@ -186,8 +185,9 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		"qtab\\(upenult.MCMC\\[,1]/umsy.MCMC", "qtab\\(upenult.MCMC\\[,1]/refPointsHistList$utarHRP")
 	figBites    = c("onefig\\{pairs1\\}")
 
-	biteMe = function(infile, bites, N) {
+	biteMe = function(infile, bites, N, CSpos=SApos, allsub=TRUE) { # bug fix: need to supply SApos or CApos
 		if (N==0) return(infile)
+		if (allsub) subfun =gsub else subfun=sub
 		for (b in bites) {
 			Nline = grep(b,infile)
 			if (length(Nline)==0) next
@@ -196,7 +196,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 			NApos = 0
 			for ( i in 1:N) {
 				iline = aline
-				NApos = NApos + as.numeric(SApos[i])
+				NApos = NApos + as.numeric(CSpos[i])
 #if (length(iline)>1) {browser();return()}
 				if (grepl("999",iline)){ iline = gsub("999",Nsurvey+i,iline) }#; browser()}
 				if (any(b==figBites)) {
@@ -204,7 +204,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 					else if (i==3) iline=gsub("\\{st}","{rd}",iline)
 					else if (i>=4) iline=gsub("\\{st}","{th}",iline)
 				}
-				if (grepl("CAs",b) && SApos[i]){
+				if (grepl("CAs",b) && CSpos[i]){
 					iline = gsub("1",i,iline)
 					alines = c(alines, gsub(paste("\\[",i,"]",sep=""),paste("\\[",NApos,"]",sep=""),iline))
 				}
@@ -216,8 +216,8 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		return(infile)
 	}
 	tfile = biteMe(tfile,SpriorBites,Nsurvey)
-	tfile = biteMe(tfile,CpriorBites,Ngear)
-	tfile = biteMe(tfile,gearBites,Ngear)
+	tfile = biteMe(tfile,CpriorBites,Ngear,CSpos=CApos)
+	tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
 	if (cpue)
 		tfile = biteMe(tfile,cpueBites,Ncpue)
 #browser();return()
@@ -285,3 +285,4 @@ runMCMC = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 
 #===YTR===
 #outMCM = runSweaveMCMC(strSpp="YTR",filename="YTR-CST2F-05.txt", runNo=5, rwtNo=2, Nsex=2, Ncpue=0, Nsurvey=6, Ngear=2, Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial"), SApos=c(T,T,T,F,F,F), Cnames=c("Bottom Trawl","Midwater Trawl"), locode=T, wpaper=F, redo.Graphs=T)
+#outMCM = runSweaveMCMC(strSpp="YTR",filename="YTR-CST1F-05.txt", runNo=5, rwtNo=2, Nsex=2, Ncpue=0, Nsurvey=6, Ngear=1, Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial"), SApos=c(T,T,T,F,F,F), Cnames=c("Trawl"), wpaper=F, redo.Graphs=T, locode=T)

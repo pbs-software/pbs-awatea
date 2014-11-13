@@ -24,7 +24,6 @@ runSweaveMCMC (wd=getwd(), strSpp="XYZ",
    mcsub   = 1:1000,
    delim   = "-",
    locode  = FALSE,       # source this function as local code (for development)
-   awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
    codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
    histRP  = FALSE,       # historical reference points
    wpaper  = FALSE,       # working paper
@@ -54,7 +53,6 @@ runMCMC(prefix=c("spp","area"), runs=1, rwts=0, ...)
   \item{mcsub}{\emph{numeric} vector of subsamples to select from the MCMC sample chain.}
   \item{delim}{\emph{character} that delimits the components of the \code{filename} prefix.}
   \item{locode}{\emph{logical}: if \code{TRUE}, source local code located at \code{codePath}.}
-  \item{awateaPath}{\emph{character}: system path to the \code{Awatea.exe} executable (using path delimiter `/`).}
   \item{codePath}{\emph{character}: system path to \pkg{PBSawatea} source code (using path delimiter `/`).}
   \item{histRP}{\emph{logical}: if \code{TRUE}, the routine will activate Sweave lines with the 
     prefix \code{@rmhrp} (denoting historical reference points), otherwise the lines are removed.}
