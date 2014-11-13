@@ -22,7 +22,9 @@
 \usepackage{graphicx}
 
 \def\AppLet{G}           % Appendix letter
-\def\StartP{100}         % page start
+\def\startP{1}           % page start (default=1)
+\def\startF{0}           % figure start counter (default=0)
+\def\startT{0}           % table start counter (default=0)
 \def\bfTh{{\bf \Theta}}  % bold Theta
 
 % Enable or disable two following lines based on whether the document is an appendix or not.
@@ -115,6 +117,29 @@
 %  It will set this for the rest of document [doesn't width do that in the above?]
 
 \begin{document}
+\setcounter{page}{\startP}
+\setcounter{figure}{\startF}
+\setcounter{table}{\startT}
+\setcounter{secnumdepth}{3}    % To number subsubheadings-ish
+
+\newcounter{prevchapter}
+\setcounter{chapter}{6}    % temporary for standalone chapters 9=(5=F, 6=G)
+\setcounter{prevchapter}{\value{chapter}}
+\addtocounter{prevchapter}{-1}
+\renewcommand{\thechapter}{\Alph{chapter}} % ditto
+\newcommand{\eqnchapter}{\Alph{prevchapter}}
+
+
+%\appendix           % Everything from now on will be an Appendix (activate when appendices stitched together)
+% Now want to number sections, tables etc. as A.1, A.2, etc.
+\renewcommand{\thesection}{\thechapter.\arabic{section}}   
+\renewcommand{\thetable}{\thechapter.\arabic{table}}    
+\renewcommand{\thefigure}{\thechapter.\arabic{figure}}  
+\renewcommand{\theequation}{\thechapter.\arabic{equation}}
+%\renewcommand{\thepage}{\thechapter\arabic{page}}
+\renewcommand{\thepage}{\arabic{page}}
+
+
 \begin{center}
 
 % First set up workspace:

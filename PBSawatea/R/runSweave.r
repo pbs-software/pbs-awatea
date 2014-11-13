@@ -1,4 +1,4 @@
-#runSweave------------------------------2014-09-29
+#runSweave------------------------------2014-11-12
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
@@ -18,7 +18,6 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
    delim   = "-",
    debug   = FALSE,
    locode  = FALSE,    # source this function as local code (for development)
-   awateaPath = "C:/Users/haighr/Files/Projects/ADMB/Coleraine",
    codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
    sexlab  = c("Females","Males")
 ) {
@@ -129,7 +128,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	gearBites  = c("Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]",
 		"onefig\\{ageCommMale1}","onefig\\{ageCommFemale1}","onefig\\{commAgeResSer1}","onefig\\{commAgeResSer1Female}","onefig\\{commAgeResSer1Male}")
 
-	biteMe = function(infile, bites, N, allsub=TRUE) {
+	biteMe = function(infile, bites, N, CSpos=SApos, allsub=TRUE) { # bug fix: need to supply SApos or CApos
 		if (N==0) return(infile)
 		if (allsub) subfun =gsub else subfun=sub
 		for (b in bites) {
@@ -137,14 +136,13 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 			if (length(Nline)==0) next
 			aline = infile[ Nline ]
 			alines=NULL
-#browser()
-			NApos = 0
+			NApos = 0; 
 			for ( i in 1:N) {
-				NApos = NApos + as.numeric(SApos[i])
-				if ((grepl("[Aa]ge",b) || grepl("CAs",b)) && !SApos[i]) next
-				#if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("muvec",b)) && !SApos[i]) next
+				NApos = NApos + as.numeric(CSpos[i])
+				if ((grepl("[Aa]ge",b) || grepl("CAs",b)) && !CSpos[i]) next
+				#if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("muvec",b)) && !CSpos[i]) next
 				#if (N==1 && !any(b==figBites)) alines=c(alines,subfun("\\[1,]","",aline))
-				if (grepl("CAs",b) && SApos[i]){
+				if (grepl("CAs",b) && CSpos[i]){
 					bline = subfun("1",i,aline)
 					alines = c(alines, subfun(paste("\\[",i,"]",sep=""),paste("\\[",NApos,"]",sep=""),bline))
 				}
@@ -160,13 +158,12 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = biteMe(tfile,cpueBites,Ncpue)
 	tfile = biteMe(tfile,survBites,Nsurvey)
 	#tfile = biteMe(tfile,gearBits,Ngear,allsub=FALSE) # only change the first instance of `1' when expanding
-	tfile = biteMe(tfile,gearBites,Ngear)
+	tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
 	if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
 	else tfile = tfile[-grep("^CAs 1",tfile)]
-	if (any(CApos)) tfile = biteMe(tfile,"CAc 1",Ngear)
+	if (any(CApos)) tfile = biteMe(tfile,"CAc 1",Ngear,CSpos=CApos)
 	else tfile = tfile[-grep("^CAc 1",tfile)]
 	tfile = gsub("@one","1",tfile)  # to restore true values of `1' in expanded lines
-#browser();return()
 
 	for (i in 1:Nsurvey)
 		tfile = gsub(paste("@survey",i,sep=""),snames[i],tfile)
@@ -237,6 +234,7 @@ runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 #=== YTR CST 2014 ===
 #outdat=runMPD(strSpp="YTR",prefix=c("YTR","CST"),runs=2,rwts=1,Nsex=2,Ncpue=0,Nsurvey=7,Ngear=2,Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial","WCVI Shrimp"),SApos=c(T,T,T,F,F,F,F), Cnames=c("Bottom Trawl","Midwater Trawl"),locode=T)
 #outdat=runMPD(strSpp="YTR",prefix=c("YTR","CST2F"),runs=5,rwts=2,Nsex=2,Ncpue=0,Nsurvey=6,Ngear=2,Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial"),SApos=c(T,T,T,F,F,F), Cnames=c("Bottom Trawl","Midwater Trawl"),locode=T)
+#outMPD = runSweave(strSpp="YTR",filename="YTR-CST1F-05.txt",runNo=5,rwtNo=2,Nsex=2,Ncpue=0,Nsurvey=6,Ngear=1, Snames=c("HS Synoptic","QC Sound Synoptic","WCVI Synoptic","Historic GB Reed","WCHG Synoptic","US Triennial"), SApos=c(T,T,T,F,F,F), Cnames=c("Trawl"),locode=T)
 
 #=== RBR CST 2014 ===
 #outMPD=runSweave(strSpp="RBR",filename="RBR-CST2F-01.txt",runNo=1,rwtNo=1,Nsex=2,Ncpue=0,Nsurvey=8,Ngear=2,Snames=c("QC Sound Synoptic","WCVI Synoptic","QC Sound Shrimp","WCHG Synoptic","HS Synoptic","US Triennial","Historic GB Reed","IPHC Longline"),SApos=c(T,T,T,F,F,F,F,F),Cnames=c("Bottom Trawl","Longline"),locode=T)
