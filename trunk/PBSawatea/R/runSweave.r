@@ -1,4 +1,4 @@
-#runSweave------------------------------2014-11-12
+#runSweave------------------------------2014-11-13
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
@@ -90,7 +90,6 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
 	}
 	tfile = gsub("@sppname", sppname, tfile)
-#browser();return()
 
 	packList(stuff=c("Snames","SApos","Cnames","CApos"), target="PBSawatea")
 	#if (exists("tput")) tput(Snames)
@@ -115,6 +114,20 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		tfile = tfile[setdiff(1:length(tfile),z0)]
 	} else {
 		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-Master.Snw`
+	}
+	
+	# Remove catch-at-age lines if no catch-at-age data
+	if (sum(CApos)==0) {
+		z0    = grep("@rmCA",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmCA ","",tfile) # assumes space after @rmCA for readability in `run-master.Snw`
+	}
+	if (sum(SApos)==0) {
+		z0    = grep("@rmSA",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmSA ","",tfile) # assumes space after @rmSA for readability in `run-master.Snw`
 	}
 
 	# Start expanding lines using bites
@@ -158,11 +171,15 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = biteMe(tfile,cpueBites,Ncpue)
 	tfile = biteMe(tfile,survBites,Nsurvey)
 	#tfile = biteMe(tfile,gearBits,Ngear,allsub=FALSE) # only change the first instance of `1' when expanding
-	tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
+#browser();return()
+
 	if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
-	else tfile = tfile[-grep("^CAs 1",tfile)]
-	if (any(CApos)) tfile = biteMe(tfile,"CAc 1",Ngear,CSpos=CApos)
-	else tfile = tfile[-grep("^CAc 1",tfile)]
+	#else            tfile = tfile[-grep("^CAs 1",tfile)]  # alreday been removed above
+	if (any(CApos)){
+		tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
+		tfile = biteMe(tfile,"CAc 1",Ngear,CSpos=CApos)
+	}
+	#else tfile = tfile[-grep("^CAc 1",tfile)]  # alreday been removed above
 	tfile = gsub("@one","1",tfile)  # to restore true values of `1' in expanded lines
 
 	for (i in 1:Nsurvey)
@@ -182,6 +199,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	writeLines(tfile,con=localSweave)
 	if (debug) { browser();return() }
 	
+#browser();return()
 	Sweave(localSweave)
 	#mkpath="C:\\Miktex\\miktex\\bin\\"
 	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)

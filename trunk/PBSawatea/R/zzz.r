@@ -53,7 +53,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"R0.mpd","refPointsList","refPointsHistList","refs","resFileList","rpType",
 	"Series","Snames","SAnames","sexlab","sigmaR","stddat",
 	"trevorMCMC",
-	"ulimYrs","use.Pnames","utarYrs",
+	"ulimYrs","use.Pnames","useCA","useSA","utarYrs",
 	"variable","Vexp",
 	"years",
 	"z1z2"

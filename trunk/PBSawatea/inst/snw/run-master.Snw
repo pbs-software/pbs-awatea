@@ -242,8 +242,10 @@ If editing {\tt .txt} file, may have to rerun just in dos/R first to check the o
 # get some names created by `runSweave()'
 Cnames  = tcall("PBSawatea")$Cnames        # names of commercial gear
 CAnames = Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
+if (length(CAnames)>0) useCA = TRUE else useCA = FALSE
 Snames  = tcall("PBSawatea")$Snames        # names of surveys
 SAnames = Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
+if (length(SAnames)>0) useSA = TRUE else useSA = FALSE
 @
 
 This Appendix describes the results from the mode of the posterior distribution (MPD) (to compare model estimates to observations), diagnostics of the Markov chain Monte Carlo (MCMC) results, and the MCMC results for the estimated parameters.  The final advice and major outputs are obtained from the MCMC results, providing estimates of uncertainty.  Estimates of major quantities and advice to management (such as decision tables) are presented in the main text.
@@ -785,9 +787,9 @@ Survey 1 & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \righ
 %=======Next line will be expanded to accomodate multiple CPUE series=======
 @rmcpue CPUE 1   & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$CPUE[1], dig=2)}\\[6pt]
 %=======Next line will be expanded to accomodate multiple surveys with age data=======
-CAs 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at1s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_survey"[1], dig=2)} \\[6pt] 
+@rmSA CAs 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at1s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_survey"[1], dig=2)} \\[6pt] 
 %=======Next line will be expanded to accomodate multiple gears with age data=======
-CAc 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at\Sexpr{Nsurv+1}s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_Commercial"[1], dig=2)} \\[6pt] 
+@rmCA CAc 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at\Sexpr{Nsurv+1}s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_Commercial"[1], dig=2)} \\[6pt] 
 Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right) - \log \left( \pi( \bfTh ) \right)$ & \Sexpr{round(currentRes$extra$likelihoods$Prior_penalties, dig=2)} \\[6pt]  
 
 % Still not convinced  about that, as think there should be a likelihood for recruitment
@@ -857,29 +859,29 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 
 @rmcpue \onefig{CPUEfit}{CPUE index series (without error bars) and biomass trajectories using different q's (if more than one CPUE series).}
 
-\onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
+@rmCA \onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
 
-\onefig{CAcFitFem}{Estimated proportions-at-age of females that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
+@rmCA \onefig{CAcFitFem}{Estimated proportions-at-age of females that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
 \clearpage   % otherwise too many unprocessed floats
 
-@rmsex \onefig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
+@rmsex @rmCA \onefig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
 
-@rmsex \onefig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
+@rmsex @rmCA \onefig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
 \newpage
 
 %=======Next line will be expanded to accomodate multiple gears=======
-\onefig{ageCommFemale1}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for females. Note that years are not consecutive.}
+@rmCA \onefig{ageCommFemale1}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for females. Note that years are not consecutive.}
 
-@rmsex %=======Next line will be expanded to accomodate multiple gears=======
-@rmsex \onefig{ageCommMale1}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for males. Note that years are not consecutive.}
+%=======Next line will be expanded to accomodate multiple gears=======
+@rmsex @rmCA \onefig{ageCommMale1}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for males. Note that years are not consecutive.}
 
 \clearpage 
 
 % Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
 %=======Next line will be expanded to accomodate multiple surveys=======
-\twofig{ageSurvFemale1}{ageSurvMale1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
+@rmSA \twofig{ageSurvFemale1}{ageSurvMale1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
 
 \onefig{meanAge}{Mean ages each year for the data (solid circles) and model estimates (joined open squares) for the commercial and survey age data.}
 
@@ -892,27 +894,27 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 
 
 %=======Next line will be expanded to accomodate multiple gears=======
-\onefig{commAgeResSer1}{Residual of fits of model to commercial proportions-at-age data (MPD values) for \Sexpr{CAnames[1]} events.  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give interquartile ranges, with bold lines representing medians and whiskers extending to the most extreme data point that is $<$@one.5 times the interquartile range from the box. Bottom panel is the normal quantile-quantile plot for residuals, with the @one:@one line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for a total of \Sexpr{residsCAcFem[1]*2} residuals).}
+@rmCA \onefig{commAgeResSer1}{Residual of fits of model to commercial proportions-at-age data (MPD values) for \Sexpr{CAnames[1]} events.  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give interquartile ranges, with bold lines representing medians and whiskers extending to the most extreme data point that is $<$@one.5 times the interquartile range from the box. Bottom panel is the normal quantile-quantile plot for residuals, with the @one:@one line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for a total of \Sexpr{residsCAcFem[1]*2} residuals).}
 
 @rmsex %=======Next line will be expanded to accomodate multiple gears=======
-@rmsex \onefig{commAgeResSer1Female}{Residual of fits of model to commercial proportions-at-age data (MPD values) for females (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcFem[1]} residuals.}
+@rmsex @rmCA \onefig{commAgeResSer1Female}{Residual of fits of model to commercial proportions-at-age data (MPD values) for females (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcFem[1]} residuals.}
 
 @rmsex %=======Next line will be expanded to accomodate multiple gears=======
-@rmsex \onefig{commAgeResSer1Male}{Residual of fits of model to commercial proportions-at-age data (MPD values) for males (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcMale[1]} residuals.}
+@rmsex @rmCA \onefig{commAgeResSer1Male}{Residual of fits of model to commercial proportions-at-age data (MPD values) for males (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcMale[1]} residuals.}
 
 
 %=======Next line will be expanded to accomodate multiple surveys=======
-\onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from the \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[1]*2} residuals.}
+@rmSA \onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from the \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[1]*2} residuals.}
 
-@rmsex %=======Next line will be expanded to accomodate multiple surveys=======
-@rmsex \onefig{survAgeResSer1Female}{Residuals of fits of model to proportions-at-age data (MPD values) for females from \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[1]} residuals.}
+%=======Next line will be expanded to accomodate multiple surveys=======
+@rmsex @rmSA \onefig{survAgeResSer1Female}{Residuals of fits of model to proportions-at-age data (MPD values) for females from \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[1]} residuals.}
 
-@rmsex %=======Next line will be expanded to accomodate multiple surveys=======
-@rmsex \onefig{survAgeResSer1Male}{Residuals of fits of model to proportions-at-age data (MPD values) for males from \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsMale[1]} residuals.}
+%=======Next line will be expanded to accomodate multiple surveys=======
+@rmsex @rmSA \onefig{survAgeResSer1Male}{Residuals of fits of model to proportions-at-age data (MPD values) for males from \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsMale[1]} residuals.}
 
- % number of years of survey age data * (number age classes -1) * 2
+% number of years of survey age data * (number age classes -1) * 2
 
-% \onefig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
+%\onefig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
 
 % Doing the long way to close up figures
 % \twofig{stockRecruit}{recruits}{Top: Deterministic stock-recruit relationship (black curve) and observed values (numbers corresponding to years) using MPD values for run \Sexpr{model.name}. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1,000s of age 1 fish; mean recruitment is \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=",")}.}
