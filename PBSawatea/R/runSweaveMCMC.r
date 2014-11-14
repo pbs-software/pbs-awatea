@@ -144,6 +144,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-MasterMCMC.Snw`
 	}
+
 	if (!cpue) {
 		z0    = grep("@rmcpue",tfile)
 		if (length(z0) > 0)
@@ -151,6 +152,21 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-MasterMCMC.Snw`
 	}
+	
+	# Remove catch-at-age lines if no catch-at-age data
+	if (sum(CApos)==0) {
+		z0    = grep("@rmCA",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmCA ","",tfile) # assumes space after @rmCA for readability in `run-master.Snw`
+	}
+	if (sum(SApos)==0) {
+		z0    = grep("@rmSA",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmSA ","",tfile) # assumes space after @rmSA for readability in `run-master.Snw`
+	}
+
 	if (!histRP) {
 		z0    = grep("@rmhrp",tfile)
 		if (length(z0) > 0)
@@ -216,8 +232,10 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		return(infile)
 	}
 	tfile = biteMe(tfile,SpriorBites,Nsurvey)
-	tfile = biteMe(tfile,CpriorBites,Ngear,CSpos=CApos)
-	tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
+	if (any(CApos)){
+		tfile = biteMe(tfile,CpriorBites,Ngear,CSpos=CApos)
+		tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
+	}
 	if (cpue)
 		tfile = biteMe(tfile,cpueBites,Ncpue)
 #browser();return()

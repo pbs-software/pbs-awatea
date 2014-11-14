@@ -2781,15 +2781,22 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 #	}
 
 	# Here plot the mean age for catch and surveys (`MAfun` in `utilsFun.r`)
-	MAc=MAfun(obj$CAc)       # catch mean age
-	MAs=MAfun(obj$CAs)       # surveys mean age
-	nseries <- length(c(sort(unique(obj$CAc$Series)),sort(unique(obj$CAs$Series))))
+	MAc = MAfun(obj$CAc)       # catch mean age
+	MAs = MAfun(obj$CAs)       # surveys mean age
+	nseries = 0
+	MAp = character()
+	if (useCA) {
+		nseries = nseries + length(sort(unique(obj$CAc$Series)))
+		MAp = c(MAp, "MAc") }
+	if (useSA) {
+		nseries = nseries + length(sort(unique(obj$CAs$Series)))
+		MAp = c(MAp, "MAs") }
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("meanAge.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 		else if (p=="png") png("meanAge.png", res=pngres, width=6.5*pngres, height=8.5*pngres)
 		par(mfrow=c(nseries,1), mar=c(1.75,2,2,0.5), oma=c(2,2,0,0), mgp=c(2,0.75,0))
-		for (m in c("MAc","MAs")) {
+		for (m in MAp) {
 			MA   = get(m)
 			last = regexpr("-",names(MA$MAobs))-1
 			for ( i in 1:length(MA$J)) {   #1:length(unique(MAsSurvNum)) ) 

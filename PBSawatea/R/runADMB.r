@@ -520,6 +520,7 @@ setMethod("reweight", signature="AWATEAdata",
 	sdnr = rep(0,2); names(sdnr) = c("cpa","spa"); SDNR = c(SDNR,sdnr)
 	wj   = NULL
 
+#browser();return()
 	# Commercial proportions-at-age
 	CAc  = res$CAc
 	cpa  = CAc[!is.na(CAc$SS),]
@@ -532,12 +533,15 @@ setMethod("reweight", signature="AWATEAdata",
 		MAc   = MAfun(cpa) # commercial mean ages
 		Wc    = wfun(MAc)
 		wNcpa = Wc$wN
-		wtemp = Wc$w; names(wtemp)=paste("cpa-",names(wtemp),sep="")
+		wtemp = Wc$w
+		if (obj@controls$NyrCAc==0)  wtemp[names(wtemp)] = 1
+		names(wtemp)=paste("cpa-",names(wtemp),sep="")
 		wj = c(wj,wtemp)
 	}
 	else
 		wNcpa  = eNfun(cpa$Series,cpa$Year,cpa$Obs,cpa$Fit)
 	SDNR["cpa"] = sd(cpa$NR,na.rm=TRUE)
+	if (obj@controls$NyrCAc == 0) SDNR["cpa"] = 0
 
 	# Survey proportions-at-age
 	CAs = res$CAs
@@ -553,14 +557,15 @@ setMethod("reweight", signature="AWATEAdata",
 		#Ws = sapply(Ws,function(x){if (all(is.na(x))) y=rep(1,length(x)) else return(x); names(y)=names(x); return(y) },simplify=FALSE)
 		wNspa = Ws$wN
 		#SDNR["spa"] = NA  # No formulae appropriate for composition-data likelihoods due to correlations (Francis 2011, Appendix B, CJFAS)
-		wtemp = Ws$w; names(wtemp)=paste("spa-",names(wtemp),sep="")
+		wtemp = Ws$w
+		if (obj@controls$NyrCAs==0) wtemp[names(wtemp)] = 1 
+		names(wtemp)=paste("spa-",names(wtemp),sep="")
 		wj = c(wj,wtemp)
-#browser();return()
 	}
 	else
 		wNspa  = eNfun(spa$Series,spa$Year,spa$Obs,spa$Fit)
-
 	SDNR["spa"] = sd(spa$NR,na.rm=TRUE)
+	if (obj@controls$NyrCAs == 0) SDNR["spa"] = 0
 
 	if (!is.null(dots$sfile)) {
 		sfile=dots$sfile
@@ -585,8 +590,6 @@ setMethod("reweight", signature="AWATEAdata",
 #=================================================
 #out = readAD("input.txt")
 #nvec = write(out)
-#popin = readAD("s3age-estmh00.txt")
-#popin = reweight(popin)
 
 #=== POP 3CD 2012 ===
 #out=runADMB("pop-3CD-05.txt",strSpp="POP",runNo=5,doMPD=TRUE,N.reweight=1,mean.age=TRUE,cvpro=0.2,clean=TRUE)
@@ -631,6 +634,7 @@ setMethod("reweight", signature="AWATEAdata",
 
 #=== YTR CST 2014 ===
 #out=runADMB("YTR-CST2F-05.txt",strSpp="YTR",runNo=5,doMPD=T,N.reweight=2,mean.age=T,cvpro=c(0.5, 0.15, 0.5, 0.6, 0.6, 0.6),clean=T, locode=T)
+#outADM = runADMB("YTR-CST1F-05.txt",strSpp="YTR",runNo=5,doMPD=T,N.reweight=2,mean.age=T,cvpro=c(0.5, 0.15, 0.5, 0.6, 0.6, 0.6),clean=T, locode=T) #awateaPath=".")
 
 #=== RBR CST 2014 ===
 #outADM=runADMB("RBR-CST2F-01.txt", strSpp="RBR", runNo=1, doMPD=T, N.reweight=1, mean.age=T, cvpro=c(0.2,0.3,0.2,0.2,0.2,0.2,0.2,0.2),clean=T, locode=T)

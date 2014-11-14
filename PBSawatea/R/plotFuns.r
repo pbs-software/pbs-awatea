@@ -897,8 +897,10 @@ plt.bubbles = function(mpdObj, nsex=2,
 		return(CAlist)
 	}
 	# These next two lines are't strictly necessary as they are now globally available
-	SAnames   = tcall("PBSawatea")$Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
-	CAnames   = tcall("PBSawatea")$Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
+	#SAnames   = tcall("PBSawatea")$Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
+	#CAnames   = tcall("PBSawatea")$Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
+	
+#browser();return()
 	CAcObsFem = blow.bubbles(mpdObj,"CAc","Obs",c("Female","Unisex"),surnames=CAnames)
 	CAcFitFem = blow.bubbles(mpdObj,"CAc","Fit",c("Female","Unisex"),surnames=CAnames)
 	CAsObsFem = blow.bubbles(mpdObj,"CAs","Obs",c("Female","Unisex"),surnames=SAnames)
@@ -910,7 +912,10 @@ plt.bubbles = function(mpdObj, nsex=2,
 		CAsFitMale = blow.bubbles(mpdObj,"CAs","Fit","Male",surnames=SAnames)
 	}
 
-	for (i in c("CAc","CAs")) {
+	CAplot = character()
+	if (useCA) CAplot = c(CAplot,"CAc")
+	if (useSA) CAplot = c(CAplot,"CAs")
+	for (i in CAplot) {
 		if (i=="CAc") { nr = length(CAnames); inames = CAnames }
 		else          { nr = length(SAnames); inames = SAnames }
 		for (j in c("Obs","Fit")) {
@@ -931,11 +936,15 @@ plt.bubbles = function(mpdObj, nsex=2,
 			}
 		}
 	}
-	assign("residsCAcFem",sapply(CAcFitFem,function(x){prod(dim(x)+c(-1,0))}), pos=1)
-	assign("residsCAsFem",sapply(CAsFitFem,function(x){prod(dim(x)+c(-1,0))}), pos=1)
-	if (nsex>1) {
-		assign("residsCAcMale",sapply(CAcFitMale,function(x){prod(dim(x)+c(-1,0))}), pos=1)
-		assign("residsCAsMale",sapply(CAsFitMale,function(x){prod(dim(x)+c(-1,0))}), pos=1)
+	if (useCA) {
+		assign("residsCAcFem",sapply(CAcFitFem,function(x){prod(dim(x)+c(-1,0))}), pos=1)
+		if (nsex>1)
+			assign("residsCAcMale",sapply(CAcFitMale,function(x){prod(dim(x)+c(-1,0))}), pos=1)
+	}
+	if (useSA) {
+		assign("residsCAsFem",sapply(CAsFitFem,function(x){prod(dim(x)+c(-1,0))}), pos=1)
+		if (nsex>1)
+			assign("residsCAsMale",sapply(CAsFitMale,function(x){prod(dim(x)+c(-1,0))}), pos=1)
 	}
 	#browser();return()
 	invisible()

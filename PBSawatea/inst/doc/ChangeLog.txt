@@ -5,6 +5,7 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
 
 0.13  2014-11-13
+  - Modified `runSweave.r', `runSweaveMCMC.r', `run-master.Snw', `runADMB.r', `plotFuns.r', and `PBSscape.r' to handle no ageing data; not fully tested. (RH 11/13)
   - Removed argument `awateaPath' from `runSweave' and `runSweaveMCMC' as it is only used in `runADMB'. (RH 11/13)
   - Fixed a bug in subfunction `biteMe' in `runSweave' and `runSweaveMCMC' to properly handle CApos (not just SApos). (RH 11/12)
   - Compressed input files by year into 7z-archives (ASCII files were taking up a lot of space). (RH 10/17)
