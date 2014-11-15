@@ -112,8 +112,11 @@ runADMB = function(
 				if (!is.null(newdat$cpue))
 					cpue[,5] = newdat$cpue$CVnew
 				CAc = dat[[rvar3]]
+				if (is.vector(CAc)) CAc = makeRmat(CAc,rowname=names(newdat$wNcpa))
+#browser();return()
 				CAc[,3] = newdat$wNcpa
 				CAs = dat[[rvar4]]
+				if (is.vector(CAs)) CAs = makeRmat(CAs,rowname=names(newdat$wNspa))
 				CAs[,3] = newdat$wNspa
 
 				Robjnew = fix(Robj,c(rvar1,rvar2,rvar3,rvar4),list(survey,cpue,CAc,CAs))

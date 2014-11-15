@@ -129,16 +129,23 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmSA ","",tfile) # assumes space after @rmSA for readability in `run-master.Snw`
 	}
+	if (sum(CApos)==0 && sum(SApos)==0) {
+		z0    = grep("@rmCSA",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmCSA ","",tfile) # assumes space after @rmCA for readability in `run-master.Snw`
+	}
 
 	# Start expanding lines using bites
 	# IMPORTANT: each element string below must be a unique match to a place in `run-Master.Smw'
-	priorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]","logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
+	SpriorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]","logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
+	CpriorBites = c("Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]")
 	figBites   = c("survIndSer4-1","twofig\\{ageSurv","onefig\\{survRes","onefig\\{survAgeResSer1}",
 		"onefig\\{survAgeResSer1Female}", "onefig\\{survAgeResSer1Male}")
 	cpueBites  = c("logqCPUE\\.prior\\[1,]","CPUE 1")
 	survBites  = c("Survey 1") 
 	#gearBits   = c("onefig\\{commAgeResSer1}") #change only first `1'
-	gearBites  = c("Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]",
+	gearBites  = c(#"Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]",
 		"onefig\\{ageCommMale1}","onefig\\{ageCommFemale1}","onefig\\{commAgeResSer1}","onefig\\{commAgeResSer1Female}","onefig\\{commAgeResSer1Male}")
 
 	biteMe = function(infile, bites, N, CSpos=SApos, allsub=TRUE) { # bug fix: need to supply SApos or CApos
@@ -152,7 +159,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 			NApos = 0; 
 			for ( i in 1:N) {
 				NApos = NApos + as.numeric(CSpos[i])
-				if ((grepl("[Aa]ge",b) || grepl("CAs",b)) && !CSpos[i]) next
+				if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("CAc",b)) && !CSpos[i]) next
 				#if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("muvec",b)) && !CSpos[i]) next
 				#if (N==1 && !any(b==figBites)) alines=c(alines,subfun("\\[1,]","",aline))
 				if (grepl("CAs",b) && CSpos[i]){
@@ -166,13 +173,14 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		}
 		return(infile)
 	}
-	tfile = biteMe(tfile,priorBites,Nsurvey)
+	tfile = biteMe(tfile,SpriorBites,Nsurvey)
+	tfile = biteMe(tfile,CpriorBites,Ngear)
 	tfile = biteMe(tfile,figBites,Nsurvey)
 	tfile = biteMe(tfile,cpueBites,Ncpue)
 	tfile = biteMe(tfile,survBites,Nsurvey)
 	#tfile = biteMe(tfile,gearBits,Ngear,allsub=FALSE) # only change the first instance of `1' when expanding
-#browser();return()
 
+#browser();return()
 	if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
 	#else            tfile = tfile[-grep("^CAs 1",tfile)]  # alreday been removed above
 	if (any(CApos)){

@@ -789,7 +789,7 @@ Survey 1 & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \righ
 %=======Next line will be expanded to accomodate multiple surveys with age data=======
 @rmSA CAs 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at1s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_survey"[1], dig=2)} \\[6pt] 
 %=======Next line will be expanded to accomodate multiple gears with age data=======
-@rmCA CAc 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at\Sexpr{Nsurv+1}s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_Commercial"[1], dig=2)} \\[6pt] 
+@rmCA CAc 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at\Sexpr{Nsurv+1}s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_Commercial"[1], dig=2)} \\[6pt]
 Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right) - \log \left( \pi( \bfTh ) \right)$ & \Sexpr{round(currentRes$extra$likelihoods$Prior_penalties, dig=2)} \\[6pt]  
 
 % Still not convinced  about that, as think there should be a likelihood for recruitment
@@ -883,7 +883,7 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 %=======Next line will be expanded to accomodate multiple surveys=======
 @rmSA \twofig{ageSurvFemale1}{ageSurvMale1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
 
-\onefig{meanAge}{Mean ages each year for the data (solid circles) and model estimates (joined open squares) for the commercial and survey age data.}
+@rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) and model estimates (joined open squares) for the commercial and survey age data.}
 
 % \section{Residuals associated with MPD fits  for run \Sexpr{model.name}.}
 %  (for the total of \Sexpr{(dim(CAcObsFem)[1] - 1)*dim(CAcObsFem)[2]*2} residuals).}
