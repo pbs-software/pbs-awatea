@@ -650,3 +650,7 @@ MAfun = function(padata,brks=NULL)
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAfun
 
+makeCmat =function(x,colname="Y") {
+	matrix(x,ncol=1,dimnames=list(names(x),colname)) }
+makeRmat =function(x,rowname="Y") {
+	matrix(x,nrow=1,dimnames=list(rowname,names(x))) }

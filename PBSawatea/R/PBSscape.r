@@ -2629,12 +2629,16 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
   # if ( save )
   #   savePlot( "selectivity", type="png" )
 	objRed = obj      # Reduced object, just plotting Selectivity to age 20
-	objRed$Sel = objRed$Sel[objRed$Sel$Age < 21,]
+	ageP = objRed$Sel$P; names(ageP)=objRed$Sel$Age
+	selP = split(ageP,paste(objRed$Sel$Series,objRed$Sel$Sex,sep="."))
+	xmax = max(as.numeric(sapply(selP,function(x){names(x[is.element(x,1)])[1]})),na.rm=TRUE) #maximum minimum age when P first hits 1
+	if (is.na(xmax)) xmax = 20
+	objRed$Sel = objRed$Sel[objRed$Sel$Age <= xmax,]
 	for (p in ptypes) {
-		if (p=="eps") postscript("selectivity.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
+		if (p=="eps")      postscript("selectivity.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
 		else if (p=="png") png("selectivity.png", res=pngres, width=6.5*pngres, height=4.5*pngres)
 		par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-		plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,20))
+		plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,xmax))
 		dev.off()
 	}
 
@@ -2791,7 +2795,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	if (useSA) {
 		nseries = nseries + length(sort(unique(obj$CAs$Series)))
 		MAp = c(MAp, "MAs") }
-
+	
+	if (nseries>0) {
 	for (p in ptypes) {
 		if (p=="eps") postscript("meanAge.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 		else if (p=="png") png("meanAge.png", res=pngres, width=6.5*pngres, height=8.5*pngres)
@@ -2819,6 +2824,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 		}
 		dev.off()
 	}
+	} # end nseries
 #browser();return()
 
 	# Plot stock-recruitment function (based on MPD's)
