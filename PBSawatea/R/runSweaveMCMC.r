@@ -194,9 +194,9 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	# Start expanding lines using bites
 	SpriorBites = c("log_qsurvey_prior\\[1,]","surveySfull_prior\\[1,]","p_surveySfulldelta\\[1,]","log_surveyvarL_prior\\[1,]")
 	CpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]")
-	cpueBites   = c("log q_999")
-	gearBites   = c("mu_999","Delta_999","log v_999L",
-		"qtab\\(VB0.MCMC\\[,1])","qtab\\(VBcurr.MCMC\\[,1])","qtab\\(upenult.MCMC\\[,1],dig=3)",
+	#cpueBites   = c("log q_999")
+	nineBites   = c("mu_999","Delta_999","log v_999L","log q_999")
+	gearBites   = c("qtab\\(VB0.MCMC\\[,1])","qtab\\(VBcurr.MCMC\\[,1])","qtab\\(upenult.MCMC\\[,1],dig=3)",
 		"qtab\\(VBcurr.MCMC\\[,1]/VB0.MCMC\\[,1]", "qtab\\(VBmsy.MCMC/VB0.MCMC\\[,1]", 
 		"qtab\\(upenult.MCMC\\[,1]/umsy.MCMC", "qtab\\(upenult.MCMC\\[,1]/refPointsHistList$utarHRP")
 	figBites    = c("onefig\\{pairs1\\}")
@@ -214,7 +214,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 				iline = aline
 				NApos = NApos + as.numeric(CSpos[i])
 #if (length(iline)>1) {browser();return()}
-				if (grepl("999",iline)){ iline = gsub("999",Nsurvey+i,iline) }#; browser()}
+				#if (grepl("999",iline)){ iline = gsub("999",Nsurvey+i,iline) }#; browser()}
 				if (any(b==figBites)) {
 					if (i==2)      iline=gsub("\\{st}","{nd}",iline)
 					else if (i==3) iline=gsub("\\{st}","{rd}",iline)
@@ -235,10 +235,17 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	if (any(CApos)){
 		tfile = biteMe(tfile,CpriorBites,Ngear,CSpos=CApos)
 		tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
+		for ( i in nineBites ){
+			ilines = grep(i,tfile)
+			if (length(ilines)==0) next
+			for (j in 1:length(ilines)) {
+				jj = ilines[j]
+				tfile[jj] = sub("999",Nsurvey+j,tfile[jj])
+			}
+		}
 	}
-	if (cpue)
-		tfile = biteMe(tfile,cpueBites,Ncpue)
-#browser();return()
+	#if (cpue)
+	#	tfile = biteMe(tfile,cpueBites,Ncpue)
 	tfile = biteMe(tfile,figBites,Nfigs)
 	#tfile = biteMe(tfile,SpostBites,Nsurvey)
 	#tfile = biteMe(tfile,CpostBites,max(Ncpue,1))

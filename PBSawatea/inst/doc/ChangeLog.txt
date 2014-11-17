@@ -4,7 +4,8 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
-0.13  2014-11-14
+0.13  2014-11-17
+  - Modified function `runSweaveMCMC' and 'run-masterMCMC.Snw' to handled a bug replacing dummy placeholder `999' with g when g>=10. (RH 11/17)
   - Made changes to accommodate no age data. (RH 10/14)
   - Modified `runSweave.r', `runSweaveMCMC.r', `run-master.Snw', `runADMB.r', `plotFuns.r', and `PBSscape.r' to handle no ageing data; not fully tested. (RH 11/13)
   - Removed argument `awateaPath' from `runSweave' and `runSweaveMCMC' as it is only used in `runADMB'. (RH 11/13)
