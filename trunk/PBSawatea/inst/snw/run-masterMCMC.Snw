@@ -1219,9 +1219,12 @@ names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
 	tabmcmc  = t(sapply(currentMCMC$P,quantile,c(0.05,0.50,0.95)))
 	if (exists("formatCatch")) { tabmcmc = formatCatch(tabmcmc,N=4) } else { tabmcmc["R_0",] = round(tabmcmc["R_0",]) }
 	names.mcmc = rownames(tabmcmc)
+	fixsub = grep("_",names.mcmc)
+	names.mcmc[fixsub] = paste0(sub("_","_{",names.mcmc[fixsub]),"}")
 	names.mcmc = gsub("mu","\\\\mu",names.mcmc)
 	names.mcmc = gsub("Delta","\\\\Delta",names.mcmc)
-	names.mcmc = gsub("log","\\\\mathrm{log}",gsub("v_","v_{",gsub("L","L}",names.mcmc)))
+	names.mcmc = sub("log","\\\\mathrm{log}",names.mcmc)
+	#names.mcmc = gsub("log","\\\\mathrm{log}",gsub("v_","v_{",gsub("L","L}",names.mcmc)))
 	rownames(tabmcmc) =  paste(rep("$",nrow(tabmcmc)),names.mcmc,rep("$",nrow(tabmcmc)),sep="")
 	xtabmcmc = xtable(tabmcmc, align="crrr",
 		label   = "tab:MCMCpar", digits = if (exists("formatCatch")) NULL else tabdigits,
