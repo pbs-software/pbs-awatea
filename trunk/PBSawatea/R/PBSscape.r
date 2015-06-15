@@ -635,7 +635,7 @@ load.allResFiles <- function( resList=NULL )
 {
 	# Loads all Awatea "res" files in working directory into a list.
 	if ( is.null(resList) )
-	resList <- dir( path="../.", pattern="results.dat$" )
+		resList <- dir( path="../.", pattern="results.dat$" )
 	#YMR AME path was "."
 	# YMR pattern was ".res$", but need to go through Excel
 	#  to get .res, and .dat has same numbers (see .Snw)
@@ -645,8 +645,7 @@ load.allResFiles <- function( resList=NULL )
 	names( result) <- resList
 
 	for ( i in 1:length(result) )
-		result[[i]] <- importRes( res.file=resList[i], Dev=TRUE, CPUE=TRUE,
-			Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE) # AME added CAc=TRUE, CAs=TRUE.
+		result[[i]] <- importRes( res.file=resList[i], Dev=TRUE, CPUE=TRUE,Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE) # AME added CAc=TRUE, CAs=TRUE.
 	result                             
 }
 

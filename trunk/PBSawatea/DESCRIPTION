@@ -7,9 +7,10 @@ Maintainer:  Rowan Haigh <rowan.haigh@dfo-mpo.gc.ca>
 Depends:     R (>= 2.15.0), PBSmodelling, scape, plotMCMC, xtable, gplots, lattice
 Imports:     methods
 Suggests:    PBStools, Hmisc, coda, gdata
-Description: Provides tools for running population models 
-             using Awatea, which is a variant of Coleraine modified 
-             by Allan Hicks and Paul Starr for marine fish stocks.
+Description: Provides tools for running population models for marine fish stocks
+             using Awatea, which is a variant of Coleraine modified
+             by Allan Hicks and Paul Starr.
 License:     GPL (>= 2)
-URL:         http://code.google.com/p/pbs-awatea/
+URL:         http://code.google.com/p/pbs-awatea/,
+             http://fish.washington.edu/research/colerain/
 

@@ -514,7 +514,6 @@ currentProj <- importProjRec( dir=prj.dir, ngear=Ngear, quiet=FALSE )  # RH adde
    # Gear used in projections (0=read in; 1=use same gear proportions as last year of data)
 
 currentProj <- sapply(currentProj,function(X){sapply(X,function(x,s){x[s,]},s=mcsub,simplify=FALSE)},simplify=FALSE)
-assign( "currentProj", currentProj, pos=1 )
 
 # **** COMMENTING THIS OUT TO GET POP 5ABC WORKING - Rowan, can we put an
 #  'if' statement in to ignore this only for POP 5ABC.
@@ -551,6 +550,7 @@ for(i in catchProj)
 #  extinct. Check  sapply(currentProj$U, min)   only has 0 for 0 
 #  catch policy.
 
+assign( "currentProj", currentProj, pos=1 )
 @ %end <<projections>> chunk
 
 <<MSY, results=hide, echo=FALSE>>=
@@ -689,13 +689,17 @@ fiveYears   = as.character(currYear+seq(0,5,1))
 tenYears    = as.character(currYear+seq(0,10,1))
 twentyYears = as.character(currYear+seq(0,20,5))
 ninetyYears = as.character(currYear+seq(0,90,15))
+pyYears     = as.character(currYear+seq(0,(projYearsNum-1),1))
 
 refProbs5 = list()    # Probs for 5 years
 refProbs10 = list()   # Probs for 10 years
 refProbs20 = list()   # Probs for 20 years
 refProbs90 = list()   # Probs for 90 years
+refProbsPY = list()   # Probs for projYearsNum
 for(i in 1:length(refProbsList))
 	{
+	refProbsPY[[i]] = refProbsList[[i]][,pyYears] # just in case the projections span some weird number of years
+	names(refProbsPY)[i] = names(refProbsList)[i]
 	if (projYearsNum>=5) {
 		refProbs5[[i]] = refProbsList[[i]][,fiveYears]
 		names(refProbs5)[i] = names(refProbsList)[i] }
@@ -737,6 +741,7 @@ refProbsB05 = list()    # Probs for 5 years
 refProbsB010 = list()   # Probs for 10 years
 refProbsB020 = list()   # Probs for 20 years
 refProbsB090 = list()   # Probs for 90 years
+#refProbsB0PY = list()   # Probs for projYearsNum
 for(i in 1:length(refProbsB0List))
 	{
 	if (projYearsNum>=5) {
@@ -1166,10 +1171,15 @@ if (resdoc) {
 \onefig{BVBnorm}{Changes in $B_t / B_0$ and $V_t / V_0$ (spawning and vulnerable biomass relative to unfished equilibrium levels) over time\Sexpr{for.area}, shown as the medians of the MCMC posteriors.}
 
 <<muIndex, results=hide, echo=FALSE>>=
-muCI = findPat((Nsurv+1):(Nsurv+Ncomm),names(muMed))
-names(muCI) = sapply(strsplit(muCI,"_"),function(x){x[2]})
-muSI=findPat(1:Nsurv,names(muMed))
-names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
+if (length(muMed)>0) {
+	muCI = findPat((Nsurv+1):(Nsurv+Ncomm),names(muMed))
+	names(muCI) = sapply(strsplit(muCI,"_"),function(x){x[2]})
+	muSI=findPat(1:Nsurv,names(muMed))
+	names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
+} else {
+	muCI = currentRes$extra$priors$p_Sfullest[,7]
+	muSI = currentRes$extra$priors$surveySfull_prior[,7]
+}
 @
 
 \onefig{recruitsMCMC}{Marginal posterior distribution of recruitment in 1,000s of age-1 fish plotted over time\Sexpr{for.area}. Boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. Note that the first year for which there are age data is \Sexpr{CAfirstYear}, and the plus-age class is \Sexpr{A}, such that there are no direct data concerning age-1 fish before \Sexpr{CAfirstYear-A+1}. Also, the final few years have no direct age-data from which to estimate recruitment, because fish are not fully selected until age \Sexpr{round(mean(muMed[muCI]),1)} by the commercial vessels or age \Sexpr{round(mean(muMed[muSI]),1)} by surveys (mean of the MCMC median ages at full selectivity for commercial catch, $\mu_{\Sexpr{paste(names(muCI),collapse=",")}}$, and survey $\mu_{\Sexpr{paste(names(muSI),collapse=",")}}$, respectively).}
@@ -1286,7 +1296,7 @@ names(muSI) = sapply(strsplit(muSI,"_"),function(x){x[2]})
  $V_0$ -- unfished equilibrium vulnerable biomass (males and females), 
  $B_{\Sexpr{currYear}}$ -- spawning biomass at the start of $\Sexpr{currYear}$, 
  $V_{\Sexpr{currYear}}$ -- vulnerable biomass in the middle of \Sexpr{currYear}, 
- $u_{\Sexpr{currYear-1}}$ -- exploitation rate (ratio of total catch to vulnerable biomass) in the middle of \Sexpr{currYear-1}, 
+ $u_{\Sexpr{currYear-@one}}$ -- exploitation rate (ratio of total catch to vulnerable biomass) in the middle of \Sexpr{currYear-@one}, 
  $u_\mathrm{max}$ -- maximum exploitation rate (calculated for each sample as the maximum exploitation rate from \Sexpr{substring(names(currentMCMC$U[1,])[1],1,4)}-\Sexpr{substring(rev(names(currentMCMC$U[1,]))[1],1,4)}), 
  $\Bmsy$ -- equilibrium spawning biomass at MSY (maximum sustainable yield), 
  $u_\mathrm{MSY}$ -- equilibrium exploitation rate at MSY, 
@@ -1313,7 +1323,7 @@ $B_{\Sexpr{currYear}} / B_0$       & \Sexpr{qtab(Bcurr.MCMC[,1] / B0.MCMC[,1], d
 $V_{\Sexpr{currYear},g=\Sexpr{GI[1]}} / V_{0,g=\Sexpr{GI[1]}}$     & \Sexpr{qtab(VBcurr.MCMC[,1]/VB0.MCMC[,1], dig=3)} \\
 
 %=======Next line will be expanded to accomodate multiple gears=======
-$u_{\Sexpr{currYear-1},g=\Sexpr{GI[1]}}$             & \Sexpr{qtab(upenult.MCMC[,1],dig=3)} \\
+$u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}}$             & \Sexpr{qtab(upenult.MCMC[,1],dig=3)} \\
 $u_\mathrm{max}$       & \Sexpr{qtab(umax.MCMC, dig=3)} \\
 \hline
  & & & \\
@@ -1331,7 +1341,7 @@ $V_\mathrm{MSY} / V_{0,g=\Sexpr{GI[1]}}$ & \Sexpr{qtab(VBmsy.MCMC/VB0.MCMC[,1], 
 %
 $u_\mathrm{MSY}$       & \Sexpr{qtab(umsy.MCMC, dig=3)} \\
 %=======Next line will be expanded to accomodate multiple gears=======
-$u_{\Sexpr{currYear-1},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.MCMC[,1]/umsy.MCMC, dig=3)} \\
+$u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.MCMC[,1]/umsy.MCMC, dig=3)} \\
 \hline
 @rmhrp  & & & \\
 @rmhrp & \multicolumn{3}{c}{History-based quantities}\\
@@ -1341,7 +1351,7 @@ $u_{\Sexpr{currYear-1},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.
 @rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Tar}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$btarHRP, dig=3)} \\
 @rmhrp $u_\mathrm{Tar}$       & \Sexpr{qtab(refPointsHistList$utarHRP, dig=3)} \\  % note to future: should this have Ngear dimensions?
 @rmhrp %=======Next line will be expanded to accomodate multiple gears=======
-@rmhrp $u_{\Sexpr{currYear-1}} / u_\mathrm{Tar}$ & \Sexpr{qtab(upenult.MCMC[,1]/refPointsHistList$utarHRP, dig=3)} \\
+@rmhrp $u_{\Sexpr{currYear-@one}} / u_\mathrm{Tar}$ & \Sexpr{qtab(upenult.MCMC[,1]/refPointsHistList$utarHRP, dig=3)} \\
 @rmhrp \hline
 \end{tabular}
 \end{table}
@@ -1356,7 +1366,7 @@ $u_{\Sexpr{currYear-1},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.
 %strategy & 2011 & 2012 & 2013 & 2014 & 2015 & 2016 \\
 
 <<tables, results=tex, echo=FALSE>>=
-tabdigits = 2      # number of decimal places to give
+tabdigits = 3      # number of decimal places to give
 
 #=====TABLE: DEFAULT DFO MSY REFERENCE POINTS=====
 if (exists("refProbs10") || exists("refProbs5")) {
@@ -1460,7 +1470,7 @@ if (is.element(spp.name,c("ROL","rol","621"))) {
 <<savingTables, results=hide, echo=FALSE>>=
 # see saving.r in YMR11 for details of tables. Or just look
 #  at each one, as they're not that long.  # refProbs3Gen90
-save(refProbs, refProbsB0, refProbsHist, refProbs3GenList, refProbs3GenList.u, Ttab0.5, Ttab0.8, Ttab0.95,  file=paste(model.name, "Tables.RData", sep=""))
+save(refProbs, refProbsB0, refProbsHist, refProbs3GenList, refProbs3GenList.u, Ttab0.5, Ttab0.8, Ttab0.95, currentProj, file=paste(model.name, "Tables.RData", sep=""))
 @ 
 
 <<savingObjects, results=hide, echo=FALSE>>=
@@ -1487,7 +1497,8 @@ Bmcmc[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
 	U.MCMC         = processObj(currentMCMC$U),
 	UoverUmsy.MCMC = processObj(currentMCMC$UoverUmsy),
 	BoverBmsy.MCMC = processObj(currentMCMC$BoverBmsy),
-	MSY.MCMC       = processObj(msy.MCMC)
+	MSY.MCMC       = processObj(msy.MCMC),
+	Umsy.MCMC      = processObj(umsy.MCMC)
 	)
 save("Bmcmc",file=paste("Bmcmc-",model.name,".rda",sep=""))
 while(dev.cur() > 1)  dev.off()
@@ -1563,7 +1574,7 @@ The model run had credible fits to the data, as demonstrated by visual examinati
 
 Figure \ref{fig:VBcatch} shows the MCMC results for the vulnerable biomass, together with the reconstructed historical catches, and Figure \ref{fig:BVBnorm} shows the estimated medians of vulnerable and spawning (mature females) biomass relative to their unfished values. (The full MCMC results for spawning biomass are shown later in Figure \ref{fig:Rproj} concerning projections). These demonstrate a slight decline in biomass from 1940 to 1960 with the onset of fishing, followed by a very sharp decline in the 1960s due to the heavy fishing (primarily by foreign fleets). After the cessation of foreign fishing, the stock increased through the 1970s. The stock then declined through the 1980s until the mid-1990s, and has since increased, with median values of relative biomasses returning to the 1980 values (Figure \ref{BVBnorm}). 
 
-Estimates of various quantities of interest are given in Table \ref{tab:MCMCderived}. In particular, the median (and 5-95\% credible interval) for depletion $B_{\Sexpr{currYear}}/B_0$, the ratio of current spawning biomass to the unfished equilibrium level, is \Sexpr{med5.95(Bcurr.MCMC / B0.MCMC, dig=2)}.
+Estimates of various quantities of interest are given in Table \ref{tab:MCMCderived}. In particular, the median (and 5-95\% credible interval) for depletion $B_{\Sexpr{currYear}}/B_0$, the ratio of current spawning biomass to the unfished equilibrium level, is \Sexpr{med5.95(Bcurr.MCMC / B0.MCMC, dig=3)}.
 
 The aforementioned stock trajectory is further explained by the estimated recruitments (Figure \ref{fig:recruitsMCMC}). There is lower-than-average recruitment in the early 1970s, which may, together with increased catches, explain the end of the increase in vulnerable biomass seen through the 1970s. There is no clear trend in recruitment, with occasional very good years. Note that although 1977 appears to be a good year for age-1 recruits (spawned in 1976), it is by no means as exceptional as seen in that year for the QCS area 5ABC POP stock (Figure 5 of \citealt{\popQCS}) or the companion assessment for area \other \citep{\otherCite}.  [***Change for 5DE]. Evidence for the largest recruitment events can be seen in the commercial proportions-at-age data (Figures \ref{fig:CAcObsFem} and \ref{fig:CAcObsMale}). Such episodic large recruitment events are characteristic of many rockfish Sebastes populations \citep{lyt02}. 
 
@@ -1577,9 +1588,9 @@ Estimates of further quantities of interest, such as absolute values of biomass,
 
 The estimated median MSY (with 5-95\% credible interval, tonnes) is \Sexpr{med5.95(msy.MCMC, dig=0)}, compared to the average catch over the last \Sexpr{num.recentCatchYears} years (\Sexpr{ as.numeric(names(recentCatch)[1])}-\Sexpr{as.numeric(rev(names(recentCatch))[1])}) of \Sexpr{round(recentCatchMean, dig=0)}~t.
 
-The estimated ratio $B_{\Sexpr{currYear}}/\Bmsy$ of spawning biomass at the start of \Sexpr{currYear} ($B_{\Sexpr{currYear}}$) to the equilibrium spawning biomass (mature females only) that will support the maximum sustainable yield ($\Bmsy$), is \Sexpr{med5.95(Bcurr.MCMC/Bmsy.MCMC, dig=2)}. 
+The estimated ratio $B_{\Sexpr{currYear}}/\Bmsy$ of spawning biomass at the start of \Sexpr{currYear} ($B_{\Sexpr{currYear}}$) to the equilibrium spawning biomass (mature females only) that will support the maximum sustainable yield ($\Bmsy$), is \Sexpr{med5.95(Bcurr.MCMC/Bmsy.MCMC, dig=3)}. 
 
-As noted above, the depletion $B_{\Sexpr{currYear}}/B_0$, the ratio of current spawning biomass to the unfished equilibrium level, is \Sexpr{med5.95(Bcurr.MCMC / B0.MCMC, dig=2)}. 
+As noted above, the depletion $B_{\Sexpr{currYear}}/B_0$, the ratio of current spawning biomass to the unfished equilibrium level, is \Sexpr{med5.95(Bcurr.MCMC / B0.MCMC, dig=3)}. 
 
 \subsection{REFERENCE POINTS}
 
@@ -1591,9 +1602,9 @@ As part of the Sustainable Fisheries Framework, \citet{dfo09} suggested provisio
 
 The zone below the limit reference point ($0.4 \Bmsy$) is termed the "critical zone" while the zone lying between the two reference points is termed the "cautious zone".  The region above the upper stock reference point ($0.8 \Bmsy$) is termed the ``healthy zone''.  $\Bmsy$ is also reported here as an additional reference point - it 'provides a useful basis for comparing stocks' \citep{rmjb11} when conducting meta-analyses of assessment results. 
 
-Figure \ref{fig:compBmsy} shows the distribution of $B_{\Sexpr{currYear}}/\Bmsy$ relative to the DFO Precautionary Approach provisional reference points of $0.4 \Bmsy$ and $0.8 \Bmsy$. The stock is estimated to be currently above the critical zone with probability P$(B_{\Sexpr{currYear}} > 0.4 \Bmsy) = \Sexpr{round(refProbs$LRP[1,1], dig=2)}$ (first column of Table \ref{tab:LRP}), and in the healthy zone with probability P$(B_{\Sexpr{currYear}} > 0.8 \Bmsy) = \Sexpr{round(refProbs$URP[1,1], dig=2)}$; (first column of Table \ref{tab:URP}). For comparison, Figure \ref{fig:compBmsy} also shows the status of the other two POP stocks.
+Figure \ref{fig:compBmsy} shows the distribution of $B_{\Sexpr{currYear}}/\Bmsy$ relative to the DFO Precautionary Approach provisional reference points of $0.4 \Bmsy$ and $0.8 \Bmsy$. The stock is estimated to be currently above the critical zone with probability P$(B_{\Sexpr{currYear}} > 0.4 \Bmsy) = \Sexpr{round(refProbs$LRP[1,1], dig=3)}$ (first column of Table \ref{tab:LRP}), and in the healthy zone with probability P$(B_{\Sexpr{currYear}} > 0.8 \Bmsy) = \Sexpr{round(refProbs$URP[1,1], dig=3)}$; (first column of Table \ref{tab:URP}). For comparison, Figure \ref{fig:compBmsy} also shows the status of the other two POP stocks.
 
-A second component of the provisional harvest rule of \citet{dfo09} is that, when in the healthy zone, the fishing mortality should be at or below that associated with MSY under equilibrium conditions ($\umsy$), be ramped down when in the cautious zone, and be zero when in the critical zone. Figure \ref{fig:snail} shows the exploitation rate in \Sexpr{currYear-1} relative to that at $\umsy$ (red dot and vertical line). The estimated ratio of $u_{\Sexpr{currYear-1}}/\umsy$ is $\Sexpr{med5.95(upenult.MCMC / umsy.MCMC, dig=2)}$. The probability that the exploitation rate is below that associated with MSY is P$(u_{\Sexpr{currYear-1}} < \umsy) = \Sexpr{round(sum(upenult.MCMC < umsy.MCMC)/num.MCMC, dig=2)}$.
+A second component of the provisional harvest rule of \citet{dfo09} is that, when in the healthy zone, the fishing mortality should be at or below that associated with MSY under equilibrium conditions ($\umsy$), be ramped down when in the cautious zone, and be zero when in the critical zone. Figure \ref{fig:snail} shows the exploitation rate in \Sexpr{currYear-1} relative to that at $\umsy$ (red dot and vertical line). The estimated ratio of $u_{\Sexpr{currYear-1}}/\umsy$ is $\Sexpr{med5.95(upenult.MCMC / umsy.MCMC, dig=3)}$. The probability that the exploitation rate is below that associated with MSY is P$(u_{\Sexpr{currYear-1}} < \umsy) = \Sexpr{round(sum(upenult.MCMC < umsy.MCMC)/num.MCMC, dig=3)}$.
 
 The blue and grey circles in Figure \ref{fig:snail} shows that, based on medians, the stock is estimated to have been in the healthy zone since the start of fishing. The median exploitation rate has been $>\umsy$ for a total of \Sexpr{length(years[ UoverUmsy.med>1])} years, the most recent being \Sexpr{rev(years[ UoverUmsy.med>1])[1]}.  
 % *** edit for 5DE
@@ -1615,6 +1626,6 @@ Note that recruitment is drawn from the estimated stock-recruitment curve with l
 
 Decision tables give the probabilities of the spawning biomass exceeding the reference points in specified years, calculated by counting the proportion of MCMC samples for which the biomass exceeded the given reference point.
 
-Results for the three $\Bmsy$-based reference points are presented in Tables \ref{tab:LRP}-\ref{tab:Bmsy}. For example, the estimated probability that the stock is in the provisional healthy zone in 2017 under a constant catch strategy of 1,000~t is P$(B_{2017} > 0.8 \Bmsy)=\Sexpr{round(refProbs$URP["1000","2017"], dig=2)}$ ('1000' row and '2017' column of Table \ref{tab:URP}). Results for the two $B_0$-based reference points are given in Tables \ref{tab:B0_0.2} and \ref{tab:B0_0.4}.    [ *** example not automated.]
+Results for the three $\Bmsy$-based reference points are presented in Tables \ref{tab:LRP}-\ref{tab:Bmsy}. For example, the estimated probability that the stock is in the provisional healthy zone in 2017 under a constant catch strategy of 1,000~t is P$(B_{2017} > 0.8 \Bmsy)=\Sexpr{round(refProbs$URP["1000","2017"], dig=3)}$ ('1000' row and '2017' column of Table \ref{tab:URP}). Results for the two $B_0$-based reference points are given in Tables \ref{tab:B0_0.2} and \ref{tab:B0_0.4}.    [ *** example not automated.]
 
 

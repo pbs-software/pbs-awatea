@@ -231,10 +231,11 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		}
 		return(infile)
 	}
+#browser();return()
 	tfile = biteMe(tfile,SpriorBites,Nsurvey)
 	if (any(CApos)){
 		tfile = biteMe(tfile,CpriorBites,Ngear,CSpos=CApos)
-		tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
+		#tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
 		for ( i in nineBites ){
 			ilines = grep(i,tfile)
 			if (length(ilines)==0) next
@@ -244,6 +245,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 			}
 		}
 	}
+	tfile = biteMe(tfile,gearBites,Ngear,CSpos=CApos)
 	#if (cpue)
 	#	tfile = biteMe(tfile,cpueBites,Ncpue)
 	tfile = biteMe(tfile,figBites,Nfigs)
@@ -251,6 +253,8 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	#tfile = biteMe(tfile,CpostBites,max(Ncpue,1))
 	#if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
 	#else tfile = tfile[-grep("^CAs 1",tfile)]
+
+	tfile = gsub("@one","1",tfile)  # to restore true values of `1' in expanded lines
 
 #browser();return()
 	localHistory = paste(mc.dir,"/runHistory.tex",sep="")
