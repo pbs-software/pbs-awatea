@@ -26,13 +26,15 @@ get.resFile <- function( resFile=NULL )
    #  the reloading here was probably done so an updated .res file
    #  can be loaded in. Also added CAc=TRUE, CAs=TRUE
 	#  RH: removed importCol2 (2013-09-13) because importRes is preferred and maintained.
+	#  RH: removed `plotMCMC::' from `plotTrace' and `plotDens'; regardless,
+	#    PBSawatea uses the functions from plotMCMC over PBSmodelling and issues WARNINGS just because.
 
 	newRes <- importRes( res.file=resFile, Dev=TRUE, CPUE=TRUE,
 		Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE)
 	assign( "currentRes", newRes, pos=1 )
 	assign( "resFile",resFile )
 	cat( "\nLoaded Awatea res file: ",resFile,"\n\n" )
-	print( ll( currentRes ) )
+	#print( ll( currentRes ) ) ## RH: this is the only `gdata' function used and importing gdata causes problems
 
 	resFile
 }
@@ -318,14 +320,14 @@ mcmcMenu <- function()
         # currentExpt <- calc.projExpect( currentMCMC$B, currentProj$B, c(1940, 1990) )
       },
       {
-        plotMCMC::plotDens( currentMCMC$B[,getYrIdx(
+        plotDens( currentMCMC$B[,getYrIdx(
           names(currentMCMC$B))],
           tick.number=5,
           xlab="Biomass", xlim=c(range(currentMCMC$B)),
           ylab="Posterior density" )
       },
       {
-       #  plotMCMC::plotDens( currentMCMC$R[,getYrIdx(
+       #  plotDens( currentMCMC$R[,getYrIdx(
        #    names(currentMCMC$R))],
        #    xlab="Recruitment", xlim=c(range(currentMCMC$R)) )
        # AME replacing with:
@@ -337,7 +339,7 @@ mcmcMenu <- function()
       },
       {
         idx <- apply( currentMCMC$P,2,allEqual )
-        plotMCMC::plotDens( currentMCMC$P[,!idx] )
+        plotDens( currentMCMC$P[,!idx] )
       }, 
       {
         if ( length( getYrIdx(names(currentMCMC$B)) ) <= 9 )
@@ -370,17 +372,17 @@ mcmcMenu <- function()
         }
       },
       {
-        plotMCMC::plotTrace( currentMCMC$R[,getYrIdx(
+        plotTrace( currentMCMC$R[,getYrIdx(
           names(currentMCMC$R))],axes=TRUE,
           xlab="Recruitment" )
         windows()
         par( oma=c(2,2,1,1), mar=c(2,2,2,1), mfrow=mfRow )
-        plotMCMC::plotTrace( currentMCMC$B[,getYrIdx(
+        plotTrace( currentMCMC$B[,getYrIdx(
           names(currentMCMC$B))],axes=TRUE,
           xlab="Biomass" )
         windows()
         idx <- apply( currentMCMC$P,2,allEqual )
-        plotMCMC::plotTrace( currentMCMC$P[,!idx], axes=TRUE )
+        plotTrace( currentMCMC$P[,!idx], axes=TRUE )
       },
       {
         plt.allTraces( currentMCMC )

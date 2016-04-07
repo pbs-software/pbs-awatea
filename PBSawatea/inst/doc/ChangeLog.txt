@@ -4,6 +4,19 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
+1.0.0 (2016-04-06)
+  • Updated the vignette `PBSawateaIntro.Rnw'. (RH 160406)
+  • Updated `resDocSty.sty' to my current version; added the TDS-compliant uarial fonts `uarial.tds.zip' and the bibliography style file `resDoc.bst'. (RH 160504)
+  • Experienced a NAMESPACE epiphany: (RH 160405)
+	In NAMESPACE, package can either be in `import' OR `importFrom', NOT both.
+	But all packages named in `import' AND `importFrom' must appear in DESCRIPTION after `Imports:'.
+	Thanks Uwe Ligges -- <<http://r.789695.n4.nabble.com/Namespace-dependency-not-required-td4481914.html>>
+	Also see <<http://stackoverflow.com/questions/13085481/namespace-dependencies-not-required>>
+  • Imported all namespace functions from `methods', `PBSmodelling', `scape', `plotMCMC', `xtable', and `lattice'. (RH 160405)
+  • Added explicit `importFrom' values for packages `coda' (mcmc), `gplots' (plotCI), and `Hmisc' (Cbind, panel.xYplot). (RH 160405)
+  • Changed package Depends to Imports for: scape, plotMCMC, xtable, gplots, lattice
+  • Switched to semantic versioning and changed DESCRIPTION file (RH 160405)
+
 0.14  2015-06-15
   • Last update to Google Code before transferring pbs-awatea repository to GitHub. (RH 150615)
   • Added the Awatea inputs for the Redbanded and Yellowtail (incomplete) Rockfish assessments in 2014. (RH 150615)

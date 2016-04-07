@@ -479,11 +479,11 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
     # scan(); print(summary(x))
-    mess = c(
-    "require(grid, quietly = TRUE, warn.conflicts = FALSE)",
-    "require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
-    )
-    eval(parse(text=mess))
+    #mess = c(
+    #"require(grid, quietly = TRUE, warn.conflicts = FALSE)",
+    #"require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
+    #)
+    #eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -581,11 +581,11 @@ plotDensPOPpars =
     p <- ncol(mcmc)
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
-    mess = c(
-    "require(grid, quietly = TRUE, warn.conflicts = FALSE)",
-    "require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
-    )
-    eval(parse(text=mess))
+    #mess = c(
+    #"require(grid, quietly = TRUE, warn.conflicts = FALSE)",
+    #"require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
+    #)
+    #eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -674,11 +674,11 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
     p <- ncol(mcmc)
     x <- data.frame(Factor = ordered(rep(names(mcmc), each = n), 
         names(mcmc)), Draw = rep(1:n, p), Value = as.vector(as.matrix(mcmc)))
-    mess = c(
-    "require(grid, quietly = TRUE, warn.conflicts = FALSE)",
-    "require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
-    )
-    eval(parse(text=mess))
+    #mess = c(
+    #"require(grid, quietly = TRUE, warn.conflicts = FALSE)",
+    #"require(lattice, quietly = TRUE, warn.conflicts = FALSE)"
+    #)
+    #eval(parse(text=mess))
     if (trellis.par.get()$background$col == "#909090") {
         for (d in dev.list()) dev.off()
         trellis.device(color = FALSE)
@@ -1013,3 +1013,12 @@ plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
 		B[[i]][["Bmsy.MCMC"]]   <- currentMSY$B
 	}
 	return(B) }
+
+## Just for testing whether namespaces really work (RH)
+.flushPlot=function(){
+   plotBubbles(round(genMatrix(40,20),0),clrs=c("green","grey","red"))
+   plotCI(1:10,runif(10,3,7),3,2)
+   plotTrace(data.frame(this=rnorm(1000),that=rnorm(1000)))
+}
+
+

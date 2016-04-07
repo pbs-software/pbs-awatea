@@ -1,18 +1,23 @@
 # PBSawatea
-
 # Packages declared in the 'Depends' field should not also be in the 'Imports' field (from R-exts.pdf).
-import(methods, scape, plotMCMC, xtable, gplots)
+# RH: In NAMESPACE, package can either be in `import' OR `importFrom', NOT both.
+#     But all packages named in `import' AND `importFrom' must appear in DESCRIPTION after `Imports:'.
+import(methods, PBSmodelling, scape, plotMCMC, xtable, lattice)
 
 #importFrom(foo, f, g)
-importFrom(PBSmodelling, view)
-importFrom(lattice, trellis.device)
+#importFrom(PBSmodelling, view)
+importFrom("coda", "mcmc")
+#importFrom("gdata", "ll")
+importFrom("gplots", "plotCI")
+importFrom("Hmisc", "Cbind", "panel.xYplot")
+#importFrom("lattice", "current.panel.limits", "densityplot", "panel.abline", "panel.barchart", "panel.curve", "panel.densityplot", "panel.number", "panel.superpose", "panel.xyplot", "trellis.device", "trellis.par.get", "xyplot")
 
 # Export all functions that do NOT begin with a dot (period)
 exportPattern("^[^\\.]")
 
 # Export dot functions by action (explicit list just to keep track)
+exportPattern("^\\.PBS")
 exportPattern("^\\.comp")
 exportPattern("^\\.flush")
-exportPattern("^\\.PBS")
 
 
