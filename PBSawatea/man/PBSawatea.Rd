@@ -20,7 +20,7 @@
   Running of Awatea is streamlined using code written in R (R Development Core Team 2009),
   rather than the original Microsoft Excel implementation. Figures and tables of output are
   automatically produced through R using code adapted from the R packages \pkg{scape} 
-  (Magnusson 2009) and \pkg{scapeMCMC} (Magnusson and Stewart 2007). We use the R function 
+  (Magnusson 2009) and \pkg{plotMCMC} (Magnusson and Stewart 2007). We use the R function 
   \code{Sweave} (Leisch 2008) in the package \pkg{utils} to automatically collate, 
   via LATEX, the large amount of figures and tables into a single portable document file
   (\code{.pdf}) for each model run.

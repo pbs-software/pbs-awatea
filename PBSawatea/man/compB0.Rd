@@ -57,7 +57,7 @@ compB0(B, Mnams=NULL, ratios=c(0.4,0.8),
   Uses a modified version of \code{boxplot} called \code{\link[PBSawatea]{plotBox}}.
 }
 \seealso{
-  \code{\link[PBSawatea]{plotBox}}, \code{\link[scapeMCMC]{importMCMC}}, \code{\link[PBSawatea]{msyCalc}} \cr
+  \code{\link[PBSawatea]{plotBox}}, \code{\link[scape]{importMCMC}}, \code{\link[PBSawatea]{msyCalc}} \cr
   \code{\link[grDevices]{plotmath}}, \code{\link[graphics]{boxplot}}, \code{\link[graphics]{bxp}}
 }
 \keyword{hplot}

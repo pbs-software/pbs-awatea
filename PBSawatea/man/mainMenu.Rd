@@ -64,7 +64,7 @@ utilMenu()
 
   \bold{Utils  menu items:} \cr
     \code{scape Help} \cr
-    \code{scapeMCMC Help} \cr
+    \code{plotMCMC Help} \cr
     \code{Portrait graphsheet} \cr
     \code{Landscape graphsheet}
 }

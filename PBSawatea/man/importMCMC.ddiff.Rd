@@ -5,7 +5,7 @@
   Import Functions for PJS Delay Difference Model
 }
 \description{
-  Make a \pkg{scapeMCMC} object identical in format to the result of 
+  Make a \pkg{plotMCMC} object identical in format to the result of 
   \code{importMCMC} (or \code{importProj}) from PJS delay 
   difference model output. \cr
   The difference is that \eqn{B} is biomass defined by a
@@ -40,7 +40,7 @@ importProj.ddiff(yrVal="2006")
   \code{"cat."} in \code{read.table}.
 }
 \seealso{
-  \code{\link[scapeMCMC]{importMCMC}}, \code{\link[scapeMCMC]{importProj}},
+  \code{\link[scape]{importMCMC}}, \code{\link[scape]{importProj}},
   \code{\link[utils]{read.table}}
 }
 % Programming

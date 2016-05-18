@@ -4,7 +4,7 @@
 \description{
   Plot Markov-chain Monte Carlo traces. This is a diagnostic plot for
   deciding whether a chain shows unwanted trends by showing the trace 
-  of moving quantiles. (Modified from the \pkg{scapeMCMC} function
+  of moving quantiles. (Modified from the \pkg{plotMCMC} function
   \code{plotTrace}.)
 }
 \usage{
@@ -67,13 +67,13 @@ plotTracePOP(mcmc, axes=FALSE, same.limits=FALSE,
   are the underlying drawing functions, and
   \code{\link[coda]{traceplot}} is a similar non-trellis plot.
 
-  \code{\link[scapeMCMC]{plotTrace}}, \code{\link[scapeMCMC]{plotAuto}}, \code{\link[scapeMCMC]{plotCumu}}, and
-  \code{\link[scapeMCMC]{plotSplom}} are diagnostic plots.
+  \code{\link[plotMCMC]{plotTrace}}, \code{\link[plotMCMC]{plotAuto}}, \code{\link[plotMCMC]{plotCumu}}, and
+  \code{\link[plotMCMC]{plotSplom}} are diagnostic plots.
 
-  \code{\link{plotDensPOP}}, \code{\link[scapeMCMC]{plotDens}}, \code{\link[scapeMCMC]{plotQuant}}, and 
+  \code{\link{plotDensPOP}}, \code{\link[plotMCMC]{plotDens}}, \code{\link[plotMCMC]{plotQuant}}, and 
   \code{\link{plotChains}} are posterior plots.
 
-  \code{\link[scapeMCMC]{scapeMCMC-package}} gives an overview of the \pkg{scapeMCMC} package.
+  \code{\link[plotMCMC]{plotMCMC-package}} gives an overview of the \pkg{plotMCMC} package.
 }
 % Graphics
 \keyword{hplot}

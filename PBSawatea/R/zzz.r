@@ -23,7 +23,7 @@ Packaged on ", pkg_date, "
 Pacific Biological Station, Nanaimo
 
 All available PBS packages can be found at
-http://code.google.com/p/pbs-software/
+https://github.com/pbs-software
 
 Aotearoa, six months in a leaky boat...
 -----------------------------------------------------------
@@ -37,23 +37,25 @@ Aotearoa, six months in a leaky boat...
 # No Visible Bindings
 # ===================
 if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
+	".findSquare",
+	"addLabel","addLegend",
 	"B0.MCMC","B0.mpd","B0refLevels","B0refNames","blimYrs","boxwidth","btarYrs",
-	"Cnames","CAnames","cordat","currentMCMC","currentMSY","currentProj","currentRes","currYear",
+	"Cnames","CAnames","clipVector","cordat","currentMCMC","currentMSY","currentProj","currentRes","currYear",
 	"delim",
 	"evadat",
-	"fval",
-	"gfcode","global",
+	"findPat","fval",
+	"genMatrix","getYes","gfcode","global",
 	"h.mpd",
 	"J",
 	"likdat",
 	"MAexp","mainTitle","MAobs","maxgrad","mess","minCpueYr",
 	"N","npars","Nsurv",
 	"obj",
-	"pardat","PBSawatea","plt.ageResids","policy","priorBoundsList","priorDistList","priorInput",
-	"R0.mpd","refPointsList","refPointsHistList","refs","resFileList","rpType",
-	"Series","Snames","SAnames","sexlab","sigmaR","stddat",
-	"trevorMCMC",
-	"ulimYrs","use.Pnames","useCA","useSA","utarYrs",
+	"packList","pad0","pardat","PBSawatea","plotBubbles","plt.ageResids","policy","priorBoundsList","priorDistList","priorInput",
+	"R0.mpd","refPointsList","refPointsHistList","refs","resetGraph","resFileList","rpType",
+	"SAnames","Series","sexlab","show0","sigmaR","Snames","stddat",
+	"tcall","trevorMCMC",
+	"ulimYrs","unpackList","use.Pnames","useCA","useSA","utarYrs",
 	"variable","Vexp",
 	"years",
 	"z1z2"

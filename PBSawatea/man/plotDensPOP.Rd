@@ -106,13 +106,13 @@ plotDensPOPparsPrior(mcmc, probs=c(0.025,0.975), points=FALSE,
   functions, and \code{\link[coda]{densplot}} is a similar non-trellis
   plot.
 
-  \code{\link[scapeMCMC]{plotTrace}}, \code{\link[scapeMCMC]{plotAuto}},
-  \code{\link[scapeMCMC]{plotCumu}}, and \code{\link[scapeMCMC]{plotSplom}} are diagnostic
+  \code{\link[plotMCMC]{plotTrace}}, \code{\link[plotMCMC]{plotAuto}},
+  \code{\link[plotMCMC]{plotCumu}}, and \code{\link[plotMCMC]{plotSplom}} are diagnostic
   plots.
 
-  \code{\link[scapeMCMC]{plotDens}} and \code{\link[scapeMCMC]{plotQuant}} are posterior plots.
+  \code{\link[plotMCMC]{plotDens}} and \code{\link[plotMCMC]{plotQuant}} are posterior plots.
 
-  \code{\link[scapeMCMC]{scapeMCMC-package}} gives an overview of the package.
+  \code{\link[plotMCMC]{plotMCMC-package}} gives an overview of the package.
 }
 % Graphics
 \keyword{hplot}

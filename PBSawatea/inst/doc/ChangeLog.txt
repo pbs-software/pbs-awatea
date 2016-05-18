@@ -4,6 +4,10 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
+1.0.1 (2016-05-18)
+  • Cleaned up some more `no visible global function definition' CRANkiness. (RH 160518)
+  • Changed DESCRIPTION and NAMESPACE from Imports PBSmodelling to Depends PBStools, which sucks in PBSmodelling and other functionality. (RH 160512)
+
 1.0.0 (2016-04-06)
   • Updated the vignette `PBSawateaIntro.Rnw'. (RH 160406)
   • Updated `resDocSty.sty' to my current version; added the TDS-compliant uarial fonts `uarial.tds.zip' and the bibliography style file `resDoc.bst'. (RH 160504)
