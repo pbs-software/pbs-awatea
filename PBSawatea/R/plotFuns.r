@@ -716,9 +716,11 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
 plt.catch = function(years, Ct, xint=5, yint=250,
    ptypes=c("eps","png"), pngres=150)
 {
-	x = years[-length(years)]; xlim = range(x); xsmall = intersect(seq(1900,2100,xint),x)
+	x = years[-length(years)]; xlim = range(x)
+	xsmall = intersect(seq(1900,2100,xint),x)
 	if (is.null(dim(Ct))) y = matrix(Ct,ncol=1) else y=Ct
-	ylim = c(0,max(y)); ysmall = seq(yint,ylim[2],yint)
+	ylim = c(0,max(y)); 
+	ysmall = seq(yint,ylim[2],yint)
 	ngear=ncol(y)
 	pchGear=seq(21,20+ngear,1)
 	colGear=rep(c("black","blue"),ngear)[1:ngear]
@@ -951,12 +953,12 @@ plt.bubbles = function(mpdObj, nsex=2,
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.bubbles
 
-#plotAges-------------------------------2014-09-30
+#plotAges-------------------------------2016-11-29
 #  Plot the MPD model fits to age data (commercial
 #  or survey) using the scape function `plotCA'.
 #-------------------------------------------AME/RH
 plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
-   ptypes = c("eps","png"), pngres=150)
+   ptypes = c("eps","png"), pngres=150, ...)
 {
 	seriesType = paste0("CA",what)
 	seriesList = sort( unique( obj[[seriesType]][["Series"]]) )
@@ -966,29 +968,36 @@ plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
 	CA.nyrs = sapply(CA.yrs,length)
 
 	for ( i in 1:length(seriesList) )  {
-		ncols   = min(maxcol,max(CA.nyrs[i],1))
-		nrows   = ceiling(CA.nyrs[i]/ncols)
+		yrs = CA.yrs[i]; nyrs = CA.nyrs[i]
+		if (!is.null(list(...)$years)) {
+			yrs = intersect(CA.yrs[[i]],list(...)$years)
+			nyrs = length(yrs)
+		}
+		ncols   = min(maxcol,max(nyrs,1))
+		nrows   = ceiling(nyrs/ncols)
 		age.layout = rev(c(nrows,ncols)) # backwards in stupid lattice
 		pwidth  = switch(ncols,4,6,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5)
-		pheight = switch(nrows,4,6,9,9,9,9,9,9,9,9,9,9)
+		pheight = switch(nrows,4,6,8,8,8,8,8,8,8,8,8,8)
 		CA.sex = unique(obj[[seriesType]][["Sex"]])
 		for(plot.sex in CA.sex) {
 			j = grep(plot.sex,CA.sex)
-			# legend key:
+			## legend key:
 			CA.key = list(text=list(lab=c("Obs","Pred")), lines=list(col=c("black",ifelse(plot.sex=="Male","blue","red")),
 				cex = c(0.5,0.5)), type=c("p","l"), x=0.78, y=ifelse(nrows==1,-0.10,-0.03), pch=c(20,20), lwd=1, between=0.3)
-			# pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
+			## pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
 			for (p in ptypes) {
-				pname = paste0(ifelse(what=="c","ageComm","ageSurv"), plot.sex, i)
+				pname = paste0(ifelse(what=="c","ageComm","ageSurv"), plot.sex,"Ser",i)
+				set = if (!is.null(list(...)$set)) list(...)$set else ""
+				pname = paste0(pname,set)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=pwidth, height=pheight, horizontal=FALSE,  paper="special", onefile=FALSE)
 				else if (p=="png") png(paste0(pname,".png"), res=pngres, width=pwidth*pngres, height=pheight*pngres)
-				par(mar=c(5,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.5,0)) # this line may have no effect on `plotCA'
+				par(mar=c(5,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.5,0)) ## this line may have no effect on `plotCA'
 				plotCA( obj, what=what, ylab="Proportion", xlab="Age class", sex=plot.sex, layout= age.layout, key=CA.key, 
-					main=paste0(seriesName[i]," - ",sexlab[j]), pch=20, cex.points=0.5, col.lines=ifelse(plot.sex=="Male","blue","red"), lwd.lines=2 ,series=i)
+					main=paste0(seriesName[i]," - ",sexlab[j]), pch=20, cex.points=ifelse(nyrs>20 && p=="eps",0.3,0.5), col.lines=ifelse(plot.sex=="Male","dodgerblue","red"), lwd.lines=2 ,series=i, ...)
 				if (p %in% c("eps","png")) dev.off()
-			} # end of plot type loop
-		} # end of plot.sex loop
-	} # end of seriesList loop
+			} ## end of plot type loop
+		} ## end of plot.sex loop
+	} ## end of seriesList loop
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotAges
 

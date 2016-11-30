@@ -124,7 +124,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 
 	#---SUBFUNCTIONS-------------------------------
 	# Flush the cat down the console
-	.flush.cat = function(...) { cat(...); flush.console() }
+	#.flush.cat = function(...) { cat(...); flush.console() }  ## already in PBStools
 
 	readVector <- function(keyword, same.line = TRUE, file = res.file,
 		vector = res.vector) {

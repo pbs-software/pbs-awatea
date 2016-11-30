@@ -9,7 +9,7 @@
 }
 \usage{
 plotAges(obj, what="c", maxcol=4, sexlab=c("Females","Males"), 
-   ptypes=c("eps","png"), pngres=150)
+   ptypes=c("eps","png"), pngres=150, ...)
 }
 \arguments{
   \item{obj}{the MPD object created by the \code{importRes} function (e.g., \code{currentRes}).}
@@ -18,6 +18,7 @@ plotAges(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
   \item{sexlab}{label(s) to rename sex on the plot (e.g., a user may wish to rename "Unisex" to "Female").}
   \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
   \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
+  \item{...}{additional arguments for \code{plotCA} and internal control.}
 }
 \details{
   The function drills down into the MPD object to extract data to pass to \pkg{scape}'s function \code{plotCA}.

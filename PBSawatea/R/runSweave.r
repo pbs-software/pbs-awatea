@@ -1,4 +1,4 @@
-#runSweave------------------------------2014-11-13
+#runSweave------------------------------2016-11-30
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
@@ -11,6 +11,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
    Ncpue   = 0,
    Nsurvey = 3,
    Ngear   = 1,                       # number of commercial gear types
+   NCAset  = 2,                       # number of commercial catch-age-age plot sets (>1 when #CA years > 20)
    Snames  = paste0("Ser",1:Nsurvey), # survey names (w/out spaces)
    SApos   = rep(TRUE,Nsurvey),       # surveys with age composition data
    Cnames  = paste0("Gear",1:Ngear),  # survey names (w/out spaces)
@@ -136,6 +137,11 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		tfile = gsub("@rmCSA ","",tfile) # assumes space after @rmCA for readability in `run-master.Snw`
 	}
 
+	## Deal with CA figures that have been split by selecting @rmCA1, @rmCA2, etc. that is appropriate based on NCAset argument
+	tfile = tfile[-grep(paste0("@rmCA[",paste0(setdiff(0:9,NCAset),collapse=""),"]"),tfile)] ## get rid of @rmCA's without the NCAset suffix
+	tfile = gsub(paste0("@rmCA",NCAset," "),"",tfile) ## assumes space after @rmCAN for readability in `run-master.Snw`
+#browser();return()
+
 	# Start expanding lines using bites
 	# IMPORTANT: each element string below must be a unique match to a place in `run-Master.Smw'
 	SpriorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]","logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
@@ -146,7 +152,9 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	survBites  = c("Survey 1") 
 	#gearBits   = c("onefig\\{commAgeResSer1}") #change only first `1'
 	gearBites  = c(#"Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]",
-		"onefig\\{ageCommMale1}","onefig\\{ageCommFemale1}","onefig\\{commAgeResSer1}","onefig\\{commAgeResSer1Female}","onefig\\{commAgeResSer1Male}")
+		"onefig\\{ageCommFemaleSer1}","onefig\\{ageCommFemaleSer1A}","onefig\\{ageCommFemaleSer1B}",
+		"onefig\\{ageCommMaleSer1}","onefig\\{ageCommMaleSer1A}","onefig\\{ageCommMaleSer1B}",
+		"onefig\\{commAgeResSer1}","onefig\\{commAgeResSer1Female}","onefig\\{commAgeResSer1Male}")
 
 	biteMe = function(infile, bites, N, CSpos=SApos, allsub=TRUE) { # bug fix: need to supply SApos or CApos
 		if (N==0) return(infile)
@@ -180,7 +188,6 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = biteMe(tfile,survBites,Nsurvey)
 	#tfile = biteMe(tfile,gearBits,Ngear,allsub=FALSE) # only change the first instance of `1' when expanding
 
-#browser();return()
 	if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
 	#else            tfile = tfile[-grep("^CAs 1",tfile)]  # alreday been removed above
 	if (any(CApos)){
@@ -188,6 +195,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		tfile = biteMe(tfile,"CAc 1",Ngear,CSpos=CApos)
 	}
 	#else tfile = tfile[-grep("^CAc 1",tfile)]  # alreday been removed above
+
 	tfile = gsub("@one","1",tfile)  # to restore true values of `1' in expanded lines
 
 	for (i in 1:Nsurvey)
@@ -264,3 +272,6 @@ runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 
 #=== RBR CST 2014 ===
 #outMPD=runSweave(strSpp="RBR",filename="RBR-CST2F-01.txt",runNo=1,rwtNo=1,Nsex=2,Ncpue=0,Nsurvey=8,Ngear=2,Snames=c("QC Sound Synoptic","WCVI Synoptic","QC Sound Shrimp","WCHG Synoptic","HS Synoptic","US Triennial","Historic GB Reed","IPHC Longline"),SApos=c(T,T,T,F,F,F,F,F),Cnames=c("Bottom Trawl","Longline"),locode=T)
+
+#=== RBR CST 2014 ===
+#outMPD=runMPD(strSpp="POP",prefix=c("POP","5ABC"),runs=1,rwts=1,Nsex=2,Ncpue=0,Nsurvey=3,Ngear=1,Snames=c("GIG Historical","QC Sound Synoptic","QC Sound Shrimp"),Cnames=c("Bottom Trawl"),SApos=c(T,T,F),locode=T)

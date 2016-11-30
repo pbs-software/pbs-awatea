@@ -4,6 +4,18 @@ Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
 
+1.0.4 (2016-11-30)
+  • Revised function `runSweave' and `run-master.Snw' to allow plots of observed and estimated proportion-ages for commercial catch-age fits to span multiple pages. (RH 161130)
+
+1.0.3 (2016-11-29)
+  • Added `lattice::' to `trellis.device' in `run-master.Snw' and `run-masterMCMC.Snw' because function is called outside PBSawatea functions. (RH 161129)
+  • Promoted `lattice' in Imports section of DESCRIPTION as `lattice.device' does not seem to be recognised by PBSawatea functions. (RH 161128)
+  • Changed backticks ` in DESCRIPTION to single quotes ' (Kurt Hornik 2016-09-20)
+
+1.0.2 (2016-05-19)
+  • Used `PBSmodelling::view' for setting the method for 'view' when using an AWATEA class. (RH 160519)
+  • Removed function `.flush.cat' as it appears in PBStools. (RH 160519)
+
 1.0.1 (2016-05-18)
   • Cleaned up some more `no visible global function definition' CRANkiness. (RH 160518)
   • Changed DESCRIPTION and NAMESPACE from Imports PBSmodelling to Depends PBStools, which sucks in PBSmodelling and other functionality. (RH 160512)

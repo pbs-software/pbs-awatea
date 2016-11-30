@@ -2556,7 +2556,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.mcmcGraphs
 
 
-#plt.mpdGraphs--------------------------2014-09-23
+#plt.mpdGraphs--------------------------2016-11-29
 # Plot the MPD graphs to encapsulated postscript files.
 #-------------------------------------------------
 # RH (2014-09-23)
@@ -2651,7 +2651,15 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	#   Also transferred code manipulation for plotting MPD age fits
 	#   into a new function called `plotAges' (located in `plotFuns.r')
 	#   to handle both commercial and survey age fits.
-	plotAges(obj, what="c", maxcol=4, sexlab=sexlab, ptypes=ptypes, pngres=pngres)
+
+	cyrs = .su(obj[["CAc"]][["Year"]])
+	cgrp = split(cyrs,ceiling(seq_along(cyrs)/20))
+	if (length(cgrp)==1)
+		plotAges(obj, what="c", maxcol=5, sexlab=sexlab, col.points="grey20", ptypes=ptypes, pngres=pngres)
+	else {
+		for (i in 1:length(cgrp))
+			plotAges(obj, what="c", maxcol=5, sexlab=sexlab, col.points="grey20", ptypes=ptypes, years=cgrp[[i]], set=LETTERS[i], pngres=pngres)
+	}
 	plotAges(obj, what="s", maxcol=4, sexlab=sexlab, ptypes=ptypes, pngres=pngres)
   
   

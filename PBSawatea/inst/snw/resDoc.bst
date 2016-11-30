@@ -183,6 +183,7 @@ FUNCTION {output.check}
 %%  if$
 %%  newline$
 %%}
+
 %% To add period at end of each entry.
 FUNCTION {fin.entry}
 { add.period$
@@ -611,8 +612,7 @@ if$
 FUNCTION {format.title} %% (RH 150507)
 { title empty$
     { "" }
-    { title "t" change.case$ dfolink
-    }
+    { title "t" change.case$ dfolink }
   if$
 }
 

@@ -1,4 +1,6 @@
-% run-Master.Snw revised for Rock Sole and Silvergray Rockfish (2013-09-23)
+%===============================================================================
+% run-master.Snw revised for Pacific Ocean Perch 5ABC (2016-11-30)
+% run-master.Snw revised for Rock Sole and Silvergray Rockfish (2013-09-23)
 % ymrrun5-0.Snw. 5/4/11.
 % ymrrun2-5.Snw - from Rowan's run2 output. Fifth reweighting.
 %   Also adding in automatic table of parameter values. 28th March 2011
@@ -8,16 +10,15 @@
 %  18th August 2010.
 % POP2001admb5.Snw - having a parameter for model start year and  start of age-data. 20th July 2010
 % POP2001admb4.Snw - making sure output is as automated as much as possible.
+%===============================================================================
 \documentclass[11pt]{book}   
 % \documentclass[12pt]{article}
 
-\usepackage{Sweave}      % andy add3ed
-% \usepackage{epsfig}
+\usepackage{Sweave}      % andy added
+% \usepackage{epsfig}    % use graphicx instead
 \usepackage{rotating}    % for sideways table
 \usepackage{longtable,array}
 % \usepackage{placeins}
-% \usepackage{nccmath}
-% \usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry} 
 \usepackage{resDocSty}   % Res Doc .sty file
 \usepackage{graphicx}
 
@@ -47,52 +48,41 @@
 %\renewcommand{\textfraction}{0.15}
 %\renewcommand{\floatpagefraction}{0.7}
 
+\newcommand{\ptype}{eps} % define plot type to use (only currently set up for eps)
+
 % Last line of http://www.latex-community.org/forum/viewtopic.php?f=45&t=4336, a German guy says: 
 %    You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
 %    Apparently shouldn't have just one argument.
+
 \newcommand\onefig[2]{    % filename is #1, text is #2
   \begin{figure}[tp]
   \begin{center}
-	\includegraphics[width=6.5in,height=7.25in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
-  %\epsfxsize=6in
-  %\epsfbox{#1.eps}
+  \includegraphics[width=6.5in,height=7.25in,keepaspectratio=TRUE]{{#1}.\ptype} \\  % RH much better control
   \end{center}
-  \caption{#2 }
-  \label{fig:#1} 
+  \caption{#2}
+  \label{fig:#1}
   \end{figure}
   \clearpage
 }
-
 \newcommand\twofig[3]{   % figure #1 under #2, caption text #3
   \begin{figure}[tp]     %  label will be #1
   \centering
-%  \epsfxsize=6in
-%  \epsfysize=3.5in
   \begin{tabular}{c}
-	\includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
-	\includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{#2.eps}
-%  \epsfbox{#1.eps} \\
-%  \epsfbox{#2.eps}
+  \includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{{#1}.\ptype} \\  % RH much better control
+  \includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{{#2}.\ptype}
   \end{tabular}
   \caption{#3}
   \label{fig:#1}
   \end{figure}
   \clearpage
 }
-
 \newcommand\threefig[4]{    % figure #1 then #2 then #3, 
   \begin{figure}[htp]       %  caption text #4, label will be #1
   \centering
   \begin{tabular}{c}
-	\includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
-	\includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{#2.eps} \\
-	\includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{#3.eps}
-  %\vspace{-20mm} 
-  %\epsfbox{#1.eps} \\
-  %\vspace{-20mm} 
-  %\epsfbox{#2.eps} \\
-  % \vspace{-20mm} 
-  %\epsfbox{#3.eps}
+  \includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{{#1}.\ptype} \\  % RH much better control
+  \includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{{#2}.\ptype} \\
+  \includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{{#3}.\ptype}
   \end{tabular}
   \caption{#4}
   \label{fig:#1}
@@ -105,7 +95,8 @@
 % keep.source = FALSE    - when echoing, if TRUE then original source is copied to the file, otherwise deparsed source is echoed.
 % eval        = TRUE     - if FALSE then chunk is not evaluated
 % results     = VERBATIM - R output included verbatim, if TEX output is already proper latex and included as is, 
-%                          if HIDE then all output is completely suppressed (but the code executed - good for admb) results options should all be lower case (else get warnings)
+%                          if HIDE then all output is completely suppressed (but the code executed - good for admb)
+%                          results options should all be lower case (else get warnings)
 % pdf         = TRUE     - whether .pdf figures shall be generated
 % eps         = TRUE     - whether .eps figures shall be generated
 % strip.white = FALSE    - if true then blank lines at beginning and end of output are removed. If all, then all blank lines are removed.
@@ -113,24 +104,24 @@
 % height      = 6        - height of figures in inches
 % fig         = FALSE    - whether the code chunk produces graphical output (only one per chunk)
 
-% \setkeys{Gin}{width=6in}     % from googling sweave figure bigger.
+% \setkeys{Gin}{width=6in}  % from googling sweave figure bigger.
 %  It will set this for the rest of document [doesn't width do that in the above?]
 
 \begin{document}
 \setcounter{page}{\startP}
 \setcounter{figure}{\startF}
 \setcounter{table}{\startT}
-\setcounter{secnumdepth}{3}    % To number subsubheadings-ish
+\setcounter{secnumdepth}{3}    % to number subsubheadings-ish
 
 \newcounter{prevchapter}
-\setcounter{chapter}{6}    % temporary for standalone chapters 9=(5=F, 6=G)
+\setcounter{chapter}{6}        % for standalone chapters 9=(5=F, 6=G)
 \setcounter{prevchapter}{\value{chapter}}
 \addtocounter{prevchapter}{-1}
 \renewcommand{\thechapter}{\Alph{chapter}} % ditto
 \newcommand{\eqnchapter}{\Alph{prevchapter}}
 
 
-%\appendix           % Everything from now on will be an Appendix (activate when appendices stitched together)
+%\appendix  % Everything from now on will be an Appendix (activate when appendices stitched together)
 % Now want to number sections, tables etc. as A.1, A.2, etc.
 \renewcommand{\thesection}{\thechapter.\arabic{section}}   
 \renewcommand{\thetable}{\thechapter.\arabic{table}}    
@@ -144,25 +135,9 @@
 
 % First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
-# '@variables' replaced by runSweave.
+# Note: '@variables' replaced by function 'runSweave'.
 cwd = "@cwd"            # Top level directory; all models occur below this one. 
 sigdig = 5              # Number of significant digits to output in tables
-#rm(list=ls())  
-#require(PBSfishery)   # also loads mapping, modelling, data, RODBC
-#require(PBSadmb)      # 1st run of these will show package numbers etc.
-#require(PBSmodelling)
-#require(xtable) 
-#require(lattice)
-#readADopts()
-# Arni Magnusson's support functions for Awatea.
-#library(scape)
-# Arni Magnusson's support functions for Awatea MCMC.
-#library(plotMCMC)
-# Data manipulation functions from CRAN.
-#library(gdata)
-
-# Function Definitions 
-#source("../../ymrScape.r")
 @ 
 
 % '@variables' replaced by function 'runSweave' to create individual Sweaves for runs and reweightings.
@@ -190,11 +165,12 @@ if(running.awatea) {
   } 
 @ 
 
-{\Large \bf MPD working results for @sppname (\Sexpr{area.name})}
+{\Large \bf MPD Results for @sppname (\Sexpr{area.name})}
 \vspace{7mm}
 
 %{\Large \bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
-{\Large \bf Paul J. Starr and Rowan Haigh}
+%{\Large \bf Paul J. Starr and Rowan Haigh}
+{\Large \bf R.~Haigh, P.J.~Starr, and A.M.~Edwards}
 
 % This file started for 2012 assessment in July 2012.
 
@@ -221,7 +197,7 @@ Using model specified by {\tt \Sexpr{model.name}.txt}. Loading in {\tt \Sexpr{mo
 
 % {\tt results.dat} file, have changed {\tt importCol2} from loading in a {\tt .res}. **Check with Paul that that's okay - they look to be similar formats (for POP assess8, {\tt results.dat} and {\tt ...estmh02.res} are identical except for a few extra quotation marks and the latter rounds some numbers up (Paul's notes mention this loss of precision). So, need new directory for each re-running, or copy results.dat over.
 
-We {\bf are}~{\bf \Sexpr{if(!running.awatea) paste("NOT")}} re-running Awatea here\Sexpr{if(!running.awatea) paste(" so just loading in output")}.
+% We {\bf are}~{\bf \Sexpr{if(!running.awatea) paste("NOT")}} re-running Awatea here\Sexpr{if(!running.awatea) paste(" so just loading in output")}.
 
 If editing {\tt .txt} file, may have to rerun just in dos/R first to check the output from ADMB (otherwise errors get hidden): 
 
@@ -248,25 +224,32 @@ SAnames = Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
 if (length(SAnames)>0) useSA = TRUE else useSA = FALSE
 @
 
-This Appendix describes the results from the mode of the posterior distribution (MPD) (to compare model estimates to observations), diagnostics of the Markov chain Monte Carlo (MCMC) results, and the MCMC results for the estimated parameters.  The final advice and major outputs are obtained from the MCMC results, providing estimates of uncertainty.  Estimates of major quantities and advice to management (such as decision tables) are presented in the main text.
+This appendix describes the results from the mode of the posterior distribution (MPD), primarily to compare model estimates to observations.
+The figures help to determine if a run should be used to generate MCMC samples.
+%diagnostics of the Markov chain Monte Carlo (MCMC) results, and the MCMC results for the estimated parameters.
+%The final advice and major outputs are obtained from the MCMC results, providing estimates of uncertainty.
+%Estimates of major quantities and advice to management (such as decision tables) are presented in the main text.
 
 \section{MODE OF THE POSTERIOR DISTRIBUTION (MPD) RESULTS}
 
 % *** need setting when putting into Appendix G
 
-Awatea first determines the mode of the posterior distribution (MPD) for each estimated parameter.  These are then used as the starting points for the MCMC simulations. 
-The MPD fits are shown for the survey indices (Figure \ref{fig:survIndSer2}), the commercial catch-at-age data (as bubble plots in Figures \ref{fig:CAcObsFem}-\ref{fig:CAcFitMale} and as overlaid age structures in Figures \ref{fig:ageCommFemale1} and \ref{fig:ageCommMale1}), and the survey series age data (Figures~\ref{\Sexpr{paste0("fig:ageSurv",gsub(" ","",SAnames[1]),"Female1")}} to \ref{\Sexpr{paste0("fig:ageSurv",gsub(" ","",rev(SAnames)[1]),"Female",length(SAnames))}}). The results are sensible and are able to capture the main features of the data sets fairly well. There appears to be relative consistency between the available data sources.
+Awatea first determines the mode of the posterior distribution (MPD) for each estimated parameter.
+These are then used as the starting points for the MCMC simulations. 
+The MPD fits are shown for the survey indices (Figure \ref{fig:survIndSer2}), the commercial catch-at-age data (as bubble plots in Figures \ref{fig:CAcObsFem} and \ref{fig:CAcObsMale}, and as overlaid age structures in Figures \ref{fig:ageCommFemaleSer1A} to \ref{fig:ageCommMaleSer1B}), and the survey series age data (Figures~\ref{fig:ageSurvFemaleSer1} to \ref{\Sexpr{paste0("fig:ageSurvFemaleSer",length(SAnames))}}). 
+%The results are sensible and are able to capture the main features of the data sets fairly well.
+%There appears to be relative consistency between the available data sources.
 
+Residuals to the MPD model fits are provided for the survey indices (Figures~\ref{\Sexpr{paste0("fig:survRes",gsub(" ","",SAnames[1]))}} to \ref{\Sexpr{paste0("fig:survRes",gsub(" ","",rev(SAnames)[1]))}}), and the age data (e.g., Figures \ref{fig:commAgeResSer1} and \ref{fig:survAgeResSer1}). 
+%These further suggest that the model fits are consistent with the data, as do the mean ages (Figure \ref{fig:meanAge}).
 
-Residuals to the MPD model fits are provided for the survey indices (Figures~\ref{\Sexpr{paste0("fig:survRes",gsub(" ","",SAnames[1]))}} to \ref{\Sexpr{paste0("fig:survRes",gsub(" ","",rev(SAnames)[1]))}}), and the age data (e.g., Figures \ref{fig:commAgeResSer1} and \ref{fig:survAgeResSer1}). These further suggest that the model fits are consistent with the data, as do the mean ages (Figure \ref{fig:meanAge}).
-
-Figure \ref{fig:stockRecruit} shows the resulting stock-recruitment function and the MPD values of recruitment over time (though see the figure of MCMC values of recruitment). Figure \ref{fig:recDev} shows that the recruitment deviations display no trend over time, and that the auto-correlation function of the deviations appears satisfactory. Figure \ref{fig:selectivity} gives the MPD fits for the selectivities, together with ogive for female maturity. The values of the log-likelihood and objective functions for the MPD fits are given in Table \ref{tab:like}.
+Figure \ref{fig:stockRecruit} shows the resulting stock-recruitment function and the MPD values of recruitment over time.
+% (though see the figure of MCMC values of recruitment). 
+Figure \ref{fig:recDev} shows the recruitment deviations over time and the auto-correlation function of the deviations. 
+Figure \ref{fig:selectivity} gives the MPD fits for the selectivities, together with ogive for female maturity. 
+The values of the log-likelihood and objective functions for the MPD fits are given in Table \ref{tab:like}.
 
 % The model is able to capture the main features of the age data fairly well.  *****FROM YMR, EDIT AS APPROPRIATE FOR EACH STOCK: For example, the strong cohort seen entering the fishery in the early 1990s (Figures G5 and G6) is fitted by the model (Figures G9 and G10).  However, older age classes seem slightly under-represented.  The residuals show no strong trends over time.  All these features were the same for the 'Fix M' run.
-
-% \section{FIGURES}
-
-% End of text for Appendix G
 
 \clearpage
 
@@ -283,7 +266,7 @@ Figure \ref{fig:stockRecruit} shows the resulting stock-recruitment function and
 # Options: "lines", "lineDot", "quantBox"
 rpType <- "quantBox"
 
-trellis.device(device="postscript", color=TRUE)   # for colour .eps
+lattice::trellis.device(device="postscript", color=TRUE)   # for colour .eps
 
 # Assign the "*.res" file name from Awatea for analysis.
 # This file must be loaded via the menu.
@@ -809,7 +792,7 @@ Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right)
 
 % Making figures (code in plotFuns.r)
 <<simple_figs, results=hide, echo=FALSE>>=
-plt.catch(years, Ct, xint=5, yint=250)
+plt.catch(years, Ct, xint=5, yint=1000)
 plt.biomass(years,Bt.mpd,yint=2500,pname="Bt",ylab="Spawning biomass (t), Bt")
 plt.biomass(years,Bt.mpd/B0.mpd,yint=0.1,pname="BtB0",xlab="",ylab="Spawning biomass relative to unfished, Bt/B0")
 plt.biomass(years,VtV0.mpd,yint=0.1,pname="VtV0",ylab="Vulnerable biomass relative to unfished, Vt/V0")
@@ -861,27 +844,32 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 
 @rmCA \onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
 
-@rmCA \onefig{CAcFitFem}{Estimated proportions-at-age of females that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
+% PJS thinks these plots are useless
+% @rmCA \onefig{CAcFitFem}{Estimated proportions-at-age of females that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
-\clearpage   % otherwise too many unprocessed floats
+\clearpage % otherwise too many unprocessed floats
 
 @rmsex @rmCA \onefig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
 
-@rmsex @rmCA \onefig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
+% @rmsex @rmCA \onefig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
 \newpage
 
-%=======Next line will be expanded to accomodate multiple gears=======
-@rmCA \onefig{ageCommFemale1}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for females. Note that years are not consecutive.}
+%=======Next line (or next two lines) will be expanded to accomodate multiple gears=======
+@rmCA @rmCA1 \onefig{ageCommFemaleSer1}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for females. Note that years are not necessarily consecutive.}
+@rmCA @rmCA2 \onefig{ageCommFemaleSer1A}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for females. Note that years are not necessarily consecutive.}
+@rmCA @rmCA2 \onefig{ageCommFemaleSer1B}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for females. Note that years are not necessarily consecutive.}
 
-%=======Next line will be expanded to accomodate multiple gears=======
-@rmsex @rmCA \onefig{ageCommMale1}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for males. Note that years are not consecutive.}
+%=======Next line (or next two lines) will be expanded to accomodate multiple gears=======
+@rmsex @rmCA @rmCA1 \onefig{ageCommMaleSer1}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for males. Note that years are not necessarily consecutive.}
+@rmsex @rmCA @rmCA2 \onefig{ageCommMaleSer1A}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for males. Note that years are not necessarily consecutive.}
+@rmsex @rmCA @rmCA2 \onefig{ageCommMaleSer1B}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for males. Note that years are not necessarily consecutive.}
 
 \clearpage 
 
 % Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
 %=======Next line will be expanded to accomodate multiple surveys=======
-@rmSA \twofig{ageSurvFemale1}{ageSurvMale1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
+@rmSA \twofig{ageSurvFemaleSer1}{ageSurvMaleSer1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
 
 @rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) and model estimates (joined open squares) for the commercial and survey age data.}
 
@@ -945,10 +933,9 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 
 % Don't need the rest for results Appendix.
 
-\onefig{ageBarsFemale}{Age structure for females during selected years (not sure if this is useful, but AME had it flagged).}
-@rmsex \onefig{ageBarsMale}{Age structure for males during selected years (not sure if this is useful, but AME had it flagged).}
-
-% \threefig{initAgeDev}{ageBarsFemale}{ageBarsMale}{*NOT AUTOMATED YET*. Top: initial age deviation, $\eta_a$, for each age $a = 2, 3, ..., A-1$). In log space, where the bias-corrected multiplicative deviation is $\mbox{e}^{\eta_a - \sigma_R^2/2}$ where $\eta_a \sim \mbox{Normal}(0, \sigma_R)$. Middle: initial age structure for females. Bottom: initial age structure for males. Lines are a steady-state initial age structure (yes?).}
+% RH: not sure why these night be useful except to see selectivity at t=1
+% \onefig{ageBarsFemale}{Age structure for females during selected years (not sure if this is useful, but AME had it flagged).}
+% @rmsex \onefig{ageBarsMale}{Age structure for males during selected years (not sure if this is useful, but AME had it flagged).}
 
 % \onefig{Bt}{Spawning biomass (mature females) over time for run \Sexpr{model.name} (MPD values).}
 

@@ -9,7 +9,7 @@ setClass ("AWATEAdata",
 #source("utilFuns.r",local=FALSE)
 
 # Flush the cat down the console
-.flush.cat = function(...) { cat(...); flush.console() }
+#.flush.cat = function(...) { cat(...); flush.console() } ## already in PBStools
 
 #runADMB--------------------------------2013-09-09
 # Run AD Model Builder code for Awatea
@@ -642,3 +642,6 @@ setMethod("reweight", signature="AWATEAdata",
 
 #=== RBR CST 2014 ===
 #outADM=runADMB("RBR-CST2F-01.txt", strSpp="RBR", runNo=1, doMPD=T, N.reweight=1, mean.age=T, cvpro=c(0.2,0.3,0.2,0.2,0.2,0.2,0.2,0.2),clean=T, locode=T)
+
+#=== POP 5ABC 2016 ===
+#outADM=runADMB("POP-5ABC-02.txt", strSpp="POP", runNo=2, doMPD=T, N.reweight=1, mean.age=T, cvpro=c(0.2,0.2,0.2),clean=T, locode=T)

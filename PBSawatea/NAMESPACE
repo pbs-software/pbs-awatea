@@ -12,7 +12,7 @@ exportPattern("^\\.flush")
 # RH: In NAMESPACE, package can either be in `import' OR `importFrom', NOT both.
 #     But all packages named in `import' AND `importFrom' must appear in DESCRIPTION after `Imports:'.
 
-import(methods, PBStools, scape, plotMCMC, xtable, lattice)
+import(methods, PBStools, lattice, scape, plotMCMC, xtable)
 
 importFrom("coda", "mcmc")
 
