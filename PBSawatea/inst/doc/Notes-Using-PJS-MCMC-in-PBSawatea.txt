@@ -1,0 +1,34 @@
+Notes on using PJS MCMCs in PBSawatea
+-------------------------------------
+
+1. Copy Paul's MCMC directory to a temporary or archive directory for evaluation and rename the folder appropriately, e.g., `MCMC.06.03' where 06 is the run number and 03 is the reweight number.
+
+2. In this folder, rename the file `awatea64.psv' to `awatea.psv'.
+
+3. Look to see that your catch policy for projections is suitable for your species (e.g., lines 76-86 in `POP-5ABC.06.03.txt').
+
+4. Run the catch projections from a command line:
+		awatea -ind POP-5ABC.06.03.txt -mceval
+
+5. Copy the MCMC results from this interim folder to the active working project. For example, copy interim folder `MCMC.06.03' to both .../POPrun06/MCMC.06.03 and to .../POPrun06/MCMC.06.03/PRJ.06.03 (the latter preserves the projections as the MSY calculation later will overwrite the projection results).
+
+6. Open R from your working directory (e.g., C:\Users\haighr\Files\GFish\PSARC17\POP\Data\Awatea\5ABC), if you have not already done so. Rather than loading the PBSawatea package (which quickly becomes out-dated once work resumes on modifying PBSawatea), source the the PBSawatea functions directly:
+
+source(paste(codePath,"runADMB.r",sep="/") ##### but see following paragraph
+
+Important -- When calling runADMB (or runSweave or runSweaveMCMC), you will need to specify a path where all the R code for PBSawatea sits on your computer. The defaults suits me but you may want to set a global variable: e.g., codePath="C:/somewhere/on/PJS/fast/mini/PBSawatea/code" and then set codePath=codePath when calling runADMB or runSweave or runSweaveMCMC.
+
+This one sourcing should automatically load all the other functions. You only need to do this once unless you directly modify the R code.
+
+7. Run the MSY calculations from R using PBSawatea (as per usual in the command file, e.g., `PBSawatea-commands-POP-5ABC.rwh'):
+		outMSY=runADMB("POP-5ABC-06.txt", strSpp="POP", runNo=6, rwtNo=3, doMSY=TRUE, msyMaxIter=15000, msyTolConv=0.01, endStrat=0.301, stepStrat=0.001, locode=T, codePath=codePath)
+   Note: This step can take a long time...
+
+8. Source the code to run Sweave on the MCMC output:
+
+source(paste(codePath,"runSweaveMCMC.r",sep="/")
+
+9. Run the code to create figures and tables and mash them up into a PDF file using Sweave.
+		outMCMC=runSweaveMCMC(strSpp="POP", filename="POP-5ABC-06.txt", runNo=6, rwtNo=3, Nsex=2, Ncpue=0, Nsurvey=3, Ngear=1, Snames=c("GIG Historical","QC Sound Synoptic","QC Sound Shrimp"), Cnames=c("Bottom Trawl"), SApos=c(T,T,F), locode=T, codePath=codePath)
+
+

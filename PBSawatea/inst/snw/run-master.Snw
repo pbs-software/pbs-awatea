@@ -1,5 +1,5 @@
 %===============================================================================
-% run-master.Snw revised for Pacific Ocean Perch 5ABC (2016-11-30)
+% run-master.Snw revised for Pacific Ocean Perch 5ABC (2016-11-30, 2017-06-06)
 % run-master.Snw revised for Rock Sole and Silvergray Rockfish (2013-09-23)
 % ymrrun5-0.Snw. 5/4/11.
 % ymrrun2-5.Snw - from Rowan's run2 output. Fifth reweighting.
@@ -22,8 +22,8 @@
 \usepackage{resDocSty}   % Res Doc .sty file
 \usepackage{graphicx}
 
-\def\AppLet{G}           % Appendix letter
-\def\startP{1}           % page start (default=1)
+%\def\AppLet{F}           % Appendix letter
+\def\startP{601}         % page start (default=1)
 \def\startF{0}           % figure start counter (default=0)
 \def\startT{0}           % table start counter (default=0)
 \def\bfTh{{\bf \Theta}}  % bold Theta
@@ -48,7 +48,7 @@
 %\renewcommand{\textfraction}{0.15}
 %\renewcommand{\floatpagefraction}{0.7}
 
-\newcommand{\ptype}{eps} % define plot type to use (only currently set up for eps)
+\newcommand{\ptype}{@ptype} %% png files also available for smaller-sized appendix
 
 % Last line of http://www.latex-community.org/forum/viewtopic.php?f=45&t=4336, a German guy says: 
 %    You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
@@ -107,38 +107,34 @@
 % \setkeys{Gin}{width=6in}  % from googling sweave figure bigger.
 %  It will set this for the rest of document [doesn't width do that in the above?]
 
+%%==============================================================================
 \begin{document}
 \setcounter{page}{\startP}
 \setcounter{figure}{\startF}
 \setcounter{table}{\startT}
 \setcounter{secnumdepth}{3}    % to number subsubheadings-ish
 
-\newcounter{prevchapter}
-\setcounter{chapter}{6}        % for standalone chapters 9=(5=F, 6=G)
-\setcounter{prevchapter}{\value{chapter}}
-\addtocounter{prevchapter}{-1}
+\setcounter{chapter}{5}    % for stand-alone chapters (5=E, 6=F)
 \renewcommand{\thechapter}{\Alph{chapter}} % ditto
-\newcommand{\eqnchapter}{\Alph{prevchapter}}
-
-
-%\appendix  % Everything from now on will be an Appendix (activate when appendices stitched together)
-% Now want to number sections, tables etc. as A.1, A.2, etc.
 \renewcommand{\thesection}{\thechapter.\arabic{section}}   
+\renewcommand{\thesubsection}{\thechapter.\arabic{section}.\arabic{subsection}.}
 \renewcommand{\thetable}{\thechapter.\arabic{table}}    
 \renewcommand{\thefigure}{\thechapter.\arabic{figure}}  
 \renewcommand{\theequation}{\thechapter.\arabic{equation}}
-%\renewcommand{\thepage}{\thechapter\arabic{page}}
-\renewcommand{\thepage}{\arabic{page}}
+%\renewcommand{\thepage}{\arabic{page}}
 
-
-\begin{center}
+\newcounter{prevchapter}
+\setcounter{prevchapter}{\value{chapter}}
+\addtocounter{prevchapter}{-1}
+\newcommand{\eqnchapter}{\Alph{prevchapter}}
 
 % First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
 # Note: '@variables' replaced by function 'runSweave'.
-cwd = "@cwd"            # Top level directory; all models occur below this one. 
-sigdig = 5              # Number of significant digits to output in tables
-@ 
+cwd    = "@cwd"            ## Top level directory; all models occur below this one. 
+sigdig = 5                 ## Number of significant digits to output in tables
+redo.Graphs = @redo.Graphs ## whether to redo the graphs or not (set to FALSE if just editing the text).
+@
 
 % '@variables' replaced by function 'runSweave' to create individual Sweaves for runs and reweightings.
 <<modelname, echo=FALSE>>=
@@ -165,54 +161,52 @@ if(running.awatea) {
   } 
 @ 
 
-{\Large \bf MPD Results for @sppname (\Sexpr{area.name})}
-\vspace{7mm}
-
-%{\Large \bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
-%{\Large \bf Paul J. Starr and Rowan Haigh}
-{\Large \bf R.~Haigh, P.J.~Starr, and A.M.~Edwards}
-
-% This file started for 2012 assessment in July 2012.
-
-Latest is \today, with \Sexpr{print(version$version.string)}. 
-% \Sexpr{print(version$platform)}.
-% {\tt Andrew.Edwards@dfo-mpo.gc.ca}
-% \vspace{4mm}
-\end{center}
 
 
 % \pagestyle{myheadings}
 % \markright{\Sexpr{paste("From ", model.name, ".txt", sep="")}}
 
-\lhead{DRAFT -- Non-citable working paper}  % Omit for final ResDoc.
-%\lhead{}
-\rhead{\Sexpr{paste("From ", model.name, ".txt", sep="")}}
-\lfoot{MPD Results} 
-\rfoot{\Sexpr{paste("@sppname"," (",area.name,")",sep="")}} 
-%\lfoot{Pacific Ocean Perch}  
-%\rfoot{Area 3CD}
+%###############################################################################
+\chapter*{Appendix~\thechapter. MPD Model Results}
 
+\newcommand{\LH}{DRAFT -- Non-citable working paper}  % Set to {} for final ResDoc
+%\newcommand{\RH}{\Sexpr{paste("From ", model.name, ".txt", sep="")}}
+\newcommand{\RH}{CSAP WP2014GRF005}
+\newcommand{\LF}{Appendix~\thechapter ~-- MPD Model Results}
+\newcommand{\RF}{\Sexpr{paste0("@sppname"," (",area.name,")")}}
 
-Using model specified by {\tt \Sexpr{model.name}.txt}. Loading in {\tt \Sexpr{model.name}.res} file. 
+\lhead{\LH}\rhead{\RH}\lfoot{\LF}\rfoot{\RF}
+
+@rmresdoc \begin{center}
+
+@rmresdoc {\Large \bf MPD Results for @sppname (\Sexpr{area.name})} \vspace{7mm}
+
+@rmresdoc \textbf{Rowan Haigh, Paul J. Starr, and Andrew M. Edwards}
+
+@rmresdoc Latest is \today, with \Sexpr{print(version$version.string)}. 
+
+@rmresdoc \end{center}
+
+@rmresdoc Using model specified by {\tt \Sexpr{model.name}.txt}. Loading in {\tt \Sexpr{model.name}.res} file. 
 
 % {\tt results.dat} file, have changed {\tt importCol2} from loading in a {\tt .res}. **Check with Paul that that's okay - they look to be similar formats (for POP assess8, {\tt results.dat} and {\tt ...estmh02.res} are identical except for a few extra quotation marks and the latter rounds some numbers up (Paul's notes mention this loss of precision). So, need new directory for each re-running, or copy results.dat over.
 
 % We {\bf are}~{\bf \Sexpr{if(!running.awatea) paste("NOT")}} re-running Awatea here\Sexpr{if(!running.awatea) paste(" so just loading in output")}.
 
-If editing {\tt .txt} file, may have to rerun just in dos/R first to check the output from ADMB (otherwise errors get hidden): 
+@rmresdoc If editing {\tt .txt} file, may have to rerun just in dos/R first to check the output from ADMB (otherwise errors get hidden): 
 
-{\tt > shell( paste("awatea -ind ../", model.name,".txt -nohess", sep=""))}
+@rmresdoc {\tt > shell( paste("awatea -ind ../", model.name,".txt -nohess", sep=""))}
+
+Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCMC results and for the write-up.
+
+5ABC POP 2017 --~~ \texttt{AppE\_Results\_POP\_5ABC\_2017\_RD.Rnw}
+
+\section{History of Runs}
 
 \input{\Sexpr{paste(run.dir, "/../runHistory", sep="")}}
-   % Rowan may wish to replace /../ with cwd (?)
 
 
-% Can comment these out if doing sensitivites or just getting running.
-%\section{Text for writing up results in Appendix G of working paper}
-
-% Copying then editing from YMRrev-AppG-Model-Results.doc
-
-\section{INTRODUCTION}
+\section{Introduction}
 
 <<getnames, results=hide, echo=FALSE>>=
 # get some names created by `runSweave()'
@@ -490,22 +484,35 @@ muC.prior = currentRes$extra$priors$p_Sfullest    # comm mu
 deltaC.prior = currentRes$extra$priors$p_Sfulldelta
 logvC.prior = currentRes$extra$priors$log_varLest_prior
 
-# calls function (defined in ymrScape.r) that does most of the plots
-plt.mpdGraphs( obj=currentRes, save=TRUE, ssnames=c("@surveys"), ngear=Ngears )
-             #some now more correctly use MCMC results
-
-plt.idx( currentRes$Survey,main="Survey Indices",ssnames=c("@surveys")) # wasn't called 
-#  in plt.mpdGraphs. Doing it here spits out SD of standardised 
-#  residuals also. May be useful for iterative reweighting?
-# close.allWin()
-
-
-# function to use for priors in table. Must read in a vector of 
-#  length, and outputs it in the format for the table.
+## Function to use for priors in table. Must read in a vector of 
+##  length, and outputs it in the format for the table.
 ptab = function(xx) 
   { print(paste(c(xx[1], " & (", xx[2], ",", xx[3], ") & ", xx[4], " & (", xx[5], ",", xx[6], ") & ", xx[7]), sep="", collapse="")) 
   }
 
+
+if(redo.Graphs){
+  ## Calls function (defined in PBSscape.r) that creates most of the plots
+  plt.mpdGraphs( obj=currentRes, save=TRUE, ssnames=c("@surveys"), ngear=Ngears )
+  ## some now more correctly use MCMC results
+
+  plt.idx( currentRes$Survey,main="Survey Indices",ssnames=c("@surveys")) # wasn't called 
+  #  in plt.mpdGraphs. Doing it here spits out SD of standardised 
+  #  residuals also. May be useful for iterative reweighting?
+  # close.allWin()
+
+  # For fits:
+  #> windows(); plotBubbles(yy, dnam=TRUE, size=0.08, hide0=TRUE)
+  #>
+
+  # Also want to do catches and biomass predictions
+  # plot(years[-length(years)], Ct)
+  # > plot(years, Bt.mpd, ylim=c(0,200000))
+  # > plot(years, Bt.mpd, ylim=c(0,120000))
+  # > plot(years[-length(years)], Ct)
+  #browser();return()
+
+}## end redo.Graphs
 
 # not saving for YMR for now (don't have all these variables, though
 #  just MPDs so don't need MCMC output).  [These were from MCMC's]
@@ -515,17 +522,6 @@ ptab = function(xx)
 # See popScape2.r for pairs plots, from:
 # Copy and run this for pairs plots        to
 # text(currentRes$B$SB, currentRes$B$U, 1:72)
-
-# For fits:
-#> windows(); plotBubbles(yy, dnam=TRUE, size=0.08, hide0=TRUE)
-#>
-
-# Also want to do catches and biomass predictions
-# plot(years[-length(years)], Ct)
-# > plot(years, Bt.mpd, ylim=c(0,200000))
-# > plot(years, Bt.mpd, ylim=c(0,120000))
-# > plot(years[-length(years)], Ct)
-#browser();return()
 @ 
 
 % Keep this for now in case do use it
@@ -792,21 +788,23 @@ Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right)
 
 % Making figures (code in plotFuns.r)
 <<simple_figs, results=hide, echo=FALSE>>=
+
+if(redo.Graphs){
+
 plt.catch(years, Ct, xint=5, yint=1000)
 plt.biomass(years,Bt.mpd,yint=2500,pname="Bt",ylab="Spawning biomass (t), Bt")
 plt.biomass(years,Bt.mpd/B0.mpd,yint=0.1,pname="BtB0",xlab="",ylab="Spawning biomass relative to unfished, Bt/B0")
 plt.biomass(years,VtV0.mpd,yint=0.1,pname="VtV0",ylab="Vulnerable biomass relative to unfished, Vt/V0")
 @rmcpue plt.cpue(cpueObj=currentRes$CPUE)
 plt.recdev(logRecDev.mpd) # log recruitment deviations
-plt.recdevacf(logRecDev.mpd, muC.mpd, logvC.mpd, A, years, yr1=firstYearOfAgeData) # ACF of log recruitment deviations
 plt.initagedev(logInitAgeDev.mpd) # Initial age deviations figure
 
-#---plotBarsFigs---
-# Second two are not made automatically - got from Rowan for 05.01. 
-# Use this when get updated package:
-# Note: 1 is males in plotBars.
-# Latest from Rowan, I may want to switch to have females first
-# year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year"]]),8)
+##---plotBarsFigs---
+## Second two are not made automatically - got from Rowan for 05.01. 
+## Use this when get updated package:
+## Note: 1 is males in plotBars.
+## Latest from Rowan, I may want to switch to have females first
+## year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year"]]),8)
 year.plotBar = round(quantile(years,seq(0,1,len=6)))
 if (nsex==1) {
 	plotBars(currentRes,type="N",sex=3,fill="green",eps=TRUE,win=FALSE,year=year.plotBar)
@@ -818,15 +816,21 @@ if (nsex==1) {
 	plotBars(currentRes,type="N",sex=1,fill="skyblue",pix=TRUE,win=FALSE,year=year.plotBar)
 }
 
-plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
+} ## end redo.Graphs
 
-@ 
+## `plt.recdevacf' needs to be run to assign `yearsForACF' to the global environment
+plt.recdevacf(logRecDev.mpd, muC.mpd, logvC.mpd, A, years, yr1=firstYearOfAgeData, redo.Graphs=redo.Graphs) # ACF of log recruitment deviations
+
+## `plt.bubbles' needs to be run to assign `residsCAcFem', `residsCAcMale', `residsCAsFem', and `residsCAsMale' to the global environment
+plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs) # Bubble plots of observed and fitted ages
+
+@
 
 % \onefig{catch}{Commercial catch data.}   % No need to repeat for every model run, and it shows up later.
 
-% \onefig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}    % Not on same year axis.
-
 \onefig{survIndSer2}{Survey index values (points) with 95\% confidence intervals (bars) and MPD model fits (curves) for the fishery-independent survey series.}
+
+@rmresdoc \onefig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}    % Not on same year axis.
 
 % Individual surveys:
 %=======Next line will be expanded to accomodate multiple surveys=======
@@ -834,22 +838,25 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 
 % Andy tried replacing survey 1 with *at*surveys - seemed to work okay for survey index fits, but got warnings.
 
-\onefig{survIndSer3}{Index series of \Sexpr{Nsurv} surveys and commercial CPUE (dashed line), all normalised to their respective means within the span of years covered by all surveys. The plot provides a crude diagnostic to see if indices are giving conflicting signals. \Sexpr{if(NCser==0) paste("(Note that CPUE isn't being used in the model fitting.)")}}
+%@rmresdoc \onefig{survIndSer3}{Index series of \Sexpr{Nsurv} surveys and commercial CPUE (dashed line), all normalised to their respective means within the span of years covered by all surveys. The plot provides a crude diagnostic to see if indices are giving conflicting signals. \Sexpr{if(NCser==0) paste("(Note that CPUE isn't being used in the model fitting.)")}}
 
 % \onefig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
+
+%=======Next line will be expanded to accomodate multiple surveys=======
+\onefig{survRes@survey1}{Residuals of fits of model to \Sexpr{Snames[1]} survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
 
 @rmcpue \onefig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 95\% error bars are based on lognormal assumption (double check error bars).}
 
 @rmcpue \onefig{CPUEfit}{CPUE index series (without error bars) and biomass trajectories using different q's (if more than one CPUE series).}
 
-@rmCA \onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
+@rmresdoc @rmCA \onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
 
 % PJS thinks these plots are useless
 % @rmCA \onefig{CAcFitFem}{Estimated proportions-at-age of females that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
 \clearpage % otherwise too many unprocessed floats
 
-@rmsex @rmCA \onefig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
+@rmresdoc @rmsex @rmCA \onefig{CAcObsMale}{Commercial catch-at-age data for males, details as for Figure \ref{fig:CAcObsFem}.}
 
 % @rmsex @rmCA \onefig{CAcFitMale}{Estimated proportions-at-age of males that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
@@ -867,20 +874,6 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 
 \clearpage 
 
-% Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
-%=======Next line will be expanded to accomodate multiple surveys=======
-@rmSA \twofig{ageSurvFemaleSer1}{ageSurvMaleSer1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
-
-@rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) and model estimates (joined open squares) for the commercial and survey age data.}
-
-% \section{Residuals associated with MPD fits  for run \Sexpr{model.name}.}
-%  (for the total of \Sexpr{(dim(CAcObsFem)[1] - 1)*dim(CAcObsFem)[2]*2} residuals).}
-%   That calculations is (number of age classes - 1) * number of years of age data * 2 sexes.
-
-%=======Next line will be expanded to accomodate multiple surveys=======
-\onefig{survRes@survey1}{Residuals of fits of model to \Sexpr{Snames[1]} survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
-
-
 %=======Next line will be expanded to accomodate multiple gears=======
 @rmCA \onefig{commAgeResSer1}{Residual of fits of model to commercial proportions-at-age data (MPD values) for \Sexpr{CAnames[1]} events.  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give interquartile ranges, with bold lines representing medians and whiskers extending to the most extreme data point that is $<$@one.5 times the interquartile range from the box. Bottom panel is the normal quantile-quantile plot for residuals, with the @one:@one line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for a total of \Sexpr{residsCAcFem[1]*2} residuals).}
 
@@ -890,9 +883,20 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 @rmsex %=======Next line will be expanded to accomodate multiple gears=======
 @rmsex @rmCA \onefig{commAgeResSer1Male}{Residual of fits of model to commercial proportions-at-age data (MPD values) for males (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcMale[1]} residuals.}
 
+\clearpage 
+
+% Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
+%=======Next line will be expanded to accomodate multiple surveys=======
+@rmSA \twofig{ageSurvFemaleSer1}{ageSurvMaleSer1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
+
+% \section{Residuals associated with MPD fits  for run \Sexpr{model.name}.}
+%  (for the total of \Sexpr{(dim(CAcObsFem)[1] - 1)*dim(CAcObsFem)[2]*2} residuals).}
+%   That calculations is (number of age classes - 1) * number of years of age data * 2 sexes.
 
 %=======Next line will be expanded to accomodate multiple surveys=======
 @rmSA \onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from the \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[1]*2} residuals.}
+
+\clearpage 
 
 %=======Next line will be expanded to accomodate multiple surveys=======
 @rmsex @rmSA \onefig{survAgeResSer1Female}{Residuals of fits of model to proportions-at-age data (MPD values) for females from \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[1]} residuals.}
@@ -900,34 +904,15 @@ plt.bubbles(currentRes, nsex=nsex) # Bubble plots of observed and fitted ages
 %=======Next line will be expanded to accomodate multiple surveys=======
 @rmsex @rmSA \onefig{survAgeResSer1Male}{Residuals of fits of model to proportions-at-age data (MPD values) for males from \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsMale[1]} residuals.}
 
+\clearpage 
+
 % number of years of survey age data * (number age classes -1) * 2
 
-%\onefig{stockRecruit}{Deterministic stock-recruit relationship (black curve) and observed values (circles) using MPD values for run \Sexpr{model.name}.}
-
-% Doing the long way to close up figures
-% \twofig{stockRecruit}{recruits}{Top: Deterministic stock-recruit relationship (black curve) and observed values (numbers corresponding to years) using MPD values for run \Sexpr{model.name}. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1,000s of age 1 fish; mean recruitment is \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=",")}.}
-
-%\begin{figure}[htp]            %  label will be #1
-%\centering
-%\epsfxsize=6in
-%\begin{tabular}{c}
-%\vspace{-20mm}\\
-%\epsfbox{stockRecruit.eps} \\   % \MPDfigdir/
-%\vspace{-20mm} \\
-%\epsfbox{recruits.eps}          % \MPDfigdir/
-%\vspace{-3mm}        % To avoid footer
-%\end{tabular}
-%\caption{Top: Deterministic stock-recruit relationship (black curve) and observed values (labelled by year of spawning) using MPD values. Bottom: Recruitment (MPD values of age-1 individuals in year $t$) over time, in 1,000s of age-1 individuals, with a mean of \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=",")}.}
-%\label{fig:stockRecruit_old}
-%\end{figure}
+@rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) with 95\% confidence intervals and model estimates (joined open squares) for the commercial and survey age data.}
 
 \twofig{stockRecruit}{recruits}{Top: Deterministic stock-recruit relationship (black curve) and observed values (labelled by year of spawning) using MPD values. Bottom: Recruitment (MPD values of age-1 individuals in year $t$) over time, in 1,000s of age-1 individuals, with a mean of \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=",")}.}
 
 \twofig{recDev}{recDevAcf}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]}. The start of this range is calculated as the first year of commercial age data (\Sexpr{firstYearOfAgeData}) minus the accumulator age class ($A=$\Sexpr{A}) plus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}); if the result is earlier than the model start year (\Sexpr{years[1]}), then the model start year is used. The end of the range is the final year that recruitments are calculated (\Sexpr{as.numeric(max(names(logRecDev.mpd)))}) minus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}).}
-
-% \twofig{recDev}{recruits}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Recruitment (MPD) over time for run \Sexpr{model.name}, in 1000's of age 1 fish; mean recruitment is \Sexpr{signif(mean(currentRes$B$R), sigdig)}.}
-
-% \onefig{recDevAcf}{Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]} (determined as the first year of commercial age data minus the plus-age class plus the age for which commercial selectivity for females is 0.5, to the final year that recruitments are calculated minus the age for which commercial selectivity for females is 0.5).}
 
 \onefig{selectivity}{Selectivities for commercial catch (\Sexpr{paste(paste0("Gear ",1:length(Cnames),": ",Cnames),collapse=", ")}) and surveys (all MPD values), with maturity ogive for females indicated by `m'.}
 
@@ -983,9 +968,9 @@ save("Bmpd",file=paste("Bmpd-",model.name,".rda",sep=""))
 
 
 \end{document}
-
+%%==============================================================================
 % CUT HERE
-%-----------------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 % GOT TO HERE ending for Sweave
 <<stopping>>=
 #setwd(cwd)

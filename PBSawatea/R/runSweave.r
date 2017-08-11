@@ -1,26 +1,29 @@
-#runSweave------------------------------2016-11-30
+#runSweave------------------------------2017-03-28
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
 runSweave = function( wd = getwd(), strSpp="XYZ",
-   filename = "spp-area-00.txt",      # Name of Awatea .txt file in 'run.dir' to run
+   filename = "spp-area-00.txt",      ## Name of Awatea .txt file in 'run.dir' to run
    runNo   = 1,
    rwtNo   = 0,
-   running.awatea =0,  # 0 if just loading previous '.rep'; 1 if rerunning Awatea
-   Nsex    = 2,        # if 1 then Unisex, if 2 then Males & Females
+   running.awatea =0,                 ## 0 if just loading previous '.rep'; 1 if rerunning Awatea
+   Nsex    = 2,                       ## if 1 then Unisex, if 2 then Males & Females
    Ncpue   = 0,
    Nsurvey = 3,
-   Ngear   = 1,                       # number of commercial gear types
-   NCAset  = 2,                       # number of commercial catch-age-age plot sets (>1 when #CA years > 20)
-   Snames  = paste0("Ser",1:Nsurvey), # survey names (w/out spaces)
-   SApos   = rep(TRUE,Nsurvey),       # surveys with age composition data
-   Cnames  = paste0("Gear",1:Ngear),  # survey names (w/out spaces)
-   CApos   = rep(TRUE,Ngear),         # commercial gears with age composition
+   Ngear   = 1,                       ## number of commercial gear types
+   NCAset  = 2,                       ## number of commercial catch-age-age plot sets (>1 when #CA years > 20)
+   Snames  = paste0("Ser",1:Nsurvey), ## survey names (w/out spaces)
+   SApos   = rep(TRUE,Nsurvey),       ## surveys with age composition data
+   Cnames  = paste0("Gear",1:Ngear),  ## survey names (w/out spaces)
+   CApos   = rep(TRUE,Ngear),         ## commercial gears with age composition
    delim   = "-",
    debug   = FALSE,
-   locode  = FALSE,    # source this function as local code (for development)
+   locode  = FALSE,                   ## source this function as local code (for development)
    codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-   sexlab  = c("Females","Males")
+   sexlab  = c("Females","Males"),
+   resdoc  = FALSE,                   ## is this build for a research document?
+   redo.Graphs = TRUE,                ## recreate all the figures (.eps, .png)
+   ptype = "eps"                      ## plot type --  either "eps" or "png"
 ) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","Rcode","Scode","qu","so",".First")),pos=1)
@@ -55,11 +58,14 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	model.name = paste(prefix,runNoStr,rwtNoStr,sep=".")
 	mpdname  = paste("MPD",runNoStr,rwtNoStr,sep=".")
 	mpd.dir  = paste(run.dir,mpdname,sep="/")  # directory where all the postscript crap happens
+#browser();return()
 	if (file.exists(mpd.dir)) 
 		setwd(mpd.dir)
 	else {
 		dir.create(mpd.dir); setwd(mpd.dir) }
-	if (!file.exists("run-master.Snw"))
+	#if (!file.exists("run-master.Snw")) ## it will almost never exist in the MPD run directory
+	## This way, someone only using the package has a fighting chance of modifying the Snw:
+	if (!file.exists(paste(wd,"run-master.Snw",sep="/")))
 		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-master.Snw",sep=""),wd)
 	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-master.Snw",sep="/"))
 	tfile = masterSweave
@@ -75,8 +81,10 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = gsub("@run.dir",run.dir,tfile)
 	tfile = gsub("@fig.dir",mpd.dir,tfile)
 	tfile = gsub("@running.awatea",running.awatea,tfile)
+	tfile = gsub("@redo.Graphs",redo.Graphs,tfile)
 	tfile = gsub("@sexlab",deparse(sexlab),tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
+	tfile = gsub("@ptype",ptype,tfile)
 	if (locode) {
 		if (any(strSpp==c("POP","pop","396"))) sppname = "Pacific Ocean Perch"
 		else if (any(strSpp==c("YMR","ymr","440"))) sppname = "Yellowmouth Rockfish"
@@ -135,6 +143,20 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		tfile = tfile[setdiff(1:length(tfile),z0)]
 	} else {
 		tfile = gsub("@rmCSA ","",tfile) # assumes space after @rmCA for readability in `run-master.Snw`
+	}
+	if (resdoc) {
+		#tfile = gsub("@resdoc",TRUE,tfile)
+		if (any(grepl("@rmresdoc",tfile))) {
+			z0 = grep("@rmresdoc",tfile)
+			tfile = tfile[setdiff(1:length(tfile),z0)] }
+		if (strSpp=="ROL" && any(grepl("@rmROL",tfile))) {   # Kendra-specific removals
+			z0 = grep("@rmROL",tfile)
+			tfile = tfile[setdiff(1:length(tfile),z0)] }
+	}
+	else {
+		#tfile = gsub("@resdoc",FALSE,tfile)
+		tfile = gsub("@rmresdoc ","",tfile) # assumes space after @rmresdoc for readability in `run-Master.Snw`
+		tfile = gsub("@rmROL ","",tfile)    # assumes space after @rmROL for readability in `run-Master.Snw`
 	}
 
 	## Deal with CA figures that have been split by selecting @rmCA1, @rmCA2, etc. that is appropriate based on NCAset argument
@@ -218,10 +240,14 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 #browser();return()
 	Sweave(localSweave)
 	#mkpath="C:\\Miktex\\miktex\\bin\\"
-	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
-	shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
-	shell(cmd=paste("dvips ",localName,".dvi",sep=""),wait=TRUE)
-	shell(cmd=paste("ps2pdf ",localName,".ps",sep=""),wait=TRUE)
+	if (ptype=="eps") {
+		shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
+		shell(cmd=paste("latex ",localName,".tex",sep=""),wait=TRUE)
+		shell(cmd=paste("dvips ",localName,".dvi",sep=""),wait=TRUE)
+		shell(cmd=paste("ps2pdf ",localName,".ps",sep=""),wait=TRUE)
+	} else {
+		shell(cmd=paste0("texify --pdf --synctex=1 --clean ",localName,".tex"),wait=TRUE)
+	}
 	# if `pstopdf` not working, try:
 	#system(cmd=paste("mgs -sDEVICE=pdfwrite -o ",localName,".pdf ",localName,".ps",sep=""),wait=TRUE)
 	#http://tex.stackexchange.com/questions/49682/how-to-configure-ps2pdf-in-miktex-portable

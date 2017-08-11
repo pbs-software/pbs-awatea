@@ -1,3 +1,6 @@
+%===============================================================================
+% RH: revised for Pacific Ocean Perch 5ABC (2017-06-06)
+% RH: Modified for 5ABC POP to save current objects to help build the final appendix F (2017-04-03)
 % RH: Modified for Rock Sole (1 sex) and Silvergray Rockfish (2013-10-01)
 % AME: Adding in formatting for resDocSty.sty, from master.tex (2012-08-24).
 % From Rowan's run-masterMCMC-rh14aug12.Snw. 
@@ -9,25 +12,21 @@
 % ymrrun1dos.Snw - automatically plot MPD output from Awatea, using
 %  scape. Awatea results.dat file must be in directory above, this
 %  one used just for figures. 23rd Feburary 2011
-
+%===============================================================================
 % Wish List
 %  Re-organise to have all inputting and re-arranging at the start,
 %   and do for run-master.Snw also.
+%===============================================================================
 
 % From resDoc master.tex:
 \documentclass[11pt]{book}   
-\usepackage{resDocSty}      % Res Doc .sty file
+\usepackage{Sweave}    % Andy added (needs to come before resDocSty)
+\usepackage{resDocSty} % Res Doc .sty file
 \captionsetup{figurewithin=none,tablewithin=none} %RH: This works for resetting figure and table numbers for book class though I don't know why. Set fig/table start number to n-1.
 \usepackage{graphicx}
-
-\usepackage{Sweave}   % andy added
 % \usepackage{epsfig}  % in .sty file
-\usepackage{rotating}    % for sideways table
+\usepackage{rotating}  % for sideways table
 \usepackage{longtable}
-% % \usepackage{placeins}
-% % \usepackage{nccmath}
-% \usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry} 
-% Last is in resDoc.sty
 
 %\newcommand{\popQCS}{Edwards-etal:2012pop}
 %\newcommand{\ymr}{Edwards-etal:2012ymr}
@@ -51,59 +50,46 @@
 \def\startT{0}                   % table start counter (default=0)
 \def\bfTh{{\bf \Theta}}  % bold Theta
 
-\renewcommand{\rmdefault}{phv}   % Arial
-\renewcommand{\sfdefault}{phv}   % Arial
+%\renewcommand{\rmdefault}{phv}   % Arial -- already defined by resDocSty.sty
+%\renewcommand{\sfdefault}{phv}   % Arial -- already defined by resDocSty.sty
+
+\newcommand{\ptype}{@ptype} %% png files also available for smaller-sized appendix
 
 % You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
 % Apparently shouldn't have just one argument.
-\newcommand\onefig[2]{    % filename is #1, text is #2
-  \begin{figure}[!htp]
+\newcommand\onefig[2]{  % filename is #1, text is #2
+  \begin{figure}[tp]
   \begin{center}
-	\includegraphics[width=6.5in,height=7.5in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
-  %\epsfxsize=6in
-  %\epsfbox{#1.eps}
+  \includegraphics[width=6.5in,height=7.25in,keepaspectratio=TRUE]{{#1}.\ptype} \\  % RH much better control
   \end{center}
-  \caption{#2 }
-  \label{fig:#1} 
+  \caption{#2}
+  \label{fig:#1}
   \end{figure}
-  %\clearpage
+  \clearpage
 }
-
-\newcommand\twofig[3]{   % figure #1 under #2, caption text #3
-  \begin{figure}[!htp]     %  label will be #1
+\newcommand\twofig[3]{  % figure #1 under #2, caption text #3
+  \begin{figure}[tp]    %  label will be #1
   \centering
-%  \epsfxsize=6in
-%  \epsfysize=3.5in
   \begin{tabular}{c}
-	\includegraphics[width=6.5in,height=3.25in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
-	\includegraphics[width=6.5in,height=3.25in,keepaspectratio=TRUE]{#2.eps}
-%  \epsfbox{#1.eps} \\
-%  \epsfbox{#2.eps}
+  \includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{{#1}.\ptype} \\  % RH much better control
+  \includegraphics[width=6in,height=3.5in,keepaspectratio=TRUE]{{#2}.\ptype}
   \end{tabular}
   \caption{#3}
   \label{fig:#1}
   \end{figure}
   \clearpage
 }
-
-\newcommand\threefig[4]{    % figure #1 then #2 then #3, 
-  \begin{figure}[!htp]       %  caption text #4, label will be #1
+\newcommand\threefig[4]{% figure #1 then #2 then #3, 
+  \begin{figure}[htp]   %  caption text #4, label will be #1
   \centering
   \begin{tabular}{c}
-	\includegraphics[width=6.5in,height=2.5in,keepaspectratio=TRUE]{#1.eps} \\  % RH much better control
-	\includegraphics[width=6.5in,height=2.5in,keepaspectratio=TRUE]{#2.eps} \\
-	\includegraphics[width=6.5in,height=2.5in,keepaspectratio=TRUE]{#3.eps}
-  %\vspace{-20mm} 
-  %\epsfbox{#1.eps} \\
-  %\vspace{-20mm} 
-  %\epsfbox{#2.eps} \\
-  % \vspace{-20mm} 
-  %\epsfbox{#3.eps}
+  \includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{{#1}.\ptype} \\  % RH much better control
+  \includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{{#2}.\ptype} \\
+  \includegraphics[width=6in,height=2.5in,keepaspectratio=TRUE]{{#3}.\ptype}
   \end{tabular}
   \caption{#4}
   \label{fig:#1}
   \end{figure}
-  \clearpage
 }
 
 \SweaveOpts{pdf=FALSE}        % keep.source=TRUE, 
@@ -128,34 +114,28 @@
 %  It will set this for the rest of document 
 %  [doesn't width do that in the above?]
 
-
+%%==============================================================================
 \begin{document}
 \setcounter{page}{\startP}
 \setcounter{figure}{\startF}
 \setcounter{table}{\startT}
 \setcounter{secnumdepth}{3}    % To number subsubheadings-ish
 
-\newcounter{prevchapter}
-%\setcounter{prevchapter}{5}
-\setcounter{chapter}{6}    % temporary for standalone chapters 9=(5=F, 6=G)
-\setcounter{prevchapter}{\value{chapter}}
-\addtocounter{prevchapter}{-1}
+\setcounter{chapter}{5}    % for stand-alone chapters (5=E, 6=F)
 \renewcommand{\thechapter}{\Alph{chapter}} % ditto
-%\newcommand{\eqnchapter}{E}
-\newcommand{\eqnchapter}{\Alph{prevchapter}}
-
-
-%\appendix           % Everything from now on will be an Appendix (activate when appendices stitched together)
-% Now want to number sections, tables etc. as A.1, A.2, etc.
 \renewcommand{\thesection}{\thechapter.\arabic{section}}   
+\renewcommand{\thesubsection}{\thechapter.\arabic{section}.\arabic{subsection}.}
 \renewcommand{\thetable}{\thechapter.\arabic{table}}    
 \renewcommand{\thefigure}{\thechapter.\arabic{figure}}  
 \renewcommand{\theequation}{\thechapter.\arabic{equation}}
-%\renewcommand{\thepage}{\thechapter\arabic{page}}
-\renewcommand{\thepage}{\arabic{page}}
+%\renewcommand{\thepage}{\arabic{page}}
 
-% First set up workspace:
+\newcounter{prevchapter}
+\setcounter{prevchapter}{\value{chapter}}
+\addtocounter{prevchapter}{-1}
+\newcommand{\eqnchapter}{\Alph{prevchapter}}
 
+%% First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
 # get some names created by `runSweave()'
 Cnames  = tcall("PBSawatea")$Cnames        # names of commercial gear
@@ -196,20 +176,19 @@ resdoc      = @resdoc
 % \pagestyle{myheadings}
 % \markright{\Sexpr{paste("From MCMC", model.name, sep="")}}
 
-\lhead{DRAFT -- Non-citable working paper}  % Omit for final ResDoc.
-\rhead{\Sexpr{paste("From MCMC ", model.name, sep="")}}
-\lfoot{Appendix \thechapter ~-- Model Results} 
-\rfoot{\Sexpr{paste("@sppname"," (",area.name,")",sep="")}} 
+%###############################################################################
+\chapter*{Appendix~\thechapter. MCMC Model Results}
 
+\newcommand{\LH}{DRAFT -- Non-citable working paper}  % Set to {} for final ResDoc
+\newcommand{\RH}{CSAP WP2014GRF005}
+\newcommand{\LF}{Appendix~\thechapter ~-- MCMC Model Results}
+\newcommand{\RF}{\Sexpr{paste0("@sppname"," (",area.name,")")}}
 
-%\chapter{POP 3CD MCMC WORKING RESULTS}
-%\chapter{MCMC Working Results for @sppname\Sexpr{in.area}}
-\chapter{Model Results}
+\lhead{\LH}\rhead{\RH}\lfoot{\LF}\rfoot{\RF}
 
 %\subsection{Area \Sexpr{area.name}}
 
-%{\bf Andrew M.~Edwards, Rowan Haigh and Paul J.~Starr}
-@rmresdoc {\bf Paul J. Starr and Rowan Haigh}
+@rmresdoc \textbf{Rowan Haigh, Paul J. Starr, and Andrew M. Edwards}
 
 @rmresdoc Latest is \today, with \Sexpr{print(version$version.string)}.  % $
 
@@ -219,21 +198,17 @@ resdoc      = @resdoc
 
 @rmresdoc *** To Paul/Rowan: The text to go into Appendix~\thechapter{} is after the figures and tables. Anything with *** is to be manually done in the final write-up, and I'll manually delete the unnecessary rows of the table of parameter estimtes.  Any ? or ?? are references/citations that will get automatically sorted in the final write up. 
 
-@rmresdoc \section{History of Runs}
+Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCMC results and for the write-up.
 
-@rmresdoc \input{\Sexpr{paste(run.dir, "/../runHistory", sep="")}}
+5ABC POP 2017 --~~ \texttt{AppE\_Results\_POP\_5ABC\_2017\_RD.Rnw}
+
+\section{History of Runs}
+
+\input{\Sexpr{paste(run.dir, "/../runHistory", sep="")}}
 
 @rmresdoc @rmhrp {\bf Note:} Historical reference points have been reported in this document. Output tables typically report $B_\mathrm{Lim}$ (biomass lower limit), $B_\mathrm{Tar}$ (biomass target), and $u_\mathrm{Tar}$ (exploitation rate target). Exploitation rate lower limit ($u_\mathrm{Lim}$) is often not defined.
 
 @rmresdoc \medskip
-
-% For final write-up, need to (at least):
-%  manually check things with *** next to them
-%  add , into 1000 for 1000 MCMC samples
-%  pairs plots - change final caption from 3rd to final, or similar
-%  Decision tables - add in the extra headers, as given below
-%  Obviously go through and think about the text write up.
-%  Number of MCMC iterations below.
 
 
 <<fromscape, results=hide, echo=FALSE>>=
@@ -244,7 +219,7 @@ resdoc      = @resdoc
 # Options: "lines", "lineDot", "quantBox"
 rpType <- "quantBox"
 
-lattice::trellis.device(device="postscript", color=TRUE)   # for colour .eps
+trellis.device(device="postscript", color=TRUE)   # for colour .eps
 
 # Load in .res file.
 setwd(fig.dir) 
@@ -254,7 +229,10 @@ currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
              CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
 # maybe should be CPUE=cpue
 
-years = currentRes$B[,"Year"]    
+assign("currentRes", currentRes, pos=1)  ## maybe need the assign (maybe because you are jumping from code chunk to code chunk)
+save("currentRes",file="currentRes.rda")  ## useful to have when compiling the final results appendix
+
+years = currentRes$B[,"Year"]
 sigmaR = currentRes$extra$residuals$p_log_RecDev[6]
     # to use when importing projected recruitment deviations (that
     #  are actually just the random N(0,1) numbers so need 
@@ -321,12 +299,14 @@ for (i in 1:Ncomm) {
 	ii = i + Nsurv
 	new.Pnames = sub(paste("Sfullest_",i,sep=""),paste("mu_",ii,sep=""),new.Pnames)
 	new.Pnames = sub(paste("log_varLest_",i,sep=""),paste("log v_",ii,"L",sep=""),new.Pnames)
+@rmdome  new.Pnames = sub(paste("log_varRest_",i,sep=""),paste("log v_",ii,"R",sep=""),new.Pnames)
 	new.Pnames = sub(paste("Sfulldelta_",i,sep=""),paste("Delta_",ii,sep=""),new.Pnames)
 }
 for (i in 1:Nsurv) {
 	ii = Sser[i]
 	new.Pnames = sub(paste("surveySfull_",i,sep=""),paste("mu_",ii,sep=""),new.Pnames)
 	new.Pnames = sub(paste("log_surveyvarL_",i,sep=""),paste("log v_",ii,"L",sep=""),new.Pnames)
+@rmdome  new.Pnames = sub(paste("log_surveyvarR_",i,sep=""),paste("log v_",ii,"R",sep=""),new.Pnames)
 	new.Pnames = sub(paste("surveySfulldeltaest_",i,sep=""),paste("Delta_",ii,sep=""),new.Pnames)
 	new.Pnames = sub(paste("log_qsurvey_",i,sep=""),paste("log q_",ii,sep=""),new.Pnames)
 }
@@ -346,7 +326,9 @@ tab.Pnames = c("R_0","M_1","M_2","h",
   paste("log q_",1:(Nsurv+Ncpue),sep=""),"log beta", 
   paste("mu_",1:(Nsurv+Ncomm),sep=""),
   paste("Delta_",1:(Nsurv+Ncomm),sep=""),
-  paste("log v_",1:(Nsurv+Ncomm),"L",sep=""))
+  paste("log v_",1:(Nsurv+Ncomm),"L",sep="")
+@rmdome  , paste("log v_",1:(Nsurv+Ncomm),"R",sep="")
+  )
 
 # Put them into the standard order:
 use.Pnames = tab.Pnames[is.element(tab.Pnames,new.Pnames)]
@@ -362,8 +344,9 @@ currentMCMC$P = currentMCMC$P[,use.Pnames]
 mpd.P = currentMCMC$P[1,]
 mpd.B = currentMCMC$B[1,]
 mpd.R = currentMCMC$R[1,]
+## Subset MCMC to remove burn-in (e.g., 201:1200)
 currentMCMC <- sapply(currentMCMC,function(x,s){x[s,]},s=mcsub,simplify=FALSE)
-assign( "currentMCMC", currentMCMC, pos=1 ) # you do need the assign (maybe because you are jumping from code chunk to code chunk)
+#assign( "currentMCMC", currentMCMC, pos=1 ) # you do need the assign (maybe because you are jumping from code chunk to code chunk)
 num.MCMC = dim(currentMCMC$P)[1]     # number of MCMC samples
 
 #--- Vulnerable biomass ----------------------------------------------
@@ -378,6 +361,10 @@ vbMCMC = read.table("vulnBiom.pst", header=TRUE)
 names(vbMCMC) = paste(rep(names(currentMCMC$B),Ngear),rep(1:Ngear,each=dim(currentMCMC$B)[2]),sep="_") # standardise names to "year_gear"
 currentMCMC[["VB"]] = vbMCMC[mcsub,]
   # Add to currentMCMC so that it gets called into functions.
+assign( "currentMCMC", currentMCMC, pos=1 ) ## you do need the assign (maybe because you are jumping from code chunk to code chunk)
+
+## currentMCMC is updated with U on L834, UoverUmsy on L874 and BoverBmsy on L879, so save again later on L882
+save("currentMCMC",file="currentMCMC.rda")  ## useful to have when compiling the final results appendix
 @
 
 \newcommand{\numMCMC}{\Sexpr{prettyNum(num.MCMC, big.mark=",")}}
@@ -408,27 +395,31 @@ for(i in 1:length(use.Pnames))
      priorInput[i,] =
      switch(ii,
        # This covers all choices in tab.Pnames
-       "R_0" = currentRes$extra$priors$R0,
-       "M_1" = currentRes$extra$priors$M1_prior[1,],
+        "R_0" = currentRes$extra$priors$R0,
+        "M_1" = currentRes$extra$priors$M1_prior[1,],
 @rmsex        "M_2" = currentRes$extra$priors$M1_prior[2,],            
-       "h"   = currentRes$extra$priors$h_prior,              
+        "h"   = currentRes$extra$priors$h_prior,              
 #=======Next line will be expanded to accomodate multiple surveys=======
-       "log q_1" = currentRes$extra$priors$log_qsurvey_prior[1,],
+        "log q_1" = currentRes$extra$priors$log_qsurvey_prior[1,],
 #=======Next line will be expanded to accomodate multiple CPUE series=======
-@rmcpue       "log q_999" = currentRes$extra$priors$log_qCPUE_prior[1,],
-@rmcpue       "log beta" = currentRes$extra$priors$log_BetaCPUE_prior[1,],
+@rmcpue "log q_999" = currentRes$extra$priors$log_qCPUE_prior[1,],
+@rmcpue "log beta" = currentRes$extra$priors$log_BetaCPUE_prior[1,],
 #=======Next line will be expanded to accomodate multiple surveys=======
-       "mu_1" = currentRes$extra$priors$surveySfull_prior[1,],
+        "mu_1" = currentRes$extra$priors$surveySfull_prior[1,],
 #=======Next line will be expanded to accomodate multiple gears=======
-       "mu_999" = currentRes$extra$priors$p_Sfullest[1,],
+        "mu_999" = currentRes$extra$priors$p_Sfullest[1,],
 #=======Next line will be expanded to accomodate multiple surveys=======
-@rmsex       "Delta_1" = currentRes$extra$priors$p_surveySfulldelta[1,],
+@rmsex  "Delta_1" = currentRes$extra$priors$p_surveySfulldelta[1,],
 #=======Next line will be expanded to accomodate multiple gears=======
-@rmsex       "Delta_999" = currentRes$extra$priors$p_Sfulldelta[1,],
+@rmsex  "Delta_999" = currentRes$extra$priors$p_Sfulldelta[1,],
 #=======Next line will be expanded to accomodate multiple surveys=======
-       "log v_1L" = currentRes$extra$priors$log_surveyvarL_prior[1,],
+        "log v_1L" = currentRes$extra$priors$log_surveyvarL_prior[1,],
 #=======Next line will be expanded to accomodate multiple gears=======
-       "log v_999L" = currentRes$extra$priors$log_varLest_prior[1,],
+        "log v_999L" = currentRes$extra$priors$log_varLest_prior[1,],
+#=======Next line will be expanded to accomodate multiple surveys=======
+@rmdome "log v_1R" = currentRes$extra$priors$log_surveyvarR_prior[1,],
+#=======Next line will be expanded to accomodate multiple gears=======
+@rmdome "log v_999R" = currentRes$extra$priors$log_varRest_prior[1,],
      )
      priorDistList[[i]] = priorFunc(priorInput[i,])
    }
@@ -551,6 +542,7 @@ for(i in catchProj)
 #  catch policy.
 
 assign( "currentProj", currentProj, pos=1 )
+save("currentProj",file="currentProj.rda")  ## useful to have when compiling the final results appendix
 @ %end <<projections>> chunk
 
 <<MSY, results=hide, echo=FALSE>>=
@@ -564,7 +556,8 @@ currentMSY = msyCalc( dir=msy.dir, error.rep = 0 )  # reports if MSY not converg
 
 currentMSY = sapply(currentMSY,function(x,s){x[s]},s=mcsub,simplify=FALSE)  # mcsub subsets the MCMC samples
 
-assign( "currentMSY", currentMSY, pos=1 )  # Forces it global (or something)
+assign( "currentMSY", currentMSY, pos=1 ) ## Forces it global (or something)
+save("currentMSY",file="currentMSY.rda")  ## useful to have when compiling the final results appendix
 
 # Do these for ease of showing statistics in tables. 
 # Each should be a vector with value for each MCMC draw
@@ -885,6 +878,8 @@ UoverUmsy.med = apply(currentMCMC$UoverUmsy, 2, median)
 currentMCMC$BoverBmsy = as.data.frame(apply(currentMCMC$B, 2, function(x,y){ x/y },  y=Bmsy.MCMC))    # No transpose, also agrees with table below
 BoverBmsy.med = apply(currentMCMC$BoverBmsy, 2, median)
 
+save("currentMCMC",file="currentMCMC.rda")  ## useful to have when compiling the final results appendix
+
 # Did this to check MPD's closely matched the medians, they more or less do:
 # plot(apply(currentMCMC$U, 2, median))
 # points(currentRes$B$U, col="red")
@@ -1026,13 +1021,13 @@ plotPolicy = projPolicy[prjPos]
 
 if(redo.Graphs)
 	plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, mpdObj=currentRes, save=TRUE, 
-		ptypes = c("eps","png"), pngres=150, ngear=Ngear,
+		ptypes = c("eps","png"), pngres=400, ngear=Ngear,
 		plotPolicies = as.character(plotPolicy), #plotPolicies = names(currentProj$Y[1:6]),
 		onePolicy    = as.character(onePolicy),  #onePolicy = names(currentProj$Y[2]), 
 		mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R),
 		trevObj = trevorMCMC
 	)
-# plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, save=TRUE, ptypes = c("eps","png"), pngres=150, ngear=Ngear, plotPolicies = as.character(plotPolicy), onePolicy = as.character(onePolicy), mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R), trevObj = trevorMCMC) # for debugging only
+# plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, save=TRUE, ptypes = c("eps","png"), pngres=400, ngear=Ngear, plotPolicies = as.character(plotPolicy), onePolicy = as.character(onePolicy), mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R), trevObj = trevorMCMC) # for debugging only
 # Change policy options if want other catch policies shown.
 # Set up for length(plotPolicies)=6
 # See help for other options.
@@ -1126,7 +1121,11 @@ if (resdoc) {
 		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("survAgeResSer")))
 		mpdfigs = c(mpdfigs,list.files(mpd.dir,pattern=c("recDev")))
 	}
-	file.copy(from=paste(mpd.dir,mpdfigs,sep="/"),to=fig.dir,overwrite=TRUE)
+	## There's no longer a need to copy these figures as the Model Results Appendix
+	##   can navigate to various directories using \graphicspath. For example:
+	## \graphicspath{{C:/Users/haighr/Files/GFish/PSARC17/POP/Data/Awatea/5ABC/POPrun08/MPD.08.03/}}
+	## \input{"POPrun08-3"}
+	## file.copy(from=paste(mpd.dir,mpdfigs,sep="/"),to=fig.dir,overwrite=TRUE)
 }
 @
 @resultsMPD
@@ -1138,10 +1137,16 @@ if (resdoc) {
 \onefig{splitChain}{Diagnostic plot\Sexpr{from.area} obtained by dividing the MCMC chain of \numMCMC~MCMC samples into three segments, and overplotting the cumulative distributions of the first segment (green), second segment (red) and final segment (blue).}
 % overplotting the cumulative distributions, removing the first 100, then plotting the cumulative distributions for samples 101-400 (green), 301-700 (red) and 701-1000 (blue). }
 
-%=======This line will be expanded to accomodate multiple pairs plots=======
-\onefig{pairs1}{Pairs plot\Sexpr{from.area} of \numMCMC~MCMC samples for 1$^\text{st}$ six parameters. Numbers are the absolute values of the correlation coefficients.}
+\onefig{paramACFs}{Autocorrelation plots for the estimated parameters from the MCMC output. Horizontal dashed blue lines delimit the 95\% confidence interval for each parameter's set of lagged correlations.}
 
-\onefig{pairsMSY}{Pairs plot\Sexpr{from.area} of \numMCMC~MCMC samples comparing reference points. Numbers are the absolute values of the correlation coefficients.}
+\clearpage
+
+%=======This line will be expanded to accomodate multiple pairs plots=======
+@rmresdoc \onefig{pairs1}{Pairs plot\Sexpr{from.area} of \numMCMC~MCMC samples for 1$^\text{st}$ six parameters. Numbers in the lower panels are the absolute values of the correlation coefficients.}
+
+\onefig{pairsPars}{Pairs plot\Sexpr{from.area} of \numMCMC~MCMC samples for \Sexpr{length(use.Pnames)} parameters. Numbers in the lower panels are the absolute values of the correlation coefficients.}
+
+\onefig{pairsMSY}{Pairs plot\Sexpr{from.area} of \numMCMC~MCMC samples comparing some parameters, key derived quantities, and function value (f). Numbers in the lower panels are the absolute values of the correlation coefficients.}
 
 \clearpage
 
@@ -1154,9 +1159,6 @@ if (resdoc) {
 
 \clearpage
 % \onefig{selectivityMCMC}{**** Rowan's favourite figure.*** MCMC selectivity figure will go here, haven't calculated yet (started in {\tt plotSelMCMC.r}---- couldn't find that anywhere, so just see prior calculation folder rprogs/POP12/Mprior).}
-
-% Not using these posterior densities now - get most of the info from
-%  the boxplots anyway, and these take up several pages.
 
 @rmresdoc \onefig{pdfBiomass}{Marginal posterior densities for beginning year female spawning biomass (1,000 tonnes) every 5 years starting in \Sexpr{startYear} for run \Sexpr{model.name}. Horizontal axes are all to same scale. Note that vertical axes are not to the same scale, but each is scaled to the peak of the density; with the area under each curve integrating to 1.0. Vertical lines are 2.5, 50 and 97.5 percentiles, and filled red circle indicates MPD value.}
 
@@ -1197,7 +1199,7 @@ if (length(muMed)>0) {
 %\label{fig:compBmsy} 
 %\end{figure}
 
-\onefig{snail}{Phase plot through time of the medians of the ratios $B_t / B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_t / u_\mathrm{MSY}$ (the exploitation rate in year $t$ relative to $u_\mathrm{MSY}$)\Sexpr{for.area}. Blue filled circle is the starting year (\Sexpr{startYear}). Years then proceed from light grey through to dark grey with the final year (\Sexpr{currYear - 1}) as a filled red circle, and the red lines represent the 10\% and 90\% percentiles of the posterior distributions for the final year. \Sexpr{ if(spp.name!="ROL") paste("Vertical grey lines indicate the Precautionary Approach provisional limit and upper stock reference points (0.4, 0.8 $B$msy), and horizontal grey line indicates $u$ at MSY.")}} % Cannot have braces {} within an \Sexpr{} (stupid)
+\onefig{snail}{Phase plot through time of the medians of the ratios $B_t/B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_{t-1} / u_\mathrm{MSY}$ (the exploitation rate in year $t-1$ relative to $u_\mathrm{MSY}$)\Sexpr{for.area}. The filled cyan circle is the starting year (\Sexpr{startYear+1}). Years then proceed from light grey through to dark grey with the final year (\Sexpr{currYear}) as a filled blue circle, and the blue lines represent the 10\% and 90\% percentiles of the posterior distributions for the final year. The filled gold circle indicates the status in 2011 ($B_{2011}/B_\mathrm{MSY}$, $u_{2010}/u_\mathrm{MSY}$), which coincides with the previous assessment in 2010. Red and green vertical dashed lines indicate the Precautionary Approach provisional limit and upper stock reference points (0.4, 0.8 $\Bmsy$), and the horizontal grey dotted line indicates $u$ at MSY.} %% Cannot have braces {} within an \Sexpr{} (stupid)
 
 \onefig{Bproj}{Projected biomass (t) under different constant catch strategies (t)\Sexpr{for.area}; boxplots show the 2.5, 25, 50, 75 and 97.5 percentiles from the MCMC results. For each of the \numMCMC~samples from the MCMC posterior, the model was run forward in time (red, with medians in black) with a constant catch, and recruitment was simulated from the stock-recruitment function with lognormal error (see Appendix~\eqnchapter). \Sexpr{refCatSentence}}
 
@@ -1245,46 +1247,13 @@ if (length(muMed)>0) {
 		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]"))
 	)
 @
+
 % Want to automate this, best to do by changing the qtab function
 %  to print out the whole row (including $q_4$ etc.), and do it
 %  only for ones in use.Pnames. Will just then loop around that
 %  for length(use.Pnames). For now it gives NA's for ones not
 %  being estimated, so putting up to g=4 because that's what
 %  we have for POP 3CD (so just simplify when writing up 3CD and 5DE).
-%\begin{table}[tp]
-%\centering
-%\caption{\label{tab:MCMCpar} 
-%Summary statistics of MCMC results for estimated parameters (defined in Appendix~\eqnchapter). Parameter values are: ****[fill this in], then can delete this: Except for $M_1$ and $M_2$, subscripts 1 to \Sexpr{Nsurv}**** correspond to the fishery-independent surveys, and subscript \Sexpr{Nsurv+1}*** to the commercial fishery.****} % Check rows for write-up***
-% Fiddling for now, need to generalise. ***
-%\begin{tabular}{lrrr} 
-%\hline
-%Parameter & \multicolumn{3}{c}{Percentile}\\
-%\cline{2-4}
-% & 5\% & 50\% & 95\% \\
-%\hline 
-%$R_0$    & \Sexpr{qtab(currentMCMC$P$R_0)} \\
-%$M_1$  & \Sexpr{ if(length(currentMCMC$P$M_1) > 0) qtab(currentMCMC$P$M_1,dig=4) else  print(paste( "- & - & -", collapse = "")) } \\
-%@rmsex $M_2$  & \Sexpr{ if(length(currentMCMC$P$M_2) > 0) qtab(currentMCMC$P$M_2,dig=4)  else  print(paste( "- & - & -", collapse = "")) } \\
-%$h$      & \Sexpr{ if(length(currentMCMC$P$h) > 0) qtab(currentMCMC$P$h, dig=3)  else  print(paste( "- & - & -", collapse = "")) } \\
-%%=======Next line will be expanded to accomodate multiple surveys=======
-%$q_1$      & \Sexpr{qtab(currentMCMC$P$q_1, dig=sigdig)} \\
-%%=======The following line will be expanded to accomodate multiple cpue series=======
-%@rmcpue $q_999$      & \Sexpr{qtab(currentMCMC$P$q_999, dig=sigdig)} \\
-%%=======Next line will be expanded to accomodate multiple surveys=======
-%$\mu_1$    & \Sexpr{qtab(currentMCMC$P$mu_1, dig=sigdig)} \\
-%%=======The following line will be expanded to accomodate multiple cpue series=======
-%$\mu_999$    & \Sexpr{qtab(currentMCMC$P$mu_999, dig=sigdig)} \\
-%%=======Next line will be expanded to accomodate multiple surveys=======
-%@rmsex $\Delta_1$ & \Sexpr{qtab(currentMCMC$P$Delta_1, dig=sigdig)} \\
-%%=======The following line will be expanded to accomodate multiple cpue series=======
-%@rmsex $\Delta_999$ & \Sexpr{qtab(currentMCMC$P$Delta_999, dig=sigdig)} \\ 
-%%=======Next line will be expanded to accomodate multiple surveys=======
-%$\log v_{1L}$  & \Sexpr{qtab(currentMCMC$P$"log v_1L", dig=sigdig)} \\
-%%=======The following line will be expanded to accomodate multiple cpue series=======
-%$\log v_{999L}$  & \Sexpr{qtab(currentMCMC$P$"log v_999L", dig=sigdig)} \\
-%\hline
-%\end{tabular}	
-%\end{table}
 
 \clearpage
 
@@ -1309,7 +1278,7 @@ Value & \multicolumn{3}{c}{Percentile}\\
 \cline{2-4}
  & 5\% & 50\% & 95\% \\
 \hline 
- & & & \\
+% & & & \\ %CSAS in Ottawa wants blank rows removed (AME 170427)
 & \multicolumn{3}{c}{From model output}\\
 $B_0$                  & \Sexpr{qtab(B0.MCMC[,1])} \\
 %=======Next line will be expanded to accomodate multiple gears=======
@@ -1326,7 +1295,7 @@ $V_{\Sexpr{currYear},g=\Sexpr{GI[1]}} / V_{0,g=\Sexpr{GI[1]}}$     & \Sexpr{qtab
 $u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}}$             & \Sexpr{qtab(upenult.MCMC[,1],dig=3)} \\
 $u_\mathrm{max}$       & \Sexpr{qtab(umax.MCMC, dig=3)} \\
 \hline
- & & & \\
+% & & & \\ %CSAS in Ottawa wants blank rows removed (AME 170427)
 & \multicolumn{3}{c}{MSY-based quantities}\\
 $\mathrm{MSY}$                    & \Sexpr{qtab(msy.MCMC)} \\
 $B_\mathrm{MSY}$       &  \Sexpr{qtab(Bmsy.MCMC)} \\
@@ -1366,7 +1335,7 @@ $u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenu
 %strategy & 2011 & 2012 & 2013 & 2014 & 2015 & 2016 \\
 
 <<tables, results=tex, echo=FALSE>>=
-tabdigits = 3      # number of decimal places to give
+tabdigits = ifelse(resdoc,2,3)    ## number of decimal places to give (AME likes 2)
 
 #=====TABLE: DEFAULT DFO MSY REFERENCE POINTS=====
 if (exists("refProbs10") || exists("refProbs5")) {
@@ -1382,7 +1351,7 @@ if (exists("refProbs10") || exists("refProbs5")) {
 		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 
 	xtabURP = xtable(refProbs$URP, label="tab:URP", digits=tabdigits,
-		caption=eval(paste("Decision table",for.area," concerning the upper reference point $0.8 \\Bmsy$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.8 \\Bmsy)$. ", refCatSentence, maxCatSentence, sep="")) )
+		caption=eval(paste("Decision table",for.area," concerning the upper stock reference point $0.8 \\Bmsy$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.8 \\Bmsy)$. ", refCatSentence, maxCatSentence, sep="")) )
 	print(xtabURP, table.placement="!ht", caption.placement="top",
 		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 
@@ -1424,7 +1393,7 @@ if (!is.element(spp.name,c("ROL","rol","621"))) {
 			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 
 		xtabB040 = xtable(refProbsB0$B00.4, label="tab:B0_0.4", digits=tabdigits,
-			caption=eval(paste("Decision table for the alternative upper reference point $0.4 B_0$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.4 B_0)$. ", refCatSentence, maxCatSentence, sep="")) )
+			caption=eval(paste("Decision table for the alternative upper stock reference point $0.4 B_0$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.4 B_0)$. ", refCatSentence, maxCatSentence, sep="")) )
 		print(xtabB040, table.placement="!ht", caption.placement="top",
 			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 		cat(" \\clearpage \\pagebreak ")
@@ -1511,6 +1480,7 @@ while(dev.cur() > 1)  dev.off()
 %\input{\Sexpr{paste(run.dir, "/../resultsMCMC", sep="")}} # Sexpr don't seem to function when brought in from a separate document. 
 
 \end{document}
+%%==============================================================================
 % CUT HERE 
 
 # COSEWIC-type Tables. Not needed for POP 3CD and 5DE assessments.
@@ -1557,7 +1527,7 @@ For the maximum sustainable yield (MSY) calculations, projections were run for \
 
 The lower bound of $u_t$ was reached for \Sexpr{sum(currentMSY$imsy == 1)} of the MCMC samples, and the upper bound for \Sexpr{sum(currentMSY$imsy == currentMSY$maxUind[1])} of the samples. Of the total of \Sexpr{prettyNum(currentMSY$maxUind[1] * num.MCMC, big.mark=",")} projection calculations, \Sexpr{sum(currentMSY$nProjMatTF)} did not convergence by \Sexpr{prettyNum(currentMSY$maxProj[1], big.mark=",")} years.
 
-% End of Appendix G
+% End of Appendix F
 
 %\clearpage
 %\section{Bayesian MCMC Results}

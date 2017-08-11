@@ -67,10 +67,19 @@
 %%  4. Run initexmf --mkmaps to rebuild the font map files.
 
 %% Redefine default font to pseudo-Arial (LaTeX only):
-\usepackage[scaled=1.00]{uarial}
-\renewcommand{\rmdefault}{ua1} %phv}% Arial vs. Helvetica
-\renewcommand{\sfdefault}{ua1} %phv}% Arial vs. Helvetica
-\renewcommand{\ttdefault}{pcr} %phv}% Courier
+%\usepackage[scaled=1.00375]{uarial}  %% scaling suggested by https://tex.stackexchange.com/questions/167402/how-to-set-font-size-at-exactly-11-pt
+\usepackage[scaled=1.1]{inconsolata} %% trial and error
+\usepackage{winfonts} %% This seems to work and the numbers behave correctly (not small and do not need adjusting)
+\renewcommand{\rmdefault}{arial} %ua1} %phv} %% Arial vs. Helvetica
+\renewcommand{\sfdefault}{arial} %ua1} %phv} %% Arial vs. Helvetica
+\renewcommand{\ttdefault}{zi4} %pcr} %phv}% Courier %% inconsolata (zi4) -- https://www.ctan.org/pkg/inconsolata (RH 170705)
+
+%% RH hack to get larger uarial numbers in PDF documents.
+%% Numbers look OK in MikTex, but are noticeably smaller in PDF documents.
+\newcommand{\N}[1]{\fontsize{12}{14}\selectfont#1%
+	\usefont{\encodingdefault}{\familydefault}{\seriesdefault}{\shapedefault}\normalsize%
+}
+
 
 %% Try real Arial built by RH from TTF (cannot get font to look darker in PDF)
 %\usepackage{arial}
@@ -83,6 +92,7 @@
 %% See: http://tex.stackexchange.com/questions/76174/set-doi-link-on-journal-name-with-bibtex-bst
 %% ----------------------------------------------
 \usepackage{natbib}                     % use resDoc.bst file: e.g., \bibliographystyle{resDoc}
+\setcitestyle{round,citesep={;},aysep={},yysep={,}} % seems to be DFO CSAS majority
 \setlength{\bibhang}{0.25in}            % set the DFO overhang
 \setlength{\bibsep}{6pt}                % paragraph spacing
 \usepackage[breaklinks=true,bookmarksdepth=3]{hyperref}  % CSAP wants hyperlinks in references %,bookmarksopen=true
@@ -347,6 +357,22 @@
 %  \lhead{\LH}\rhead{\RH}\lfoot{\LF}\rfoot{\RF}
 %%-----------------------------------------End CSAP landscape nonsense
 
+\makeatletter
+%% Taken from CG's resDocSty.sty
+%% Make a landscape page properly, with the page numbers and bars rotated to
+%%  be along the long side for ease of reading in a PDF viewer.
+\newenvironment{landscapepage}[1]{
+  \newgeometry{hmargin=1in,vmargin=1in}
+  \thispagestyle{csaplscape}
+  \begin{landscape}
+    \centering
+    #1
+}{
+  \end{landscape}
+  \restoregeometry
+  \clearpage
+}
+\makeatother
 
 %%--------------------------------------------------------------------
 %% How can I change the margins for only part of the text?

@@ -832,7 +832,7 @@ plt.recdev = function(logRecDev, xint=5, #yint=0.1,
 #<<recdevacf, results=hide, echo=FALSE>>=
 #-------------------------------------------AME/RH
 plt.recdevacf = function(logRecDev, muC, logvC, A, years, yr1, 
-   ptypes=c("eps","png"), pngres=150 )
+   ptypes=c("eps","png"), pngres=150, redo.Graphs=TRUE)
 {
 	ageHalfFemSelComm = min(round(muC - sqrt(exp(logvC) * log(2) ))) # take the min when Ngears>1
 	assign("ageHalfFemSelComm", ageHalfFemSelComm, pos=1)
@@ -843,17 +843,19 @@ plt.recdevacf = function(logRecDev, muC, logvC, A, years, yr1,
 	assign("yearsForACF", yearsForACF, pos=1)
 	# max() to start no earlier than first year of model
 	logRecDevForACF = logRecDev[as.character(yearsForACF)]
-	for (p in ptypes) {
-		if (p=="eps") postscript("recDevAcf.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("recDevAcf.png", res=pngres, width=6*pngres, height=5*pngres)
-		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-		if (all(logRecDevForACF==0)) {
-			plot(0,0,type="n",axes=FALSE,xlab="",ylab="")
-			text(0,0,"No ACF plot.\nAll recruitment deviations = 0",cex=1.5,col="red")
-		} else {
-			acf(logRecDevForACF, lag.max=30, main="", ylab="Auto-correlation function of epsilon_t", na.action=na.pass)
+	if (redo.Graphs) {
+		for (p in ptypes) {
+			if (p=="eps") postscript("recDevAcf.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
+			else if (p=="png") png("recDevAcf.png", width=6, height=5, units="in", res=pngres)
+			par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+			if (all(logRecDevForACF==0)) {
+				plot(0,0,type="n",axes=FALSE,xlab="",ylab="")
+				text(0,0,"No ACF plot.\nAll recruitment deviations = 0",cex=1.5,col="red")
+			} else {
+				acf(logRecDevForACF, lag.max=30, main="", ylab="Auto-correlation function of epsilon_t", na.action=na.pass)
+			}
+			dev.off()
 		}
-		dev.off()
 	}
 }
 
@@ -881,7 +883,7 @@ plt.initagedev = function(logInitAgeDev,
 #<<bubbleplots, results=hide, echo=FALSE>>=
 #-------------------------------------------AME/RH
 plt.bubbles = function(mpdObj, nsex=2,
-   ptypes=c("eps","png"), pngres=150 )
+   ptypes=c("eps","png"), pngres=150, redo.Graphs=TRUE)
 {
 	blow.bubbles = function(obj, cac, mod, sex, surnames=NULL) {
 		series = sort(unique(obj[[cac]][["Series"]]))
@@ -925,15 +927,17 @@ plt.bubbles = function(mpdObj, nsex=2,
 			for (k in kk) {
 				ijk = paste0(i,j,k); ijk.list = get(ijk)
 				assign(ijk, ijk.list, pos=1)
-				for (p in ptypes) {
-					if (p=="eps") postscript(paste0(ijk,".eps"), width=6, height=ifelse(nr==1,6,8), horizontal=FALSE,  paper="special")
-					else if (p=="png") png(paste0(ijk,".png"), res=pngres, width=6*pngres, height=ifelse(nr==1,6,8)*pngres)
-					par(mfrow=c(nr,1), mar=c(2,3.5,2,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-					junk=sapply(1:nr,function(s,x,n){ # nr = no. rows = ngear or nsurv
-						plotBubbles(x[[s]], dnam=TRUE, size=0.10, hide0=TRUE, main=n[s], prettyaxis=TRUE, las=1)
-						mtext("Age",side=2,line=2,cex=1.2)},
-						x=ijk.list, n=inames)
-					dev.off()
+				if (redo.Graphs) {
+					for (p in ptypes) {
+						if (p=="eps") postscript(paste0(ijk,".eps"), width=6, height=ifelse(nr==1,6,8), horizontal=FALSE,  paper="special")
+						else if (p=="png") png(paste0(ijk,".png"), res=pngres, width=6*pngres, height=ifelse(nr==1,6,8)*pngres)
+						par(mfrow=c(nr,1), mar=c(2,3.5,2,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+						junk=sapply(1:nr,function(s,x,n){ # nr = no. rows = ngear or nsurv
+							plotBubbles(x[[s]], dnam=TRUE, size=0.10, hide0=TRUE, main=n[s], prettyaxis=TRUE, las=1)
+							mtext("Age",side=2,line=2,cex=1.2)},
+							x=ijk.list, n=inames)
+						dev.off()
+					}
 				}
 			}
 		}
@@ -1000,6 +1004,38 @@ plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
 	} ## end of seriesList loop
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotAges
+
+## plotACFs-----------------------------2017-05-29
+##  Plot ACFs for the estimated parameters.
+##  Control eps and png from PBScape.r in plt.mcmcGraphs
+##----------------------------------------------RH
+plotACFs =function(mcmcObj, lag.max=60) #, ptypes=c("eps","png"), pngres=150)
+{
+	#if (!is.null(dev.list())) on.exit(expandGraph(mfrow=c(1,1)))
+	acfs  = apply(mcmcObj$P, 2, function(x){acf(x,plot=FALSE)$acf})
+	ylim  = range(acfs[round(acfs,5)>-1 & round(acfs,5)<1])
+	idx   = apply(mcmcObj$P, 2, allEqual)
+	mcmcP = mcmcObj$P[,!idx,drop=FALSE]
+	rc    = .findSquare(ncol(mcmcObj$P[,!idx]))
+	#for (p in ptypes) {
+		#if (p=="eps") postscript("paramAcf.eps", width=8, height=8, horizontal=FALSE,  paper="special")
+		#else if (p=="png") png("paramAcf.png", width=8, height=8, units="in", res=pngres)
+		expandGraph(mfrow=rc, mar=c(1,1,0,0), oma=c(3,3,0.5,0.5))
+		sapply(1:ncol(mcmcP), function(i){
+			ii  = colnames(mcmcP)[i]
+			mcP = mcmcP[,i]
+			acf(mcP, lag.max=lag.max, ylim=ylim, xaxt="n", yaxt="n", xlab="", ylab="")
+			axis(1,label=ifelse(i > (ncol(mcmcP)-rc[2]),TRUE,FALSE),cex.axis=1.2,las=1)
+			axis(2,label=ifelse(par()$mfg[2]==1,TRUE,FALSE),cex.axis=1.2,las=1)
+			addLabel(0.95,0.95,ii,cex=1.5,adj=c(1,1), col="blue")
+			box(lwd=1.5)
+		})
+		mtext("Lag",side=1,outer=TRUE,line=1.5,cex=1.5)
+		mtext("ACF",side=2,outer=TRUE,line=1.25,cex=1.5)
+		#dev.off()
+	#}
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotACFs
 
 
 #==============H I D D E N========================

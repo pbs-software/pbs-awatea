@@ -3,6 +3,53 @@ PBSawatea Changes
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
+          CG  = Chris Grandin
+
+1.1.0 (2017-08-11)
+  • Modified `resDocSty.sty' for POP 2017 (RH 170801)
+	* Reset fonts to inconsolata zi4 font for ttdefault and winfonts arial for rmdefault and sfdefault.
+	* Added CG's macro for CSAP landscape page.
+	* Reset in-text citation delimiters.
+  • Modified function `runSweaveMCMC.r' for POP 2017 (RH 170607)
+	* Added two new arguments -- `ptype' (for plot type eps or png) and `domeS' (logical: use dome-shaped selectivity?)
+	* Added switch to use MiKTeX's executable `texify' with ptype=="png".
+  • Modified function `runSweaveMCMC.r' for POP 2017 (RH 170607)
+	* Added two new arguments -- `ptype' (for plot type eps or png) and `redo.Graphs' (logical: if T rebuild the figure files)
+	* Added switch to use MiKTeX's executable `texify' with ptype=="png".
+  • Modified function `plotFuns.r' for POP 2017 (RH 170607)
+	* Added `redo.Graphs' as an argument to all plot functions.
+	* Added new function `plotACFs' using stats::acf function.
+  • Modified `run-master.Snw' for POP 2017 (RH 170607)
+	* Added `ptype' to choose between `eps' and `png' image files.
+	* Added `redo.Graphs' to hasten code editing when figures do not need renewing.
+	* Added autocorrelation plots using `acf'
+  • Modified `PBSscape.r' for POP 2017 (RH 170606)
+	* Changed calls to `png' to use arguments units="in" and res=pngres
+	* Disabled labelling of cvpro on plots if cvpro==0
+	* Added calls to `plotACFs' (autocorrelation plots)
+	* Added call to pairs plot with all combos on one page.
+	* Modified `plotSnail' (phase plot) to show to show the position of the 2010 assessment point; also changed plot to u_t-1/u_MSY vs. B_t/u_MSY.
+  • Modified `run-masterMCMC.Snw' for POP 2017 (RH 170606)
+	* Added `ptype' to choose between `eps' and `png' image files.
+	* Added `@rmdome' control  flag to remove lines that report dome-shaped selectivity output.
+	* Saved `currentRes' to `currentRes.rda'   --  useful to have when compiling the final results appendix.
+	* Saved `currentMCMC' to `currentMCMC.rda' --  useful to have when compiling the final results appendix.
+	* Saved `currentProj' to `currentProj.rda' --  useful to have when compiling the final results appendix.
+	* Saved `currentMSY' to `currentMSY.rda'   --  useful to have when compiling the final results appendix.
+	* Disabled copying of MPD figures as code now uses \graphicspath.
+	* Added autocorrelation plots using `acf'
+	* Added new pairs plot with all parameters on one page (rather than 6 per page)
+	* Added new phase (snail) plot to show to show the position of the 2010 assessment point; also changed plot to u_t-1/u_MSY vs. B_t/u_MSY.
+  • Modified `runADMB.r' for POP 2017 (RH 170605)
+	* Fixed a serious flaw (caught during the POP RPR process by us) in the interpretation of cvpro=0:
+		code interpreted it as cvpro=FALSE then started adding iterative re-weighting based on old SDNR method.
+	* Potential problem still exists if user wants to subtract process error, i.e., cvpro < 0:
+		squaring in Francis variance formula only assumes that cvpro is added.
+
+1.0.5 (2017-03-28)
+  • Added my `CSAPrefs.bib' file for posterity. (RH 170328)
+  • Updated function `runSweave' to allow for removal of lines in `run-master.Snw' not wanted in ResDoc using code `@rmresdoc'. (RH 170328)
+  • Re-ordered sequence of plots in `run-master.Snw'. (RH 170328)
 
 1.0.4 (2016-11-30)
   • Revised function `runSweave' and `run-master.Snw' to allow plots of observed and estimated proportion-ages for commercial catch-age fits to span multiple pages. (RH 161130)
@@ -50,7 +97,7 @@ Authors : RH  = Rowan Haigh
   • Debugged a few things in `run-master.Snw' and `run-masterMCMC.Snw' that were broken for 1-gear situation. (RH 141006)
   • Transferred code that builds MPD fits to proportions-at-age from body of `plt.mpdGraphs' to new function `plotAges'. (RH 140930)
   • Revised function `plotIndexNotLattice' to clean up output files and generate PNGs as well as EPSs. (RH 140929)
-  • Changed Table 3 of `run-master.Snw' to a longtable so that it doen't print off the bottom of the page. (RH 140929)
+  • Changed Table 3 of `run-master.Snw' to a longtable so that it doesn't print off the bottom of the page. (RH 140929)
   • Fixed a small bug in the weighting subfunction `wfun' in `runADMB' that crashed when calculating variance of a single number. (RH 140929)
   • Switched dependency from package `scapeMCMC' to `plotMCMC' as Arni now separates Coleraine functions form plotting functions. (RH 140929)
   • Revised R code and Sweave code extensively to deal with more than one commercial gear type. (RH 140926)
@@ -69,7 +116,7 @@ Authors : RH  = Rowan Haigh
   • Revised `run-MasterSweave.Snw` and `runSweaveMCMC.r`. (RH 130916)
   • Revised `run-Master.Snw` and various functions. (RH 130912)
   • Revised `runSweave` and various other functions to work with 2 sexes; improved some of the output figures. (RH 130906)
-  • Revised extensivley various functions to deal flexibly with one-sex models and optional CPUE series. (RH 130905)
+  • Revised extensively various functions to deal flexibly with one-sex models and optional CPUE series. (RH 130905)
 	Recoding occurred in `runADMB.r`, `runSweave.r`, `PBSscape.r`, and `run-Master.tex`.
 
 0.11  2013-02-20
@@ -79,7 +126,7 @@ Authors : RH  = Rowan Haigh
 0.10  2012-10-16  RH
   • Revised function 'msyCalc' to report the convergence numbers. (AME 121016)
   • Updated function 'readAD' to handle inactive data identified by "###" as opposed to comments identified by "#". (RH 121016)
-  • Updated functions 'pltmpdGraphs' and 'plt.mcmcGraphs' (e.g., lower panel of pairs plot reports the correlation coefficient). (AME 121015)
+  • Updated functions 'plt.mpdGraphs' and 'plt.mcmcGraphs' (e.g., lower panel of pairs plot reports the correlation coefficient). (AME 121015)
   • Updated function 'runSweaveMCMC' and 'run-masterMCMC.Snw' to accommodate variable numbers of pairs plots. (RH 120910)
   • Tweaked margins for figures in function 'plotIndexNotLattice'; updated Rd files. (RH 120906)
   • Updated functions in R files 'runSweave.r', 'runSweaveMCMC.r', and 'PBSscape.r';
@@ -92,7 +139,7 @@ Authors : RH  = Rowan Haigh
   • Fixed bug in function 'plotVBcatch'. (AME 120815)
   • Debugged 'run-masterMCMC.Snw' up to prior functions section (AME will take it from there). (RH 120814)
   • Resolved a minor bug in the function 'findTarget' which crashed when number of projection years were too short to calculate generation-time reference criteria. (120814)
-  • Added new function 'importEva' to import the Hessian eiganvalues from an Awatea file, usually called 'Awatea.eva'. (RH 120810)
+  • Added new function 'importEva' to import the Hessian eigenvalues from an Awatea file, usually called 'Awatea.eva'. (RH 120810)
   • Updated 'plotBars' to determine start year from results file. (RH 120810)
   • Added new function 'importLik' to import an Awatea likelihood file, usually called 'likelihood.dat'. (RH 120810)
   • Added 'input' directory for the Awatea input files used; format = spp-area-run.txt. (RH 120802)

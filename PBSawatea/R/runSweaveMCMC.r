@@ -1,30 +1,32 @@
-#runSweave------------------------------2014-11-13
+#runSweaveMCMC--------------------------2017-03-28
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
 runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
-   filename="spp-area-00.txt",  # name of Awatea .txt file in 'run.dir' to run
+   filename="spp-area-00.txt",        ## name of Awatea .txt file in 'run.dir' to run
    runNo   = 1,
    rwtNo   = 0,
-   running.awatea=0,      # =0 : load previous '.rep'; =1 : rerun Awatea
-   Nsex    = 2,           # if 1 then Unisex, if 2 Males & Females
+   running.awatea=0,                  ## =0 : load previous '.rep'; =1 : rerun Awatea
+   Nsex    = 2,                       ## if 1 then Unisex, if 2 Males & Females
    Ncpue   = 0,
    Nsurvey = 3,
-   Ngear   = 1,                       # number of commercial gear types
-   Snames  = paste0("Ser",1:Nsurvey), # survey names (w/out spaces)
-   SApos   = rep(TRUE,Nsurvey),       # surveys with age composition data
-   Cnames  = paste0("Gear",1:Ngear),  # survey names (w/out spaces)
-   CApos   = rep(TRUE,Ngear),         # commercial gears with age composition
+   Ngear   = 1,                       ## number of commercial gear types
+   Snames  = paste0("Ser",1:Nsurvey), ## survey names (w/out spaces)
+   SApos   = rep(TRUE,Nsurvey),       ## surveys with age composition data
+   Cnames  = paste0("Gear",1:Ngear),  ## survey names (w/out spaces)
+   CApos   = rep(TRUE,Ngear),         ## commercial gears with age composition
    mcsub   = 1:1000,
    delim   = "-",
-   locode  = FALSE,       # source this function as local code (for development)
+   locode  = FALSE,                   ## source this function as local code (for development)
    codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-   histRP  = FALSE,       # historical reference points
-   wpaper  = FALSE,       # working paper
-   resdoc  = FALSE,       # research document
-   redo.Graphs = TRUE,    # recreate all the figures (.eps, .wmf, .png)
-   skip.last.year = TRUE  # remove last year of projections (set to FALSE for POP 5ABC in 2010)
+   histRP  = FALSE,                   ## historical reference points
+   wpaper  = FALSE,                   ## working paper
+   resdoc  = FALSE,                   ## research document
+   redo.Graphs = TRUE,                ## recreate all the figures (.eps, .wmf, .png)
+   skip.last.year = TRUE,             ## remove last year of projections (set to FALSE for POP 5ABC in 2010)
+   ptype   = "eps",                   ## plot type --  either "eps" or "png"
+   domeS   = FALSE                    ## using dome-shaped selectivity?
 ) {
 	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
 	on.exit(ciao(wd))
@@ -74,7 +76,9 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	input.name = paste0(model.name,".txt") # Just in case I need this in future;
 	infile   = readAD(input.name)          # assumes user has included this input file with MCMC results
 
-	if (!file.exists("run-masterMCMC.Snw"))
+	#if (!file.exists("run-masterMCMC.Snw")) ## it will almost never exist in the MCMC run directory
+	## This way, someone only using the package has a fighting chance of modifying the Snw:
+	if (!file.exists(paste(wd,"run-masterMCMC.Snw",sep="/")))
 		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-masterMCMC.Snw",sep=""),wd)
 	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-masterMCMC.Snw",sep="/"))
 	tfile = masterSweave
@@ -116,6 +120,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	tfile = gsub("@nsex",Nsex,tfile)
 	tfile = gsub("@ngear",Ngear,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
+	tfile = gsub("@ptype",ptype,tfile)
 	if (!locode) data(gfcode,package="PBSawatea")
 	sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
 	sppname = sapply(sapply(strsplit(sppname," "),function(x){paste(toupper(substring(x,1,1)),tolower(substring(x,2)),sep="")},simplify=FALSE),paste,collapse=" ")
@@ -174,6 +179,13 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmhrp ","",tfile) # assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
 	}
+	if (!domeS) { ## right hand variance of selectivity is used (dome-shaped selectivty)
+		z0    = grep("@rmdome",tfile)
+		if (length(z0) > 0)
+			tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmdome ","",tfile) # assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
+	}
 	if (wpaper||resdoc) {
 		resdoc = TRUE
 		tfile = gsub("@resdoc",TRUE,tfile)
@@ -182,7 +194,10 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 			tfile = tfile[setdiff(1:length(tfile),z0)] }
 		if (strSpp=="ROL" && any(grepl("@rmROL",tfile))) {   # Kendra-specific removals
 			z0 = grep("@rmROL",tfile)
-			tfile = tfile[setdiff(1:length(tfile),z0)] }
+			tfile = tfile[setdiff(1:length(tfile),z0)]
+		} else {
+			tfile = gsub("@rmROL ","",tfile)    # assumes space after @rmROL for readability in `run-MasterMCMC.Snw`
+		}
 	}
 	else {
 		resdoc = FALSE
@@ -190,12 +205,13 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		tfile = gsub("@rmresdoc ","",tfile) # assumes space after @rmresdoc for readability in `run-MasterMCMC.Snw`
 		tfile = gsub("@rmROL ","",tfile)    # assumes space after @rmROL for readability in `run-MasterMCMC.Snw`
 	}
+#browser();return()
 
 	# Start expanding lines using bites
-	SpriorBites = c("log_qsurvey_prior\\[1,]","surveySfull_prior\\[1,]","p_surveySfulldelta\\[1,]","log_surveyvarL_prior\\[1,]")
-	CpriorBites = c("p_Sfullest\\[1,]","p_Sfulldelta\\[1,]","log_varLest_prior\\[1,]")
+	SpriorBites = c("log_qsurvey_prior\\[1,]", "surveySfull_prior\\[1,]", "p_surveySfulldelta\\[1,]", "log_surveyvarL_prior\\[1,]", "log_surveyvarR_prior\\[1,]")
+	CpriorBites = c("p_Sfullest\\[1,]", "p_Sfulldelta\\[1,]", "log_varLest_prior\\[1,]", "log_varRest_prior\\[1,]")
 	#cpueBites   = c("log q_999")
-	nineBites   = c("mu_999","Delta_999","log v_999L","log q_999")
+	nineBites   = c("mu_999", "Delta_999", "log v_999L", "log v_999R", "log q_999")
 	gearBites   = c("qtab\\(VB0.MCMC\\[,1])","qtab\\(VBcurr.MCMC\\[,1])","qtab\\(upenult.MCMC\\[,1],dig=3)",
 		"qtab\\(VBcurr.MCMC\\[,1]/VB0.MCMC\\[,1]", "qtab\\(VBmsy.MCMC/VB0.MCMC\\[,1]", 
 		"qtab\\(upenult.MCMC\\[,1]/umsy.MCMC", "qtab\\(upenult.MCMC\\[,1]/refPointsHistList$utarHRP")
@@ -256,7 +272,6 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 
 	tfile = gsub("@one","1",tfile)  # to restore true values of `1' in expanded lines
 
-#browser();return()
 	localHistory = paste(mc.dir,"/runHistory.tex",sep="")
 	if(file.exists(paste(wd,"/runHistory.tex",sep=""))) {
 		is.history=file.copy(paste(wd,"/runHistory.tex",sep=""),localHistory,overwrite=TRUE)
@@ -266,16 +281,22 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	# Final clean-up of empty lines ( cannot because paragraphs delineation is squashed)
 	#tfile = tfile[setdiff(1:length(tfile),grep("^$",tfile))]
 
-	mcname      = paste(mcname,ifelse(wpaper,"-Wpaper",ifelse(resdoc,"-ResDoc","")),sep="")
+	## No real need to change the name any longer
+	## mcname      = paste(mcname,ifelse(wpaper,"-Wpaper",ifelse(resdoc,"-ResDoc","")),sep="")
 	localName   = paste(mcname,".Snw",sep="")
 	localSweave = paste(mc.dir,"/",localName,sep="")
+#browser();return()
 
 	writeLines(tfile,con=localSweave)
 	Sweave(localSweave)
-	shell(cmd=paste("latex ",mcname,".tex",sep=""),wait=TRUE)
-	shell(cmd=paste("latex ",mcname,".tex",sep=""),wait=TRUE)
-	shell(cmd=paste("dvips ",mcname,".dvi",sep=""),wait=TRUE)
-	shell(cmd=paste("ps2pdf ",mcname,".ps",sep=""),wait=TRUE)
+	if (ptype=="eps") {
+		shell(cmd=paste("latex ",mcname,".tex",sep=""),wait=TRUE)
+		shell(cmd=paste("latex ",mcname,".tex",sep=""),wait=TRUE)
+		shell(cmd=paste("dvips ",mcname,".dvi",sep=""),wait=TRUE)
+		shell(cmd=paste("ps2pdf ",mcname,".ps",sep=""),wait=TRUE)
+	} else {
+		shell(cmd=paste0("texify --pdf --synctex=1 --clean ",mcname,".tex"),wait=TRUE)
+	}
 	invisible(tfile) }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweaveMCMC
 

@@ -1960,7 +1960,7 @@ plt.expRate <- function( obj, yLim=c(0,0.5), xLim=c(1954,2005) )
 # AME doing postscript for POP. Adapting to five surveys for YMR
 #-------------------------------------------AME/RH
 plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=150, ...)
+   ptypes = c("eps","png"), pngres=400, ...)
 {
 	seriesList <- sort( unique( obj$Series ) )
 	nseries=length(seriesList)
@@ -1974,7 +1974,7 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 		pname = surveyFigName[i]
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(pname,".eps"), height=6, width=5, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(pname,".png"), res=pngres, height=6*pngres, width=5*pngres)
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, height=6, width=5)
 			par(mfrow=c(nseries,1), mar=c(1.75,2,2,0.5), oma=c(2,2,0,0), mgp=c(2,0.75,0))
 			plt.stdResids( result, xLim=range(result[!is.na(result$Obs), ]$Year)) # restrict years for plot
 			mtext( side=3, line=0, cex=1.0, outer=TRUE, surveyHeadName[i])
@@ -1993,7 +1993,7 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 #-------------------------------------------AME/RH
 plotIndexNotLattice <- function(obj, main="", save=NULL,
    bar=1.96, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=150, ...)
+   ptypes = c("eps","png"), pngres=400, ...)
 {
 	cvcol="slategrey"
 	objSurv=obj$Survey; objCPUE=obj$CPUE
@@ -2007,7 +2007,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	rc = .findSquare(nseries)
 	for (p in ptypes) {
 		if (p=="eps") postscript("survIndSer.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("survIndSer.png", res=pngres, width=6.5*pngres, height=8.5*pngres)
+		else if (p=="png") png("survIndSer.png", units="in", res=pngres, width=6.5, height=8.5)
 		par(mfrow=c(rc[1],rc[2]), mar=c(2,2,1,0.5), oma=c(1.5,2,1,0.5), mgp=c(1.75,0.5,0))
 		for ( i in 1:nseries ) {
 			idx <- seriesList[i]==objSurv$Series
@@ -2027,7 +2027,8 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
 			mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
-			addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,1),cex=0.8,col=cvcol)
+			if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
+				addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,1),cex=0.8,col=cvcol)
 			if(i==nseries) {
 				mtext(side=2, line=0, cex=1, outer=TRUE,"Relative biomass")
 				mtext(side=1, line=0, cex=1.2, outer=TRUE, "Year")
@@ -2041,7 +2042,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	xLimmaxsurvIndSer3=NA
 	for (p in ptypes) {
 		if (p=="eps") postscript("survIndSer2.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("survIndSer2.png", res=pngres, width=6.5*pngres, height=8.5*pngres)
+		else if (p=="png") png("survIndSer2.png", units="in", res=pngres, width=6.5, height=8.5)
 		par(mfrow=c(nseries,1), mar=c(0,2,0,3), oma=c(3.2,2,0.5,0), mgp=c(1.75,0.5,0))
 		for ( i in 1:length(seriesList) ) {
 		idx <- seriesList[i]==objSurv$Series
@@ -2065,7 +2066,8 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
 			axis( side=1, at=YrTicks, tcl=-0.4, labels=FALSE)
 			mtext(side=4, line=1.5, cex=0.8, outer=FALSE, paste0(strwrap(surveyHeadName[i],10),collapse="\n"))
-			addLabel(0.025,0.075,paste("+ CV process error ",cvpro[i],sep=""),adj=c(0,0),cex=.8+(.05*(nseries-1)),col=cvcol)
+			if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
+				addLabel(0.025,0.075,paste("+ CV process error ",cvpro[i],sep=""),adj=c(0,0),cex=.8+(.05*(nseries-1)),col=cvcol)
 			if(i==nseries) {
 				axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
 				axis( side=1, at=YrTicks, tcl=-0.4, labels=TRUE)
@@ -2088,7 +2090,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("survIndSer3.eps", width=6.5, height=6.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("survIndSer3.png", res=pngres, width=6.5*pngres, height=6.5*pngres)
+		else if (p=="png") png("survIndSer3.png", units="in", res=pngres, width=6.5, height=6.5)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		#postscript("survIndSer3.eps", height=6.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
 		yrTicks=yrsspan
@@ -2146,14 +2148,15 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 		yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0("survIndSer4-", i, ".eps"), width=6.5, height=6.5, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0("survIndSer4-", i, ".png"), res=pngres, width=6.5*pngres, height=6.5*pngres)
+			else if (p=="png") png(paste0("survIndSer4-", i, ".png"), units="in", res=pngres, width=6.5, height=6.5)
 			par(mfrow=c(1,1), mar=c(3,3,2,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, 
 				xlim=xLim, ylim=yLim, xlab="Year", ylab="Relative biomass", gap=0, pch=19, cex.lab=1.25)
 			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
 			mtext( side=3, line=0.25, cex=1.5, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
-			addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,0),cex=0.8,col=cvcol)
+			if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
+				addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,0),cex=0.8,col=cvcol)
 			dev.off()
 		}
 	}  # cex was 0.8 for POP
@@ -2291,7 +2294,8 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
          # restrict years for plot, does error bars
     lines(seriesVals$Year, seriesVals$Fit, lwd=2)
     axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-    addLabel(0.95,0.95,paste("+ CV process error ",cvpro[ii],sep=""),adj=c(1,0),cex=0.8,col="slategrey")
+    if (is.numeric(cvpro[ii]) && round(cvpro[ii],5)!=0)
+       addLabel(0.95,0.95,paste("+ CV process error ",cvpro[ii],sep=""),adj=c(1,0),cex=0.8,col="slategrey")
     # mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
     # if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
     # if(i==5)  mtext(side=1, line=0, cex=1, outer=TRUE, "Year")
@@ -2324,7 +2328,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
 #-------------------------------------------AME/AM
 plt.mcmcGraphs <-
 function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE, 
-   ptypes = c("eps","png"), pngres=150, ngear=1,
+   ptypes = c("eps","png"), pngres=400, ngear=1,
    ylim.recruitsMCMC=NULL, ylim.exploitMCMC=NULL,
    ylim.VBcatch=NULL, ylim.BVBnorm=NULL,
    xlim.snail=NULL, ylim.snail=NULL,
@@ -2346,12 +2350,12 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		txt <- paste(prefix, txt, sep="")
 		text(0.5, 0.5, txt, cex=1.75)
 	}
-
+	panel.cor.small = eval(parse(text=sub("1\\.75", "1.25", deparse(panel.cor))))
 #browser();return()
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("recruitsMCMC.eps", width=6.25, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("recruitsMCMC.png", res=pngres, width=6.25*pngres, height=4*pngres)
+		else if (p=="png") png("recruitsMCMC.png", units="in", res=pngres, width=6.25, height=4)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotRmcmcPOP(mcmcObj$R, yLim=ylim.recruitsMCMC) # *AME*
 		dev.off()
@@ -2359,7 +2363,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("exploitMCMC.eps", width=6.25, height=4*ngear, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("exploitMCMC.png", res=pngres, width=6.25*pngres, height=4*ngear*pngres)
+		else if (p=="png") png("exploitMCMC.png", units="in", res=pngres, width=6.25, height=4*ngear)
 		par(mfrow=c(ngear,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		for (g in 1:ngear) {
 			gfile = mcmcObj$U[,grep(paste0("_",g),names(mcmcObj$U))]
@@ -2371,7 +2375,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("pdfParameters.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("pdfParameters.png", res=pngres, width=6.25*pngres, height=7*pngres)
+		else if (p=="png") png("pdfParameters.png", units="in", res=pngres, width=6.25, height=7)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotDensPOPparsPrior(mcmcObj$P, lty.outer=2, between=list(x=0.3, y=0.2),mpd=mpd[["mpd.P"]])
 		dev.off()
@@ -2379,7 +2383,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("pdfBiomass%d.eps", width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
-		else if (p=="png") png("pdfBiomass%d.png", res=pngres, width=6.5*pngres, height=8*pngres)
+		else if (p=="png") png("pdfBiomass%d.png", units="in", res=pngres, width=6.5, height=8)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotDensPOP(mcmcObj$B/1000, xlab="Female spawning biomass, Bt (1000 t)", 
 			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, #panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
@@ -2389,7 +2393,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("pdfRecruitment%d.eps", width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
-		else if (p=="png") png("pdfRecruitment%d.png", res=pngres, width=6.5*pngres, height=8*pngres)
+		else if (p=="png") png("pdfRecruitment%d.png", units="in", res=pngres, width=6.5, height=8)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotDensPOP(mcmcObj$R/1000, xlab="Recruitment, Rt (1000s)", 
 			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2,
@@ -2399,7 +2403,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("pdfBiomass.eps", width=6.5, height=8, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("pdfBiomass.png", res=pngres, width=6.5*pngres, height=8*pngres)
+		else if (p=="png") png("pdfBiomass.png", units="in", res=pngres, width=6.5, height=8)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotDensPOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, xlab="Female spawning biomass, Bt (1000 t)", 
 			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, #panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
@@ -2409,7 +2413,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("pdfRecruitment.eps", width=6.5, height=8, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("pdfRecruitment.png", res=pngres, width=6.5*pngres, height=8*pngres)
+		else if (p=="png") png("pdfRecruitment.png", units="in", res=pngres, width=6.5, height=8)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotDensPOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, xlab="Recruitment, Rt (1000s)", 
 			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2,
@@ -2419,7 +2423,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("traceBiomass.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("traceBiomass.png", res=pngres, width=6.25*pngres, height=7*pngres)
+		else if (p=="png") png("traceBiomass.png", units="in", res=pngres, width=6.25, height=7)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotTracePOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, axes=TRUE, between=list(x=0.2, y=0.2),
 			xlab="Sample", ylab="Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000)
@@ -2428,7 +2432,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("traceRecruits.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("traceRecruits.png", res=pngres, width=6.25*pngres, height=7*pngres)
+		else if (p=="png") png("traceRecruits.png", units="in", res=pngres, width=6.25, height=7)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotTracePOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), 
 			xlab="Sample", ylab="Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000)
@@ -2437,7 +2441,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("traceParams.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("traceParams.png", res=pngres, width=6.25*pngres, height=7*pngres)
+		else if (p=="png") png("traceParams.png", units="in", res=pngres, width=6.25, height=7)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		idx <- apply(mcmcObj$P, 2, allEqual)
 		plotTracePOP(mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), 
@@ -2447,7 +2451,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("splitChain.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("splitChain.png", res=pngres, width=6.25*pngres, height=7*pngres)
+		else if (p=="png") png("splitChain.png", units="in", res=pngres, width=6.25, height=7)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotChains(mcmc=mcmcObj$P, axes=TRUE, between=list(x=0.15, y=0.2), 
 			col.trace=c("green", "red", "blue"), xlab="Sample", ylab="Cumulative Frequency", pdisc=0.001)
@@ -2455,9 +2459,16 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	}
 
 	for (p in ptypes) {
+		if (p=="eps") postscript("paramACFs.eps", width=8, height=8, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("paramACFs.png", width=8, height=8, units="in", res=pngres)
+		plotACFs(currentMCMC,lag.max=60)
+		dev.off()
+	}
+
+	for (p in ptypes) {
 		if (p=="eps") postscript("VBcatch.eps", width=6.25, height=4.5*ngear, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("VBcatch.png", res=pngres, width=6.25*pngres, height=4.5*ngear*pngres)
-		par(mfrow=c(ngear,1), mar=c(3,3,0.5,0.5), oma=c(0,ifelse(ngear>1,2,0),0,0), mgp=c(1.75,0.5,0))
+		else if (p=="png") png("VBcatch.png", units="in", res=pngres, width=6.25, height=4.5*ngear)
+		par(mfrow=c(ngear,1), mar=c(3,3,0.5,1), oma=c(0,ifelse(ngear>1,2,0),0,0), mgp=c(1.75,0.5,0))
 		for (g in 1:ngear) {
 			gfile = mcmcObj$VB[,grep(paste0("_",g),names(mcmcObj$VB))]
 			names(gfile) = substring(names(gfile),1,4)
@@ -2475,8 +2486,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 #
 	for (p in ptypes) {
 		if (p=="eps") postscript("BVBnorm.eps", width=6.25, height=5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("BVBnorm.png", res=pngres, width=6.25*pngres, height=5*pngres)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		else if (p=="png") png("BVBnorm.png", units="in", res=pngres, width=6.25, height=5)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plotBVBnorm(mcmcObj, xLeg=0.02, yLeg=0.2, yLim=ylim.BVBnorm, ngear=ngear, VB.col=c("blue","red"))
 		dev.off()
 	}
@@ -2492,7 +2503,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	options(scipen=10)
 	for (p in ptypes) {
 		if (p=="eps") postscript("Bproj.eps", width=6.25, height=7, horizontal=FALSE, paper="special")
-		else if (p=="png") png("Bproj.png", res=pngres, width=6.25*pngres, height=7*pngres)
+		else if (p=="png") png("Bproj.png", units="in", res=pngres, width=6.25, height=7)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plt.quantBio(mcmcObj$B, projObj$B, xyType="quantBox",  policy=plotPolicies, save=FALSE)  # *AME* 
 		dev.off()
@@ -2500,7 +2511,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("Rproj.eps", width=6.25, height=7, horizontal=FALSE, paper="special")
-		else if (p=="png") png("Rproj.png", res=pngres, width=6.25*pngres, height=7*pngres)
+		else if (p=="png") png("Rproj.png", units="in", res=pngres, width=6.25, height=7)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plt.quantBio(mcmcObj$R, projObj$R, xyType="quantBox", policy=plotPolicies,    # *AME*
 			save=FALSE, yaxis.lab="Recruitment (1000s)")
@@ -2509,7 +2520,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("RprojOnePolicy.eps", width=6.25, height=5, horizontal=FALSE, paper="special")
-		else if (p=="png") png("RprojOnePolicy.png", res=pngres, width=6.25*pngres, height=5*pngres)
+		else if (p=="png") png("RprojOnePolicy.png", units="in", res=pngres, width=6.25, height=5)
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		plt.quantBioBB0(mcmcObj$R, projObj$R, xyType="quantBox", policy=onePolicy, 
 			save=FALSE, xaxis.by=10, yaxis.lab="Recruitment (1000s)")    # *AME* (onePolicy)
@@ -2518,13 +2529,13 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("snail.eps", width=6.25, height=5, horizontal=FALSE, paper="special")
-		else if (p=="png") png("snail.png", res=pngres, width=6.25*pngres, height=5*pngres)
+		else if (p=="png") png("snail.png", units="in", res=pngres, width=6.25, height=5)
 		par(mfrow=c(1,1), mar=c(3,3.75,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.5,0))
 		plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=c(0.1, 0.9), xLim=xlim.snail, yLim=ylim.snail, ngear=ngear)
 		dev.off()
 	}
 
-	# Doing 6 on a page:
+	# Doing 6 pairs on a page:
 	npr = 6
 	nuP = length(use.Pnames)
 	npp = ceiling(nuP/npr) # number of pairs plots
@@ -2534,9 +2545,25 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			pname = paste0("pairs",i)
 			if (p=="eps") postscript(paste0(pname,".eps"), width=7, height=7, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(pname,".png"), res=pngres, width=7*pngres, height=7*pngres)
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=7, height=7)
 			par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 			pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
+			dev.off()
+		}
+	}
+	# Doing 1 pairs plot with all parameters
+	npp = 1
+	nuP = length(use.Pnames)
+	npr = ceiling(nuP/npp)
+	for (i in 1:npp) {
+		if (i<npp) ii = (1:npr)+(i-1)*npr
+		else       ii = (nuP-npr+1):nuP
+		for (p in ptypes) {
+			pname = "pairsPars"
+			if (p=="eps") postscript(paste0(pname,".eps"), width=10, height=10, horizontal=FALSE,  paper="special")
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=10, height=10)
+			par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+			pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor.small, cex.axis=1.25)
 			dev.off()
 		}
 	}
@@ -2545,7 +2572,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	names(trevObj) = gsub("_","",names(trevObj))
 	for (p in ptypes) {
 		if (p=="eps") postscript("pairsMSY.eps", width=7, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("pairsMSY.png", res=pngres, width=7*pngres, height=7*pngres)
+		else if (p=="png") png("pairsMSY.png", units="in", res=pngres, width=7, height=7)
 		par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		pairs(trevObj, col="grey25", pch=20, cex=.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
 		dev.off()
@@ -2566,7 +2593,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 #  to accommodate multiple gear types
 #-------------------------------------------AME/RH
 plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=150, ngear=1,
+   ptypes = c("eps","png"), pngres=400, ngear=1,
    pchGear=seq(21,20+ngear,1), ltyGear=seq(1,ngear,1), 
    colGear=rep(c("black","blue"),ngear)[1:ngear])
 {
@@ -2592,7 +2619,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	ylim = range(U,na.rm=TRUE)
 	for (p in ptypes) {
 		if (p=="eps") postscript("exploit.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("exploit.png", res=pngres, width=6.5*pngres, height=4.5*pngres)
+		else if (p=="png") png("exploit.png", units="in", res=pngres, width=6.5, height=4.5)
 		par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		plot(0,0,xlim=xlim,ylim=ylim,type="n",xlab="Year",ylab="Exploitation rate")
 		sapply(ngear:1,function(g,x,y){
@@ -2612,7 +2639,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
   #  and just adding here to do MPD for recruits.
 	for (p in ptypes) {
 		if (p=="eps") postscript("recruits.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("recruits.png", res=pngres, width=6.5*pngres, height=4*pngres)
+		else if (p=="png") png("recruits.png", units="in", res=pngres, width=6.5, height=4)
 		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		plot(obj$B$Year, obj$B$R, type="o", xlab="Year",
 			ylab="Recruitment, Rt (1000s)", ylim=c(0, max(obj$B$R, na.rm=TRUE)))
@@ -2631,10 +2658,11 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	selP = split(ageP,paste(objRed$Sel$Series,objRed$Sel$Sex,sep="."))
 	xmax = max(as.numeric(sapply(selP,function(x){names(x[is.element(x,1)])[1]})),na.rm=TRUE) #maximum minimum age when P first hits 1
 	if (is.na(xmax)) xmax = 20
+	if (any(round(unlist(currentRes$extra$parameters[c("log_varRest","log_surveyvarR")]),5)!=100)) xmax=40 ## temporary fix
 	objRed$Sel = objRed$Sel[objRed$Sel$Age <= xmax,]
 	for (p in ptypes) {
 		if (p=="eps")      postscript("selectivity.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("selectivity.png", res=pngres, width=6.5*pngres, height=4.5*pngres)
+		else if (p=="png") png("selectivity.png", units="in", res=pngres, width=6.5, height=4.5)
 		par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,xmax))
 		dev.off()
@@ -2701,7 +2729,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 		for (p in ptypes) {
 			pname = paste0("commAgeResSer",g)
 			if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(pname,".png"), res=pngres, width=6.5*pngres, height=8.5*pngres)
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
 			par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
 			plt.ageResidsPOP( stdRes.CAc.g, main="")
 			mtext(CAnames[g],side=3,outer=TRUE,line=0.25,cex=1.5)
@@ -2717,7 +2745,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 			for (p in ptypes) {
 				pname = paste0("commAgeResSer",g,s)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-				else if (p=="png") png(paste0(pname,".png"), res=pngres, width=6.5*pngres, height=8.5*pngres)
+				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
 				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
 				plt.ageResidsPOP( stdRes.CAc.g.s, main="" ) 
 				mtext(paste0(CAnames[g]," - ",s),side=3,outer=TRUE,line=0.25,cex=1.5)
@@ -2742,7 +2770,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 		for (p in ptypes) {
 			pname = paste0("survAgeResSer",g)
 			if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(pname,".png"), res=pngres, width=6.5*pngres, height=8.5*pngres)
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
 			par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
 			plt.ageResidsPOP( stdRes.CAs.g, main="")
 			mtext(SAnames[g],side=3,outer=TRUE,line=0.25,cex=1.5)
@@ -2758,7 +2786,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 			for (p in ptypes) {
 				pname = paste0("survAgeResSer",g,s)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-				else if (p=="png") png(paste0(pname,".png"), res=pngres, width=6.5*pngres, height=8.5*pngres)
+				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
 				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
 				plt.ageResidsPOP( stdRes.CAs.g.s, main="" ) 
 				mtext(paste0(SAnames[g]," - ",s),side=3,outer=TRUE,line=0.25,cex=1.5)
@@ -2790,7 +2818,14 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 #		}
 #	}
 
+#plotMeanAge----------------------------2016-12-08
+# Plot observed and expected mean ages from 
+# commercial and survey C@A data.
+#-----------------------------------------------RH
+#plotMeanAge =function(obj, ptypes = c("win"), useCA=T, useSA=T, CAnames="Trawl")
+#{
 	# Here plot the mean age for catch and surveys (`MAfun` in `utilsFun.r`)
+#browser();return()
 	MAc = MAfun(obj$CAc)       # catch mean age
 	MAs = MAfun(obj$CAs)       # surveys mean age
 	nseries = 0
@@ -2803,35 +2838,52 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 		MAp = c(MAp, "MAs") }
 	
 	if (nseries>0) {
-	for (p in ptypes) {
-		if (p=="eps") postscript("meanAge.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("meanAge.png", res=pngres, width=6.5*pngres, height=8.5*pngres)
-		par(mfrow=c(nseries,1), mar=c(1.75,2,2,0.5), oma=c(2,2,0,0), mgp=c(2,0.75,0))
-		for (m in MAp) {
-			MA   = get(m)
-			last = regexpr("-",names(MA$MAobs))-1
-			for ( i in 1:length(MA$J)) {   #1:length(unique(MAsSurvNum)) ) 
-				ii  = MA$J[i]
-				iii = substring(names(MA$MAobs),1,last)
-				z   = is.element(iii,ii)
-				plot(MA$Yr[z],MA$MAobs[z],type="n",xlab="",ylab="", cex.axis=1.4,
-					ylim=extendrange(c(MA$MAobs[z],MA$MAexp[z]),f=0.1))
-				points(MA$Yr[z], MA$MAexp[z], pch=22, type="o",col="blue", bg="white",cex=1.4)
-				points(MA$Yr[z],MA$MAobs[z], pch=20, col="green4", cex=1.4)
-				if (m=="MAc")
-					mtext(CAnames[i], side=3, line=0.25, cex=1, outer=FALSE)
-				else {
-					surveyHeadName = if (!exists("tcall")) ssnames[MAs$J] else tcall(PBSawatea)$Snames[MAs$J]
-					mtext(surveyHeadName[i], side=3, line=0.25, cex=1, outer=FALSE)
+		MA.pjs = list()
+		for (p in ptypes) {
+			if (p=="eps") postscript("meanAge.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
+			else if (p=="png") png("meanAge.png", units="in", res=pngres, width=6.5, height=8.5)
+			par(mfrow=c(nseries,1), mar=c(1.75,2,2,0.5), oma=c(2,2,0,0), mgp=c(2,0.75,0))
+			for (m in MAp) {
+				MA   = get(m)
+				last = regexpr("-",names(MA$MAobs))-1
+				for ( i in 1:length(MA$J)) {   #1:length(unique(MAsSurvNum)) ) 
+					ii  = MA$J[i]
+					iii = substring(names(MA$MAobs),1,last)
+					z   = is.element(iii,ii)
+					if (p==ptypes[1]) {
+						for (k in setdiff(names(MA),"J"))
+							MA.pjs[[paste0(m,ii)]][[k]] = MA[[k]][z]
+					}
+#if (m=="MAs" && ii==2) {browser();return()}
+					ylim = extendrange(c(MA$MAobs[z]+MA$CI[z],MA$MAobs[z]-MA$CI[z],MA$MAexp[z]),f=0.1)
+					plot(MA$Yr[z],MA$MAobs[z],type="n",xlab="",ylab="", cex.axis=1.4, ylim=ylim)
+						#ylim=extendrange(c(MA$MAobs[z],MA$MAexp[z]),f=0.1))
+					points(MA$Yr[z], MA$MAexp[z], pch=22, type="o",col="blue", bg="white",cex=1.4)
+					CLlo = MA$MAobs[z]-MA$CI[z]
+					CLhi = MA$MAobs[z]+MA$CI[z]
+					xCI  = as.vector(rbind(MA$Yr[z],MA$Yr[z],rep(NA,length(MA$Yr[z]))))
+					yCI  = as.vector(rbind(CLlo,CLhi,rep(NA,length(CLlo))))
+					lines(xCI,yCI,col="green4")
+					points(MA$Yr[z],MA$MAobs[z], pch=20, col="green4", cex=1.4)
+					if (m=="MAc")
+						mtext(CAnames[i], side=3, line=0.25, cex=1, outer=FALSE)
+					else {
+						surveyHeadName = if (!exists("tcall")) ssnames[MAs$J] else tcall(PBSawatea)$Snames[MAs$J]
+						mtext(surveyHeadName[i], side=3, line=0.25, cex=1, outer=FALSE)
+					}
 				}
-			}
-			mtext("Mean Age (y)",side=2,line=0.25,cex=1.2,outer=T)
-			if (par()$mfg[1]==par()$mfg[3]) mtext("Year",side=1,line=0.75,cex=1.2,outer=T)
-		}
-		dev.off()
-	}
-	} # end nseries
+				mtext("Mean Age (y)",side=2,line=0.25,cex=1.2,outer=T)
+				if (par()$mfg[1]==par()$mfg[3]) mtext("Year",side=1,line=0.75,cex=1.2,outer=T)
+			} ## end MAp
+			if (is.element(p,c("eps","png")))dev.off()
+		} ## end ptypes
+		assign("MA.pjs",MA.pjs,envir=.GlobalEnv)
+		dump("MA.pjs",file="MA.pjs.r")  ## for Paul
+		save("MA.pjs",file="MA.pjs.rda")
+	} ## end nseries
 #browser();return()
+#}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	# Plot stock-recruitment function (based on MPD's)
 	# xLimSR and yLimSR fixed here for YMR to have Run 26 and 27 figs
@@ -2847,7 +2899,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 
 	for (p in ptypes) {
 		if (p=="eps") postscript("stockRecruit.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("stockRecruit.png", res=pngres, width=6.5*pngres, height=4*pngres)
+		else if (p=="png") png("stockRecruit.png", units="in", res=pngres, width=6.5, height=4)
 		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		plot(xxx, yyy, lwd=2, xlim=xLimSR, ylim=yLimSR, type="l",
 			xlab=expression( paste("Spawning biomass ",  italic(B)[italic(t)-1], " (t) in year ", italic(t), "-1", sep="") ),
@@ -3569,46 +3621,54 @@ refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
 
 
-#plotSnail------------------------------2014-09-23
+#plotSnail------------------------------2017-06-06
 # Plot snail-trail plots for MCMC analysis.
-#   AME: replacing "2010" with as.character(currYear - 1)
+#  AME: replacing "2010" with as.character(currYear - 1)
+#  RH: added assYrs = years past with estimated Bcurr from previous assessment(s)
 #-------------------------------------------AME/RH
-plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lwd=2, ngear=1)
+plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lwd=2, ngear=1, assYrs=2011)
 {
 	BUlist = as.list(0:ngear); names(BUlist)=c("Spawning Biomass",Cnames[1:ngear])
-	BUlist[[1]] = BoverBmsy[,-length(BoverBmsy)]
+	#BUlist[[1]] = BoverBmsy[,-length(BoverBmsy)]
+	BUlist[[1]] = BoverBmsy[,-1]  ## conversation with PJS: we both agree that B2017/Bmsy should be paired with U2016/Umsy
 	for (g in 1:ngear) {
 		gfile = UoverUmsy[,grep(paste0("_",g),names(UoverUmsy))]
 		names(gfile) = substring(names(gfile),1,4)
 		BUlist[[g+1]] = gfile
 	}
 	# Calculate medians to be plotted
-	BUmed  = sapply(BUlist,function(x){apply(x,2,median)},simplify=FALSE)  # median each year
-	colPal = colorRampPalette(c("grey95", "grey30"))
+	BUmed    = sapply(BUlist,function(x){apply(x,2,median)},simplify=FALSE)  # median each year
+	colPal   = colorRampPalette(c("grey95", "grey30"))
 	colSlime = rep(c("grey","slategray2"),ngear)[1:ngear]
-	colStart = rep(c("blue","purple"),ngear)[1:ngear]
-	colStop = rep(c("red","orange"),ngear)[1:ngear]
+	colStart = rep(c("cyan","thistle"),ngear)[1:ngear]
+	colStop  = rep(c("blue","purple"),ngear)[1:ngear]
+	colAss   = rep(c("gold","orange"),ngear)[1:ngear]
 	nB = length(BUmed[[1]])
 	if (is.null(xLim))
 		xLim=c(0, max(c(BUmed[[1]], quantile(apply(BUlist[[1]],2,quantile,p[2]),0.6), 1)))
 	if (is.null(yLim))
 		yLim=c(0, max(c(sapply(BUmed[(1:ngear)+1],max), quantile(sapply(BUlist[(1:ngear)+1],function(x,p){apply(x,2,quantile,p)},p=p[2]),0.95), 1)))
-	plot(0,0, xlim=xLim, ylim=yLim, type="n", xlab=expression(paste(B[t]/B[msy])), ylab=expression(paste(u[t]/u[msy])),cex.lab=1.25,cex.axis=1.0)
+	plot(0,0, xlim=xLim, ylim=yLim, type="n", 
+		xlab = expression(paste(italic(B[t])/italic(B)[MSY])), 
+		ylab = expression(paste(italic(u[t])/italic(u)[MSY])),
+		cex.lab=1.25,cex.axis=1.0,las=1)
+	abline(h=1, col=c("grey20"), lwd=Lwd, lty=3)
+	abline(v=c(0.4,0.8), col=c("red","green4"), lwd=Lwd, lty=2)
 	for (i in ngear:1) {
 		lines(BUmed[[1]], BUmed[[i+1]], col=colSlime[i], lwd=Lwd)
 		points(BUmed[[1]], BUmed[[i+1]], type="p", pch=19, col=colPal(nB))
 		points(BUmed[[1]][1], BUmed[[i+1]][1], pch=19, col=colStart[i])
 		points(rev(BUmed[[1]])[1], rev(BUmed[[i+1]])[1], pch=19, col=colStop[i])
+		points(BUmed[[1]][as.character(assYrs)], BUmed[[i+1]][as.character(assYrs)], pch=19, col=colAss[i])
 		segments(quantile(BUlist[[1]][,as.character(currYear-1)],p[1]),
 			BUmed[[i+1]][as.character(currYear-1)],
 			quantile(BUlist[[1]][,as.character(currYear-1)], p[2]), 
-			BUmed[[i+1]][as.character(currYear-1)], col=colStop[i])
+			BUmed[[i+1]][as.character(currYear-1)], col=colStop[i], lwd=1.5)
 		segments(BUmed[[1]][as.character(currYear - 1)], 
 			quantile(BUlist[[i+1]][, as.character(currYear - 1)], p[1]),
 			BUmed[[1]][as.character(currYear - 1)], 
-			quantile(BUlist[[i+1]][, as.character(currYear - 1)], p[2]), col=colStop[i])
+			quantile(BUlist[[i+1]][, as.character(currYear - 1)], p[2]), col=colStop[i], lwd=1.5)
 	}
-	abline(h=1, v=c(0.4,0.8), col="gainsboro", lwd=Lwd)
 	if (ngear>1)  addLegend(0.95,0.80,legend=Cnames,lty=1,lwd=Lwd,col=colSlime,seg.len=4,xjust=1,bty="n",cex=0.8)
 	box()
 }

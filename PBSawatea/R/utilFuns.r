@@ -622,31 +622,43 @@ tabSAR = function(models=paste("input-ymr",pad0(c(29,30),2),pad0(1,2),sep="."),
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^tabSAR
 
 
-#MAfun----------------------------------2013-09-04
+#MAfun----------------------------------2016-12-08
 # Mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
 # MAfun is used in both `runADMB` and in `runSweave`.
+# Francis: j=composition dataset, y=years, b=bins (ages)
 #-----------------------------------------------RH
 MAfun = function(padata,brks=NULL)
 {
 	padata=padata[padata$Age>=padata$startL & padata$Age<=padata$endL,]# Choose only ages older than `startL`
-	# S = series, y = year, a = age bin, O = observed proportions, P = Predicted (fitted) proportions, N=sample size
+	# S = series, y = year, a = age bin, O = observed proportions, P = Predicted (fitted) proportions, SS = N = Sample Size
 	S=padata$Series; y=padata$Year; a=padata$Age; O=padata$Obs; E=padata$Fit; SS=padata$SS   # note: SD and NR not used
 	if (is.null(brks)) {
-		f = paste(S,y,sep="-"); J = unique(S) }
+		b = paste(S,y,sep="-"); J = unique(S) } ## b = bins = no. age classes * no. sexes
 	else {
 		B = cut(y, breaks=brks, include.lowest=TRUE, labels=FALSE)
-		f = paste(S,B,y,sep="-"); J = unique(paste(S,B,sep="-")) }
-	# make sure that input age proportions are standardised (especially if females only)
-	O    = as.vector(sapply(split(O,f),function(x){x/sum(x)})) #standardise O (obs props)
-	#E    = as.vector(sapply(split(E,f),function(x){x/sum(x)})) #standardise E (fitted props)  -- causes instability
-	Oay  = a * O; Eay = a * E; Eay2 = a^2 * E
-	mOy  = sapply(split(Oay,f),sum,na.rm=TRUE)   # mean observed age
-	mEy  = sapply(split(Eay,f),sum,na.rm=TRUE)   # expected mean age
-	mEy2 = sapply(split(Eay2,f),sum,na.rm=TRUE)
-	Vexp = mEy2-mEy^2                            # variance of expected mean age
-	N    = sapply(split(SS,f),mean,na.rm=TRUE)
+		b = paste(S,B,y,sep="-"); J = unique(paste(S,B,sep="-")) }
+	# make sure that input age proportions are standardised (especially if females only) (they should be)
+	O    = as.vector(sapply(split(O,b),function(x){x/sum(x)})) # standardise O (obs props)
+	#E    = as.vector(sapply(split(E,b),function(x){x/sum(x)})) #standardise E (fitted props)  -- causes instability
+	## Note: sum(O) sould equal sum(E) and both should be the number of years
+
+	## From Francis (2011, p.1137) -- Methods allowing for correlations (bottom left of page)
+	#Oay  = a * O; Eay = a * E; Eay2 = a^2 * E    ## Francis: xb*Ojby, xb*Ejby, xb^2 * Ebjy
+	Oay  = a * O; Oay2 = a^2 * O
+	Eay  = a * E; Eay2 = a^2 * E    ## Francis: xb*Ojby, xb*Ejby, xb^2 * Ebjy
+	mOy  = sapply(split(Oay,b),sum,na.rm=TRUE)   ## mean observed age by year
+	mOy2 = sapply(split(Oay2,b),sum,na.rm=TRUE)  ## weird inflated mean age by year for variance calc
+	Vobs = mOy2 - mOy^2                          ## variance of observed age distribution
+	mEy  = sapply(split(Eay,b),sum,na.rm=TRUE)   ## expected mean age by year
+	mEy2 = sapply(split(Eay2,b),sum,na.rm=TRUE)  ## weird inflated mean age by year for variance calc
+	Vexp = mEy2 - mEy^2                          ## variance of expected age distribution
+	N    = sapply(split(SS,b),mean,na.rm=TRUE)   ## Sample Size
 	Yr   = as.numeric(substring(names(mOy),nchar(names(mOy))-3))
-	return(list(MAobs=mOy, MAexp=mEy, Vexp=Vexp, N=N, J=J, Yr=Yr)) # observed and expected mean ages, variance of expected ages
+	m    = sapply(split(SS,b),length)
+	CI   = 1.96 * sqrt(Vobs)/sqrt(m)
+	#CLlo = mOy-CI; CLhi=mOy+CI
+#browser();return()
+	return(list(MAobs=mOy, MAexp=mEy, Vobs=Vobs, Vexp=Vexp, Yr=Yr, N=N, CI=CI, J=J)) # observed and expected mean ages, variance of expected ages
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAfun
 

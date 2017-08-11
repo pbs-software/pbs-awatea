@@ -17,7 +17,8 @@ setClass ("AWATEAdata",
 runADMB = function(
    filename.ext, wd=getwd(), 
    strSpp="XYZ", runNo=1, rwtNo=0,
-   doMPD=FALSE, N.reweight=0, cvpro=FALSE, mean.age=TRUE, 
+   doMPD=FALSE, N.reweight=0, cvpro=FALSE,  ## if Ncpue>0 then cvpro lists cvpro for CPUE after those for surveys
+   mean.age=TRUE,                           ## Francis (2011) mean age reweight method for age frequencies
    doMCMC=FALSE, mcmc=1e6, mcsave=1e3, ADargs=NULL, verbose=FALSE, 
    doMSY=FALSE, msyMaxIter=15000., msyTolConv=0.01, endStrat=0.301, stepStrat=0.001,
    delim="-", clean=FALSE, locode=FALSE, 
@@ -398,7 +399,7 @@ setMethod("write", signature(x = "AWATEAdata"),
 	invisible(nvec) } )
 #----------------------------------setMethod.write
 
-#setMethod.reweight---------------------2014-09-29
+#setMethod.reweight---------------------2017-06-05
 # Set the method for 'reweight' when using an AWATEA class.
 # Calculates reweighted values and populates S4 object.
 #-----------------------------------------------RH
@@ -461,7 +462,8 @@ setMethod("reweight", signature="AWATEAdata",
 	# Mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
 	# MAfun now in `utilFuns.r` (because it is needed here and in `runSweave`).
 
-	# Weighting Method TA1.8 (Francis 2011, CJFAS, p.1137)
+	## Method TA1.8 Weigting assumption T3.4 in Francis (2011, CJFAS, p.1137) Table A1
+	## See plotMeanAge.r for debugging
 	wfun = function (MAlist) {
 		# y=year, a=age bin, O=observed proportions, P=Predicted (fitted) proportions, N=sample size, J=series
 		unpackList(MAlist,scope="L")
@@ -474,13 +476,17 @@ setMethod("reweight", signature="AWATEAdata",
 			# Only use values in series jj with non-zero variance and with fitted values
 			zUse = z&!zNoVar&!zNoVal
 			if (!any(zUse) || sum(zUse)<=1) next
-			w[j] = 1 / var((MAobs[zUse]-MAexp[zUse])/((Vexp[zUse]/N[zUse])^0.5) )  
+			## Method TA1.8 Weigting assumption T3.4 in Francis (2011) Table A1
+			w[j] = 1 / var((MAobs[zUse]-MAexp[zUse])/((Vexp[zUse]/N[zUse])^0.5) )
 			wN[zUse] = N[zUse] * w[j]
-			}
+		}
 		return(list(w=w,wN=wN))
 	}
 
 	#---Start reweight-------------------
+	do.cvpro = if (is.numeric(cvpro[1])) TRUE else do.cvpro=cvpro[1]
+	if (do.cvpro && is.logical(cvpro[1]) && cvpro[1]==TRUE)
+		cvpro = rep(0.2, length(cvpro))
 	survey =  res$Survey[!is.na(res$Survey[,"Obs"]),]
 	Sseries = sort(unique(survey[,"Series"]))
 	SDNR   = rep(0,length(Sseries)); names(SDNR) = Sseries
@@ -491,13 +497,22 @@ setMethod("reweight", signature="AWATEAdata",
 		zs = is.element(survey$Series,s)
 		sser = survey[zs,]
 		SDNR[ss] = sd(sser$NR)
-		if (cvpro[1] && nrwt==0)
-			survey$CVnew[zs] = sqrt(survey$CV[zs]^2 + cvpro[s]^2)
-		else if (cvpro[1] && nrwt>0)
+		if (do.cvpro && nrwt==0) {
+			.flush.cat(paste0("Francis reweight once only -- survey ", s, " with CVpro=",cvpro[s]),"\n")
+			if (round(cvpro[s],5)==0)
+				survey$CVnew[zs] = survey$CV[zs]
+			else
+				survey$CVnew[zs] = sqrt(survey$CV[zs]^2 + cvpro[s]^2)
+			## What todo when CVpro is negative? 
+			## sqrt(GT0(survey$CV[zs]^2 + sign(cvpro[2])*cvpro[2]^2))
+		} else if (do.cvpro && nrwt>0) {
 			survey$CVnew[zs] = survey$CV[zs]
-		else
+		} else {
+			.flush.cat(paste0("SDNR reweight ", nrwt+1, " -- survey ", s, " with SDNR=",SDNR[ss]), "\n")
 			survey$CVnew[zs] = sser$CV * SDNR[ss]
+		}
 	}
+#browser();return()
 
 	if (all(view(obj,pat="CPUE likelihood",see=FALSE)[[1]]==0)) 
 		cpue = NULL
@@ -508,17 +523,20 @@ setMethod("reweight", signature="AWATEAdata",
 		cpue$NR = NRfun(cpue$Obs,cpue$Fit,cpue$CV)
 		cpue$CVnew = rep(0,nrow(cpue))
 		for (u in names(Useries)) {
-			s = s + 1 # to index cvpro; s continued from surveys above
+			s = s + 1  ## to index cvpro for CPUE; s continued from surveys above
 			uu=as.character(u)
 			zu = is.element(cpue$Series,u)
 			user = cpue[zu,]
 			SDNR[Useries[uu]] = sd(user[,"NR"])
-			if (cvpro[1] && nrwt==0)
+			if (do.cvpro && nrwt==0) {
+				.flush.cat(paste0("Francis reweight once only -- CPUE ", u, " with CVpro=",cvpro[s]),"\n")
 				cpue$CVnew[zu] = sqrt(user$CV^2 + cvpro[s]^2)
-			else if (cvpro[1] && nrwt>0)
+			} else if (do.cvpro && nrwt>0) {
 				cpue$CVnew[zu] = user$CV
-			else
+			} else {
+				.flush.cat(paste0("SDNR reweight ", nrwt+1, " -- CPUE ", u, " with SDNR=",SDNR[Useries[uu]]), "\n")
 				cpue$CVnew[zu] = user$CV * SDNR[Useries[uu]]
+			}
 		}
 	}
 	sdnr = rep(0,2); names(sdnr) = c("cpa","spa"); SDNR = c(SDNR,sdnr)

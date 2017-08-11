@@ -1,4 +1,4 @@
-###Introduction###
+## PBSawatea: Tools for running Awatea and visualizing the results ##
 
 **PBSawatea** provides an R interface for running ADMB Awatea software, which is a variant of the Coleraine fish population software. The added functionality here includes automation of:
 
@@ -9,7 +9,7 @@
 
 All the automation offers enormous time-saving when trying numerous model runs.
 
-**PBSawatea** requires the R packages **PBStools**, **scape**, **plotMCMC**, **xtable**, **lattice**, **coda**, **gplots**, and **Hmisc** (all posted on CRAN except **PBStools**, available from GitHub: <https://github.com/pbs-software/pbs-tools>).
+**PBSawatea** requires the R packages **PBStools**, **scape**, **plotMCMC**, **xtable**, **lattice**, **coda**, **gplots**, and **Hmisc** (all posted on CRAN except **PBStools**, available from <a href="https://github.com/pbs-software/pbs-tools">GitHub</a>.
 
 This package borrows some functionality from the **scape** package by adopting the code from a few functions and creating variants. We try to acknowledge the original source wherever possible.
 
