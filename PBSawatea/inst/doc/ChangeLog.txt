@@ -5,212 +5,277 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.2.1 (2018-04-04)
+  * runSweave.r
+    + Save `ptype' in `PBSawatea' list object, which is stored in environment `.PBSmodEnv' via `packList'. (RH 180404)
+  * runSweaveMCMC.r
+    + Save `ptype' in `PBSawatea' list object, which is stored in environment `.PBSmodEnv' via `packList'. (RH 180404)
+  * PBSscape.r
+    + Changed arguments `ptypes=c("eps","png")' to `ptypes=tcall(PBSawatea)$ptype' to avoid generating deprecated eps files. (RH 180404)
+  * plotFuns.r
+    + Changed arguments `ptypes=c("eps","png")' to `ptypes=tcall(PBSawatea)$ptype' to avoid generating deprecated eps files. (RH 180404)
+  * Input
+    + Added 2017 POP 5ABC model input files. (RH 180404)
+
+1.2.0 (2017-12-04)
+  * runADMB.r
+    + Revised function `setMethod.reweight' to accept negative cvpro (reduce CV) and fixed cvpro handling for CPUE index series to match that of surveys. (RH 171204)
+  * PBSscape.r
+    + Modified plotting functions (171201)
+      - Standardise quantiles, using global objects `quants3' and `quants5', and pngres=400.
+      - Removed function `plotBmcmcPOP' as it was not being used anywhere.
+      - Modified `plt.idx', `plt.stdResids', and `plotCPUE' to better accomodate CPUE index series.
+      - Modified `plt.stdResids' to better show quantiles in qqnorm plots. (RH 171201)
+  * runSweave.r
+    + Modified functions in `runSweave' and 'run-master.Snw' (RH 171201)
+      - better handle surveys with missing catch-at-age series (surveys no longer need to be ordered by those with c@a first).
+  * plotFuns.r
+    + Removed function `compBmsy' and added a much-evolved version of this function (same name) to package PBStools. (RH 170908)
+
 1.1.0 (2017-08-11)
-  • Modified `resDocSty.sty' for POP 2017 (RH 170801)
-	* Reset fonts to inconsolata zi4 font for ttdefault and winfonts arial for rmdefault and sfdefault.
-	* Added CG's macro for CSAP landscape page.
-	* Reset in-text citation delimiters.
-  • Modified function `runSweaveMCMC.r' for POP 2017 (RH 170607)
-	* Added two new arguments -- `ptype' (for plot type eps or png) and `domeS' (logical: use dome-shaped selectivity?)
-	* Added switch to use MiKTeX's executable `texify' with ptype=="png".
-  • Modified function `runSweaveMCMC.r' for POP 2017 (RH 170607)
-	* Added two new arguments -- `ptype' (for plot type eps or png) and `redo.Graphs' (logical: if T rebuild the figure files)
-	* Added switch to use MiKTeX's executable `texify' with ptype=="png".
-  • Modified function `plotFuns.r' for POP 2017 (RH 170607)
-	* Added `redo.Graphs' as an argument to all plot functions.
-	* Added new function `plotACFs' using stats::acf function.
-  • Modified `run-master.Snw' for POP 2017 (RH 170607)
-	* Added `ptype' to choose between `eps' and `png' image files.
-	* Added `redo.Graphs' to hasten code editing when figures do not need renewing.
-	* Added autocorrelation plots using `acf'
-  • Modified `PBSscape.r' for POP 2017 (RH 170606)
-	* Changed calls to `png' to use arguments units="in" and res=pngres
-	* Disabled labelling of cvpro on plots if cvpro==0
-	* Added calls to `plotACFs' (autocorrelation plots)
-	* Added call to pairs plot with all combos on one page.
-	* Modified `plotSnail' (phase plot) to show to show the position of the 2010 assessment point; also changed plot to u_t-1/u_MSY vs. B_t/u_MSY.
-  • Modified `run-masterMCMC.Snw' for POP 2017 (RH 170606)
-	* Added `ptype' to choose between `eps' and `png' image files.
-	* Added `@rmdome' control  flag to remove lines that report dome-shaped selectivity output.
-	* Saved `currentRes' to `currentRes.rda'   --  useful to have when compiling the final results appendix.
-	* Saved `currentMCMC' to `currentMCMC.rda' --  useful to have when compiling the final results appendix.
-	* Saved `currentProj' to `currentProj.rda' --  useful to have when compiling the final results appendix.
-	* Saved `currentMSY' to `currentMSY.rda'   --  useful to have when compiling the final results appendix.
-	* Disabled copying of MPD figures as code now uses \graphicspath.
-	* Added autocorrelation plots using `acf'
-	* Added new pairs plot with all parameters on one page (rather than 6 per page)
-	* Added new phase (snail) plot to show to show the position of the 2010 assessment point; also changed plot to u_t-1/u_MSY vs. B_t/u_MSY.
-  • Modified `runADMB.r' for POP 2017 (RH 170605)
-	* Fixed a serious flaw (caught during the POP RPR process by us) in the interpretation of cvpro=0:
-		code interpreted it as cvpro=FALSE then started adding iterative re-weighting based on old SDNR method.
-	* Potential problem still exists if user wants to subtract process error, i.e., cvpro < 0:
-		squaring in Francis variance formula only assumes that cvpro is added.
+  * Sweave
+    + Modified `resDocSty.sty' for POP 2017 (RH 170801)
+      - Reset fonts to inconsolata zi4 font for ttdefault and winfonts arial for rmdefault and sfdefault.
+      - Added CG's macro for CSAP landscape page.
+      - Reset in-text citation delimiters.
+    + Modified `run-master.Snw' for POP 2017 (RH 170607)
+      - Added `ptype' to choose between `eps' and `png' image files.
+      - Added `redo.Graphs' to hasten code editing when figures do not need renewing.
+      - Added autocorrelation plots using `acf'
+    + Modified `run-masterMCMC.Snw' for POP 2017 (RH 170606)
+      - Added `ptype' to choose between `eps' and `png' image files.
+      - Added `@rmdome' control  flag to remove lines that report dome-shaped selectivity output.
+      - Saved `currentRes' to `currentRes.rda'   --  useful to have when compiling the final results appendix.
+      - Saved `currentMCMC' to `currentMCMC.rda' --  useful to have when compiling the final results appendix.
+      - Saved `currentProj' to `currentProj.rda' --  useful to have when compiling the final results appendix.
+      - Saved `currentMSY' to `currentMSY.rda'   --  useful to have when compiling the final results appendix.
+      - Disabled copying of MPD figures as code now uses \graphicspath.
+      - Added autocorrelation plots using `acf'
+      - Added new pairs plot with all parameters on one page (rather than 6 per page)
+      - Added new phase (snail) plot to show to show the position of the 2010 assessment point; also changed plot to u_t-1/u_MSY vs. B_t/u_MSY.
+  * R code
+    + Modified function `runSweaveMCMC.r' for POP 2017 (RH 170607)
+      - Added two new arguments -- `ptype' (for plot type eps or png) and `domeS' (logical: use dome-shaped selectivity?)
+      - Added switch to use MiKTeX's executable `texify' with ptype=="png".
+    + Modified function `runSweaveMCMC.r' for POP 2017 (RH 170607)
+      - Added two new arguments -- `ptype' (for plot type eps or png) and `redo.Graphs' (logical: if T rebuild the figure files)
+      - Added switch to use MiKTeX's executable `texify' with ptype=="png".
+    + Modified function `plotFuns.r' for POP 2017 (RH 170607)
+      - Added `redo.Graphs' as an argument to all plot functions.
+      - Added new function `plotACFs' using stats::acf function.
+    + Modified `PBSscape.r' for POP 2017 (RH 170606)
+      - Changed calls to `png' to use arguments units="in" and res=pngres
+      - Disabled labelling of cvpro on plots if cvpro==0
+      - Added calls to `plotACFs' (autocorrelation plots)
+      - Added call to pairs plot with all combos on one page.
+      - Modified `plotSnail' (phase plot) to show to show the position of the 2010 assessment point; also changed plot to u_t-1/u_MSY vs. B_t/u_MSY.
+    + Modified `runADMB.r' for POP 2017 (RH 170605)
+      - Fixed a serious flaw (caught during the POP RPR process by us) in the interpretation of cvpro=0:
+      -  code interpreted it as cvpro=FALSE then started adding iterative re-weighting based on old SDNR method.
+      - Potential problem still exists if user wants to subtract process error, i.e., cvpro < 0:
+      -  squaring in Francis variance formula only assumes that cvpro is added.
 
 1.0.5 (2017-03-28)
-  • Added my `CSAPrefs.bib' file for posterity. (RH 170328)
-  • Updated function `runSweave' to allow for removal of lines in `run-master.Snw' not wanted in ResDoc using code `@rmresdoc'. (RH 170328)
-  • Re-ordered sequence of plots in `run-master.Snw'. (RH 170328)
+  * Sweave
+    + Added my `CSAPrefs.bib' file for posterity. (RH 170328)
+    + Updated function `runSweave' to allow for removal of lines in `run-master.Snw' not wanted in ResDoc using code `@rmresdoc'. (RH 170328)
+    + Re-ordered sequence of plots in `run-master.Snw'. (RH 170328)
 
 1.0.4 (2016-11-30)
-  • Revised function `runSweave' and `run-master.Snw' to allow plots of observed and estimated proportion-ages for commercial catch-age fits to span multiple pages. (RH 161130)
+  * R code
+    + Revised function `runSweave' and `run-master.Snw' to allow plots of observed and estimated proportion-ages for commercial catch-age fits to span multiple pages. (RH 161130)
 
 1.0.3 (2016-11-29)
-  • Added `lattice::' to `trellis.device' in `run-master.Snw' and `run-masterMCMC.Snw' because function is called outside PBSawatea functions. (RH 161129)
-  • Promoted `lattice' in Imports section of DESCRIPTION as `lattice.device' does not seem to be recognised by PBSawatea functions. (RH 161128)
-  • Changed backticks ` in DESCRIPTION to single quotes ' (Kurt Hornik 2016-09-20)
+  * Sweave
+    + Added `lattice::' to `trellis.device' in `run-master.Snw' and `run-masterMCMC.Snw' because function is called outside PBSawatea functions. (RH 161129)
+  * Documentation
+    + Promoted `lattice' in Imports section of DESCRIPTION as `lattice.device' does not seem to be recognised by PBSawatea functions. (RH 161128)
+    + Changed backticks ` in DESCRIPTION to single quotes ' (Kurt Hornik 2016-09-20)
 
 1.0.2 (2016-05-19)
-  • Used `PBSmodelling::view' for setting the method for 'view' when using an AWATEA class. (RH 160519)
-  • Removed function `.flush.cat' as it appears in PBStools. (RH 160519)
+  * R code
+    + Used `PBSmodelling::view' for setting the method for 'view' when using an AWATEA class. (RH 160519)
+    + Removed function `.flush.cat' as it appears in PBStools. (RH 160519)
 
 1.0.1 (2016-05-18)
-  • Cleaned up some more `no visible global function definition' CRANkiness. (RH 160518)
-  • Changed DESCRIPTION and NAMESPACE from Imports PBSmodelling to Depends PBStools, which sucks in PBSmodelling and other functionality. (RH 160512)
+  * Documentation
+    + Cleaned up some more `no visible global function definition' CRANkiness. (RH 160518)
+    + Changed DESCRIPTION and NAMESPACE from Imports PBSmodelling to Depends PBStools, which sucks in PBSmodelling and other functionality. (RH 160512)
 
 1.0.0 (2016-04-06)
-  • Updated the vignette `PBSawateaIntro.Rnw'. (RH 160406)
-  • Updated `resDocSty.sty' to my current version; added the TDS-compliant uarial fonts `uarial.tds.zip' and the bibliography style file `resDoc.bst'. (RH 160504)
-  • Experienced a NAMESPACE epiphany: (RH 160405)
-	In NAMESPACE, package can either be in `import' OR `importFrom', NOT both.
-	But all packages named in `import' AND `importFrom' must appear in DESCRIPTION after `Imports:'.
-	Thanks Uwe Ligges -- <<http://r.789695.n4.nabble.com/Namespace-dependency-not-required-td4481914.html>>
-	Also see <<http://stackoverflow.com/questions/13085481/namespace-dependencies-not-required>>
-  • Imported all namespace functions from `methods', `PBSmodelling', `scape', `plotMCMC', `xtable', and `lattice'. (RH 160405)
-  • Added explicit `importFrom' values for packages `coda' (mcmc), `gplots' (plotCI), and `Hmisc' (Cbind, panel.xYplot). (RH 160405)
-  • Changed package Depends to Imports for: scape, plotMCMC, xtable, gplots, lattice
-  • Switched to semantic versioning and changed DESCRIPTION file (RH 160405)
+  * Documentation
+    + Updated the vignette `PBSawateaIntro.Rnw'. (RH 160406)
+    + Updated `resDocSty.sty' to my current version; added the TDS-compliant uarial fonts `uarial.tds.zip' and the bibliography style file `resDoc.bst'. (RH 160504)
+    + Experienced a NAMESPACE epiphany: (RH 160405)
+      - In NAMESPACE, package can either be in `import' OR `importFrom', NOT both.
+      - But all packages named in `import' AND `importFrom' must appear in DESCRIPTION after `Imports:'.
+      - Thanks Uwe Ligges -- <<http://r.789695.n4.nabble.com/Namespace-dependency-not-required-td4481914.html>>
+      - Also see <<http://stackoverflow.com/questions/13085481/namespace-dependencies-not-required>>
+    + Imported all namespace functions from `methods', `PBSmodelling', `scape', `plotMCMC', `xtable', and `lattice'. (RH 160405)
+    + Added explicit `importFrom' values for packages `coda' (mcmc), `gplots' (plotCI), and `Hmisc' (Cbind, panel.xYplot). (RH 160405)
+    + Changed package Depends to Imports for: scape, plotMCMC, xtable, gplots, lattice
+    + Switched to semantic versioning and changed DESCRIPTION file (RH 160405)
 
 0.14  2015-06-15
-  • Last update to Google Code before transferring pbs-awatea repository to GitHub. (RH 150615)
-  • Added the Awatea inputs for the Redbanded and Yellowtail (incomplete) Rockfish assessments in 2014. (RH 150615)
+  * Documentation
+    + Last update to Google Code before transferring pbs-awatea repository to GitHub. (RH 150615)
+  * Input
+    + Added the Awatea inputs for the Redbanded and Yellowtail (incomplete) Rockfish assessments in 2014. (RH 150615)
 
 0.13  2014-11-23
-  • Modified function `runSweaveMCMC' to fix a bug (non-expansion of gear for Table 2 VB and u) introduced by the Nov 17 fix. (RH 141123)
-  • Fixed a bug in `run-masterMCMC.Snw' that tried to collect estimated mu (selectivity) when mu was not estimated. (RH 141121)
-  • Modified function `runSweaveMCMC' and 'run-masterMCMC.Snw' to handled a bug replacing dummy placeholder `999' with g when g>=10. (RH 141117)
-  • Made changes to accommodate no age data. (RH 141014)
-  • Modified `runSweave.r', `runSweaveMCMC.r', `run-master.Snw', `runADMB.r', `plotFuns.r', and `PBSscape.r' to handle no ageing data; not fully tested. (RH 141113)
-  • Removed argument `awateaPath' from `runSweave' and `runSweaveMCMC' as it is only used in `runADMB'. (RH 141113)
-  • Fixed a bug in subfunction `biteMe' in `runSweave' and `runSweaveMCMC' to properly handle CApos (not just SApos). (RH 141112)
-  • Compressed input files by year into 7z-archives (ASCII files were taking up a lot of space). (RH 141017)
-  • Added in some appendix info to `run-master.Snw' in case the MPD is to be used as an appendix (Rob needed it for YTR). (RH 141006)
-  • Debugged a few things in `run-master.Snw' and `run-masterMCMC.Snw' that were broken for 1-gear situation. (RH 141006)
-  • Transferred code that builds MPD fits to proportions-at-age from body of `plt.mpdGraphs' to new function `plotAges'. (RH 140930)
-  • Revised function `plotIndexNotLattice' to clean up output files and generate PNGs as well as EPSs. (RH 140929)
-  • Changed Table 3 of `run-master.Snw' to a longtable so that it doesn't print off the bottom of the page. (RH 140929)
-  • Fixed a small bug in the weighting subfunction `wfun' in `runADMB' that crashed when calculating variance of a single number. (RH 140929)
-  • Switched dependency from package `scapeMCMC' to `plotMCMC' as Arni now separates Coleraine functions form plotting functions. (RH 140929)
-  • Revised R code and Sweave code extensively to deal with more than one commercial gear type. (RH 140926)
-  • Added vignette to briefly describe the package and past DFO assessments using Awatea. (AME/RH 140826)
-  • Modified function `runSweaveMCMC' to include a new argument `skip.last.year' for compatibility with older 2010 POP 5ABC assessment. (RH 140826)
-  • Modified Sweave master documents `run-master.Snw' and `run-masterMCMC.Snw' for compatibility with older 2010 POP 5ABC assessment. (AME 140825)
-  • Added 2010 POP 5ABC input files. (AME 140825)
+  * R code
+    + Modified function `runSweaveMCMC' to fix a bug (non-expansion of gear for Table 2 VB and u) introduced by the Nov 17 fix. (RH 141123)
+    + Modified function `runSweaveMCMC' and 'run-masterMCMC.Snw' to handled a bug replacing dummy placeholder `999' with g when g>=10. (RH 141117)
+    + Made changes to accommodate no age data. (RH 141014)
+    + Modified `runSweave.r', `runSweaveMCMC.r', `run-master.Snw', `runADMB.r', `plotFuns.r', and `PBSscape.r' to handle no ageing data; not fully tested. (RH 141113)
+    + Removed argument `awateaPath' from `runSweave' and `runSweaveMCMC' as it is only used in `runADMB'. (RH 141113)
+    + Fixed a bug in subfunction `biteMe' in `runSweave' and `runSweaveMCMC' to properly handle CApos (not just SApos). (RH 141112)
+    + Transferred code that builds MPD fits to proportions-at-age from body of `plt.mpdGraphs' to new function `plotAges'. (RH 140930)
+    + Revised function `plotIndexNotLattice' to clean up output files and generate PNGs as well as EPSs. (RH 140929)
+    + Fixed a small bug in the weighting subfunction `wfun' in `runADMB' that crashed when calculating variance of a single number. (RH 140929)
+    + Revised R code and Sweave code extensively to deal with more than one commercial gear type. (RH 140926)
+    + Modified function `runSweaveMCMC' to include a new argument `skip.last.year' for compatibility with older 2010 POP 5ABC assessment. (RH 140826)
+  * Sweave
+    + Fixed a bug in `run-masterMCMC.Snw' that tried to collect estimated mu (selectivity) when mu was not estimated. (RH 141121)
+    + Added in some appendix info to `run-master.Snw' in case the MPD is to be used as an appendix (Rob needed it for YTR). (RH 141006)
+    + Debugged a few things in `run-master.Snw' and `run-masterMCMC.Snw' that were broken for 1-gear situation. (RH 141006)
+    + Changed Table 3 of `run-master.Snw' to a longtable so that it doesn't print off the bottom of the page. (RH 140929)
+    + Modified Sweave master documents `run-master.Snw' and `run-masterMCMC.Snw' for compatibility with older 2010 POP 5ABC assessment. (AME 140825)
+  * Input
+    + Compressed input files by year into 7z-archives (ASCII files were taking up a lot of space). (RH 141017)
+    + Added 2010 POP 5ABC input files. (AME 140825)
+  * Documentation
+    + Switched dependency from package `scapeMCMC' to `plotMCMC' as Arni now separates Coleraine functions form plotting functions. (RH 140929)
+    + Added vignette to briefly describe the package and past DFO assessments using Awatea. (AME/RH 140826)
 
 0.12  2013-11-12
-  • SGR and ROL assessments finished. Cleaned up code and Rd files for incorporation into R-package. (RH 131112)
-  • Sweave MCMC can now take in tex files of MPD results (that user prepares by extracting pieces from run-master.Snw build). (RH 131104)
-  • Added a few more flags to determine if the Sweave file is meant to be a working paper or a ResDoc (`@rmresdoc` used for both). (RH 131001)
-  • Revised the Sweave MCMC to allow the inclusion of a discussion file specific to a single run (e.g., `resultsMCMC-run22.tex`). (RH 130930)
-  • More updates and debugging, mostly for MCMC stuff. (RH 130927)
-  • Debugged problems in Sweave MCMC. (RH 130920)
-  • Revised `run-MasterSweave.Snw` and `runSweaveMCMC.r`. (RH 130916)
-  • Revised `run-Master.Snw` and various functions. (RH 130912)
-  • Revised `runSweave` and various other functions to work with 2 sexes; improved some of the output figures. (RH 130906)
-  • Revised extensively various functions to deal flexibly with one-sex models and optional CPUE series. (RH 130905)
-	Recoding occurred in `runADMB.r`, `runSweave.r`, `PBSscape.r`, and `run-Master.tex`.
+  * Documentation
+    + SGR and ROL assessments finished. Cleaned up code and Rd files for incorporation into R-package. (RH 131112)
+  * Sweave
+    + Sweave MCMC can now take in tex files of MPD results (that user prepares by extracting pieces from run-master.Snw build). (RH 131104)
+    + Added a few more flags to determine if the Sweave file is meant to be a working paper or a ResDoc (`@rmresdoc` used for both). (RH 131001)
+    + Revised the Sweave MCMC to allow the inclusion of a discussion file specific to a single run (e.g., `resultsMCMC-run22.tex`). (RH 130930)
+    + More updates and debugging, mostly for MCMC stuff. (RH 130927)
+    + Debugged problems in Sweave MCMC. (RH 130920)
+    + Revised `run-MasterSweave.Snw` and `runSweaveMCMC.r`. (RH 130916)
+    + Revised `run-Master.Snw` and various functions. (RH 130912)
+  * R code
+    + Revised `runSweave` and various other functions to work with 2 sexes; improved some of the output figures. (RH 130906)
+    + Revised extensively various functions to deal flexibly with one-sex models and optional CPUE series. (RH 130905)
+      - Recoding occurred in `runADMB.r`, `runSweave.r`, `PBSscape.r`, and `run-Master.tex`.
 
 0.11  2013-02-20
-  • Updated just for compatibility with R-3.0.0. (RH 130419)
-  • Revised functions `importProjRec` and `plt.mcmcGraphs`; revised `run-masterMCMC.Snw`. (AME 130220)
+  * Documentation
+    + Updated just for compatibility with R-3.0.0. (RH 130419)
+  * R code
+    + Revised functions `importProjRec` and `plt.mcmcGraphs`; revised `run-masterMCMC.Snw`. (AME 130220)
 
 0.10  2012-10-16  RH
-  • Revised function 'msyCalc' to report the convergence numbers. (AME 121016)
-  • Updated function 'readAD' to handle inactive data identified by "###" as opposed to comments identified by "#". (RH 121016)
-  • Updated functions 'plt.mpdGraphs' and 'plt.mcmcGraphs' (e.g., lower panel of pairs plot reports the correlation coefficient). (AME 121015)
-  • Updated function 'runSweaveMCMC' and 'run-masterMCMC.Snw' to accommodate variable numbers of pairs plots. (RH 120910)
-  • Tweaked margins for figures in function 'plotIndexNotLattice'; updated Rd files. (RH 120906)
-  • Updated functions in R files 'runSweave.r', 'runSweaveMCMC.r', and 'PBSscape.r';
-	separated menu functions from 'PBSscape.r' to 'menuFuns.r'. (RH 120821)
-  • Updated Sweave files 'run-master.Snw' and 'run-masterMCMC.Snw'. (120821)
-  • Updated functions 'plt.mcmcGraphs' and 'plotSnail' to work more generally. (AME 120817)
-  • Cleaned and debugged 'run-masterMCMC.Snw' further; still not finished for fixed M & H options. (AME 120817)
-  • Updated 'panel.curve' in  function 'plotDensPOPparsPrior'. (AME 120816)
-  • Re-wrote the function that selects and generates prior distributions using 'switch'. (AME 120815)
-  • Fixed bug in function 'plotVBcatch'. (AME 120815)
-  • Debugged 'run-masterMCMC.Snw' up to prior functions section (AME will take it from there). (RH 120814)
-  • Resolved a minor bug in the function 'findTarget' which crashed when number of projection years were too short to calculate generation-time reference criteria. (120814)
-  • Added new function 'importEva' to import the Hessian eigenvalues from an Awatea file, usually called 'Awatea.eva'. (RH 120810)
-  • Updated 'plotBars' to determine start year from results file. (RH 120810)
-  • Added new function 'importLik' to import an Awatea likelihood file, usually called 'likelihood.dat'. (RH 120810)
-  • Added 'input' directory for the Awatea input files used; format = spp-area-run.txt. (RH 120802)
-  • Modified 'runADMB' to handle situations when 'Awatea.cor' and 'Awatea.std' are not available ( when -nohess is specified in MPD call). (RH 120802)
-  • Added new function 'plotBars' to illustrate how an age composition compares with an equilibrium age structure. (RH 120801)
-  • Modified 'importRes' to import virgin vulnerable and spawning biomass values. (RH 120731)
-  • Added new function 'importCor' to import the Awatea correlation file. (RH 120730)
-  • Added new functions 'importPar' and 'importStd'  to import all and estimated parameters, respectively. (RH 120727)
-  • Updated AWATEAdata class (not thoroughly tested yet). (RH 120727)
-  • Updated 'runSweave' to handle surveys with missing age composition data. (RH 120726)
-  • Updated 'runADMB' to find the system exectuable file 'Awatea.exe' using the 'awateaPath' argument. (RH 120725)
-  • Updated the 'runMPD' wrapper for 'runSweave'. (RH 120725)
-  • Updated 'runSweave' and 'run-Master.Snw' to be more flexible wrt the number of surveys. (120719)
-  • Updated 'runADMB', 'runSweave', 'runSweaveMCMC' to deal with POP in WCVI and WCHG. (RH 120718)
-  • Implemented Brian Ripley's suggestion to remove NOTES about 'no visible binding for global variable xxx':
-	if(getRversion() >= "2.15.1") globalVariables(names=c(...), package="PBSawatea") (RH 120717)
+  * R code
+    + Revised function 'msyCalc' to report the convergence numbers. (AME 121016)
+    + Updated function 'readAD' to handle inactive data identified by "###" as opposed to comments identified by "#". (RH 121016)
+    + Updated functions 'plt.mpdGraphs' and 'plt.mcmcGraphs' (e.g., lower panel of pairs plot reports the correlation coefficient). (AME 121015)
+    + Updated function 'runSweaveMCMC' and 'run-masterMCMC.Snw' to accommodate variable numbers of pairs plots. (RH 120910)
+    + Tweaked margins for figures in function 'plotIndexNotLattice'; updated Rd files. (RH 120906)
+    + Updated functions in R files 'runSweave.r', 'runSweaveMCMC.r', and 'PBSscape.r';
+      - separated menu functions from 'PBSscape.r' to 'menuFuns.r'. (RH 120821)
+    + Updated functions 'plt.mcmcGraphs' and 'plotSnail' to work more generally. (AME 120817)
+    + Updated 'panel.curve' in  function 'plotDensPOPparsPrior'. (AME 120816)
+    + Re-wrote the function that selects and generates prior distributions using 'switch'. (AME 120815)
+    + Fixed bug in function 'plotVBcatch'. (AME 120815)
+    + Resolved a minor bug in the function 'findTarget' which crashed when number of projection years were too short to calculate generation-time reference criteria. (120814)
+    + Added new function 'importEva' to import the Hessian eigenvalues from an Awatea file, usually called 'Awatea.eva'. (RH 120810)
+    + Updated 'plotBars' to determine start year from results file. (RH 120810)
+    + Added new function 'importLik' to import an Awatea likelihood file, usually called 'likelihood.dat'. (RH 120810)
+    + Modified 'runADMB' to handle situations when 'Awatea.cor' and 'Awatea.std' are not available ( when -nohess is specified in MPD call). (RH 120802)
+    + Added new function 'plotBars' to illustrate how an age composition compares with an equilibrium age structure. (RH 120801)
+    + Modified 'importRes' to import virgin vulnerable and spawning biomass values. (RH 120731)
+    + Added new function 'importCor' to import the Awatea correlation file. (RH 120730)
+    + Added new functions 'importPar' and 'importStd'  to import all and estimated parameters, respectively. (RH 120727)
+    + Updated AWATEAdata class (not thoroughly tested yet). (RH 120727)
+    + Updated 'runSweave' to handle surveys with missing age composition data. (RH 120726)
+    + Updated 'runADMB' to find the system exectuable file 'Awatea.exe' using the 'awateaPath' argument. (RH 120725)
+    + Updated the 'runMPD' wrapper for 'runSweave'. (RH 120725)
+    + Updated 'runSweave' and 'run-Master.Snw' to be more flexible wrt the number of surveys. (120719)
+    + Updated 'runADMB', 'runSweave', 'runSweaveMCMC' to deal with POP in WCVI and WCHG. (RH 120718)
+  * Sweave
+    + Updated Sweave files 'run-master.Snw' and 'run-masterMCMC.Snw'. (120821)
+    + Cleaned and debugged 'run-masterMCMC.Snw' further; still not finished for fixed M & H options. (AME 120817)
+    + Debugged 'run-masterMCMC.Snw' up to prior functions section (AME will take it from there). (RH 120814)
+    + Added 'input' directory for the Awatea input files used; format = spp-area-run.txt. (RH 120802)
+  * Documentation
+    + Implemented Brian Ripley's suggestion to remove NOTES about 'no visible binding for global variable xxx':
+      - if(getRversion() >= "2.15.1") globalVariables(names=c(...), package="PBSawatea") (RH 120717)
 
 0.09  2011-12-20  RH
-  • Added documentation for AWATEAdata S4 class; cleaned up mismatches caught by Rcheck. (RH 111220)
-  • Added new function 'compBmsy' to compare biomass posteriors relative to Bmsy. (RH 111219)
-  • Revised function 'plotBox' to handle vector data not in list format. (RH 111215)
-  • Updated function 'compB0' to allow the choice of reference criteria and points for plotting. (RH 111215)
+  * Documentation
+    + Added documentation for AWATEAdata S4 class; cleaned up mismatches caught by Rcheck. (RH 111220)
+  * R code
+    + Added new function 'compBmsy' to compare biomass posteriors relative to Bmsy. (RH 111219)
+    + Revised function 'plotBox' to handle vector data not in list format. (RH 111215)
+    + Updated function 'compB0' to allow the choice of reference criteria and points for plotting. (RH 111215)
 
 0.08  2011-11-09  RH
-  • R-2.14.0 requires namespace and loading via '.onLoad' (RH 111109)
+  * Documentation
+    + R-2.14.0 requires namespace and loading via '.onLoad' (RH 111109)
 
 0.07  2011-07-20  RH
-  • Revised function 'compB0' to satisfy AME's 'attention to detail'. (RH 110720)
-  • Added new function 'tabSAR' to create output tables for the SAR (Science Advisory Report). (RH 110718)
-  • Added new function 'compB0' to compare various reference points relative to B0. (RH 110713)
-  • Added modified version of 'boxplot' called 'plotBox' to use quantiles in whiskers. (RH 110713)
+  * R code
+    + Revised function 'compB0' to satisfy AME's 'attention to detail'. (RH 110720)
+    + Added new function 'tabSAR' to create output tables for the SAR (Science Advisory Report). (RH 110718)
+    + Added new function 'compB0' to compare various reference points relative to B0. (RH 110713)
+    + Added modified version of 'boxplot' called 'plotBox' to use quantiles in whiskers. (RH 110713)
 
 0.06  2011-07-11  RH
-  • Added the PDF summary of package functions. (RH 110711)
-  • Added support document 'Latex.pdf' to .../trunk/documentation (not in package). (RH 110711)
-  • Added documentation for new functions 'srFun' and 'importProjRec'. (RH 110711)
-  • Updated versions of 'ymrScape.r' and 'ymrrun-masterMCMC.Snw' (AME 110708)
+  * Documentation
+    + Added the PDF summary of package functions. (RH 110711)
+    + Added support document 'Latex.pdf' to .../trunk/documentation (not in package). (RH 110711)
+    + Added documentation for new functions 'srFun' and 'importProjRec'. (RH 110711)
+  * R code
+    + Updated versions of 'ymrScape.r' and 'ymrrun-masterMCMC.Snw' (AME 110708)
 
 0.05  2011-07-04  RH
-  • Added Rd documentation: (RH 110705)
-	'plt.ssbVbCatch', 'plt.stdResids', 'PBSawatea'
-  • Added Rd documentation: (RH 110704)
-	'importMCMC.ddiff', 'importProj.ddiff', 'msyCalc', 'refPoints', 'refPointsB0',
-	'plotSnail', 'plotDensPOPparsPrior', 'plotBVBnorm', 'plotCPUE', 'plt.mpdGraphs',
-	'plt.mcmcGraphs', 'plt.quantBio', 'plt.quantBioBB0', 'plt.numR'
-  • Added Rd documentation: (RH 110630)
-	'plt.ageResidsPOP', 'plt.ageResidsqqPOP', 'plt.yearResidsPOP', 'plt.cohortResids',
-	'plt.allTraces', 'plt.expRate', 'plt.idx', 'plotIndexNotLattice', 'plotTracePOP',
-	'plotChains', 'cquantile', 'cquantile.vec', 'plotDensPOP', 'plotDensPOPpars',
-	'get.resFile', 'mainMenu', 'loadMenu', 'mpdMenu', 'mcmcMenu', 'utilMenu'
-  • Added a number of support documents to '/tunk/documentation'. (RH 110630)
-  • Added functions 'plotTracePOP', 'cquantile', 'plotDensPOP', and 'plotDensPOPpars'. (RH 110630)
-  • Removed calls to runSweave that should not have been active. (RH 110630)
+  * Documentation
+    + Added Rd documentation: (RH 110705)
+      - 'plt.ssbVbCatch', 'plt.stdResids', 'PBSawatea'
+    + Added Rd documentation: (RH 110704)
+      - 'importMCMC.ddiff', 'importProj.ddiff', 'msyCalc', 'refPoints', 'refPointsB0',
+      - 'plotSnail', 'plotDensPOPparsPrior', 'plotBVBnorm', 'plotCPUE', 'plt.mpdGraphs',
+      - 'plt.mcmcGraphs', 'plt.quantBio', 'plt.quantBioBB0', 'plt.numR'
+    + Added Rd documentation: (RH 110630)
+      - 'plt.ageResidsPOP', 'plt.ageResidsqqPOP', 'plt.yearResidsPOP', 'plt.cohortResids',
+      - 'plt.allTraces', 'plt.expRate', 'plt.idx', 'plotIndexNotLattice', 'plotTracePOP',
+      - 'plotChains', 'cquantile', 'cquantile.vec', 'plotDensPOP', 'plotDensPOPpars',
+      - 'get.resFile', 'mainMenu', 'loadMenu', 'mpdMenu', 'mcmcMenu', 'utilMenu'
+    + Added a number of support documents to '/tunk/documentation'. (RH 110630)
+  * R code
+    + Added functions 'plotTracePOP', 'cquantile', 'plotDensPOP', and 'plotDensPOPpars'. (RH 110630)
+    + Removed calls to runSweave that should not have been active. (RH 110630)
 
 0.04  2011-06-29  RH
-  • Added Rd documentation: (RH 110629)
-	'plotB2', 'plotBmcmcPOP', 'plotVBcatch', 'plotVBnorm', 'plotRmcmcPOP', 'plotIndex2',
-	'allEqual', 'close.allWin', 'graphics', 'panLab', 'panLegend', 
-	'calc.projExpect', 'calc.projExpect2', 'calc.projProbs', 'calc.projProbs2', 'calc.refProbs',
-	'calc.refVal', 'getYrIdx', 'out.pmTables', 'stdRes.CA', 'stdRes.index', 'MAfun2'
+  * Documentation
+    + Added Rd documentation: (RH 110629)
+      - 'plotB2', 'plotBmcmcPOP', 'plotVBcatch', 'plotVBnorm', 'plotRmcmcPOP', 'plotIndex2',
+      - 'allEqual', 'close.allWin', 'graphics', 'panLab', 'panLegend', 
+      - 'calc.projExpect', 'calc.projExpect2', 'calc.projProbs', 'calc.projProbs2', 'calc.refProbs',
+      - 'calc.refVal', 'getYrIdx', 'out.pmTables', 'stdRes.CA', 'stdRes.index', 'MAfun2'
 
 0.03  2011-06-28  RH
-  • Added Rd documentation for functions 'findTarget', 'importCol2', 'load.allResFiles'. (RH 110628)
-  • Added AME's suite of scape functions 'ymrScape.r' (no Rd files). (RH 110628)
-  • Transferred function 'makeErrMat' from package PBSfishery to PBSawatea. (RH 110628)
-  • Added functions 'runSweaveMCMC' and 'runMCMC'. (RH 110628)
-  • Added AME's Sweave files 'ymrrun-masterMCMC.Snw' and 'ymrrun-masterMCMC20yrProjs.Snw' to the 'inst/snw' directory. (RH 110628)
+  * Documentation
+    + Added Rd documentation for functions 'findTarget', 'importCol2', 'load.allResFiles'. (RH 110628)
+  * R code
+    + Added AME's suite of scape functions 'ymrScape.r' (no Rd files). (RH 110628)
+    + Transferred function 'makeErrMat' from package PBSfishery to PBSawatea. (RH 110628)
+    + Added functions 'runSweaveMCMC' and 'runMCMC'. (RH 110628)
+  * Sweave
+    + Added AME's Sweave files 'ymrrun-masterMCMC.Snw' and 'ymrrun-masterMCMC20yrProjs.Snw' to the 'inst/snw' directory. (RH 110628)
 
 0.02  2011-06-27  RH
-  • Added functions 'runSeave' and 'runMPD'. (RH 110627)
-  • Added AME's Sweave file 'ymrrun-master.Snw' to the 'inst/snw' directory. (RH 110627)
+  * R code
+    + Added functions 'runSeave' and 'runMPD'. (RH 110627)
+  * Sweave
+    + Added AME's Sweave file 'ymrrun-master.Snw' to the 'inst/snw' directory. (RH 110627)
 
 0.01  2011-06-24  RH
-  • Added functions 'importRes', 'runADMB', 'readAD', and 'reweight'; set Methods for 'view', 'fix', and 'write'. (RH 110624)
+  * R code
+    + Added functions 'importRes', 'runADMB', 'readAD', and 'reweight'; set Methods for 'view', 'fix', and 'write'. (RH 110624)

@@ -21,34 +21,37 @@ runADMB(
 )
 }
 \arguments{
-  \item{filename.ext}{\emph{character} file name including its extension.}
-  \item{wd}{\emph{character} string specifying the working directory, if different from the current working directory.}
-  \item{strSpp}{\emph{character} string 3-letter code of the species.}
-  \item{runNo}{\emph{numeric}: the model run number.}
-  \item{rwtNo}{\emph{numeric}: the reweight number.}
-  \item{doMPD}{\emph{logical}: if \code{TRUE}, perform an MPD analysis.}
-  \item{N.reweight}{\emph{numeric}: the number of reweights to perform in the MPD analysis.}
-  \item{cvpro}{\emph{numeric/logical}: CV process error added to CV observation error: \eqn{c_t = \sqrt{c_o^2 + c_p^2}}; \cr
-    if \code{FALSE} index CVs are reweighted using the standard deviation of normalized residuals.}
-  \item{mean.age}{\emph{logical}: if \code{TRUE}, use mean-age residuals to reweight
+  \item{filename.ext}{\code{character} file name including its extension.}
+  \item{wd}{\code{character} string specifying the working directory, if different from the current working directory.}
+  \item{strSpp}{\code{character} string 3-letter code of the species.}
+  \item{runNo}{\code{numeric}: the model run number.}
+  \item{rwtNo}{\code{numeric}: the reweight number.}
+  \item{doMPD}{\code{logical}: if \code{TRUE}, perform an MPD analysis.}
+  \item{N.reweight}{\code{numeric}: the number of reweights to perform in the MPD analysis.}
+  \item{cvpro}{\code{numeric/logical}: CV process error added to CV observation error: \eqn{c_t = \sqrt{c_o^2 + c_p^2}}; \cr
+    if \code{cvpro} vector is shorter than \code{Nsurvey + Ncpue}, 
+    it is repeated to match the number of survey series and CPUE series used to index abundance.\cr
+    If \code{cvpro==FALSE}, index CVs are reweighted using the standard deviation of normalized residuals;\cr
+    note that \code{cvpro=0} is not the same as \code{cvpro=FALSE}.}
+  \item{mean.age}{\code{logical}: if \code{TRUE}, use mean-age residuals to reweight
     the effective \eqn{N} for the age composition data (see Francis 2011); \cr
     if \code{FALSE}, reweight \eqn{N} using \eqn{ \Sigma (P(1-P)) / \Sigma (O-P)^2 }, 
     where \eqn{O} = observed proportions-at age and \eqn{P} = predicted/fitted proportions-at-age.}
-  \item{doMCMC}{\emph{logical}: if \code{TRUE}, perform an MCMC analysis.}
-  \item{mcmc}{\emph{numeric}: number of MCMC iterations to perform.}
-  \item{mcsave}{\emph{numeric}: frequency of MCMC iterations to save.}
-  \item{ADargs}{\emph{character}: additional arguments for a call to Awatea.}
-  \item{verbose}{\emph{logical}: if \code{TRUE}, spew Awatea messages to the R console.}
-  \item{doMSY}{\emph{logical}: if \code{TRUE}, perform an MSY analysis.}
-  \item{msyMaxIter}{\emph{numeric}: maximum iterations for the MSY calculations.}
-  \item{msyTolConv}{\emph{numeric}: tolerance for convergence in the MSY calculations.}
-  \item{endStrat}{\emph{numeric}: maximum fishing mortality for the MSY analysis.}
-  \item{stepStrat}{\emph{numeric}: fishing mortality step size for the MSY analysis.}
-  \item{delim}{\emph{character} that delimits the components of the \code{filename} prefix.}
-  \item{clean}{\emph{logical}: if \code{TRUE}, clean all Awatea files before running an MPD analysis.}
-  \item{locode}{\emph{logical}: if \code{TRUE}, source local code located at \code{codePath}.}
-  \item{awateaPath}{\emph{character}: system path to the \code{Awatea.exe} executable (using path delimiter `/`).}
-  \item{codePath}{\emph{character}: system path to \pkg{PBSawatea} source code (using path delimiter `/`).}
+  \item{doMCMC}{\code{logical}: if \code{TRUE}, perform an MCMC analysis.}
+  \item{mcmc}{\code{numeric}: number of MCMC iterations to perform.}
+  \item{mcsave}{\code{numeric}: frequency of MCMC iterations to save.}
+  \item{ADargs}{\code{character}: additional arguments for a call to Awatea.}
+  \item{verbose}{\code{logical}: if \code{TRUE}, spew Awatea messages to the R console.}
+  \item{doMSY}{\code{logical}: if \code{TRUE}, perform an MSY analysis.}
+  \item{msyMaxIter}{\code{numeric}: maximum iterations for the MSY calculations.}
+  \item{msyTolConv}{\code{numeric}: tolerance for convergence in the MSY calculations.}
+  \item{endStrat}{\code{numeric}: maximum fishing mortality for the MSY analysis.}
+  \item{stepStrat}{\code{numeric}: fishing mortality step size for the MSY analysis.}
+  \item{delim}{\code{character} that delimits the components of the \code{filename} prefix.}
+  \item{clean}{\code{logical}: if \code{TRUE}, clean all Awatea files before running an MPD analysis.}
+  \item{locode}{\code{logical}: if \code{TRUE}, source local code located at \code{codePath}.}
+  \item{awateaPath}{\code{character}: system path to the \code{Awatea.exe} executable (using path delimiter `/`).}
+  \item{codePath}{\code{character}: system path to \pkg{PBSawatea} source code (using path delimiter `/`).}
   \item{\dots}{additional arguments (not currently used for any purpose).}
 }
 \details{

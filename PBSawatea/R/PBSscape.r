@@ -1,7 +1,10 @@
-#PBSscape-------------------------------2013-09-13
+#PBSscape-------------------------------2017-12-01
 #  Modified functions from Arni Magnussen's 
 #  packages 'scape' and 'plotMCMC'
 #-------------------------------------------AME/RH
+## Force this globally
+quants3 = c(0.05,0.50,0.95)
+quants5 = c(0.05,0.25,0.50,0.75,0.95)
 
 #---History---------------------------------------
 # PBSscape.r - originally created from `ymrscape` for POP 2012.
@@ -784,83 +787,13 @@ plotB2 <- function (model, what="d", series=NULL, years=NULL, axes=TRUE,
 # obj should be the specficic MCMC posterior by year (so just a data.frame),
 #  e.g. currentMCMC$B.  currentRes1 is local currentRes.
 #----------------------------------------------AME
-# RH -- This function does not appear to get called and is dysfunctional anyway.
-plotBmcmcPOP=function(obj, currentRes1=currentRes,
-   p=c(0.025,0.25,0.5,0.75,0.975),
-   xyType="quantBox",
-   lineType=c(3,2,1,2,3),
-   refLines=NULL, xLim=NULL, yLim=NULL,
-   userPrompt=FALSE, save=TRUE, xLab=c(1939, 1939, 1939),
-   yLab=c(10000, 70000, 170000),
-   textLab=c("catch", "spawning", "vulnerable"),
-   yaxis.by=10000, tcl.val=-0.2, ...)
-   # xLab - x position for label, etc.
-{
-  # See plt.quantBio if want other xyTypes, as took out here:
-  plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim,... ) 
-    {
-    if ( new )
-     plot( xLim,yLim, type="n", xlab="Year",ylab="Biomass or catch (t)" )
-
-    yrs <- as.numeric(dimnames(obj)[[2]])
-
-    # Quantile boxplots - assumes five quantiles.
-    if ( xyType=="quantBox" )
-    {
-      delta <- 0.25
-      # Draw the outer whiskers.
-      segments( yrs,obj[1,], yrs,obj[5,], lty=1,col=1 )
-      # Overlay the box.
-      for ( i in 1:length(yrs) )
-        rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i],... )
-      # Add the median.
-      segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col=1 )
-    }
-  }
-
-  # Plot quantiles of biomass using the posterior densities.
-
-  yrs1 <- NULL
-  yrs2 <- NULL
-  result1 <- NULL
-  result2 <- NULL
-
-  # Calculate the quantiles of the reconstructed biomass.
-  result1 <- apply( obj,2,quantile,probs=p )
-  yrs1 <- as.numeric(dimnames(result1)[[2]])
-
-  if ( is.null(yLim) )
-    {
-      yLim <- c(0, max(c(max(result1), max(currentRes1$B$VB)))) #range(result1)
-      xLim=range(yrs1)
-    }
-  # xLegPos=xLeg*diff(xLim)+xLim[1]    # position of xLeg
-  # yLegPos=yLeg*diff(yLim)+yLim[1]
-
-  plt.qB( result1,xLim=xLim,yLim=yLim, xyType=xyType )
-#browser();return()
-  #RH -- following two lines make no sense and would not work if they did make sense
-  #points(obj$B$Year, currentRes1$B$Y.1, type="h", lwd=3)   # catch
-  #points(obj$B$Year, currentRes1$B$VB, type="p")         # vuln biom
-  text( xLab, yLab, textLab, pos=4, offset=0)
-  axis(1, at=intersect(seq(1900,3000,5),xLim[1]:xLim[2]), tcl=tcl.val, labels=FALSE)
-  axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
-
-  # legend(xLegPos, yLegPos, c("Vulnerable", "Spawning", "Catch"), bty="n")
-  # points(xLegPos-2, yLegPos, type="p")
-    # mtext( side=1, line=2, cex=1.0, "Year" )
-    # mtext( side=2, line=2, cex=1.0, "Biomass" )
-  # }
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBmcmcPOP
-#plotBmcmcPOP(currentMCMC$B,currentRes) # RH -- activate for debugging only
 
 #plotVBcatch----------------------------2014-09-22
 # AME adding, based on plotBmcmcPOP (tweaking some)
 #  currentMCMC$B.  currentRes1 is local currentRes.
 #-------------------------------------------AME/RH
 plotVBcatch=function(obj, currentRes1=currentRes,
-   p=c(0.025,0.25,0.5,0.75,0.975),
+   p = get("quants5"),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -951,7 +884,7 @@ plotVBcatch=function(obj, currentRes1=currentRes,
 #  xLab - x position for label, etc.
 #-------------------------------------------AME/RH
 plotBVBnorm=function(mcmcObj,
-   p=c(0.025,0.25,0.5,0.75,0.975),
+   p = get("quants5"),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -1001,7 +934,7 @@ plotBVBnorm=function(mcmcObj,
 # Adding yLab and then using for exploitation plot also
 #----------------------------------------------AME
 plotRmcmcPOP=function(obj, 
-   p=c(0.025,0.25,0.5,0.75,0.975),
+   p = get("quants5"),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -1956,17 +1889,20 @@ plt.expRate <- function( obj, yLim=c(0,0.5), xLim=c(1954,2005) )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.expRate
 
 
-#plt.idx--------------------------------2014-09-15
+#plt.idx--------------------------------2017-12-01
 # AME doing postscript for POP. Adapting to five surveys for YMR
 #-------------------------------------------AME/RH
 plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=400, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
 {
-	seriesList <- sort( unique( obj$Series ) )
-	nseries=length(seriesList)
-	surveyFigName=paste0("survRes",ssnames)
-	surveyFigName=gsub(" ","",surveyFigName)
-	surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
+	sType = substring(rev(as.character(substitute(obj)))[1],1,1)
+	seriesList = sort( unique( obj$Series ) )
+	nseries    = length(seriesList)
+	surveyFigName = paste0(ifelse(sType=="S","surv",ifelse(sType=="C","cpue","unkn")),"Res",ssnames)
+	surveyFigName = gsub(" ","",surveyFigName)
+#browser();return()
+	surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)[[paste0(sType,"names")]]
+
 	for ( i in 1:nseries )
 	{
 		idx <- seriesList[i]==obj$Series
@@ -1980,8 +1916,6 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 			mtext( side=3, line=0, cex=1.0, outer=TRUE, surveyHeadName[i])
 			dev.off()
 		}
-		# if ( !is.null(save) )
-		#   savePlot( paste(save,i,sep=""), type="png" )
 	}
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.idx
@@ -1993,7 +1927,7 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 #-------------------------------------------AME/RH
 plotIndexNotLattice <- function(obj, main="", save=NULL,
    bar=1.96, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=400, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
 {
 	cvcol="slategrey"
 	objSurv=obj$Survey; objCPUE=obj$CPUE
@@ -2175,7 +2109,7 @@ plotChains=function (mcmc, nchains=3, pdisc=0.1,
    cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8, las=0, 
    tck=0.5, tick.number=5, lty.trace=1, lwd.trace=1, col.trace="grey", 
    lty.median=1, lwd.median=1, col.median="black", lty.quant=2, lwd.quant=1, 
-   col.quant="black", plot=TRUE, probs=c(0.025, 0.5, 0.975), ...)  # AME probs
+   col.quant="black", plot=TRUE, probs=get("quants3"), ...)  # AME probs
 {
 	panel.trace <- function(x, y, ...) {
 
@@ -2251,56 +2185,62 @@ plotChains=function (mcmc, nchains=3, pdisc=0.1,
 #plotChains(mcmc=P,axes=TRUE,between=list(x=0.15,y=0.2),col.trace=c("green","red","blue"),xlab="Sample",ylab="Cumulative Frequency")
 
 
-# Plotting CPUE and fit with error bars, copying plotIndexNotLattice
-# from above.
-plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
-{                            # obj=currentRes$CPUE
-  seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
-  nseries=length(seriesList)
-  # surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
-  surveyHeadName=c("CPUE")
+## Plotting CPUE and fit with error bars, copying plotIndexNotLattice from above.
+## obj=currentRes$CPUE
+## last modified: RH 171130
+##-------------------------
+plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
+{
+	seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
+	nseries=length(seriesList)
+	# surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
+	surveyHeadName=c("CPUE")
 	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
-  postscript("CPUEser.eps",
-        height=switch(nseries,5,8,9), width=6.0,
-        horizontal=FALSE,  paper="special")   # height was 6 for POP
-  par(mfrow=c(nseries,1),mai=c(0.75,0.75,0,0.1),omi=c(0,0,0.25,0),mgp=c(2,.75,0))
-  # par(mai=c(0.25, 0.5, 0.3, 0.2)) # JAE changed  for each figure was for POP 0.45, 0.5, 0.3, 0.2
-  # par(omi=c(0.45,0.1,0,0))  # Outer margins of whole thing, inch
-  yrTicks=as.numeric( obj$Year)
-   
-  for ( i in 1:nseries )
-  {
-    ii=Nsurv + i  # to index the CPUE cvpro
-    idx <- seriesList[i]==obj$Series
-    seriesVals=obj[idx,]
-    # seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
-    seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
-    seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
-    # browser(); return()
-    yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
-    # yearsPlot=min(yearsnotNA):max(yearsnotNA)
-    xLim=range(yearsnotNA)
-    if(i==1)
-      xLimAll=xLim    # range to use in next plot
-    xLimAll=range(xLim, xLimAll)    # range to use in next plot
-    #if(is.null(yLim))     
-    yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
-    # postscript(surveyFigName[i],  height=4, width=3.2,
-    #     horizontal=FALSE,  paper="special")
-    #gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-    plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-           li=seriesVals$Lo, xlim=xLim, ylim=yLim, xlab="Year",
-           ylab=paste("CPUE index:",seriesList[i]), gap=0, pch=19)
-         # restrict years for plot, does error bars
-    lines(seriesVals$Year, seriesVals$Fit, lwd=2)
-    axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-    if (is.numeric(cvpro[ii]) && round(cvpro[ii],5)!=0)
-       addLabel(0.95,0.95,paste("+ CV process error ",cvpro[ii],sep=""),adj=c(1,0),cex=0.8,col="slategrey")
-    # mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
-    # if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
-    # if(i==5)  mtext(side=1, line=0, cex=1, outer=TRUE, "Year")
-  }                         # cex was 0.8 for POP
-  dev.off()
+	pwidth=6.0;  pheight=switch(nseries,5,8,9)
+	for (p in ptypes) {
+		pname = "CPUEser"
+		if (p=="eps") postscript(paste0(pname,".eps"), width=pwidth, height=pheight, horizontal=FALSE,  paper="special", onefile=FALSE)
+		else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=pwidth, height=pheight)
+		par(mfrow=c(nseries,1),mai=c(0.75,0.75,0,0.1),omi=c(0,0,0.25,0),mgp=c(2,.75,0))
+		# par(mai=c(0.25, 0.5, 0.3, 0.2)) # JAE changed  for each figure was for POP 0.45, 0.5, 0.3, 0.2
+		# par(omi=c(0.45,0.1,0,0))  # Outer margins of whole thing, inch
+		yrTicks=as.numeric( obj$Year)
+
+		for ( i in 1:nseries )
+		{
+			ii=Nsurv + i  # to index the CPUE cvpro
+			idx <- seriesList[i]==obj$Series
+			seriesVals=obj[idx,]
+			# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
+			seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
+			seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
+			# browser(); return()
+			yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
+			# yearsPlot=min(yearsnotNA):max(yearsnotNA)
+			xLim=range(yearsnotNA)
+			if(i==1)
+				xLimAll=xLim    # range to use in next plot
+			xLimAll=range(xLim, xLimAll)    # range to use in next plot
+			#if(is.null(yLim))     
+			yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
+			# postscript(surveyFigName[i],  height=4, width=3.2,
+			# horizontal=FALSE,  paper="special")
+			#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+			plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
+				li=seriesVals$Lo, xlim=xLim, ylim=yLim, xlab="Year",
+				ylab=paste("CPUE index:",seriesList[i]), gap=0, pch=19)
+				#restrict years for plot, does error bars
+			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
+			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
+			if (is.numeric(cvpro[ii]) && round(cvpro[ii],5)!=0)
+				addLabel(0.95,0.95,paste("+ CV process error ",cvpro[ii],sep=""),adj=c(1,0),cex=0.8,col="slategrey")
+			# mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+			# if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
+			# if(i==5)  mtext(side=1, line=0, cex=1, outer=TRUE, "Year")
+		}  # cex was 0.8 for POP
+	dev.off()
+	}
 }
 
 
@@ -2328,7 +2268,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
 #-------------------------------------------AME/AM
 plt.mcmcGraphs <-
 function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE, 
-   ptypes = c("eps","png"), pngres=400, ngear=1,
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
    ylim.recruitsMCMC=NULL, ylim.exploitMCMC=NULL,
    ylim.VBcatch=NULL, ylim.BVBnorm=NULL,
    xlim.snail=NULL, ylim.snail=NULL,
@@ -2593,7 +2533,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 #  to accommodate multiple gear types
 #-------------------------------------------AME/RH
 plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=400, ngear=1,
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
    pchGear=seq(21,20+ngear,1), ltyGear=seq(1,ngear,1), 
    colGear=rep(c("black","blue"),ngear)[1:ngear])
 {
@@ -2764,7 +2704,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	objCAs = obj$CAs
 #	SAnames   = tcall("PBSawatea")$Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
 #	assign("SAnames", SAnames, pos=1)
-	for (g in sort(unique(objCAs$Series))) { # treat each survey separately
+	for (g in sort(unique(objCAs$Series))) { # treat each survey separately (g = survey number)
 		objCAs.g = objCAs[is.element(objCAs$Series,g),]
 		stdRes.CAs.g = stdRes.CA( objCAs.g )
 		for (p in ptypes) {
@@ -2773,7 +2713,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
 			par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
 			plt.ageResidsPOP( stdRes.CAs.g, main="")
-			mtext(SAnames[g],side=3,outer=TRUE,line=0.25,cex=1.5)
+			mtext(Snames[g],side=3,outer=TRUE,line=0.25,cex=1.5)  ## g indexes Snames not SAnames
 			mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
 			plt.yearResidsPOP(stdRes.CAs.g)
 			plt.cohortResids(stdRes.CAs.g)   # cohort resid, by year of birth
@@ -2789,7 +2729,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
 				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
 				plt.ageResidsPOP( stdRes.CAs.g.s, main="" ) 
-				mtext(paste0(SAnames[g]," - ",s),side=3,outer=TRUE,line=0.25,cex=1.5)
+				mtext(paste0(Snames[g]," - ",s),side=3,outer=TRUE,line=0.25,cex=1.5)  ## g indexes Snames not SAnames
 				mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
 				plt.yearResidsPOP(stdRes.CAs.g.s)
 				plt.cohortResids(stdRes.CAs.g.s)   # cohort resid, by year of birth
@@ -2822,7 +2762,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 # Plot observed and expected mean ages from 
 # commercial and survey C@A data.
 #-----------------------------------------------RH
-#plotMeanAge =function(obj, ptypes = c("win"), useCA=T, useSA=T, CAnames="Trawl")
+#plotMeanAge =function(obj, ptypes=c("win"), useCA=T, useSA=T, CAnames="Trawl")
 #{
 	# Here plot the mean age for catch and surveys (`MAfun` in `utilsFun.r`)
 #browser();return()
@@ -2975,7 +2915,7 @@ plt.numR <- function( obj, minYr=NULL )
 #  use as template for decisions tables once we have MSY.
 #----------------------------------------------AME
 plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
-                  p=c(0.025,0.25,0.5,0.75,0.975),
+                  p = get("quants5"),
                   xyType="lines",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
@@ -3127,7 +3067,7 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
       if ( mfg[1]==mfg[3] & mfg[2]==mfg[4] | j==nPolicies )
       {
         if ( save )
-          savePlot( paste( "policyProj",iPage,sep=""),type="png" )
+          savePlot( paste( "policyProj",iPage,sep=""), type="png" )
         iPage <- iPage + 1
 
         if ( j < nPolicies )
@@ -3154,7 +3094,7 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
 #  Now using for single recruitment projection plot
 #----------------------------------------------AME
 plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
-                  p=c(0.025,0.25,0.5,0.75,0.975),
+                  p = get("quants5"),
                   xyType="lines",
                   lineType=c(3,2,1,2,3),
                   refLines=NULL, xLim=NULL, yLim=NULL,
@@ -3371,7 +3311,7 @@ plt.ssbVbCatch <- function( obj, x1=1966, xLim=c(1954,2005), yLim=c(0,25000) )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.ssbVbCatch
 
 
-#plt.stdResids--------------------------2011-08-31
+#plt.stdResids--------------------------2011-12-01
 # Plot standardised residuals (AME adding xlim's for POP).
 #----------------------------------------------AME
 plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
@@ -3393,15 +3333,16 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
   mtext( side=1, line=2, cex=0.8, "Year" )
 
   # Plot the standardised residuals against predicted values.
-  plot( log(obj$Fit), obj$stdRes, type="n", xlab="", ylab="", ylim=yLim )
+  zin = !is.na(obj$Fit) & !is.na(obj$stdRes)
+  plot( log(obj$Fit[zin]), obj$stdRes[zin], type="n", xlab="", ylab="", ylim=yLim )
   abline( h=0, lty=2 )
-  points( log(obj$Fit), obj$stdRes, cex=ptcex, pch=ptpch) #, bg="orange" )
+  points( log(obj$Fit[zin]), obj$stdRes[zin], cex=ptcex, pch=ptpch) #, bg="orange" )
   mtext( side=1, line=2, cex=0.8, "Predicted" )
 
   # Plot the q-normal plot of the standardised residuals.
   wiggle=qqnorm( obj$stdRes,xlab="",ylab="",main="" , pch=ptpch, cex=ptcex)
   abline( a=0,b=1 )
-  abline( h=quantile(obj$stdRes,p=pct/100,na.rm=TRUE),lty=2 )
+  abline( h=quantile(obj$stdRes,p=pct/100,na.rm=TRUE), lty=c(3,2,1,2,3), lwd=0.75 )
   points(wiggle, pch=ptpch, cex=ptcex) #, bg="orange")
   mtext( side=1, line=2, cex=0.8, "Theoretical quantiles" )
 
@@ -3650,7 +3591,7 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lw
 		yLim=c(0, max(c(sapply(BUmed[(1:ngear)+1],max), quantile(sapply(BUlist[(1:ngear)+1],function(x,p){apply(x,2,quantile,p)},p=p[2]),0.95), 1)))
 	plot(0,0, xlim=xLim, ylim=yLim, type="n", 
 		xlab = expression(paste(italic(B[t])/italic(B)[MSY])), 
-		ylab = expression(paste(italic(u[t])/italic(u)[MSY])),
+		ylab = expression(paste(italic(u[t-1])/italic(u)[MSY])),
 		cex.lab=1.25,cex.axis=1.0,las=1)
 	abline(h=1, col=c("grey20"), lwd=Lwd, lty=3)
 	abline(v=c(0.4,0.8), col=c("red","green4"), lwd=Lwd, lty=2)
@@ -3679,7 +3620,7 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lw
 # Adding the prior automatically.
 #----------------------------------------------AME
 plotDensPOPparsPrior <-
-    function (mcmc, probs=c(0.025, 0.975), points=FALSE, axes=TRUE, 
+    function (mcmc, probs=get("quants3")[c(1,3)], points=FALSE, axes=TRUE, 
     same.limits=FALSE, between=list(x=axes, y=axes), 
     div=1, log=FALSE, base=10, main=NULL, xlab=NULL, 
     ylab=NULL, cex.main=1.2, cex.lab=1, cex.strip=0.8, 

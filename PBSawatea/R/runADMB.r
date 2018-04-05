@@ -84,8 +84,8 @@ runADMB = function(
 		Nsurv = file.controls$Nsurv
 		cvpro = file.controls$cvpro # expanded cvpro determined by number of surveys and number of cpue series
 		sdnrfile = paste(prefix,runNoStr,"sdnr",sep=".")
-		#cat("#SDNR (Surveys, CPUE, CAc, CAs)\n",file=sdnrfile)
-		header = paste0("#SDNR -- ",ifelse(Nsurv>0,paste0("Surveys(",Nsurv,"), "),""),ifelse(Ncpue>0,paste0("CPUE(",Ncpue,"), "),""),"CAcomm, CAsurv\n")
+		#cat("#SDNR (Surveys, CPUE, CAs, CAc)\n",file=sdnrfile)
+		header = paste0("#SDNR -- ",ifelse(Nsurv>0,paste0("Surveys(",Nsurv,"), "),""),ifelse(Ncpue>0,paste0("CPUE(",Ncpue,"), "),""),"CAsurv, CAcomm\n")
 		cat(header,file=sdnrfile)
 		cat("CVpro:",cvpro,"\n",file=sdnrfile,append=TRUE,sep=" ")
 #browser();return()
@@ -190,7 +190,6 @@ runADMB = function(
 		if (!file.exists(msydir)) dir.create(msydir)
 		fileN = paste(prefix,runNoStr,rwtNoStr,ext,sep=".")
 		fileA = c(paste(wd,runname,fileN,sep="/"),paste(wd,runname,mcname,"Awatea.psv",sep="/"))
-#browser();return()
 		file.copy(fileA,msydir,overwrite=TRUE); setwd(msydir)
 		ctlfile  = paste(c("#MSY control file",
 			"#Maximum number of iterations",format(msyMaxIter,scientific=FALSE),
@@ -199,6 +198,7 @@ runADMB = function(
 
 		infile = readAD(fileN)
 		strategy = view(infile,pat=c("Strategy","End year"),see=FALSE)
+#browser();return()
 		# Reset the strategy and express in terms of U
 		strategy[[grep("Strategy Type",names(strategy))]] = 2
 		strategy[[grep("End year of projections",names(strategy))]]  = -99
@@ -399,7 +399,7 @@ setMethod("write", signature(x = "AWATEAdata"),
 	invisible(nvec) } )
 #----------------------------------setMethod.write
 
-#setMethod.reweight---------------------2017-06-05
+#setMethod.reweight---------------------2017-12-04
 # Set the method for 'reweight' when using an AWATEA class.
 # Calculates reweighted values and populates S4 object.
 #-----------------------------------------------RH
@@ -497,14 +497,19 @@ setMethod("reweight", signature="AWATEAdata",
 		zs = is.element(survey$Series,s)
 		sser = survey[zs,]
 		SDNR[ss] = sd(sser$NR)
+		## Check that this routine is repeated for the CPUE series below
 		if (do.cvpro && nrwt==0) {
 			.flush.cat(paste0("Francis reweight once only -- survey ", s, " with CVpro=",cvpro[s]),"\n")
-			if (round(cvpro[s],5)==0)
+			if (round(cvpro[s],5)==0) {
 				survey$CVnew[zs] = survey$CV[zs]
-			else
-				survey$CVnew[zs] = sqrt(survey$CV[zs]^2 + cvpro[s]^2)
-			## What todo when CVpro is negative? 
-			## sqrt(GT0(survey$CV[zs]^2 + sign(cvpro[2])*cvpro[2]^2))
+			} else {
+				survey$CVnew[zs] = sqrt(survey$CV[zs]^2 + cvpro[s]^2) ## single event by Sseries s
+				## need to subtract if cvpro < 0
+				if (cvpro[s] > 0)
+					survey$CVnew[zs] = sqrt(survey$CV[zs]^2 + cvpro[s]^2)
+				else
+					survey$CVnew[zs] = sqrt(survey$CV[zs]^2 - cvpro[s]^2)
+			}
 		} else if (do.cvpro && nrwt>0) {
 			survey$CVnew[zs] = survey$CV[zs]
 		} else {
@@ -514,35 +519,47 @@ setMethod("reweight", signature="AWATEAdata",
 	}
 #browser();return()
 
-	if (all(view(obj,pat="CPUE likelihood",see=FALSE)[[1]]==0)) 
+	if (all(view(obj,pat="CPUE likelihood",see=FALSE)[[1]]==0)) {
 		cpue = NULL
-	else {
+	} else {
 		cpue =  res$CPUE[!is.na(res$CPUE[,"Obs"]),]
 		Utmp = sort(unique(cpue[,"Series"])); Useries = gsub("Series","cpue",Utmp); names(Useries) = Utmp
 		sdnr = rep(0,length(Useries)); names(sdnr) = Useries; SDNR = c(SDNR,sdnr)
 		cpue$NR = NRfun(cpue$Obs,cpue$Fit,cpue$CV)
 		cpue$CVnew = rep(0,nrow(cpue))
 		for (u in names(Useries)) {
-			s = s + 1  ## to index cvpro for CPUE; s continued from surveys above
-			uu=as.character(u)
+			s  = s + 1  ## to index cvpro for CPUE; s continued from surveys above
+			uu = as.character(u)
 			zu = is.element(cpue$Series,u)
 			user = cpue[zu,]
 			SDNR[Useries[uu]] = sd(user[,"NR"])
 			if (do.cvpro && nrwt==0) {
 				.flush.cat(paste0("Francis reweight once only -- CPUE ", u, " with CVpro=",cvpro[s]),"\n")
-				cpue$CVnew[zu] = sqrt(user$CV^2 + cvpro[s]^2)
+				if (round(cvpro[s],5)==0) {
+					cpue$CVnew[zu] = cpue$CV[zu]
+				} else {
+					#cpue$CVnew[zu] = sqrt(cpue$CV[zu]^2 + cvpro[s]^2) ## single event by Useries u
+					## need to subtract if cvpro < 0
+					if (cvpro[s] > 0)
+						cpue$CVnew[zu] = sqrt(cpue$CV[zu]^2 + cvpro[s]^2)
+					else
+						cpue$CVnew[zu] = sqrt(cpue$CV[zu]^2 - cvpro[s]^2)
+				}
 			} else if (do.cvpro && nrwt>0) {
-				cpue$CVnew[zu] = user$CV
+				cpue$CVnew[zu] = cpue$CV[zu]
 			} else {
 				.flush.cat(paste0("SDNR reweight ", nrwt+1, " -- CPUE ", u, " with SDNR=",SDNR[Useries[uu]]), "\n")
 				cpue$CVnew[zu] = user$CV * SDNR[Useries[uu]]
 			}
 		}
 	}
-	sdnr = rep(0,2); names(sdnr) = c("cpa","spa"); SDNR = c(SDNR,sdnr)
+	if (nrwt==0) .flush.cat("\n")
+
+	sdnr = rep(0,2); names(sdnr) = c("spa","cpa"); SDNR = c(SDNR,sdnr)
 	wj   = NULL
 
-#browser();return()
+#if(nrwt==0) {browser();return()}
+
 	# Commercial proportions-at-age
 	CAc  = res$CAc
 	cpa  = CAc[!is.na(CAc$SS),]

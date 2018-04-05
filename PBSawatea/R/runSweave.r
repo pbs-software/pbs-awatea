@@ -1,8 +1,10 @@
-#runSweave------------------------------2017-03-28
+#runSweave------------------------------2018-04-04
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
-runSweave = function( wd = getwd(), strSpp="XYZ",
+runSweave = function(
+   wd = getwd(), 
+   strSpp="XYZ",
    filename = "spp-area-00.txt",      ## Name of Awatea .txt file in 'run.dir' to run
    runNo   = 1,
    rwtNo   = 0,
@@ -23,7 +25,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
    sexlab  = c("Females","Males"),
    resdoc  = FALSE,                   ## is this build for a research document?
    redo.Graphs = TRUE,                ## recreate all the figures (.eps, .png)
-   ptype = "eps"                      ## plot type --  either "eps" or "png"
+   ptype = "png"                      ## plot type --  either "eps" or "png"
 ) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","Rcode","Scode","qu","so",".First")),pos=1)
@@ -38,6 +40,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		"require(gdata, quietly=TRUE)"     # Data manipulation functions from CRAN.
 		)
 		eval(parse(text=mess))
+#browser();return()
 		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runADMB.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runSweaveMCMC.r",sep="/"),local=FALSE)
@@ -93,19 +96,27 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 		else if (any(strSpp==c("YTR","ytr","418"))) sppname = "Yellowtail Rockfish"
 		else if (any(strSpp==c("RBR","rbr","401"))) sppname = "Redbanded Rockfish"
 		else if (any(strSpp==c("ARF","arf","602"))) sppname = "Arrowtooth Flounder"
+		else if (any(strSpp==c("WAP","wap","228"))) sppname = "Walleye Pollock"
+		else if (any(strSpp==c("RSR","rsr","439"))) sppname = "Redstripe Rockfish"
 		else sppname="Unspecified species"
 	} else {
 		data(gfcode,package="PBSawatea")
 		sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
 	}
 	tfile = gsub("@sppname", sppname, tfile)
+	tfile = gsub("@strSpp", strSpp, tfile)
 
-	packList(stuff=c("Snames","SApos","Cnames","CApos"), target="PBSawatea")
+	packList(stuff=c("Snames","SApos","Cnames","CApos","ptype"), target="PBSawatea")
 	#if (exists("tput")) tput(Snames)
 	snames = rep(Snames,Nsurvey)[1:Nsurvey] # enforce same number of names as surveys
 	snames = gsub(" ","",snames)
-	tfile = gsub("@surveys",paste(snames,collapse="\",\""),tfile)
+	tfile  = gsub("@surveys",paste(snames,collapse="\",\""),tfile)
+	if (Ncpue>0)
+		Cnames = rep(Cnames,Ncpue)[1:Ncpue] # enforce same number of names as surveys
+	cnames = gsub(" ","",Cnames)
+	tfile  = gsub("@cpues",paste(cnames,collapse="\",\""),tfile)
 
+#browser();return()
 	if (Nsex==1) {
 		z0    = grep("@rmsex",tfile)
 		tfile = tfile[setdiff(1:length(tfile),z0)]
@@ -168,12 +179,13 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	# IMPORTANT: each element string below must be a unique match to a place in `run-Master.Smw'
 	SpriorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]","logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
 	CpriorBites = c("Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]")
-	figBites   = c("survIndSer4-1","twofig\\{ageSurv","onefig\\{survRes","onefig\\{survAgeResSer1}",
+	figBites   = c("survIndSer4-1","onefig\\{survRes","twofig\\{ageSurv","onefig\\{survAgeResSer1}",
 		"onefig\\{survAgeResSer1Female}", "onefig\\{survAgeResSer1Male}")
 	cpueBites  = c("logqCPUE\\.prior\\[1,]","CPUE 1")
 	survBites  = c("Survey 1") 
 	#gearBits   = c("onefig\\{commAgeResSer1}") #change only first `1'
 	gearBites  = c(#"Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]",
+		"onefig\\{cpueRes",
 		"onefig\\{ageCommFemaleSer1}","onefig\\{ageCommFemaleSer1A}","onefig\\{ageCommFemaleSer1B}",
 		"onefig\\{ageCommMaleSer1}","onefig\\{ageCommMaleSer1A}","onefig\\{ageCommMaleSer1B}",
 		"onefig\\{commAgeResSer1}","onefig\\{commAgeResSer1Female}","onefig\\{commAgeResSer1Male}")
@@ -190,8 +202,6 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 			for ( i in 1:N) {
 				NApos = NApos + as.numeric(CSpos[i])
 				if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("CAc",b)) && !CSpos[i]) next
-				#if ((grepl("[Aa]ge",b) || grepl("CAs",b) || grepl("muvec",b)) && !CSpos[i]) next
-				#if (N==1 && !any(b==figBites)) alines=c(alines,subfun("\\[1,]","",aline))
 				if (grepl("CAs",b) && CSpos[i]){
 					bline = subfun("1",i,aline)
 					alines = c(alines, subfun(paste("\\[",i,"]",sep=""),paste("\\[",NApos,"]",sep=""),bline))
@@ -200,6 +210,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 				else alines=c(alines,subfun("1",i,aline))
 			}
 			infile=c(infile[1:(Nline-1)],alines,infile[(Nline+1):length(infile)])
+#browser();return()
 		}
 		return(infile)
 	}
@@ -208,7 +219,7 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	tfile = biteMe(tfile,figBites,Nsurvey)
 	tfile = biteMe(tfile,cpueBites,Ncpue)
 	tfile = biteMe(tfile,survBites,Nsurvey)
-	#tfile = biteMe(tfile,gearBits,Ngear,allsub=FALSE) # only change the first instance of `1' when expanding
+#browser();return()
 
 	if (any(SApos)) tfile = biteMe(tfile,"CAs 1",Nsurvey)
 	#else            tfile = tfile[-grep("^CAs 1",tfile)]  # alreday been removed above
@@ -222,6 +233,10 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 
 	for (i in 1:Nsurvey)
 		tfile = gsub(paste("@survey",i,sep=""),snames[i],tfile)
+	if (Ncpue>0) {
+		for (i in 1:Ncpue)
+			tfile = gsub(paste("@cpue",i,sep=""),cnames[i],tfile)
+	}
 
 	localHistory = paste(mpd.dir,"/runHistory.tex",sep="")
 	if(file.exists(paste(wd,"/runHistory.tex",sep=""))) {
@@ -229,10 +244,10 @@ runSweave = function( wd = getwd(), strSpp="XYZ",
 	} else
 		tfile = gsub("\\\\input","%\\\\input",tfile)
 
-#browser();return()
 
 	localName   = paste(run.name,"-",rwtNo,sep="")
 	localSweave = paste(mpd.dir,"/",localName,".Snw",sep="")
+#browser();return()
 
 	writeLines(tfile,con=localSweave)
 	if (debug) { browser();return() }

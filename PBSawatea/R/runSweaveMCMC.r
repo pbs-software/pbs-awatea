@@ -1,4 +1,4 @@
-#runSweaveMCMC--------------------------2017-03-28
+#runSweaveMCMC--------------------------2018-04-04
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
@@ -25,7 +25,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
    resdoc  = FALSE,                   ## research document
    redo.Graphs = TRUE,                ## recreate all the figures (.eps, .wmf, .png)
    skip.last.year = TRUE,             ## remove last year of projections (set to FALSE for POP 5ABC in 2010)
-   ptype   = "eps",                   ## plot type --  either "eps" or "png"
+   ptype   = "png",                   ## plot type --  either "eps" or "png"
    domeS   = FALSE                    ## using dome-shaped selectivity?
 ) {
 	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
@@ -133,7 +133,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	#yrsub = intersect(seq(1900,3000,5),years)
 	#Nyrsub = length(yrsub)
 
-	packList(stuff=c("Snames","SApos","Cnames","CApos"), target="PBSawatea")
+	packList(stuff=c("Snames","SApos","Cnames","CApos","ptype"), target="PBSawatea")
 
 	if (Nsex==1) {
 		z0    = grep("@rmsex",tfile)

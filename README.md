@@ -1,4 +1,5 @@
 ## PBSawatea: Tools for running Awatea and visualizing the results ##
+&copy; Fisheries and Oceans Canada (2011-2018)
 
 **PBSawatea** provides an R interface for running ADMB Awatea software, which is a variant of the Coleraine fish population software. The added functionality here includes automation of:
 
@@ -13,7 +14,7 @@ All the automation offers enormous time-saving when trying numerous model runs.
 
 This package borrows some functionality from the **scape** package by adopting the code from a few functions and creating variants. We try to acknowledge the original source wherever possible.
 
-The reliance on so many packages is not ideal because each relies on other packages. This means that a user likely has to install various additional R packages, which is a nuisance. Also, there appears to be redundant cross-dependencies (see below); however, **PBSawatea** only imports specific functions from the following:
+**WARNING:** The reliance on so many packages is not ideal because each relies on other packages. This means that a user likely has to install various additional R packages, which is a nuisance. Also, there appears to be redundant cross-dependencies (see below); however, **PBSawatea** only imports specific functions from the following:
 
 importFrom("coda", "mcmc")
 
@@ -82,3 +83,5 @@ In the end, the target audience is very small, comprising only those people who 
 &emsp; **gridExtra** imports **gtable**, *grid*, *grDevices*, *graphics*, *utils*<br>
 &emsp; **data.table** imports *methods*, **chron**<br>
 &emsp;&emsp; **chron** imports *graphics*, *stats*<br>
+
+Although **PBSawatea** is not available on <a href="https://cran.r-project.org/">CRAN</a> (Comprehensive R Archive Network), the package (Windows binary and source tarball) is built after using CRAN's rigorous `R CMD check --as-cran` routine (on a Windows system) and posted to <a href="https://drive.google.com/drive/folders/0B2Bkic2Qu5LGOGx1WkRySVYxNFU?usp=sharing">Google Drive</a>. Most of the time, the revision on <a href="https://github.com/pbs-software/pbs-awatea">GitHub</a> can be built (supposedly) in R using `devtools::install_github("pbs-software/pbs-awatea")`; however, not every revision has been checked for CRAN worthiness.

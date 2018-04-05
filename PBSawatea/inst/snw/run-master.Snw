@@ -1,4 +1,5 @@
 %===============================================================================
+% run-master.Snw revised for Redstripe Rockfish (2017-12-01, 2018-03-21)
 % run-master.Snw revised for Pacific Ocean Perch 5ABC (2016-11-30, 2017-06-06)
 % run-master.Snw revised for Rock Sole and Silvergray Rockfish (2013-09-23)
 % ymrrun5-0.Snw. 5/4/11.
@@ -22,8 +23,8 @@
 \usepackage{resDocSty}   % Res Doc .sty file
 \usepackage{graphicx}
 
-%\def\AppLet{F}           % Appendix letter
-\def\startP{601}         % page start (default=1)
+%\def\AppLet{F}          % Appendix letter
+\def\startP{1}           % page start (default=1)
 \def\startF{0}           % figure start counter (default=0)
 \def\startT{0}           % table start counter (default=0)
 \def\bfTh{{\bf \Theta}}  % bold Theta
@@ -140,6 +141,7 @@ redo.Graphs = @redo.Graphs ## whether to redo the graphs or not (set to FALSE if
 <<modelname, echo=FALSE>>=
 model.name     = "@model.name"
 area.name      = strsplit(model.name,split="[-\\.]")[[1]][2]
+strSpp         = "@strSpp"
 run.dir        = "@run.dir"
 fig.dir        = "@fig.dir"
 running.awatea =  @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
@@ -171,9 +173,9 @@ if(running.awatea) {
 
 \newcommand{\LH}{DRAFT -- Non-citable working paper}  % Set to {} for final ResDoc
 %\newcommand{\RH}{\Sexpr{paste("From ", model.name, ".txt", sep="")}}
-\newcommand{\RH}{CSAP WP2014GRF005}
-\newcommand{\LF}{Appendix~\thechapter ~-- MPD Model Results}
-\newcommand{\RF}{\Sexpr{paste0("@sppname"," (",area.name,")")}}
+\newcommand{\RH}{CSAP WP 2015GRF08}
+\newcommand{\LF}{\Sexpr{paste0("@sppname"," (",area.name,")")}}
+\newcommand{\RF}{Appendix~\thechapter ~-- MPD Model Results}
 
 \lhead{\LH}\rhead{\RH}\lfoot{\LF}\rfoot{\RF}
 
@@ -181,7 +183,7 @@ if(running.awatea) {
 
 @rmresdoc {\Large \bf MPD Results for @sppname (\Sexpr{area.name})} \vspace{7mm}
 
-@rmresdoc \textbf{Rowan Haigh, Paul J. Starr, and Andrew M. Edwards}
+@rmresdoc \textbf{Paul J. Starr and Rowan Haigh}
 
 @rmresdoc Latest is \today, with \Sexpr{print(version$version.string)}. 
 
@@ -193,13 +195,13 @@ if(running.awatea) {
 
 % We {\bf are}~{\bf \Sexpr{if(!running.awatea) paste("NOT")}} re-running Awatea here\Sexpr{if(!running.awatea) paste(" so just loading in output")}.
 
-@rmresdoc If editing {\tt .txt} file, may have to rerun just in dos/R first to check the output from ADMB (otherwise errors get hidden): 
+@rmresdoc If editing {\tt .txt} file, may have to rerun just in DOS/R first to check the output from ADMB (otherwise errors get hidden): 
 
 @rmresdoc {\tt > shell( paste("awatea -ind ../", model.name,".txt -nohess", sep=""))}
 
 Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCMC results and for the write-up.
 
-5ABC POP 2017 --~~ \texttt{AppE\_Results\_POP\_5ABC\_2017\_RD.Rnw}
+\Sexpr{paste(area.name, strSpp, 2018)} --~~ \texttt{AppE\_Results\_\Sexpr{strSpp}\_\Sexpr{area.name}\_2018\_RD.Rnw}
 
 \section{History of Runs}
 
@@ -209,13 +211,13 @@ Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCM
 \section{Introduction}
 
 <<getnames, results=hide, echo=FALSE>>=
-# get some names created by `runSweave()'
-Cnames  = tcall("PBSawatea")$Cnames        # names of commercial gear
-CAnames = Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
-if (length(CAnames)>0) useCA = TRUE else useCA = FALSE
-Snames  = tcall("PBSawatea")$Snames        # names of surveys
-SAnames = Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
-if (length(SAnames)>0) useSA = TRUE else useSA = FALSE
+	## get some names created by `runSweave()'
+	Cnames  = tcall("PBSawatea")$Cnames        # names of commercial gear
+	CAnames = Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
+	if (length(CAnames)>0) useCA = TRUE else useCA = FALSE
+	Snames  = tcall("PBSawatea")$Snames        # names of surveys
+	SAnames = Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
+	if (length(SAnames)>0) useSA = TRUE else useSA = FALSE
 @
 
 This appendix describes the results from the mode of the posterior distribution (MPD), primarily to compare model estimates to observations.
@@ -230,7 +232,7 @@ The figures help to determine if a run should be used to generate MCMC samples.
 
 Awatea first determines the mode of the posterior distribution (MPD) for each estimated parameter.
 These are then used as the starting points for the MCMC simulations. 
-The MPD fits are shown for the survey indices (Figure \ref{fig:survIndSer2}), the commercial catch-at-age data (as bubble plots in Figures \ref{fig:CAcObsFem} and \ref{fig:CAcObsMale}, and as overlaid age structures in Figures \ref{fig:ageCommFemaleSer1A} to \ref{fig:ageCommMaleSer1B}), and the survey series age data (Figures~\ref{fig:ageSurvFemaleSer1} to \ref{\Sexpr{paste0("fig:ageSurvFemaleSer",length(SAnames))}}). 
+The MPD fits are shown for the survey indices (Figure \ref{fig:survIndSer2}), the commercial catch-at-age data (as bubble plots in Figures \ref{fig:CAcObsFem} and \ref{fig:CAcObsMale}, and as overlaid age structures in Figures \ref{fig:ageCommFemaleSer1A} to \ref{fig:ageCommMaleSer1B}), and the survey series age data (Figures~\ref{fig:ageSurvFemaleSer1} to \ref{fig:ageSurvFemaleSer4}).%% 4 is hard-wired here (not important)...
 %The results are sensible and are able to capture the main features of the data sets fairly well.
 %There appears to be relative consistency between the available data sources.
 
@@ -493,10 +495,12 @@ ptab = function(xx)
 
 if(redo.Graphs){
   ## Calls function (defined in PBSscape.r) that creates most of the plots
-  plt.mpdGraphs( obj=currentRes, save=TRUE, ssnames=c("@surveys"), ngear=Ngears )
+  plt.mpdGraphs( obj=currentRes, save=TRUE, ssnames=c("@surveys"), ngear=Ngears, pngres=400)
   ## some now more correctly use MCMC results
 
-  plt.idx( currentRes$Survey,main="Survey Indices",ssnames=c("@surveys")) # wasn't called 
+  plt.idx( currentRes$Survey,main="Survey Indices",ssnames=c("@surveys"), pngres=400) # wasn't called 
+  plt.idx( currentRes$CPUE,main="CPUE Indices", ssnames=c("@cpues"), pngres=400) ## PBSawatea in .PBSmodEnv will have Cnames
+
   #  in plt.mpdGraphs. Doing it here spits out SD of standardised 
   #  residuals also. May be useful for iterative reweighting?
   # close.allWin()
@@ -791,9 +795,9 @@ Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right)
 
 if(redo.Graphs){
 
-plt.catch(years, Ct, xint=5, yint=1000)
-plt.biomass(years,Bt.mpd,yint=2500,pname="Bt",ylab="Spawning biomass (t), Bt")
-plt.biomass(years,Bt.mpd/B0.mpd,yint=0.1,pname="BtB0",xlab="",ylab="Spawning biomass relative to unfished, Bt/B0")
+plt.catch(years, Ct, xint=5, yint=diff(pretty(unlist(Ct)))[1])
+plt.biomass(years, Bt.mpd, yint=diff(pretty(unlist(Bt.mpd)))[1], pname="Bt", ylab="Spawning biomass (t), Bt")
+plt.biomass(years, Bt.mpd/B0.mpd, yint=diff(pretty(unlist(Bt.mpd/B0.mpd)))[1], pname="BtB0", xlab="", ylab="Spawning biomass relative to unfished, Bt/B0")
 plt.biomass(years,VtV0.mpd,yint=0.1,pname="VtV0",ylab="Vulnerable biomass relative to unfished, Vt/V0")
 @rmcpue plt.cpue(cpueObj=currentRes$CPUE)
 plt.recdev(logRecDev.mpd) # log recruitment deviations
@@ -806,14 +810,21 @@ plt.initagedev(logInitAgeDev.mpd) # Initial age deviations figure
 ## Latest from Rowan, I may want to switch to have females first
 ## year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year"]]),8)
 year.plotBar = round(quantile(years,seq(0,1,len=6)))
+ptype = tcall(PBSawatea)$ptype
 if (nsex==1) {
-	plotBars(currentRes,type="N",sex=3,fill="green",eps=TRUE,win=FALSE,year=year.plotBar)
-	plotBars(currentRes,type="N",sex=3,fill="green",pix=TRUE,win=FALSE,year=year.plotBar)
+	if (ptype=="eps")
+		plotBars(currentRes,type="N",sex=3,fill="green",eps=TRUE,win=FALSE,year=year.plotBar)
+	if (ptype=="png")
+		plotBars(currentRes,type="N",sex=3,fill="green",png=TRUE,win=FALSE,year=year.plotBar)
 } else {
-	plotBars(currentRes,type="N",sex=2,fill="pink",eps=TRUE,win=FALSE,year=year.plotBar)
-	plotBars(currentRes,type="N",sex=2,fill="pink",pix=TRUE,win=FALSE,year=year.plotBar)
-	plotBars(currentRes,type="N",sex=1,fill="skyblue",eps=TRUE,win=FALSE,year=year.plotBar)
-	plotBars(currentRes,type="N",sex=1,fill="skyblue",pix=TRUE,win=FALSE,year=year.plotBar)
+	if (ptype=="eps") {
+		plotBars(currentRes,type="N",sex=2,fill="pink",eps=TRUE,win=FALSE,year=year.plotBar)
+		plotBars(currentRes,type="N",sex=1,fill="skyblue",eps=TRUE,win=FALSE,year=year.plotBar)
+	}
+	if (ptype=="png") {
+		plotBars(currentRes,type="N",sex=2,fill="pink",png=TRUE,win=FALSE,year=year.plotBar)
+		plotBars(currentRes,type="N",sex=1,fill="skyblue",png=TRUE,win=FALSE,year=year.plotBar)
+	}
 }
 
 } ## end redo.Graphs
@@ -845,9 +856,12 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs) # Bubble plots of ob
 %=======Next line will be expanded to accomodate multiple surveys=======
 \onefig{survRes@survey1}{Residuals of fits of model to \Sexpr{Snames[1]} survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
 
-@rmcpue \onefig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 95\% error bars are based on lognormal assumption (double check error bars).}
+@rmcpue \onefig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 90\% error bars are based on lognormal assumption (double check error bars).}
 
 @rmcpue \onefig{CPUEfit}{CPUE index series (without error bars) and biomass trajectories using different q's (if more than one CPUE series).}
+
+%=======Next line will be expanded to accomodate multiple CPUE series=======
+@rmcpue \onefig{cpueRes@cpue1}{Residuals of fits of model to \Sexpr{Cnames[1]} CPUE series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
 
 @rmresdoc @rmCA \onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
 
@@ -887,22 +901,22 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs) # Bubble plots of ob
 
 % Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
 %=======Next line will be expanded to accomodate multiple surveys=======
-@rmSA \twofig{ageSurvFemaleSer1}{ageSurvMaleSer1}{Observed and predicted proportions-at-age for \Sexpr{SAnames[1]} survey.}
+@rmSA \twofig{ageSurvFemaleSer1}{ageSurvMaleSer1}{Observed and predicted proportions-at-age for \Sexpr{Snames[1]} survey.}
 
 % \section{Residuals associated with MPD fits  for run \Sexpr{model.name}.}
 %  (for the total of \Sexpr{(dim(CAcObsFem)[1] - 1)*dim(CAcObsFem)[2]*2} residuals).}
 %   That calculations is (number of age classes - 1) * number of years of age data * 2 sexes.
 
 %=======Next line will be expanded to accomodate multiple surveys=======
-@rmSA \onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from the \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[1]*2} residuals.}
+@rmSA \onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from the \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[Snames[1]]*2} residuals.}
 
 \clearpage 
 
 %=======Next line will be expanded to accomodate multiple surveys=======
-@rmsex @rmSA \onefig{survAgeResSer1Female}{Residuals of fits of model to proportions-at-age data (MPD values) for females from \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[1]} residuals.}
+@rmsex @rmSA \onefig{survAgeResSer1Female}{Residuals of fits of model to proportions-at-age data (MPD values) for females from \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[Snames[1]]} residuals.}
 
 %=======Next line will be expanded to accomodate multiple surveys=======
-@rmsex @rmSA \onefig{survAgeResSer1Male}{Residuals of fits of model to proportions-at-age data (MPD values) for males from \Sexpr{SAnames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsMale[1]} residuals.}
+@rmsex @rmSA \onefig{survAgeResSer1Male}{Residuals of fits of model to proportions-at-age data (MPD values) for males from \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsMale[Snames[1]]} residuals.}
 
 \clearpage 
 
@@ -924,16 +938,18 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs) # Bubble plots of ob
 
 % \onefig{Bt}{Spawning biomass (mature females) over time for run \Sexpr{model.name} (MPD values).}
 
-\begin{figure}[htp]
-\centering
-\begin{tabular}{c}
-\epsfbox{BtB0.eps} 
-\vspace{-10mm} \\
-\epsfbox{catchSmall.eps}
-\end{tabular}
-\caption{Spawning biomass (mature females) relative to unfished level, $B_t / B_0$, and commercial catch,  for run \Sexpr{model.name}.}
-\label{fig:BtB0}
-\end{figure}
+%\begin{figure}[htp]
+%\centering
+%\begin{tabular}{c}
+%\epsfbox{BtB0.eps} 
+%\vspace{-10mm} \\
+%\epsfbox{catchSmall.eps}
+%\end{tabular}
+%\caption{Spawning biomass (mature females) relative to unfished level, $B_t / B_0$, and commercial catch,  for run \Sexpr{model.name}.}
+%\label{fig:BtB0}
+%\end{figure}
+
+\twofig{BtB0}{catchSmall}{Spawning biomass (mature females) relative to unfished level, $B_t / B_0$, and commercial catch,  for run \Sexpr{model.name}.}
 
 \twofig{exploit}{catch}{TOP: Exploitation rate (MPD) over time; BOTTOM: catch (t) by gear type for run \Sexpr{model.name}.}
 

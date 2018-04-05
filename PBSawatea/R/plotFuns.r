@@ -1,7 +1,6 @@
 #===============================================================================
 # PBSawatea plot functions:
 #  compB0           : compare reference points relative to B0.
-#  compBmsy         : compare biomass posteriors relative to Bmsy.
 #  cquantile        : cumulative quantile, from cumuplot.
 #  cquantile.vec    : get one probability at a time.
 #  plotBars         : barplots of specific year age proportions
@@ -16,7 +15,7 @@
 #-----------------------------------------------RH
 compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8), 
    include=list(A1=TRUE, A2=TRUE, SSPM=TRUE, Bmsy=TRUE, Bt=TRUE),
-   t.yr=2011, boxwidth=0.6, figgy=FALSE, width=12, height=9, ...) {
+   t.yr=2011, boxwidth=0.6, figgy=FALSE, width=12, height=9, pngres=400, ...) {
 
 	oldpar = par(no.readonly=TRUE); oldpso = grDevices::ps.options()
 	ciao = function() {
@@ -87,7 +86,7 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 	else if (is.null(spp) || spp=="") spp="UNK"
 
 	#--------------PLOT ROUTINE----------------
-	if (figgy) figout = c("eps","pdf","pix","wmf","win") else figout="win"
+	if (figgy) figout = c("eps","pdf","png","wmf","win") else figout="win"
 	fout = paste("CompB0-",spp,"-(",paste(names(xBox),collapse=","),")",sep="")
 
 	for (f in figout) {
@@ -95,9 +94,9 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 		                  postscript(file=paste(fout,".eps",sep=""),width=width,height=height,fonts="mono") }
 		if (f=="pdf"){    grDevices::ps.options(horizontal = TRUE)
 		                  pdf(file=paste(fout,".pdf",sep=""),width=width,height=height,fonts="mono") }
-		else if (f=="pix") png(paste(fout,".png",sep=""), units="in", res=300, width=width, height=height)
+		else if (f=="png") png(paste(fout,".png",sep=""), units="in", res=pngres, width=width, height=height)
 		else if (f=="wmf") win.metafile(paste(fout,".wmf",sep=""), width=width, height=height)
-		par(mar=c(3.5,5,0.5,0.5),cex=ifelse(f%in%c("pix","eps"),1,1.2),xaxs="i")
+		par(mar=c(3.5,5,0.5,0.5),cex=ifelse(f%in%c("png","eps"),1,1.2),xaxs="i")
 		plotBox(xBox,xlim=xlim,ylim=ylim,yaxs="i",las=1,xaxt="n",yaxt="n",xlab="",ylab="",
 			pars=list(boxwex=boxwidth,medlwd=2,whisklty=1,medcol=medcol,staplecol=staplecol,whiskcol=whiskcol,boxfill=boxfill,...)) 
 		ypos = par()$usr[4]-.025*diff(par()$usr[3:4])
@@ -155,76 +154,6 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~compB0
 
 
-#compBmsy-------------------------------2013-10-31
-# Compare biomass posteriors relative to Bmsy.
-#-----------------------------------------------RH
-compBmsy = function(Bspp, spp="POP", Mnams=c("Est M","Fix M"),
-   ratios=c(0.4,0.8), t.yr=2013, figgy=FALSE, width=12, height=9, 
-   spplabs=TRUE, ...)
-{
-	oldpar = par(no.readonly=TRUE); oldpso = grDevices::ps.options()
-	ciao = function() {
-		par(oldpar)
-		mess = paste("grDevices::ps.options(",paste(paste(names(oldpso),sapply(oldpso,deparse),sep="="),collapse=","),")",sep="")
-		eval(parse(text=mess))
-		gc(verbose=FALSE) }
-	on.exit(ciao())
-
-	spp = unique(spp)
-	spp = spp[is.element(spp,names(Bspp))]
-	if (length(spp)==0) 
-		stop (paste("Input list 'Bspp' contains no species labelled: (\"",paste(spp,collapse="\",\""),"\")",sep=""))
-	Nmods = sapply(Bspp,length); SPP = names(Nmods); nmods=sum(Nmods[spp])
-	nrats = length(ratios)
-	Bmsy=list()
-	for (i in spp) {
-		iBspp = Bspp[[i]]
-		if (is.null(Mnams)) Mnams = names(iBspp)
-		names(iBspp) = if (spplabs) paste(i,"\n",Mnams,sep="") else Mnams
-		iBmsy = sapply(iBspp,function(x) { x[["Bt.MCMC"]] / x[["Bmsy.MCMC"]] }, simplify=FALSE) 
-		for (j in names(iBmsy))
-			Bmsy[[j]] = iBmsy[[j]]
-	}
-	Bmsy = Bmsy[rev(names(Bmsy))]
-
-	ylim=c(0,max(sapply(Bmsy,quantile,0.96)))
-	dots=list(...)
-	unpackList(dots)
-	if (!is.null(dots$medcol)) medcol=rev(medcol)
-	if (!is.null(dots$boxfill)) boxfill=rev(boxfill)
-
-	if (figgy) figout = c("eps","pdf","pix","wmf","win") else figout="win"
-	fout = paste("CompBmsy-",paste(spp,collapse="+"),"-(",paste(gsub(" ","",Mnams),collapse=","),")",sep="")
-
-	for (f in figout) {
-		if (f=="eps"){    grDevices::ps.options(horizontal = FALSE)
-		                  postscript(file=paste(fout,".eps",sep=""),width=width*1.25,height=height,fonts="mono",paper="special") }
-		if (f=="pdf"){    grDevices::ps.options(horizontal = TRUE)
-		                  pdf(file=paste(fout,".pdf",sep=""),width=width*1.25,height=height*1.25,fonts="mono") }
-		else if (f=="pix") png(paste(fout,".png",sep=""), units="in", res=300, width=width, height=height)
-		else if (f=="wmf") win.metafile(paste(fout,".wmf",sep=""), width=width*1.25, height=height*1.25)
-		yaxis.space = (max(nchar(names(Bmsy)))-ifelse(spplabs,nchar(spp),0))^0.9
-		par(mar=c(4,yaxis.space,0.5,0.5),cex=ifelse(f%in%c("pix","eps"),1,1.2),mgp=c(1.6,0.6,0))
-		plotBox(Bmsy, horizontal=TRUE, las=1, xlim=c(0.5,nmods+1),ylim=ylim, cex.axis=1.2, yaxs="i", 
-			pars=list(boxwex=boxwidth,medlwd=2,whisklty=1),quants=c(0.05,0.25,0.5,0.75,0.95))
-		abline(v=ratios,col=rep(c("red","green4","blue"),nrats)[1:nrats],lty=2,lwd=2)
-		plotBox(Bmsy, horizontal=TRUE, las=1, xlim=c(0.5,nmods+1),ylim=ylim, cex.axis=1.2, yaxs="i", 
-			pars=list(boxwex=boxwidth,medlwd=2,whisklty=1,medcol=medcol,boxfill=boxfill,...),add=TRUE,quants=c(0.05,0.25,0.5,0.75,0.95))
-		y2 = par()$usr[4] - 0.2*diff(par()$usr[3:4])
-		text(c(0.2,0.6,1.2),rep(y2,3),c("Critical","Cautious","Healthy"),col=c("red","darkorange","green4"),font=2,cex=1.1,srt=90,adj=c(0,0.5))
-		#axis(1,at=ratios,labels=paste(ratios,"",sep=""),tick=FALSE,cex.axis=1.2,line=2)
-		text(ratios,par()$usr[3],labels=ratios,adj=c(1.1,-.5),col=c("red","green4"))
-		#mess = paste("mtext(expression(italic(B)[",t.yr,"]/italic(B)[MSY]),side=1,line=2.5,cex=2)",sep="")
-		mess = paste("mtext(expression(italic(B)[italic(t)]/italic(B)[MSY]),side=1,line=2.5,cex=1.5)",sep="")
-#browser();return()
-		eval(parse(text=mess))
-		if (f!="win") dev.off()
-	}
-	invisible(Bmsy)
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~compBmsy
-
-
 #cquantile------------------------------2010-10-20
 # cumulative quantile, from cumuplot
 #----------------------------------------------AME
@@ -268,7 +197,7 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
 #-----------------------------------------------RH
 plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]), 
     sex=c(2,1), # sex 2 =females (gfbio) 1 = males, 3 = unisex (awatea)
-    age=NULL, fill=c("orange","cyan","green"), eps=FALSE, pix=FALSE, win=TRUE, ...) {
+    age=NULL, fill=c("orange","cyan","green"), eps=FALSE, png=FALSE, win=TRUE, pngres=400, ...) {
 
 	if (!any(type==names(res))) stop("Choose another object in the list")
 	nyear = length(year)
@@ -301,12 +230,12 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 	rc =  .findSquare(nyear)
 	nrow=rc[1]; ncol=rc[2]
 	fnam = paste("ageBars",paste(Sex,collapse=""),sep="")
-	figs = c(eps=eps,pix=pix,win=win)
+	figs = c(eps=eps,png=png,win=win)
 #browser();return()
 	for (k in names(figs)){
 		if (!figs[k]) next
 		if (k=="eps") postscript(paste(fnam,"eps",sep="."), horizontal=FALSE, paper="special", width=6.5, height=2.5*nrow)
-		else if (k=="pix") png(paste(fnam,"png",sep="."), res=100, width=6.75*100, height=2.5*100*nrow, pointsize=12)
+		else if (k=="png") png(paste(fnam,"png",sep="."), units="in", res=pngres, width=6.75, height=2.5*nrow)
 		else resetGraph()
 		par(mfcol=c(nrow,ncol),mgp=c(2,0.5,0),las=1,xaxs="i",
 			mar = if(nyear==1) c(4,6,1,1) else c(4,3,1,1),
@@ -339,7 +268,7 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 			if (i==year[1])
 				addLegend(0.975,0.875,legend=paste(Sex," M = ",M,sep=""),fill=fill,bty="n",yjust=1,xjust=1)
 		}
-		if (any(k==c("eps","pix"))) dev.off()
+		if (any(k==c("eps","png"))) dev.off()
 	}
 	invisible(list(dat=dat,mat=mat,xpos=xpos)) }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBars
@@ -353,7 +282,7 @@ plotBox = function (x, ..., range=1.5, width=NULL, varwidth=FALSE,
     border=par("fg"), col=NULL, log="", 
     pars=list(boxwex=0.8, staplewex=0.5, outwex=0.5, whisklty=1), 
     horizontal=FALSE, add=FALSE, at=NULL,
-    quants=c(0.025,0.25,0.5,0.75,0.975), outliers=FALSE) 
+    quants=get("quants5"), outliers=FALSE) 
 {
 	# RH tweaks for non-list inputs (e.g., vectors)
 	if (!is.list(x)) {
@@ -431,7 +360,7 @@ plotBox = function (x, ..., range=1.5, width=NULL, varwidth=FALSE,
 #  ylim=c(0,0.0005).
 #  Andrew Edwards. Edited lines indicated by AME. 19 October 2010
 #----------------------------------------------AME
-plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TRUE, 
+plotDensPOP = function (mcmc, probs=get("quants3")[c(1,3)], points = FALSE, axes = TRUE, 
     same.limits = FALSE, between = list(x = axes, y = axes), 
     div = 1, log = FALSE, base = 10, main = NULL, xlab = NULL, 
     ylab = NULL, cex.main = 1.2, cex.lab = 1, cex.strip = 0.8, 
@@ -538,7 +467,7 @@ plotDensPOP = function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TR
 #  to put MPDs on. AME. 26th Oct 2010.
 #----------------------------------------------AME
 plotDensPOPpars =
-    function (mcmc, probs = c(0.025, 0.975), points = FALSE, axes = TRUE, 
+    function (mcmc, probs=get("quants3")[c(1,3)], points = FALSE, axes = TRUE, 
     same.limits = FALSE, between = list(x = axes, y = axes), 
     div = 1, log = FALSE, base = 10, main = NULL, xlab = NULL, 
     ylab = NULL, cex.main = 1.2, cex.lab = 1, cex.strip = 0.8, 
@@ -634,7 +563,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
     cex.axis = 0.8, las = 0, tck = 0.5, tick.number = 5, lty.trace = 1, 
     lwd.trace = 1, col.trace = "grey", lty.median = 1, lwd.median = 1, 
     col.median = "black", lty.quant = 2, lwd.quant = 1, col.quant = "black", 
-    plot = TRUE, probs=c(0.025, 0.5, 0.975) , mpd=mcmc[1,], ...)  # AME probs
+    plot = TRUE, probs=get("quants3"), mpd=mcmc[1,], ...)  # AME probs
 {
     panel.trace <- function(x, y, ...) {
         panel.xyplot(x, y, type = "l", lty = lty.trace, lwd = lwd.trace, 
@@ -643,13 +572,13 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
             # print(x)  # gives 1 2 3 ... 1000 for each parameter/yr
             # panel.xyplot(range(x), rep(median(y), 2), type = "l", 
             #  lty = lty.median, lwd = lwd.median, col = col.median)
-            panel.xyplot(x, cquantile.vec(y, prob=0.025),
+            panel.xyplot(x, cquantile.vec(y, prob=get("quants3")[1]),
               type = "l", lty = lty.quant, lwd = lwd.quant,
               col = col.quant)
-            panel.xyplot(x, cquantile.vec(y, prob=0.5),
+            panel.xyplot(x, cquantile.vec(y, prob=get("quants3")[2]),
               type = "l", lty = lty.median, lwd = lwd.median,
               col = col.median)
-            panel.xyplot(x, cquantile.vec(y, prob=0.975),
+            panel.xyplot(x, cquantile.vec(y, prob=get("quants3")[3]),
               type = "l", lty = lty.quant, lwd = lwd.quant,
               col = col.quant)
             panel.xyplot(x[1], mpd[panel.number()], pch=19, col="red") # AME
@@ -714,7 +643,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
 # <<catch, results=hide, echo=FALSE>>=
 #-------------------------------------------AME/RH
 plt.catch = function(years, Ct, xint=5, yint=250,
-   ptypes=c("eps","png"), pngres=150)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400)
 {
 	x = years[-length(years)]; xlim = range(x)
 	xsmall = intersect(seq(1900,2100,xint),x)
@@ -726,7 +655,7 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 	colGear=rep(c("black","blue"),ngear)[1:ngear]
 	for (p in ptypes) {
 		if (p=="eps") postscript("catch.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("catch.png", res=pngres, width=6.5*pngres, height=4.5*pngres)
+		else if (p=="png") png("catch.png", units="in", res=pngres, width=6.5, height=4.5)
 		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		#plot(x, y, type="h", xlim=xlim, ylim=ylim, xlab="Year", ylab="Catch (t)")
 		xy = barplot(t(y),space=0.5,beside=FALSE,col=colGear,border="gainsboro",xlab="Year", ylab="Catch (t)",yaxs="i",names.arg=rep("",length(x)))
@@ -753,7 +682,7 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 #<<BtB0plot, results=hide, echo=FALSE>>=
 #-------------------------------------------AME/RH
 plt.biomass = function(years, Bt, xint=5, yint=2500,
-   ptypes=c("eps","png"), pngres=150, 
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, 
    pname="Bt", xlab="Year", ylab="Spawning biomass (t), Bt")
 {
 	#pname = gsub("\\.mpd","",as.character(substitute(Bt)))
@@ -765,7 +694,7 @@ plt.biomass = function(years, Bt, xint=5, yint=2500,
 	colGear=rep(c("black","blue"),ngear)[1:ngear]
 	for (p in ptypes) {
 		if (p=="eps") postscript(paste0(pname,".eps"), width=6, height=5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png(paste0(pname,".png"), res=pngres, width=6*pngres, height=5*pngres)
+		else if (p=="png") png(paste0(pname,".png"), unit="in", res=pngres, width=6, height=5)
 		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		plot(0,0, xlim=xlim, ylim=ylim, type="n", xlab=xlab, ylab=ylab)
 		sapply(1:ngear, function(g,x,y){
@@ -783,14 +712,14 @@ plt.biomass = function(years, Bt, xint=5, yint=2500,
 #<<CPUEfig, results=hide, echo=FALSE>>=    # Crude for now
 #-------------------------------------------AME/RH
 plt.cpue = function(cpueObj, #xint=5, yint=2.5,
-   ptypes=c("eps","png"), pngres=150 )
+   ptypes=tcall(PBSawatea)$ptype, pngres=400)
 {
 	zobs = !is.na(cpueObj$Obs)
 	xlim = range(cpueObj$Year[zobs])
 	ylim = range(c(cpueObj$Obs[zobs],cpueObj$Fit[zobs]))
 	for (p in ptypes) {
 		if (p=="eps") postscript("CPUEfit.eps", width=6, height=6, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("CPUEfit.png", res=pngres, width=6*pngres, height=5*pngres)
+		else if (p=="png") png("CPUEfit.png", units="in", res=pngres, width=6, height=5)
 		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		plot(cpueObj$Year, cpueObj$Obs, xlim=xlim, ylim=ylim, type="n", xlab="Year",ylab="CPUE: Observed & Fit")
 		series = unique(cpueObj$Series)
@@ -811,12 +740,12 @@ plt.cpue = function(cpueObj, #xint=5, yint=2.5,
 #<<recdevplot, results=hide, echo=FALSE>>=
 #-------------------------------------------AME/RH
 plt.recdev = function(logRecDev, xint=5, #yint=0.1,
-   ptypes=c("eps","png"), pngres=150 )
+   ptypes=tcall(PBSawatea)$ptype, pngres=400)
 {
 	x = as.numeric(names(logRecDev)); xlim = range(x); xsmall = intersect(seq(1900,2100,xint),x)
 	for (p in ptypes) {
 		if (p=="eps") postscript("recDev.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("recDev.png", res=pngres, width=6*pngres, height=4*pngres)
+		else if (p=="png") png("recDev.png", units="in", res=pngres, width=6, height=4)
 		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		plot(x, logRecDev, xlab="Year", ylab="Log recruitment deviations, epsilon_t")
 		abline(h=0, col="grey")
@@ -832,7 +761,7 @@ plt.recdev = function(logRecDev, xint=5, #yint=0.1,
 #<<recdevacf, results=hide, echo=FALSE>>=
 #-------------------------------------------AME/RH
 plt.recdevacf = function(logRecDev, muC, logvC, A, years, yr1, 
-   ptypes=c("eps","png"), pngres=150, redo.Graphs=TRUE)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, redo.Graphs=TRUE)
 {
 	ageHalfFemSelComm = min(round(muC - sqrt(exp(logvC) * log(2) ))) # take the min when Ngears>1
 	assign("ageHalfFemSelComm", ageHalfFemSelComm, pos=1)
@@ -865,11 +794,11 @@ plt.recdevacf = function(logRecDev, muC, logvC, A, years, yr1,
 #<<initagedevplot, results=hide, echo=FALSE>>=
 #-------------------------------------------AME/RH
 plt.initagedev = function(logInitAgeDev, 
-   ptypes=c("eps","png"), pngres=150 )
+   ptypes=tcall(PBSawatea)$ptype, pngres=400)
 {
 	for (p in ptypes) {
 		if (p=="eps") postscript("initAgeDev.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("initAgeDev.png", res=pngres, height=5*pngres, width=6*pngres)
+		else if (p=="png") png("initAgeDev.png", units="in", res=pngres, height=5, width=6)
 		par(mfrow=c(1,1), mar=c(3.2,3.2,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 		plot(names(logInitAgeDev), logInitAgeDev, xlab="Age", ylab="Log initial age deviations")
 		abline(h=0, col="grey")
@@ -883,7 +812,7 @@ plt.initagedev = function(logInitAgeDev,
 #<<bubbleplots, results=hide, echo=FALSE>>=
 #-------------------------------------------AME/RH
 plt.bubbles = function(mpdObj, nsex=2,
-   ptypes=c("eps","png"), pngres=150, redo.Graphs=TRUE)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, redo.Graphs=TRUE)
 {
 	blow.bubbles = function(obj, cac, mod, sex, surnames=NULL) {
 		series = sort(unique(obj[[cac]][["Series"]]))
@@ -930,7 +859,7 @@ plt.bubbles = function(mpdObj, nsex=2,
 				if (redo.Graphs) {
 					for (p in ptypes) {
 						if (p=="eps") postscript(paste0(ijk,".eps"), width=6, height=ifelse(nr==1,6,8), horizontal=FALSE,  paper="special")
-						else if (p=="png") png(paste0(ijk,".png"), res=pngres, width=6*pngres, height=ifelse(nr==1,6,8)*pngres)
+						else if (p=="png") png(paste0(ijk,".png"), units="in", res=pngres, width=6, height=ifelse(nr==1,6,8))
 						par(mfrow=c(nr,1), mar=c(2,3.5,2,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 						junk=sapply(1:nr,function(s,x,n){ # nr = no. rows = ngear or nsurv
 							plotBubbles(x[[s]], dnam=TRUE, size=0.10, hide0=TRUE, main=n[s], prettyaxis=TRUE, las=1)
@@ -957,12 +886,12 @@ plt.bubbles = function(mpdObj, nsex=2,
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.bubbles
 
-#plotAges-------------------------------2016-11-29
+#plotAges-------------------------------2017-11-30
 #  Plot the MPD model fits to age data (commercial
 #  or survey) using the scape function `plotCA'.
 #-------------------------------------------AME/RH
 plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
-   ptypes = c("eps","png"), pngres=150, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
 {
 	seriesType = paste0("CA",what)
 	seriesList = sort( unique( obj[[seriesType]][["Series"]]) )
@@ -972,6 +901,7 @@ plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
 	CA.nyrs = sapply(CA.yrs,length)
 
 	for ( i in 1:length(seriesList) )  {
+		ii  = seriesList[i] ## sometimes a survey age series is missing
 		yrs = CA.yrs[i]; nyrs = CA.nyrs[i]
 		if (!is.null(list(...)$years)) {
 			yrs = intersect(CA.yrs[[i]],list(...)$years)
@@ -990,14 +920,14 @@ plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
 				cex = c(0.5,0.5)), type=c("p","l"), x=0.78, y=ifelse(nrows==1,-0.10,-0.03), pch=c(20,20), lwd=1, between=0.3)
 			## pch[2] doesn't get used, as type[2]="l". Have to match up if change options in plotCA(currentRes, ....)
 			for (p in ptypes) {
-				pname = paste0(ifelse(what=="c","ageComm","ageSurv"), plot.sex,"Ser",i)
+				pname = paste0(ifelse(what=="c","ageComm","ageSurv"), plot.sex,"Ser",ii) ## need the right series for plot
 				set = if (!is.null(list(...)$set)) list(...)$set else ""
 				pname = paste0(pname,set)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=pwidth, height=pheight, horizontal=FALSE,  paper="special", onefile=FALSE)
-				else if (p=="png") png(paste0(pname,".png"), res=pngres, width=pwidth*pngres, height=pheight*pngres)
+				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=pwidth, height=pheight)
 				par(mar=c(5,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.5,0)) ## this line may have no effect on `plotCA'
 				plotCA( obj, what=what, ylab="Proportion", xlab="Age class", sex=plot.sex, layout= age.layout, key=CA.key, 
-					main=paste0(seriesName[i]," - ",sexlab[j]), pch=20, cex.points=ifelse(nyrs>20 && p=="eps",0.3,0.5), col.lines=ifelse(plot.sex=="Male","dodgerblue","red"), lwd.lines=2 ,series=i, ...)
+					main=paste0(seriesName[i]," - ",sexlab[j]), pch=20, cex.points=ifelse(CA.nyrs[i]>20&&p=="eps",0.3,0.5), col.lines=ifelse(plot.sex=="Male","dodgerblue","red"), lwd.lines=2 ,series=ii, ...)  ## need to pass the right series ii
 				if (p %in% c("eps","png")) dev.off()
 			} ## end of plot type loop
 		} ## end of plot.sex loop
@@ -1009,7 +939,7 @@ plotAges = function(obj, what="c", maxcol=4, sexlab=c("Females","Males"),
 ##  Plot ACFs for the estimated parameters.
 ##  Control eps and png from PBScape.r in plt.mcmcGraphs
 ##----------------------------------------------RH
-plotACFs =function(mcmcObj, lag.max=60) #, ptypes=c("eps","png"), pngres=150)
+plotACFs =function(mcmcObj, lag.max=60) #, ptypes=tcall(PBSawatea)$ptype, pngres=400)
 {
 	#if (!is.null(dev.list())) on.exit(expandGraph(mfrow=c(1,1)))
 	acfs  = apply(mcmcObj$P, 2, function(x){acf(x,plot=FALSE)$acf})

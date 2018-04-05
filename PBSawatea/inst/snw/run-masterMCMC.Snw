@@ -180,27 +180,23 @@ resdoc      = @resdoc
 \chapter*{Appendix~\thechapter. MCMC Model Results}
 
 \newcommand{\LH}{DRAFT -- Non-citable working paper}  % Set to {} for final ResDoc
-\newcommand{\RH}{CSAP WP2014GRF005}
-\newcommand{\LF}{Appendix~\thechapter ~-- MCMC Model Results}
-\newcommand{\RF}{\Sexpr{paste0("@sppname"," (",area.name,")")}}
+\newcommand{\RH}{CSAP WP 2015GRF08}
+\newcommand{\LF}{\Sexpr{paste0("@sppname"," (",area.name,")")}}
+\newcommand{\RF}{Appendix~\thechapter ~-- MCMC Model Results}
 
 \lhead{\LH}\rhead{\RH}\lfoot{\LF}\rfoot{\RF}
 
 %\subsection{Area \Sexpr{area.name}}
 
-@rmresdoc \textbf{Rowan Haigh, Paul J. Starr, and Andrew M. Edwards}
+@rmresdoc \textbf{Paul J. Starr and Rowan Haigh}
 
 @rmresdoc Latest is \today, with \Sexpr{print(version$version.string)}.  % $
 
 @rmresdoc Plotting MCMC output for model {\tt \Sexpr{model.name}}. 
 
-@rmresdoc Graphs ARE \Sexpr{if(!redo.Graphs) paste("NOT")} re-plotted during this document build.
-
-@rmresdoc *** To Paul/Rowan: The text to go into Appendix~\thechapter{} is after the figures and tables. Anything with *** is to be manually done in the final write-up, and I'll manually delete the unnecessary rows of the table of parameter estimtes.  Any ? or ?? are references/citations that will get automatically sorted in the final write up. 
+@rmresdoc Graphs ARE \Sexpr{if(!redo.Graphs) paste("NOT")} re-generated during this document build.
 
 Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCMC results and for the write-up.
-
-5ABC POP 2017 --~~ \texttt{AppE\_Results\_POP\_5ABC\_2017\_RD.Rnw}
 
 \section{History of Runs}
 
@@ -209,7 +205,6 @@ Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCM
 @rmresdoc @rmhrp {\bf Note:} Historical reference points have been reported in this document. Output tables typically report $B_\mathrm{Lim}$ (biomass lower limit), $B_\mathrm{Tar}$ (biomass target), and $u_\mathrm{Tar}$ (exploitation rate target). Exploitation rate lower limit ($u_\mathrm{Lim}$) is often not defined.
 
 @rmresdoc \medskip
-
 
 <<fromscape, results=hide, echo=FALSE>>=
 # Commenting some out for ymr.
@@ -229,14 +224,14 @@ currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
              CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
 # maybe should be CPUE=cpue
 
-assign("currentRes", currentRes, pos=1)  ## maybe need the assign (maybe because you are jumping from code chunk to code chunk)
+assign("currentRes", currentRes, pos=1)   ## maybe need the assign (maybe because you are jumping from code chunk to code chunk)
 save("currentRes",file="currentRes.rda")  ## useful to have when compiling the final results appendix
 
 years = currentRes$B[,"Year"]
 sigmaR = currentRes$extra$residuals$p_log_RecDev[6]
-    # to use when importing projected recruitment deviations (that
-    #  are actually just the random N(0,1) numbers so need 
-    #  multiplying by sigmaR).
+    ## to use when importing projected recruitment deviations (that
+    ## are actually just the random N(0,1) numbers so need 
+    ## multiplying by sigmaR).
 
 # Assign a generic title for use in some plots.
 mainTitle <- "@sppname"
@@ -347,7 +342,7 @@ mpd.R = currentMCMC$R[1,]
 ## Subset MCMC to remove burn-in (e.g., 201:1200)
 currentMCMC <- sapply(currentMCMC,function(x,s){x[s,]},s=mcsub,simplify=FALSE)
 #assign( "currentMCMC", currentMCMC, pos=1 ) # you do need the assign (maybe because you are jumping from code chunk to code chunk)
-num.MCMC = dim(currentMCMC$P)[1]     # number of MCMC samples
+num.MCMC = dim(currentMCMC$P)[1]   ## number of MCMC samples
 
 #--- Vulnerable biomass ----------------------------------------------
 # Also have to import vulnerable biomass from vulnBiom.pst, as it's
@@ -506,16 +501,16 @@ currentProj <- importProjRec( dir=prj.dir, ngear=Ngear, quiet=FALSE )  # RH adde
 
 currentProj <- sapply(currentProj,function(X){sapply(X,function(x,s){x[s,]},s=mcsub,simplify=FALSE)},simplify=FALSE)
 
-# **** COMMENTING THIS OUT TO GET POP 5ABC WORKING - Rowan, can we put an
-#  'if' statement in to ignore this only for POP 5ABC.
-# Take off final year of projection
+## **** COMMENTING THIS OUT TO GET POP 5ABC WORKING
+## Rowan, can we put an 'if' statement in to ignore this only for POP 5ABC.
+## Take off final year of projection
 if (@skip.last.year) { 
 	currentProj$B = lapply(currentProj$B, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
 	currentProj$Y = lapply(currentProj$Y, function(x) { x[ ,1:(dim(x)[[2]]-1)]  })
 	currentProj$eps = lapply(currentProj$eps, function(x) {  x[ ,1:(dim(x)[[2]]-1)] })
 	currentProj$VB = lapply(currentProj$VB, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
 }
-# **** END ****
+## **** END ****
 
 # currentProj$R is calculated below
 # sd(unlist(currentProj$eps$'0'))
@@ -533,13 +528,13 @@ for(i in catchProj)
   {
   currentProj$U[[i]] = currentProj$Y[[i]] / currentProj$VB[[i]]
 }
-# So currentProj$U is now exploitation rate for MCMC projections.
+## So currentProj$U is now exploitation rate for MCMC projections.
 
 # boxplot(currentProj$U[[5]])   to plot
-# Note: if go beyond 10 years (or have earlier maturing fish) then
-#  for u table need to check that u doesn't go to 0 when stock 
-#  extinct. Check  sapply(currentProj$U, min)   only has 0 for 0 
-#  catch policy.
+## Note: if go beyond 10 years (or have earlier maturing fish) then
+##  for u table need to check that u doesn't go to 0 when stock 
+##  extinct. Check  sapply(currentProj$U, min)   only has 0 for 0 
+##  catch policy.
 
 assign( "currentProj", currentProj, pos=1 )
 save("currentProj",file="currentProj.rda")  ## useful to have when compiling the final results appendix
@@ -547,27 +542,27 @@ save("currentProj",file="currentProj.rda")  ## useful to have when compiling the
 
 <<MSY, results=hide, echo=FALSE>>=
 
-# Awatea MSY.
+## Awatea MSY.
 currentMSY = msyCalc( dir=msy.dir, error.rep = 0 )  # reports if MSY not converged
 
-# Next line now doesn't work with the scalars in the list, so 
-#  replacing with an error for now as we're using all mcsub values
-#  for POP 3CD and 5DE.
+## Next line now doesn't work with the scalars in the list, so 
+##  replacing with an error for now as we're using all mcsub values
+##  for POP 3CD and 5DE.
 
 currentMSY = sapply(currentMSY,function(x,s){x[s]},s=mcsub,simplify=FALSE)  # mcsub subsets the MCMC samples
 
 assign( "currentMSY", currentMSY, pos=1 ) ## Forces it global (or something)
 save("currentMSY",file="currentMSY.rda")  ## useful to have when compiling the final results appendix
 
-# Do these for ease of showing statistics in tables. 
-# Each should be a vector with value for each MCMC draw
+## Do these for ease of showing statistics in tables. 
+## Each should be a vector with value for each MCMC draw
 
 if(currentRes$extra$priors$Rinit_prior[1] > 0 & currentRes$extra$priors$Rinit_prior[7] != 1) stop("Not starting from unfished equilibrium, so need to fix B0 values")
 
-# AME changing RH's Year to currYearChar
+## AME changing RH's Year to currYearChar
 currYearChar = rev(dimnames(currentMCMC$B)[[2]])[1]      
                 # character current year (start for projections)
-# AME changing RH's Year0 to currYear
+## AME changing RH's Year0 to currYear
 currYear = as.numeric(currYearChar)         # numeric current year
 startYearChar = dimnames(currentMCMC$B)[[2]][1]   # start year
 startYear = as.numeric(startYearChar)
@@ -575,7 +570,7 @@ startYear = as.numeric(startYearChar)
 #Ypro  = dimnames(currentProj$B[[1]])[[2]]        # character available projection years
 #Ypr0  = as.numeric(Ypro)                         # numeric available projection years
 
-# To calculate trajectory for Bt/B0 MCMC's, do:
+## To calculate trajectory for Bt/B0 MCMC's, do:
 # BoverB0 = currentMCMC$B / B0.MCMC     # B/B0  each chain
 # BoverB0med = apply(BoverB0, 2, median)         # median each year
 
@@ -590,29 +585,28 @@ VBmsy.MCMC  = currentMSY$VB # only one VB is calculated in projections
 msy.MCMC    = currentMSY$yield
 umsy.MCMC   = currentMSY$u
 
-# gather MCMC values suggested by Trevor Davies (Dalhousie) for comparison
+## Gather MCMC values suggested by Trevor Davies (Dalhousie) for comparison
 trevorMCMC = currentMCMC$P[,c("h","M_1","M_2")[is.element(c("h","M_1","M_2"),names(currentMCMC$P))],drop=FALSE]
 trevorMCMC = data.frame(trevorMCMC, B0=B0.MCMC[,1], MSY=msy.MCMC, Bmsy=Bmsy.MCMC, umsy=umsy.MCMC, f=currentMCMC$L$f)
 
-# To calculate the actual projected recruitments (from the eps)
+## To calculate the actual projected recruitments (from the eps)
 currentProj$R = list()
 NN = matrix(1:num.MCMC, nrow=1)      # to use to populate each data.frame
 projYearsNames = names(currentProj$B[[1]])
 projYearsNum   = length(projYearsNames)
 
-# First calculate recruits for first projection year, which is based
-#  on penultimate MCMC year's spawners (which is 2010, final year
-#  of that is 2011, first proj year is 2011, and I checked that
-#  values for last year of MCMC equal those for first yr of proj:
-#  > range(currentMCMC$B[, 72] - currentProj$B$'250'[, 1])
-#      0 0.
-# Do this here as does not depend on projections (and so is same for
-#  all catch strategies).
-Bpen.MCMC = currentMCMC$B[, rev(names(currentMCMC$B))[2]]
-     # spawning biomass for penultimate year of MCMC
+## First calculate recruits for first projection year, which is based
+##  on penultimate MCMC year's spawners (which is 2010, final year
+##  of that is 2011, first proj year is 2011, and I checked that
+##  values for last year of MCMC equal those for first yr of proj:
+##  > range(currentMCMC$B[, 72] - currentProj$B$'250'[, 1]) 0 0.
 
-# Need a vector of h for projections, so if h not estimated
-#  make hForProj just replicate the mpd value:
+## Do this here as does not depend on projections (and so is same for all catch strategies).
+Bpen.MCMC = currentMCMC$B[, rev(names(currentMCMC$B))[2]]
+     ## spawning biomass for penultimate year of MCMC
+
+## Need a vector of h for projections, so if h not estimated
+##  make hForProj just replicate the mpd value:
 
 if (!is.element("h",use.Pnames))
   {hForProj = rep(currentRes$extra$parameters$h, num.MCMC) } else 
@@ -620,8 +614,8 @@ if (!is.element("h",use.Pnames))
   
 RfirstProj = srFun(Bpen.MCMC, R0 = currentMCMC$P$R_0, h=hForProj, B0=B0.MCMC)
 
-# Stochastic multiplier, will be same for all strategies as random
-#  numbers currentProj$eps[[j]] are the same for each strategy j
+## Stochastic multiplier, will be same for all strategies as random
+##  numbers currentProj$eps[[j]] are the same for each strategy j
 stochMult = exp(currentProj$eps$'0' - sigmaR^2/2)
 
 for(j in 1:length(currentProj$eps) )    # loop over policies
@@ -629,16 +623,15 @@ for(j in 1:length(currentProj$eps) )    # loop over policies
   junk = apply(NN, 2, function(i, B, R0, h, B0) {
    srFun(as.numeric(B[i,]), h = h[i], R0=R0[i], B0=B0[1] ) },
    B = currentProj$B[[j]],
-   R0 = currentMCMC$P$R_0, h = hForProj, B0=B0.MCMC[,1])  # RH: I changed B0.MCMC to be a one-column matrix above to be comparable with VB0.MCMC
-       # Rowan's trick for using apply on each row.
+   R0 = currentMCMC$P$R_0, h = hForProj, B0=B0.MCMC[,1])  ## RH: I changed B0.MCMC to be a one-column matrix above to be comparable with VB0.MCMC
+       ## Rowan's trick for using apply on each row.
   junk = t(junk)
   junk = as.data.frame(junk)
-       # This gives data
-       #  frame, rows are MCMC samples, columns are recruits for the
-       #  next year. Need to insert RfirstProj as first column,
-       #  and remove final column (which
-       #  corresponds to recruits for the year after final projection
-       #  year).
+       ## This gives data frame,
+       ##  rows are MCMC samples, columns are recruits for the
+       ##  next year. Need to insert RfirstProj as first column,
+       ##  and remove final column (which corresponds to recruits
+       ##  for the year after final projection year).
   detR = cbind(RfirstProj, junk)
   detR = detR[, -dim(detR)[2] ]     # take off final column
   names(detR) = projYearsNames      # detR is deterministic values
@@ -1021,13 +1014,13 @@ plotPolicy = projPolicy[prjPos]
 
 if(redo.Graphs)
 	plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, mpdObj=currentRes, save=TRUE, 
-		ptypes = c("eps","png"), pngres=400, ngear=Ngear,
+		ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=Ngear,
 		plotPolicies = as.character(plotPolicy), #plotPolicies = names(currentProj$Y[1:6]),
 		onePolicy    = as.character(onePolicy),  #onePolicy = names(currentProj$Y[2]), 
 		mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R),
 		trevObj = trevorMCMC
 	)
-# plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, save=TRUE, ptypes = c("eps","png"), pngres=400, ngear=Ngear, plotPolicies = as.character(plotPolicy), onePolicy = as.character(onePolicy), mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R), trevObj = trevorMCMC) # for debugging only
+# plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, save=TRUE, ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=Ngear, plotPolicies = as.character(plotPolicy), onePolicy = as.character(onePolicy), mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R), trevObj = trevorMCMC) # for debugging only
 # Change policy options if want other catch policies shown.
 # Set up for length(plotPolicies)=6
 # See help for other options.
