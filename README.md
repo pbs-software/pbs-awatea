@@ -24,7 +24,7 @@ importFrom("Hmisc", "Cbind", "panel.xYplot")
 
 In the end, the target audience is very small, comprising only those people who actually use Awatea.
 
-###PBSawatea dependencies###
+### PBSawatea dependencies ###
 
 **PBStools** depends on **PBSmapping**, **PBSmodelling**, **PBSdata**, **RODBC**<br>
 &emsp;**PBSmodelling** imports *methods*, *tcltk*, *XML*<br>

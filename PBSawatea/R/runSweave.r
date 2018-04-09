@@ -32,12 +32,12 @@ runSweave = function(
 	if (locode) { 
 		mess = c(
 		"require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)",
-		"require(gplots, quietly=TRUE)",
+		#"require(gplots, quietly=TRUE)", ## deprecate
+		#"require(gdata, quietly=TRUE)"   ## deprecate  # Data manipulation functions from CRAN.
 		"require(xtable, quietly=TRUE)",
 		"require(lattice, quietly=TRUE)",
-		"require(scape, quietly=TRUE)",     # Arni Magnusson's support functions for Awatea.
-		"require(plotMCMC, quietly=TRUE)", # Arni Magnusson's plot functions for Awatea MCMC.
-		"require(gdata, quietly=TRUE)"     # Data manipulation functions from CRAN.
+		"require(scape, quietly=TRUE)",   ## Arni Magnusson's support functions for Awatea.
+		"require(plotMCMC, quietly=TRUE)" ## Arni Magnusson's plot functions for Awatea MCMC.
 		)
 		eval(parse(text=mess))
 #browser();return()

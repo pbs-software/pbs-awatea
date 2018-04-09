@@ -5,6 +5,7 @@
 #  cquantile.vec    : get one probability at a time.
 #  plotBars         : barplots of specific year age proportions
 #  plotBox          : modified boxplot with quantile whiskers.
+#  plotCI           : plot points with confidence intervals
 #  plotDensPOP      : edited plotMCMC::plotDens function.
 #  plotDensPOPpars  : edited plotMCMC::plotDens for parameters.
 #  plotTracePOP     : plot traces with running median.
@@ -350,6 +351,60 @@ plotBox = function (x, ..., range=1.5, width=NULL, varwidth=FALSE,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBox
 
 
+#plotCI---------------------------------2018-04-06
+# Lifted and modified from gplots::plotCI
+#-----------------------------------------------RH
+plotCI = function (x, y=NULL, ui, li, uiw=0.05, liw=uiw, clipNA=TRUE,
+   gap=1, col=par("col"), barcol=col, lwd=par("lwd"), lty=par("lty"), ...)
+{
+	xobjnam = deparse(substitute(x))
+	yobjnam = deparse(substitute(y))
+	if (is.list(x)) {
+		y <- x$y
+		x <- x$x
+	}
+	if (is.null(y)) {
+		if (is.null(x)) 
+			stop("both x and y NULL")
+		y <- as.numeric(x)
+		x <- seq(along = x)
+	}
+	if (clipNA) {
+		y  = clipVector(y, NA)
+		i  = as.numeric(names(y))
+		x  = x[i]
+		ui = ui[i]
+		li = li[i]
+	}
+	dots = list(...)
+	need = c("xlim","ylim","xlab","ylab","pch","bg","cex.axis","cex.lab","cex.main")
+	narg = as.list(rep(NA,length(need))); names(narg) = need
+	for (a in need)
+		eval(parse(text=paste0(a," = dots$",a)))
+	if (is.null(xlim))      xlim      = range(x, na.rm = TRUE)
+	if (is.null(ylim))      ylim      = range(c(y, ui, li), na.rm=TRUE)
+	if (is.null(xlab))      xlab      = xobjnam
+	if (is.null(ylab))      ylab      = yobjnam
+	if (is.null(pch))       pch       = 21
+	if (is.null(bg))        bg        = "white"
+	if (is.null(cex.axis))  cex.axis  = 1.2
+	if (is.null(cex.lab))   cex.lab   = 1.5
+	if (is.null(cex.main))  cex.main  = 1.5
+	for (a in need)
+		narg[[a]] = get(a)
+	marg = dots[setdiff(names(dots),need)]
+
+	do.call(plot,args=c(list(x=x,y=y),narg,marg))
+#if (pch==20) {browser();return()}
+	#plot(x, y, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, type="n", cex.axis=cex.axis, cex.lab=cex.lab, cex.main=cex.main)
+	arrows(x, li, x, pmax(y-gap,li), col=barcol, lwd=lwd, lty=lty, angle=90, length=liw, code=1)
+	arrows(x, ui, x, pmin(y+gap,ui), col=barcol, lwd=lwd, lty=lty, angle=90, length=uiw, code=1)
+	points(x, y, pch=pch, col=col, bg=bg, cex=1.2)
+	invisible(list(x = x, y = y))
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotCI
+
+
 #plotDensPOP----------------------------2010-10-19
 #  editing plotMCMC::plotDens function to have
 #  less whitesapce, not repeat x axis labels, and make y axes
@@ -549,6 +604,60 @@ plotDensPOPpars =
     }
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotDensPOPpars
+
+
+#plotSnail------------------------------2017-06-06
+# Plot snail-trail plots for MCMC analysis.
+#  AME: replacing "2010" with as.character(currYear - 1)
+#  RH: added assYrs = years past with estimated Bcurr from previous assessment(s), e.g., 5ABC QCS c(2011, 2017)
+#-------------------------------------------AME/RH
+plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lwd=2, ngear=1, assYrs=2011)
+{
+	BUlist = as.list(0:ngear); names(BUlist)=c("Spawning Biomass",Cnames[1:ngear])
+	#BUlist[[1]] = BoverBmsy[,-length(BoverBmsy)]
+	BUlist[[1]] = BoverBmsy[,-1]  ## conversation with PJS: we both agree that B2017/Bmsy should be paired with U2016/Umsy
+	for (g in 1:ngear) {
+		gfile = UoverUmsy[,grep(paste0("_",g),names(UoverUmsy))]
+		names(gfile) = substring(names(gfile),1,4)
+		BUlist[[g+1]] = gfile
+	}
+	# Calculate medians to be plotted
+	BUmed    = sapply(BUlist,function(x){apply(x,2,median)},simplify=FALSE)  # median each year
+	colPal   = colorRampPalette(c("grey95", "grey30"))
+	colSlime = rep(c("grey","slategray2"),ngear)[1:ngear]
+	colStart = rep(c("cyan","thistle"),ngear)[1:ngear]
+	colStop  = rep(c("blue","purple"),ngear)[1:ngear]
+	colAss   = rep(c("gold","orange"),ngear)[1:ngear]
+	nB = length(BUmed[[1]])
+	if (is.null(xLim))
+		xLim=c(0, max(c(BUmed[[1]], quantile(apply(BUlist[[1]],2,quantile,p[2]),0.6), 1)))
+	if (is.null(yLim))
+		yLim=c(0, max(c(sapply(BUmed[(1:ngear)+1],max), quantile(sapply(BUlist[(1:ngear)+1],function(x,p){apply(x,2,quantile,p)},p=p[2]),0.95), 1)))
+	plot(0,0, xlim=xLim, ylim=yLim, type="n", 
+		xlab = expression(paste(italic(B[t])/italic(B)[MSY])), 
+		ylab = expression(paste(italic(u[t-1])/italic(u)[MSY])),
+		cex.lab=1.25,cex.axis=1.0,las=1)
+	abline(h=1, col=c("grey20"), lwd=Lwd, lty=3)
+	abline(v=c(0.4,0.8), col=c("red","green4"), lwd=Lwd, lty=2)
+	for (i in ngear:1) {
+		lines(BUmed[[1]], BUmed[[i+1]], col=colSlime[i], lwd=Lwd)
+		points(BUmed[[1]], BUmed[[i+1]], type="p", pch=19, col=colPal(nB))
+		points(BUmed[[1]][1], BUmed[[i+1]][1], pch=19, col=colStart[i])
+		points(rev(BUmed[[1]])[1], rev(BUmed[[i+1]])[1], pch=19, col=colStop[i])
+		points(BUmed[[1]][as.character(assYrs)], BUmed[[i+1]][as.character(assYrs)], pch=19, col=colAss[i])
+		segments(quantile(BUlist[[1]][,as.character(currYear-1)],p[1]),
+			BUmed[[i+1]][as.character(currYear-1)],
+			quantile(BUlist[[1]][,as.character(currYear-1)], p[2]), 
+			BUmed[[i+1]][as.character(currYear-1)], col=colStop[i], lwd=1.5)
+		segments(BUmed[[1]][as.character(currYear - 1)], 
+			quantile(BUlist[[i+1]][, as.character(currYear - 1)], p[1]),
+			BUmed[[1]][as.character(currYear - 1)], 
+			quantile(BUlist[[i+1]][, as.character(currYear - 1)], p[2]), col=colStop[i], lwd=1.5)
+	}
+	if (ngear>1)  addLegend(0.95,0.80,legend=Cnames,lty=1,lwd=Lwd,col=colSlime,seg.len=4,xjust=1,bty="n",cex=0.8)
+	box()
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotSnail
 
 
 #plotTracePOP---------------------------2012-08-23

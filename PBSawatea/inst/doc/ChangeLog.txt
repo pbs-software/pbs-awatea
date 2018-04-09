@@ -5,6 +5,19 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.2.2 (2018-04-06)
+  * PBSscape.r
+    + Removed function `plotIndex2' from PBSawatea as it does not seem to be used. (RH 180406)
+    + Revised functions `plotIndexNotLattice' to better plot the survey indices. (RH 180406)
+    + Revised function `plotCPUE' to use the replacement function `plotCI'. (RH 180405)
+    + Created new function `plotCI' to replace `gplots::plotCI'. (RH 180405)
+  * Sweave
+    + Revised `run-master.Snw' & 'run-masterMCMC.Snw. (RH 180405)
+      - Stop creating eps figures if the choice is to use png figures, and vice-versa.
+      - Added a new 2-figure function `twofigWH' to add plots with differing heights in the same figure.
+      - Added figure tagging through \pdftooltip from the package `pdfcomment'.
+      - Changed the BtB0|catchSmall figure to be either eps or png (twas fixed as an eps figure).
+
 1.2.1 (2018-04-04)
   * runSweave.r
     + Save `ptype' in `PBSawatea' list object, which is stored in environment `.PBSmodEnv' via `packList'. (RH 180404)

@@ -14,9 +14,9 @@ exportPattern("^\\.flush")
 
 import(methods, PBStools, lattice, scape, plotMCMC, xtable)
 
-importFrom("coda", "mcmc")
+importFrom("coda", "mcmc")         ## deprecate
 
-importFrom("gplots", "plotCI")
+importFrom("gplots", "plotCI")     ## deprecate
 
 importFrom("graphics", "abline", "axis", "barplot", "box", "boxplot",
            "legend", "lines", "mtext", "pairs", "par", "plot",

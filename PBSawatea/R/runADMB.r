@@ -26,10 +26,11 @@ runADMB = function(
    codePath="C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
    ...
 	) {
-
 	ciao = function(){setwd(cwd); Sys.setenv(PATH=syspath0); gc(verbose=FALSE)} # exit function
 	cwd  = getwd(); syspath0  = Sys.getenv()["PATH"]
 	on.exit(ciao())
+	if (!doMPD)
+		cvpro = tcall(PBSawatea)$cvpro  ## retain cvpro from initially run MPD
 	if (locode) { 
 		load(paste0(system.file("data",package="PBSawatea"),"/gfcode.rda"))
 		eval(parse(text="require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)"))

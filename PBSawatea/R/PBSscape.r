@@ -983,141 +983,6 @@ plotRmcmcPOP=function(obj,
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotRmcmcPOP
 
-
-#plotIndex2-----------------------------2011-08-31
-# Revised version of Arni's function to confine plotting to data region.
-#----------------------------------------------AME
-plotIndex2 <- function (model, what="c", series=NULL, axes=TRUE, same.limits=FALSE,
-   between=list(x=axes, y=axes), ylim=NULL, q=1, bar=1,
-   log=FALSE, base=10, main="", xlab="", ylab="",
-   cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8,
-   las=1, tck=c(1, 0)/2, tick.number=5, lty.grid=3,
-   col.grid="white", pch=16, cex.points=1.2, col.points="black",
-   lty.lines=1, lwd.lines=4, col.lines="dimgrey", lty.bar=1,
-   plot=TRUE, ...)
-{
-    panel.index <- function(x, y, subscripts, yobs, yfit, col.points,
-        col.lines, ...) {
-        y.range <- range(c(rep(0, !log), attr(yobs, "other"),
-            y), na.rm=TRUE)
-        panel.abline(v=pretty(x, tick.number), h=pretty(y.range,
-            tick.number), lty=lty.grid, col=col.grid)
-        panel.xyplot(x, y, type="n", ...)
-        panel.xyplot(x, yfit[subscripts], type="l", lty=lty.lines,
-            lwd=lwd.lines, col=col.lines[subscripts], ...)
-        ok.Y <- !is.na(yobs[subscripts])
-        if (lty.bar == 0)
-            panel.xyplot(x, yobs[subscripts], col=col.points,
-                ...)
-        else panel.xYplot(x[ok.Y], yobs[subscripts][ok.Y], subscripts=subscripts[ok.Y],
-            col=col.points[subscripts], lty.bar=lty.bar, ...)
-    }
-    if (class(model) != "scape")
-        stop("The 'model' argument should be a scape object, not ",
-            chartr(".", " ", class(model)), ".")
-    what <- match.arg(what, c("c", "s"))
-    relation <- if (same.limits)
-        "same"
-    else "free"
-    if (what == "c") {
-        if (any(names(model) == "CPUE"))
-        {
-        # Truncate fit to show only data years.
-          minYr <- min( model$CPUE$Year[ !is.na(model$CPUE$Obs) ] )
-          x <- model$CPUE[ model$CPUE$Year >= minYr, ]
-        }
-        else {
-            what <- "s"
-            cat("Commercial CPUE data (", substitute(model),
-                "$CPUE) not found. Assuming user intended what=\"s\".\n",
-                sep="")
-        }
-    }
-    if (what == "s") {
-        if (any(names(model) == "Survey"))
-        {
-        # Truncate fit to show only data years.
-            x <- model$Survey
-            minYr <- min( model$Survey$Year[ !is.na(model$Survey$Obs) ] )
-            x <- model$Survey[ model$Survey$Year >= minYr, ]
-        }
-        else stop("Found neither commercial CPUE data (", substitute(model),
-            "$CPUE) nor survey abundance data (", substitute(model),
-            "$Survey).\nPlease verify that ", substitute(model),
-            " is a 'scape' model that contains abundance index data.")
-    }
-    if (is.null(series))
-        series <- unique(x$Series)
-    ok.series <- x$Series %in% series
-    if (!any(ok.series))
-        stop("Please check if the 'series' argument is correct.")
-    x <- x[ok.series, ]
-    if (is.numeric(x$Series))
-        x$Series <- factor(paste("Series", x$Series))
-    x$Obs <- x$Obs/q
-    x$Fit <- x$Fit/q
-    x$Hi <- x$Obs * exp(bar * x$CV)
-    x$Lo <- x$Obs/exp(bar * x$CV)
-    if (log) {
-        x$Obs <- log(x$Obs, base=base)
-        x$Fit <- log(x$Fit, base=base)
-        x$Hi <- log(x$Hi, base=base)
-        x$Lo <- log(x$Lo, base=base)
-    }
-    #mess = c(
-    #"require(grid, quietly=TRUE, warn.conflicts=FALSE)",
-    #"require(Hmisc, quietly=TRUE, warn.conflicts=FALSE)",
-    #"require(lattice, quietly=TRUE, warn.conflicts=FALSE)"
-    #)
-    eval(parse(text=mess))
-    if (trellis.par.get()$background$col == "#909090") {
-        for (d in dev.list()) dev.off()
-        trellis.device(color=FALSE)
-    }
-    col.points <- rep(col.points, length.out=nlevels(x$Series))
-    col.lines <- rep(col.lines, length.out=nlevels(x$Series))
-    mymain <- list(label=main, cex=cex.main)
-    myxlab <- list(label=xlab, cex=cex.lab)
-    myylab <- list(label=ylab, cex=cex.lab)
-    myrot <- switch(as.character(las), "0"=list(x=list(rot=0),
-        y=list(rot=90)), "1"=list(x=list(rot=0), y=list(rot=0)),
-        "2"=list(x=list(rot=90), y=list(rot=0)), "3"=list(x=list(rot=90),
-            y=list(rot=90)))
-    myscales <- c(list(draw=axes, relation=relation, cex=cex.axis,
-        tck=tck, tick.number=tick.number), myrot)
-    mystrip <- list(cex=cex.strip)
-    graph <- xyplot(Fit ~ Year+0.5 | Series, data=x, panel=panel.index,
-        yobs=Cbind(x$Obs, x$Hi, x$Lo), yfit=x$Fit, as.table=TRUE,
-        between=between, main=mymain, xlab=myxlab, ylab=myylab,
-        par.strip.text=mystrip, scales=myscales, pch=pch,
-        cex=cex.points, col.points=col.points[x$Series],
-        col.lines=col.lines[x$Series], ...)
-    if (is.list(ylim))
-        graph$y.limits <- rep(ylim, length.out=length(series))
-    else if (is.numeric(ylim))
-        graph$y.limits <- rep(list(ylim), length(series))
-    else {
-        extremes <- as.data.frame(lapply(split(x[, c("Fit", "Hi",
-            "Lo")], x$Series), range, na.rm=TRUE))
-        if (!log)
-            graph$y.limits <- lapply(extremes, function(x) c(0,
-                1.04 * x[2]))
-        else graph$y.limits <- lapply(extremes, function(x) range(x) +
-            c(-0.04, 0.04) * diff(range(x)))
-    }
-    if (same.limits) 
-        graph$y.limits <- range(unlist(graph$y.limits))
-    if (plot) {
-        print(graph)
-        invisible(x)
-    }
-    else {
-        invisible(graph)
-    }
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotIndex2
-
-
 #--------------------------------------------------------------------#
 #                        Utility Functions                           #
 #--------------------------------------------------------------------#
@@ -1921,9 +1786,10 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.idx
 
 
-#plotIndexNotLattice--------------------2014-09-29
+#plotIndexNotLattice--------------------2018-04-06
 # Taking some of plt.idx, but doing plot.Index NOT as lattice
-# YMR - have five survey series, so adapting as required.
+# obj = currentRes
+# plotCI is now custom function in PBSawatea (not gplots)
 #-------------------------------------------AME/RH
 plotIndexNotLattice <- function(obj, main="", save=NULL,
    bar=1.96, ssnames=paste("Ser",1:9,sep=""),
@@ -1933,7 +1799,9 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	objSurv=obj$Survey; objCPUE=obj$CPUE
 	seriesList <- sort( unique( objSurv$Series ) )   # sort is risky if not always in same order
 	nseries=length(seriesList)
-	surveyHeadName=if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
+	surveyHeadName = if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
+	surveyHeadName = gsub("QC Sound","QCS",surveyHeadName)
+	cvpro = tcall(PBSawatea)$cvpro
 	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
 
 	# (1) Plot the survey indices 
@@ -1942,7 +1810,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	for (p in ptypes) {
 		if (p=="eps") postscript("survIndSer.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 		else if (p=="png") png("survIndSer.png", units="in", res=pngres, width=6.5, height=8.5)
-		par(mfrow=c(rc[1],rc[2]), mar=c(2,2,1,0.5), oma=c(1.5,2,1,0.5), mgp=c(1.75,0.5,0))
+		par(mfrow=c(rc[1],rc[2]), mar=c(2,2,1.25,0.5), oma=c(1.5,1.5,1,0.5), mgp=c(1.75,0.5,0))
 		for ( i in 1:nseries ) {
 			idx <- seriesList[i]==objSurv$Series
 			seriesVals=objSurv[idx,]
@@ -1960,28 +1828,32 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 				xlim=xLim, ylim=yLim, xlab="", ylab="", gap=0, pch=19) # restrict years for plot, does error bars
 			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-			mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
+			mtext( side=3, line=0.25, cex=ifelse(nseries>2,1.2,1.5), outer=FALSE, surveyHeadName[i]) #  outer=TRUE
 			if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
 				addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,1),cex=0.8,col=cvcol)
 			if(i==nseries) {
-				mtext(side=2, line=0, cex=1, outer=TRUE,"Relative biomass")
-				mtext(side=1, line=0, cex=1.2, outer=TRUE, "Year")
+				mtext(side=2, line=0, cex=1.5, outer=TRUE,"Relative biomass")
+				mtext(side=1, line=0, cex=1.5, outer=TRUE, "Year")
 			}
 		}
-		dev.off()
+		if (p %in% c("eps","png")) dev.off()
 	}  # cex was 0.8 for POP
+#browser();return()
 
 	# (2) And again, but with the same year axis for each. Think will be instructive to see
 	ymaxsurvIndSer3=0           # For ymaxsurvIndSer3.eps
 	xLimmaxsurvIndSer3=NA
+	XLIM=numeric()
 	for (p in ptypes) {
 		if (p=="eps") postscript("survIndSer2.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 		else if (p=="png") png("survIndSer2.png", units="in", res=pngres, width=6.5, height=8.5)
-		par(mfrow=c(nseries,1), mar=c(0,2,0,3), oma=c(3.2,2,0.5,0), mgp=c(1.75,0.5,0))
+		par(mfrow=c(nseries,1), mar=c(0,2,0,0.5), oma=c(3.2,3,0.5,0), mgp=c(1.75,0.5,0))
 		for ( i in 1:length(seriesList) ) {
-		idx <- seriesList[i]==objSurv$Series
-			yrTicks=as.numeric( objSurv$Year[idx])           # all years
-			YrTicks=intersect(seq(1900,2100,10),yrTicks) # decadal ticks
+			idx <- seriesList[i]==objSurv$Series
+			yrTicks=as.numeric( objSurv$Year[idx])        ## all years
+			#YrTicks=intersect(seq(1900,2100,10),yrTicks) ## decadal ticks (doesn't work for short survey in odd years)
+			XLIM = range(c(XLIM,seriesVals$Year[!is.na(seriesVals$Obs)]))
+			YrTicks=pretty(XLIM)
 			seriesVals=objSurv[idx,]
 			# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
 			seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
@@ -1998,19 +1870,21 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 			# restrict years for plot, does error bars
 			lines(seriesVals$Year, seriesVals$Fit, lwd=2, col="blue")
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
-			axis( side=1, at=YrTicks, tcl=-0.4, labels=FALSE)
-			mtext(side=4, line=1.5, cex=0.8, outer=FALSE, paste0(strwrap(surveyHeadName[i],10),collapse="\n"))
+			axis( side=1, at=YrTicks, tcl=-0.4, labels=ifelse(i==nseries,TRUE,FALSE),cex.axis=1.2)
+			#mtext(side=4, line=1.5, cex=0.8, outer=FALSE, paste0(strwrap(surveyHeadName[i],10),collapse="\n"))
+			mtext(side=2, line=1.75, cex=ifelse(nseries>2,1,1.5), outer=FALSE, surveyHeadName[i], col="blue")
 			if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
-				addLabel(0.025,0.075,paste("+ CV process error ",cvpro[i],sep=""),adj=c(0,0),cex=.8+(.05*(nseries-1)),col=cvcol)
+				addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,1),cex=.8+(.05*(nseries-1)),col=cvcol)
 			if(i==nseries) {
-				axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
-				axis( side=1, at=YrTicks, tcl=-0.4, labels=TRUE)
-				mtext(side=1, line=2, cex=1.2, outer=TRUE, "Year")
-				mtext(side=2, line=0, cex=1, outer=TRUE,"Relative biomass")
+				#axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
+				#axis( side=1, at=YrTicks, tcl=-0.4, labels=TRUE)
+				mtext(side=1, line=2, cex=1.5, outer=TRUE, "Year")
+				mtext(side=2, line=1.2, cex=1.5, outer=TRUE, "Relative biomass")
 			}
 		}  # cex was 0.8 for POP
-		dev.off()
+		if (p %in% c("eps","png")) dev.off()
 	}
+#browser();return()
 
 	# (3) And again, but all series on same plot, normalised to their means to see trends. Maybe add CPUE also.
 	# Calculate max of normalised surveys and CPUEs
@@ -2028,7 +1902,8 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 		#postscript("survIndSer3.eps", height=6.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
 		yrTicks=yrsspan
-		YrTicks=intersect(seq(1900,2100,10),yrTicks) # decadal ticks
+		#YrTicks=intersect(seq(1900,2100,10),yrTicks) ## decadal ticks (doesn't work for short survey in odd years)
+		YrTicks=pretty(xLim)
 		NSL=1:length(seriesList)
 		CLRS=c("black","blue","red","green4","orange","purple","navy","salmon")
 		clrs=rep(CLRS,max(NSL))[NSL]
@@ -2043,9 +1918,10 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 			yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
 			points(yearsnotNA, seriesVals$Obs[ !is.na(seriesVals$Obs)] / mean(seriesVals$Obs, na.rm=TRUE), pch=i, col=clrs[i], type="o")
 		}
-		legtxt=if (exists(".PBSmodEnv")) tcall(PBSawatea)$Snames else PBSawatea$Snames
+		legtxt = if (exists(".PBSmodEnv")) tcall(PBSawatea)$Snames else PBSawatea$Snames
+		legtxt = gsub("QC Sound","QCS",legtxt)
 		# Now draw on CPUE series also:
-		nseries=length(seriesList)  #  Need nseries from surveys for col
+		nseries = length(seriesList)  #  Need nseries from surveys for col
 		seriesListCPUE <- sort( unique( objcpue$Series ) )
 		ncpue=length(seriesListCPUE)
 		cpue = as.logical(obj$extra$likelihoods$CPUE)
@@ -2065,8 +1941,8 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 						na.rm=TRUE), pch=i+nseries, col=clrs[i+nseries], type="o", lty=2)
 			}
 		}
-		addLegend(0.075,0.975,bty="n",col=clrs,pch=NSL,legend=legtxt,cex=0.8)
-		dev.off()
+		addLegend(0.075, 0.975, bty="n", col=clrs, pch=NSL, legend=legtxt, cex=0.8)
+		if (p %in% c("eps","png")) dev.off()
 	}
 
 	# (4) And again, but big figures for ease of viewing. 
@@ -2083,15 +1959,15 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0("survIndSer4-", i, ".eps"), width=6.5, height=6.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0("survIndSer4-", i, ".png"), units="in", res=pngres, width=6.5, height=6.5)
-			par(mfrow=c(1,1), mar=c(3,3,2,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3.25,2,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, 
-				xlim=xLim, ylim=yLim, xlab="Year", ylab="Relative biomass", gap=0, pch=19, cex.lab=1.25)
+				xlim=xLim, ylim=yLim, xlab="Year", ylab="Relative biomass", gap=0, pch=19, cex.lab=1.5)
 			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
 			mtext( side=3, line=0.25, cex=1.5, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
 			if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
 				addLabel(0.95,0.95,paste("+ CV process error ",cvpro[i],sep=""),adj=c(1,0),cex=0.8,col=cvcol)
-			dev.off()
+			if (p %in% c("eps","png")) dev.off()
 		}
 	}  # cex was 0.8 for POP
 }
@@ -2187,7 +2063,7 @@ plotChains=function (mcmc, nchains=3, pdisc=0.1,
 
 ## Plotting CPUE and fit with error bars, copying plotIndexNotLattice from above.
 ## obj=currentRes$CPUE
-## last modified: RH 171130
+## last modified: RH 180405
 ##-------------------------
 plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
    ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
@@ -2196,6 +2072,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 	nseries=length(seriesList)
 	# surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
 	surveyHeadName=c("CPUE")
+	cvpro = tcall(PBSawatea)$cvpro
 	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
 	pwidth=6.0;  pheight=switch(nseries,5,8,9)
 	for (p in ptypes) {
@@ -2224,13 +2101,9 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 			xLimAll=range(xLim, xLimAll)    # range to use in next plot
 			#if(is.null(yLim))     
 			yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
-			# postscript(surveyFigName[i],  height=4, width=3.2,
-			# horizontal=FALSE,  paper="special")
-			#gplots::plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
 			plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
 				li=seriesVals$Lo, xlim=xLim, ylim=yLim, xlab="Year",
-				ylab=paste("CPUE index:",seriesList[i]), gap=0, pch=19)
-				#restrict years for plot, does error bars
+				ylab=paste("CPUE index:",seriesList[i]), gap=0, pch=21, col="blue", bg="cyan", lwd=2)
 			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
 			if (is.numeric(cvpro[ii]) && round(cvpro[ii],5)!=0)
@@ -2239,7 +2112,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 			# if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
 			# if(i==5)  mtext(side=1, line=0, cex=1, outer=TRUE, "Year")
 		}  # cex was 0.8 for POP
-	dev.off()
+	if (p %in% c("eps","png")) dev.off()
 	}
 }
 
@@ -2471,7 +2344,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		if (p=="eps") postscript("snail.eps", width=6.25, height=5, horizontal=FALSE, paper="special")
 		else if (p=="png") png("snail.png", units="in", res=pngres, width=6.25, height=5)
 		par(mfrow=c(1,1), mar=c(3,3.75,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.5,0))
-		plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=c(0.1, 0.9), xLim=xlim.snail, yLim=ylim.snail, ngear=ngear)
+		plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=c(0.1, 0.9), xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=2010) ## RSR in 5RF
 		dev.off()
 	}
 
@@ -2629,8 +2502,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 			plotAges(obj, what="c", maxcol=5, sexlab=sexlab, col.points="grey20", ptypes=ptypes, years=cgrp[[i]], set=LETTERS[i], pngres=pngres)
 	}
 	plotAges(obj, what="s", maxcol=4, sexlab=sexlab, ptypes=ptypes, pngres=pngres)
-  
-  
+
+
   # Plot the fishery index (CPUE data I think)
   # windows()
   # plotIndex(obj, main=paste(mainTitle,"CPUE"), what="c", bar=1.96 )
@@ -3562,60 +3435,6 @@ refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
 
 
-#plotSnail------------------------------2017-06-06
-# Plot snail-trail plots for MCMC analysis.
-#  AME: replacing "2010" with as.character(currYear - 1)
-#  RH: added assYrs = years past with estimated Bcurr from previous assessment(s)
-#-------------------------------------------AME/RH
-plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, Lwd=2, ngear=1, assYrs=2011)
-{
-	BUlist = as.list(0:ngear); names(BUlist)=c("Spawning Biomass",Cnames[1:ngear])
-	#BUlist[[1]] = BoverBmsy[,-length(BoverBmsy)]
-	BUlist[[1]] = BoverBmsy[,-1]  ## conversation with PJS: we both agree that B2017/Bmsy should be paired with U2016/Umsy
-	for (g in 1:ngear) {
-		gfile = UoverUmsy[,grep(paste0("_",g),names(UoverUmsy))]
-		names(gfile) = substring(names(gfile),1,4)
-		BUlist[[g+1]] = gfile
-	}
-	# Calculate medians to be plotted
-	BUmed    = sapply(BUlist,function(x){apply(x,2,median)},simplify=FALSE)  # median each year
-	colPal   = colorRampPalette(c("grey95", "grey30"))
-	colSlime = rep(c("grey","slategray2"),ngear)[1:ngear]
-	colStart = rep(c("cyan","thistle"),ngear)[1:ngear]
-	colStop  = rep(c("blue","purple"),ngear)[1:ngear]
-	colAss   = rep(c("gold","orange"),ngear)[1:ngear]
-	nB = length(BUmed[[1]])
-	if (is.null(xLim))
-		xLim=c(0, max(c(BUmed[[1]], quantile(apply(BUlist[[1]],2,quantile,p[2]),0.6), 1)))
-	if (is.null(yLim))
-		yLim=c(0, max(c(sapply(BUmed[(1:ngear)+1],max), quantile(sapply(BUlist[(1:ngear)+1],function(x,p){apply(x,2,quantile,p)},p=p[2]),0.95), 1)))
-	plot(0,0, xlim=xLim, ylim=yLim, type="n", 
-		xlab = expression(paste(italic(B[t])/italic(B)[MSY])), 
-		ylab = expression(paste(italic(u[t-1])/italic(u)[MSY])),
-		cex.lab=1.25,cex.axis=1.0,las=1)
-	abline(h=1, col=c("grey20"), lwd=Lwd, lty=3)
-	abline(v=c(0.4,0.8), col=c("red","green4"), lwd=Lwd, lty=2)
-	for (i in ngear:1) {
-		lines(BUmed[[1]], BUmed[[i+1]], col=colSlime[i], lwd=Lwd)
-		points(BUmed[[1]], BUmed[[i+1]], type="p", pch=19, col=colPal(nB))
-		points(BUmed[[1]][1], BUmed[[i+1]][1], pch=19, col=colStart[i])
-		points(rev(BUmed[[1]])[1], rev(BUmed[[i+1]])[1], pch=19, col=colStop[i])
-		points(BUmed[[1]][as.character(assYrs)], BUmed[[i+1]][as.character(assYrs)], pch=19, col=colAss[i])
-		segments(quantile(BUlist[[1]][,as.character(currYear-1)],p[1]),
-			BUmed[[i+1]][as.character(currYear-1)],
-			quantile(BUlist[[1]][,as.character(currYear-1)], p[2]), 
-			BUmed[[i+1]][as.character(currYear-1)], col=colStop[i], lwd=1.5)
-		segments(BUmed[[1]][as.character(currYear - 1)], 
-			quantile(BUlist[[i+1]][, as.character(currYear - 1)], p[1]),
-			BUmed[[1]][as.character(currYear - 1)], 
-			quantile(BUlist[[i+1]][, as.character(currYear - 1)], p[2]), col=colStop[i], lwd=1.5)
-	}
-	if (ngear>1)  addLegend(0.95,0.80,legend=Cnames,lty=1,lwd=Lwd,col=colSlime,seg.len=4,xjust=1,bty="n",cex=0.8)
-	box()
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotSnail
-
-
 #plotDensPOPparsPrior-------------------2011-08-31
 # Adding the prior automatically.
 #----------------------------------------------AME
@@ -3925,10 +3744,11 @@ importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
       	VB <- get.VB(Policies, Years)
 	if (!quiet) cat("\n")
 	output <- list(B=B, Y=Y, eps=eps, VB=VB)
-	if (coda) {
-		#eval(parse(text="require(coda, quietly=TRUE, warn.conflicts=FALSE)"))
-		output <- lapply(output, function(x) lapply(x, mcmc))
-	}
+	## Deprecate the use of coda's mcmc function
+	#if (coda) {
+	#	#eval(parse(text="require(coda, quietly=TRUE, warn.conflicts=FALSE)"))
+	#	output <- lapply(output, function(x) lapply(x, mcmc))
+	#}
 	attr(output, "call") <- match.call()
 	attr(output, "info") <- info
 	return(output)
