@@ -1,4 +1,4 @@
-#runSweaveMCMC--------------------------2018-04-04
+#runSweaveMCMC--------------------------2018-04-16
 # Create and run customised Sweave files for Awatea MCMC runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 # Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
@@ -31,8 +31,9 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
 	on.exit(ciao(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC","Rcode","Scode","qu","so",".First")),pos=1)
-	if (locode) { 
-		load(paste0(system.file("data",package="PBSawatea"),"/gfcode.rda"))
+	if (locode) {
+		ici = sys.frame(sys.nframe())
+		load(paste0(system.file("data",package="PBSawatea"),"/gfcode.rda"), envir=ici)
 		mess = c(
 		"require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)",
 		#"require(gplots, quietly=TRUE)", ## deprecate
@@ -121,7 +122,10 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	tfile = gsub("@ngear",Ngear,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
 	tfile = gsub("@ptype",ptype,tfile)
-	if (!locode) data(gfcode,package="PBSawatea")
+	if (!locode) {
+		ici = sys.frame(sys.nframe())
+		data(gfcode,package="PBSawatea", envir=ici)
+	}
 	sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
 	sppname = sapply(sapply(strsplit(sppname," "),function(x){paste(toupper(substring(x,1,1)),tolower(substring(x,2)),sep="")},simplify=FALSE),paste,collapse=" ")
 	spplatin = gfcode[is.element(gfcode$code3,strSpp),"latin"]
@@ -157,6 +161,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-MasterMCMC.Snw`
 	}
+	tfile  = gsub("@Ncpue",Ncpue,tfile)
 	
 	# Remove catch-at-age lines if no catch-at-age data
 	if (sum(CApos)==0) {

@@ -10,12 +10,12 @@
 }
 \usage{
 plt.mpdGraphs(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=150, ngear=1,
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
    pchGear=seq(21,20+ngear,1), ltyGear=seq(1,ngear,1), 
    colGear=rep(c("black","blue"),ngear)[1:ngear])
 
 plt.mcmcGraphs(mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE, 
-   ptypes = c("eps","png"), pngres=150, ngear=1,
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
    ylim.recruitsMCMC=NULL, ylim.exploitMCMC=NULL,
    ylim.VBcatch=NULL, ylim.BVBnorm=NULL,
    xlim.snail=NULL, ylim.snail=NULL,

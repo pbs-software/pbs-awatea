@@ -15,7 +15,7 @@ plotTracePOP(mcmc, axes=FALSE, same.limits=FALSE,
           las=0, tck=0.5, tick.number=5, lty.trace=1, lwd.trace=1,
           col.trace="grey", lty.median=1, lwd.median=1,
           col.median="black", lty.quant=2, lwd.quant=1,
-          col.quant="black", plot=TRUE, probs=c(0.025, 0.5, 0.975),
+          col.quant="black", plot=TRUE, probs=get("quants3"),
           mpd=mcmc[1, ], ...)
 }
 \arguments{

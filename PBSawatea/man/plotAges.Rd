@@ -8,16 +8,16 @@
   using the scape function \code{plotCA}.
 }
 \usage{
-plotAges(obj, what="c", maxcol=4, sexlab=c("Females","Males"), 
-   ptypes=c("eps","png"), pngres=150, ...)
+plotAges(obj, what="c", maxcol=5, sexlab=c("Females","Males"), 
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
 }
 \arguments{
-  \item{obj}{the MPD object created by the \code{importRes} function (e.g., \code{currentRes}).}
-  \item{what}{character letter -- \code{"c"} for commercial proportions-at-age (pA) or \code{"s"} for survey pA.}
-  \item{maxcol}{maximum number of columns for trellis plot}
-  \item{sexlab}{label(s) to rename sex on the plot (e.g., a user may wish to rename "Unisex" to "Female").}
-  \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
-  \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
+  \item{obj}{\code{list} -- the MPD object created by the \code{importRes} function (e.g., \code{currentRes}).}
+  \item{what}{\code{character} -- letter: \code{"c"} for commercial proportions-at-age (pA) or \code{"s"} for survey pA.}
+  \item{maxcol}{\code{numeric} -- maximum number of columns for trellis plot}
+  \item{sexlab}{\code{character} -- label(s) to rename sex on the plot (e.g., a user may wish to rename "Unisex" to "Female").}
+  \item{ptypes}{\code{character} -- plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
+  \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{png} file.}
   \item{...}{additional arguments for \code{plotCA} and internal control.}
 }
 \details{

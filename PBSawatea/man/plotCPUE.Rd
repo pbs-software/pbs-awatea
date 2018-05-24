@@ -7,16 +7,20 @@
   Plot CPUE and fit with error bars.
 }
 \usage{
-plotCPUE(obj, main="", save=NULL, bar=1.96, yLim=NULL, ...)
+plotCPUE(obj, main="", save=NULL, bar=1.96, yLim=NULL, 
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
 }
 \arguments{
   \item{obj}{data frame of CPUE indices from Awatea's results file
     (\emph{e.g.}, \code{currentRes$CPUE}).}
-  \item{main}{title for figure}
+  \item{main}{\code{character} -- title for figure}
   \item{save}{\bold{not used}}
-  \item{bar}{standard deviation of the normal distribution 
+  \item{bar}{\code{numeric} -- standard deviation of the normal distribution 
     (1.96 is the approximate value of the 97.5 percentile point).}
-  \item{yLim}{limits of the y-axis.}
+  \item{yLim}{\code{numeric} -- limits of the y-axis.}
+  \item{ptypes}{\code{character} -- plot types for the figures: \code{eps} = encapsulated postscript, 
+     \code{png} = portable network graphics.}
+  \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{png} file.}
   \item{\dots}{\bold{not used}}
 }
 \value{

@@ -9,7 +9,7 @@
   for model inputs and fits by sex and gear or survey. 
 }
 \usage{
-plt.bubbles(mpdObj, nsex=2, ptypes=c("eps","png"), pngres=150)
+plt.bubbles(mpdObj, nsex=2, ptypes=tcall(PBSawatea)$ptype, pngres=400, redo.Graphs=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,6 +17,7 @@ plt.bubbles(mpdObj, nsex=2, ptypes=c("eps","png"), pngres=150)
   \item{nsex}{number of sexes in the model}
   \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
   \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
+  \item{redo.Graphs}{\code{logical} -- if \code{TRUE}, re-create the figures.}
 }
 \details{
   The function \code{plt.bubbles} loops through all the catch@age (CA) 

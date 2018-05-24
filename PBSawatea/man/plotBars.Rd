@@ -9,20 +9,21 @@
 \usage{
 plotBars(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]), 
     sex=c(2,1), age=NULL, fill=c("orange", "cyan", "green"), 
-    eps=FALSE, pix=FALSE, win=TRUE, ...)
+    eps=FALSE, png=FALSE, win=TRUE, pngres = 400, ...)
 }
 \arguments{
   \item{res}{Awatea results file from a call to \code{importRes}: \cr
     \code{importRes("POPrun05/pop-3CD.05.01.res",Dev=T,CPUE=T,Survey=T,CAc=T,CAs=T)}}
-  \item{type}{type of annual value (e.g., \code{"N"} = numbers, \code{"B"} = biomass).}
-  \item{prop}{logical: if \code{TRUE}, convert values from \code{type} to proportions.}
-  \item{year}{numeric scalar or vector of years.}
-  \item{sex}{sex code where \code{1} = males and \code{2} = females; note that Awatea uses females before males.}
-  \item{age}{specify age vector if subset of available is desired.}
-  \item{fill}{bar colour by sex for barplots (one colour per sex).}
-  \item{eps}{logical: if \code{TRUE}, send figure to a postscript (\code{.eps}) file.}
-  \item{pix}{logical: if \code{TRUE}, send figure to a portable network graphics (\code{.png}) file.}
-  \item{win}{logical: if \code{TRUE}, send figure to the R windows device.}
+  \item{type}{\code{character} -- type of annual value (e.g., \code{"N"} = numbers, \code{"B"} = biomass).}
+  \item{prop}{\code{logical} -- if \code{TRUE}, convert values from \code{type} to proportions.}
+  \item{year}{\code{numeric} -- scalar or vector of years.}
+  \item{sex}{\code{numeric} -- sex code where \code{1} = males and \code{2} = females; note that Awatea uses females before males.}
+  \item{age}{\code{numeric} -- specify age vector if subset of available is desired.}
+  \item{fill}{\code{character} -- bar colour by sex for barplots (one colour per sex).}
+  \item{eps}{\code{logical} -- if \code{TRUE}, send figure to a postscript (\code{.eps}) file.}
+  \item{png}{\code{logical} -- if \code{TRUE}, send figure to a portable network graphics (\code{.png}) file.}
+  \item{win}{\code{logical} -- if \code{TRUE}, send figure to the R windows device.}
+  \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{png} file.}
   \item{\dots}{extra parameters (not currently used).}
 }
 \details{

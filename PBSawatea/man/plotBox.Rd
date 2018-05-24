@@ -17,7 +17,7 @@ plotBox(x, \dots, range=1.5, width=NULL, varwidth=FALSE,
     border=par("fg"), col=NULL, log="", 
     pars=list(boxwex=0.8, staplewex=0.5, outwex=0.5, whisklty=1), 
     horizontal=FALSE, add=FALSE, at=NULL,
-    quants=c(0.025,0.25,0.5,0.75,0.975), outliers=FALSE)
+    quants = get("quants5"), outliers=FALSE)
 }
 \arguments{
   \item{x}{for specifying data from which the boxplots are to be

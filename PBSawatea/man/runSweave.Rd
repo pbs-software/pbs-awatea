@@ -9,56 +9,65 @@
 }
 \usage{
 runSweave( wd = getwd(), strSpp="XYZ",
-   filename = "spp-area-00.txt",      # Name of Awatea .txt file in 'run.dir' to run
+   filename = "spp-area-00.txt",
    runNo   = 1,
    rwtNo   = 0,
-   running.awatea =0,  # 0 if just loading previous '.rep'; 1 if rerunning Awatea
-   Nsex    = 2,        # if 1 then Unisex, if 2 then Males & Females
+   running.awatea =0,
+   Nsex    = 2,
    Ncpue   = 0,
    Nsurvey = 3,
-   Ngear   = 1,                       # number of commercial gear types
-   NCAset  = 2,                       # no. comm. catch-age-age plot sets
-   Snames  = paste0("Ser",1:Nsurvey), # survey names (w/out spaces)
-   SApos   = rep(TRUE,Nsurvey),       # surveys with age composition data
-   Cnames  = paste0("Gear",1:Ngear),  # survey names (w/out spaces)
-   CApos   = rep(TRUE,Ngear),         # commercial gears with age composition
+   Ngear   = 1,
+   NCAset  = 1,
+   Snames  = paste0("Ser",1:Nsurvey),
+   SApos   = rep(TRUE,Nsurvey),
+   Cnames  = paste0("Gear",1:Ngear),
+   CApos   = rep(TRUE,Ngear),
    delim   = "-",
    debug   = FALSE,
-   locode  = FALSE,    # source this function as local code (for development)
-   codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-   sexlab  = c("Females","Males")
+   locode  = FALSE,
+   codePath=
+     "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+   sexlab  = c("Females","Males"),
+   resdoc  = FALSE,
+   redo.Graphs = TRUE,
+   ptype   = "png"
 ) 
 runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
 }
 \arguments{
-  \item{wd}{\emph{character}: working directory in which Awatea input files occur.}
-  \item{strSpp}{\emph{character}: three-letter code that identifies the species.}
-  \item{filename}{\emph{character}: name of Awatea input file.}
-  \item{runNo}{\emph{numeric}: the run number that identifies a unique combination of input values.}
-  \item{rwtNo}{\emph{numeric}: the reweight number of the MPD run to build and collate figures.}
-  \item{running.awatea}{\emph{numeric}: if \code{0} load a previous \code{.rep} file, if \code{1} re-run \code{Awatea}}
-  \item{Nsex}{\emph{numeric}: number of sexes; if \eqn{>1} then the routine will 
+  \item{wd}{\code{character} -- working directory in which Awatea input files occur.}
+  \item{strSpp}{\code{character} -- three-letter code that identifies the species.}
+  \item{filename}{\code{character} -- name of Awatea input file.}
+  \item{runNo}{\code{numeric} -- the run number that identifies a unique combination of input values.}
+  \item{rwtNo}{\code{numeric} -- the reweight number of the MPD run to build and collate figures.}
+  \item{running.awatea}{\code{numeric} -- if \code{0} load a previous \code{.rep} file, if \code{1} re-run \code{Awatea}}
+  \item{Nsex}{\code{numeric} -- number of sexes; if \eqn{>1} then the routine will 
     activate Sweave lines with the prefix \code{@rmsex}, otherwise the lines are removed.}
-  \item{Ncpue}{\emph{numeric}: number of CPUE series; if \eqn{>=1} then the routine will 
+  \item{Ncpue}{\code{numeric} -- number of CPUE series; if \eqn{>=1} then the routine will 
     activate Sweave lines with the prefix \code{@rmcpue}, otherwise the lines are removed.}
-  \item{Nsurvey}{\emph{numeric}: number of survey series.}
-  \item{Ngear}{\emph{numeric}: number of commercial gear series.}
-  \item{NCAset}{\emph{numeric}: number of commercial catch-age-age plot sets (separate figures).
+  \item{Nsurvey}{\code{numeric} -- number of survey series.}
+  \item{Ngear}{\code{numeric} -- number of commercial gear series.}
+  \item{NCAset}{\code{numeric} -- number of commercial catch-age-age plot sets (separate figures).
     It is best to limit the number of panels (years) per page to 20; therefore 
     \code{NCAset=1} for \eqn{\le}{<=}20 CA years, \code{NCAset=2} for \eqn{\le}{<=}40 CA years, and so on.}
-  \item{Snames}{\emph{character}: survey names for figure labelling and image creation.}
-  \item{SApos}{\emph{logical} vector of length \code{Nsurvey} denoting which surveys have ageing data.}
-  \item{Cnames}{\emph{character}: gear names for figure labelling and image creation.}
-  \item{CApos}{\emph{logical} vector of length \code{Ngear} denoting which commercial gears have ageing data.}
-  \item{delim}{\emph{character} that delimits the components of the \code{filename} prefix.}
-  \item{debug}{\emph{logical}: if \code{TRUE}, function only builds the target \code{.Snw} file but does not execute it.}
-  \item{locode}{\emph{logical}: if \code{TRUE}, source local code located at \code{codePath}.}
-  \item{codePath}{\emph{character}: system path to \pkg{PBSawatea} source code (using path delimiter `/`).}
-  \item{sexlab}{\emph{character}: labels for the sexes in figures.}
+  \item{Snames}{\code{character} -- survey names for figure labelling and image creation.}
+  \item{SApos}{\code{logical} -- vector of length \code{Nsurvey} denoting which surveys have ageing data.}
+  \item{Cnames}{\code{character} -- gear names for figure labelling and image creation.}
+  \item{CApos}{\code{logical} -- vector of length \code{Ngear} denoting which commercial gears have ageing data.}
+  \item{delim}{\code{character} -- that delimits the components of the \code{filename} prefix.}
+  \item{debug}{\code{logical} -- if \code{TRUE}, function only builds the target \code{.Snw} file but does not execute it.}
+  \item{locode}{\code{logical} -- if \code{TRUE}, source local code located at \code{codePath}.}
+  \item{codePath}{\code{character} -- system path to \pkg{PBSawatea} source code (using path delimiter `/`).}
+  \item{sexlab}{\code{character} -- labels for the sexes in figures.}
+  \item{resdoc}{\code{logical} -- if \code{TRUE}, the routine will remove Sweave lines with the 
+    prefix \code{@rmresdoc} (denoting either working paper or research document), otherwise the lines are activated.}
+  \item{redo.Graphs}{\code{logical} -- if \code{TRUE}, re-create the figures.}
+  \item{ptype}{\code{character} -- plot type for the figures: \code{"png"} = portable network graphics, 
+    \code{"eps"} = encapsulated postscript.\cr\cr------ \code{runMPD} ------}
 
-  \item{prefix}{\emph{character} vector of \code{filename} prefix components delimited by \code{delim}.}
-  \item{runs}{\emph{numeric} vector of run number(s) for \code{runNo} in \code{runSweave}.}
-  \item{rwts}{\emph{numeric} vector of reweight number(s) for \code{rwtNo} in \code{runSweave}.}
+  \item{prefix}{\code{character} -- vector of \code{filename} prefix components delimited by \code{delim}.}
+  \item{runs}{\code{numeric} -- vector of run number(s) for \code{runNo} in \code{runSweave}.}
+  \item{rwts}{\code{numeric} -- vector of reweight number(s) for \code{rwtNo} in \code{runSweave}.}
   \item{...}{arguments passed on to the function \code{runSweave}.}
 }
 \details{
@@ -100,7 +109,10 @@ runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
   \code{runMPD} produces multiple Sweave documents and PDF files.
 }
 \author{
-  Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-05-24}
 }
 \note{
   Example Sweave files (\code{run-master.Snw}) can be found in the library directory: \cr

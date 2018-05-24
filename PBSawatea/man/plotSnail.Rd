@@ -10,16 +10,19 @@
 }
 \usage{
 plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9), 
-   xLim=NULL, yLim=NULL, Lwd=2, ngear=1)
+   xLim=NULL, yLim=NULL, Lwd=1.5, ngear=1, assYrs=2011, outs=FALSE)
 }
 \arguments{
-  \item{BoverBmsy}{numeric matrix of \eqn{B_t}{Bt} over \eqn{B_{MSY}}{Bmsy}.}
-  \item{UoverUmsy}{numeric matrix of \eqn{u_t}{ut} over \eqn{u_{MSY}}{umsy}.}
-  \item{p}{quantiles to show the bulk of the distribution.}
-  \item{xLim}{limits of the x-axis.}
-  \item{yLim}{limits of the y-axis.}
-  \item{Lwd}{line width of the snail trail.}
-  \item{ngear}{number of commercial gears}
+  \item{BoverBmsy}{\code{numeric} -- matrix of \eqn{B_t}{Bt} over \eqn{B_{MSY}}{Bmsy}.}
+  \item{UoverUmsy}{\code{numeric} -- matrix of \eqn{u_t}{ut} over \eqn{u_{MSY}}{umsy}.}
+  \item{p}{\code{numeric} -- quantiles to show the bulk of the distribution.}
+  \item{xLim}{\code{numeric} -- limits of the x-axis.}
+  \item{yLim}{\code{numeric} -- limits of the y-axis.}
+  \item{Lwd}{\code{numeric} -- line width of the snail trail.}
+  \item{ngear}{\code{numeric} -- number of commercial gears}
+  \item{assYrs}{\code{numeric} -- \sQuote{current} model years of past assessments.}
+  \item{outs}{\code{logical} -- if \code{TRUE}, extend the range of the 
+    quantile box whiskers to include the outliers (all data).}
 }
 \details{
   The graph attempts to show the time history of the exploitation rate 

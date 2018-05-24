@@ -8,7 +8,7 @@
 }
 \usage{
 plotRmcmcPOP( obj, 
-              p=c(0.025,0.25,0.5,0.75,0.975),
+              p=get("quants5"),
               xyType="quantBox",
               lineType=c(3,2,1,2,3),
               refLines=NULL, xLim=NULL, yLim=NULL,
@@ -41,7 +41,7 @@ plotRmcmcPOP( obj,
   Adding \code{yLab} and then using for exploitation plot also.
 }
 \seealso{
-  \code{\link{plotBmcmcPOP}}, \code{\link{plotB2}}
+  \code{\link{plotB2}}
 }
 \keyword{hplot}
 

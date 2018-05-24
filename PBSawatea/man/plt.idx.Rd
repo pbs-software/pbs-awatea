@@ -9,7 +9,7 @@
 }
 \usage{
 plt.idx(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=150, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
 }
 \arguments{
   \item{obj}{a data frame with columns \code{Year}, \code{stdRes}, and \code{Fit}.}

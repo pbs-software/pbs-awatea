@@ -12,15 +12,15 @@ exportPattern("^\\.flush")
 # RH: In NAMESPACE, package can either be in `import' OR `importFrom', NOT both.
 #     But all packages named in `import' AND `importFrom' must appear in DESCRIPTION after `Imports:'.
 
-import(methods, PBStools, lattice, scape, plotMCMC, xtable)
+import(methods, PBSmodelling, lattice, scape, plotMCMC, xtable)
 
-importFrom("coda", "mcmc")         ## deprecate
+#importFrom("coda", "mcmc")         ## deprecate
 
-importFrom("gplots", "plotCI")     ## deprecate
+#importFrom("gplots", "plotCI")     ## deprecate
 
-importFrom("graphics", "abline", "axis", "barplot", "box", "boxplot",
+importFrom("graphics", "abline", "arrows", "axis", "barplot", "box", "boxplot",
            "legend", "lines", "mtext", "pairs", "par", "plot",
-           "points", "rect", "segments", "text")
+           "points", "polygon", "rect", "segments", "text")
 
 importFrom("grDevices", "boxplot.stats", "colorRampPalette", "dev.cur",
            "dev.list", "dev.off", "extendrange", "pdf", "png",

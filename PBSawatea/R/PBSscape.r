@@ -1,10 +1,16 @@
-#PBSscape-------------------------------2017-12-01
-#  Modified functions from Arni Magnussen's 
-#  packages 'scape' and 'plotMCMC'
+##PBSscape-------------------------------2017-12-01
+## Modified functions from Arni Magnussen's packages 'scape' and 'plotMCMC'
+## ------------------------------------------------------------------------
+##  plt.mpdGraphs   : wrapper function to call MPD graphing functions
+##  plt.mcmcGraphs  : wrapper function to call MCMC graphing functions
 #-------------------------------------------AME/RH
-## Force this globally
-quants3 = c(0.05,0.50,0.95)
-quants5 = c(0.05,0.25,0.50,0.75,0.95)
+## Force this globally (without have to make a documentation file)
+assign("quants3", c(0.05,0.50,0.95), envir=.GlobalEnv)
+assign("quants5", c(0.05,0.25,0.50,0.75,0.95), envir=.GlobalEnv)
+
+## Flush the cat down the console (change to '.flash.cat' to avoid conflict with function in PBStools)
+## Note: `.flush.cat' already in PBStools but this package is not assumed to be loaded.
+.flash.cat = function(...) { cat(...); flush.console() }
 
 #---History---------------------------------------
 # PBSscape.r - originally created from `ymrscape` for POP 2012.
@@ -95,8 +101,8 @@ quants5 = c(0.05,0.25,0.50,0.75,0.95)
 #  option 7 (All residual plots) doesn't give an error now.
 #  options 8-10 plot results from each .res file in the directory
 #  so that they can be easily compared - looks useful.
-# 
-#  
+#
+#
 #--------------------------------------------------------------------#
 # rsScape.r : Graphical analyses for rocksole Coleraine ouput.       #
 # Developers: A.R. Kronlund, P.J. Starr                              #
@@ -177,461 +183,533 @@ quants5 = c(0.05,0.25,0.50,0.75,0.95)
 #                    Awatea Related Functions                     #
 #--------------------------------------------------------------------#
 
-# BUG FIX: Original importCol appears not to recognize multiple
-#          fishery series.
+# BUG FIX: Original importCol appears not to recognize multiple fishery series.
 
-#rm(list=ls())
-#require("PBSmodelling")  # Doing it here before plotMCMC, as both
-                         #  have plotDens(). Though if already loaded
-                         #  plotMCMC that won't always work, so
-                         #  replacing plotDens with
-                         #  plotMCMC::plotDens throughout code
-                         # plotMCMC::plotTrace() also
-#source("plotDensPOP.r")  # AME's version that modifies defaults
-                         #  to give better recruitment and Bt plots
-#source("plotDensPOPpars.r")  # AME's version to add MPD for params
-#source("plotTracePOP.r") # AME's version that adds on MPD
-# source("plotBVBnorm.r") # B/B0 and V/V0, as lattice so can use for
-                        #  multiple runs. NOT as lattice now.
-
-#importCol2---------------------------- DEPRECATED
-# Modified 'importCol' with RH's 'extra' section.
-# Use function 'importRes' which is maintained.
-#----------------------------------------------AME
-importCol2 <- function (res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
-    CAc=FALSE, CAs=FALSE, CLc=FALSE, CLs=FALSE, LA=FALSE, quiet=TRUE, extra=TRUE)
+#plt.mpdGraphs--------------------------2018-04-17
+# Plot the MPD graphs to encapsulated postscript files.
+#-------------------------------------------------
+# RH (2014-09-23)
+#  Aded arguments `ptype',`pngres', and `ngear'
+#  to render output figures in multiple formats
+#  (only `eps' and `png' at the moment), and
+#  to accommodate multiple gear types
+#-------------------------------------------AME/RH
+plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
+   pchGear=seq(21,20+ngear,1), ltyGear=seq(1,ngear,1), 
+   colGear=rep(c("black","blue"),ngear)[1:ngear])
 {
-    readVector <- function(keyword, same.line=TRUE, file=res.file,
-        vector=res.vector) {
-        line <- match(keyword, substring(vector, 1, nchar(keyword)))
-        v <- if (same.line)
-            as.numeric(scan(file, what="", skip=line - 1,
-                nlines=1, quiet=TRUE)[-1])
-        else as.numeric(scan(file, what="", skip=line, nlines=1,
-            quiet=TRUE))
-        if (!quiet)
-            cat("vector...")
-        return(v)
-    }
-    readMatrix <- function(keyword, nrow, header=FALSE, stripe=c("no",
-        "left", "right", "upper", "lower"), file=res.file,
-        vector=res.vector) {
-        stripe <- match.arg(stripe)
-        line <- match(keyword, substring(vector, 1, nchar(keyword))) +
-            as.numeric(header)
-        m <- scan(file, skip=line, nlines=nrow, quiet=TRUE)
-        m <- matrix(m, byrow=TRUE, nrow=nrow)
-        m <- switch(stripe, left=m[, seq(1, ncol(m)/2)], right=m[,
-            seq(ncol(m)/2 + 1, ncol(m))], upper=m[seq(1, nrow(m) -
-            1, by=2), ], lower=m[seq(2, nrow(m), by=2),
-            ], m)
-        if (!quiet)
-            cat("matrix...")
-        return(m)
-    }
-    getN <- function(sexes, years, ages) {
-        if (!quiet)
-            cat("N         ")
-        nsexes <- length(sexes)
-        nyears <- length(years)
-        nages <- length(ages)
-        if (nsexes == 1) {
-            Nu <- readMatrix("Numbers_at_age_by_Year,sex_and_age",
-                nrow=nyears * nsexes)
-            N <- data.frame(Sex=rep(sexes, nyears * nages),
-                Year=rep(years, each=nages), Age=rep(ages,
-                  nyears), N=as.vector(t(Nu)))
-        }
-        if (nsexes == 2) {
-            Nf <- readMatrix("Numbers_at_age_by_Year,sex_and_age",
-                nrow=nyears * nsexes, stripe="upper")
-            Nm <- readMatrix("Numbers_at_age_by_Year,sex_and_age",
-                nrow=nyears * nsexes, stripe="lower")
-            N <- data.frame(Sex=rep(sexes, each=nyears *
-                nages), Year=rep(rep(years, each=nages),
-                2), Age=rep(ages, 2 * nyears), N=as.vector(t(rbind(Nf,
-                Nm))))
-        }
-        if (!quiet)
-            cat("OK\n")
-        return(N)
-    }
-    getB <- function(years, gears) {
-        ngears <- length(gears)
-        if (!quiet)
-            cat("B         ")
-        vb <- readMatrix("Vulnerable_Biomass_by_Method_and_Year",
-            nrow=ngears)
-        sb <- readVector("Spawning_Biomass_by_Year", same.line=FALSE)
+	#AME some actually MCMC. # Doing as postscript now. # Taking some out for ymr.
+	closeAllWin()
 
-        # *** ADD in the exploitation rate, last year is missing and need
-        #     to pad the matrix with missing values to match other "B" columns.
+	# AME adding, plot exploitation rate, not writing new function:
+	# RH modified to deal with multiple commercial gears
 
-        U <- readMatrix("Exploitation_Rate_by_Method_and_Year", nrow=ngears )
-        U <- cbind( U, rep(NA,nrow(U)) )
-
-#        y <- c(readVector("Total_Catch_by_Method_and_Year", same.line=FALSE),
-#            NA)
-
-        # BUG FIX: Appears should call readMatrix to accommodate multiple gear series.
-        #          Then, sum over the gears to get total catch.
-        y <- readMatrix( "Total_Catch_by_Method_and_Year", nrow=ngears )
-        y <- apply( y,2,sum,na.rm=TRUE )
-        y <- c( y,NA )
-
-        B <- as.data.frame( cbind(years, t(vb), sb, y, t(U)) )
-        names(B) <- if (ngears == 1)
-            c("Year", "VB", "SB", "Y", "U")
-        else c("Year", paste("VB", gears, sep="."), "SB", "Y",
-                       paste("U",gears,sep=".") )
-        if (!quiet)
-            cat("OK\n")
-        return(B)
-    }
-    getSel <- function(gears, surveys, years, sexes, ages) {
-        if (!quiet)
-            cat("Sel       ")
-        ngears <- length(gears)
-        nsurveys <- length(surveys)
-        nyears <- length(years)
-        nsexes <- length(sexes)
-        nages <- length(ages)
-        com <- readMatrix("Commercial_age-specific_selectivity_by_method,Year,sex_and_age",
-            nrow=ngears * nyears * nsexes)
-        com <- com[seq(1, to=ngears * nyears * nsexes, by=nyears),
-            ]
-        srv <- readMatrix("Survey_age-specific_selectivity_by_survey,Year,sex_and_age",
-            nrow=nsurveys * nsexes)
-        fecundity <- readVector("Fecundity_by_year_and_age",
-            same.line=FALSE)
-        weight <- readVector("Weight_by_year,sex_and_age", same.line=FALSE)
-        mat <- rep(ifelse(weight > 0, fecundity/weight, 0), nsexes)
-        if (is.numeric(gears))
-            gears <- paste("Gear", gears)
-        if (is.numeric(surveys))
-            surveys <- paste("Survey", surveys)
-        Sel <- data.frame(Series=c(rep(gears, each=nsexes *
-            nages), rep(surveys, each=nsexes * nages), rep("Maturity",
-            nsexes * nages)), Sex=rep(rep(sexes, each=nages),
-            ngears + nsurveys + 1), Age=rep(ages, (ngears +
-            nsurveys + 1) * nsexes), P=c(t(com), t(srv), mat))
-        if (!quiet)
-            cat("OK\n")
-        return(Sel)
-    }
-    getDev <- function(ages, years) {
-        if (!quiet)
-            cat("Dev       ")
-        Dev <- list()
-        Dev$Initial <- readVector("log_InitialDev", same.line=TRUE)
-        names(Dev$Initial) <- ages[-c(1, length(ages))]
-        Dev$Annual <- readVector("log_RecDev", same.line=TRUE)
-        names(Dev$Annual) <- years[-length(years)]
-        if (!quiet)
-            cat("OK\n")
-        return(Dev)
-    }
-    getCPUE <- function(gears, years) {
-        if (!quiet)
-            cat("CPUE      ")
-        nseries <- readVector("NCPUEindex")
-        ngears <- length(gears)
-        nyears <- length(years)
-        obs <- readMatrix("indexmethodyearvaluecv", nrow=readVector("Number_of_CPUE_data",
-            same.line=FALSE))
-        obs <- data.frame(Series=obs[, 1], Gear=obs[, 2],
-            Year=obs[, 3], Obs=obs[, 4], CV=obs[, 5])
-        fit <- readMatrix("CPUE_Index_Trajectories", nrow=nseries)
-        fit <- data.frame(Series=rep(1:nseries, each=nyears),
-            Year=rep(years, nseries), Fit=as.vector(t(fit)))
-        CPUE <- merge(obs[, names(obs) != "Gear"], fit, all=TRUE)
-        sgkey <- unique(obs[, c("Series", "Gear")])
-        CPUE <- merge(sgkey, CPUE)
-        CPUE <- data.frame(Series=paste("Series ", CPUE$Series,
-            "-", CPUE$Gear, sep=""), Year=as.integer(CPUE$Year),
-            Obs=CPUE$Obs, CV=CPUE$CV, Fit=CPUE$Fit)
-        if (!quiet)
-            cat("OK\n")
-        return(CPUE)
-    }
-    getSurvey <- function(years) {
-        if (!quiet)
-            cat("Survey    ")
-        nyears <- length(years)
-        nseries <- readVector("Nsurveyindex")
-        obs <- readMatrix("indexyearvaluecv", nrow=readVector("Number_of_survey_data",
-            same.line=FALSE))
-        obs <- data.frame(Series=obs[, 1], Year=obs[, 2],
-            Obs=obs[, 3], CV=obs[, 4])
-        fit <- readMatrix("Survey_Index_Trajectories", nrow=nseries)
-        fit <- data.frame(Series=rep(1:nseries, each=nyears),
-            Year=rep(years, nseries), Fit=as.vector(t(fit)))
-        Survey <- merge(obs, fit, all=TRUE)
-        Survey$Series <- as.integer(Survey$Series)
-        Survey$Year <- as.integer(Survey$Year)
-        if (!quiet)
-            cat("OK\n")
-        return(Survey)
-    }
-    getCAc <- function(sexes, ages) {
-        if (!quiet)
-            cat("CAc       ")
-        nsexes <- length(sexes)
-        nages <- length(ages)
-        nobs <- readVector("Number_of_Commercial_C@A", same.line=FALSE)
-        obs <- readMatrix("methodyearsamplesizesex1a1sex1a2sex1a3", nrow=nobs)                     # "Observed_C@A"  not unique
-        fit <- readMatrix("methodyearsamplesizesex1a1sex1a2sex1a3", nrow=nobs, header=2*(nobs+1))  # "Predicted_C@A" not unique
-        CAc <- data.frame(Series=rep(obs[,1],each=nsexes*nages), Year=rep(obs[,2],each=nsexes*nages),
-                      SS=rep(obs[,3],each=nsexes*nages), Sex=rep(rep(sexes,each=nages),nobs),
-                      startL=rep(obs[,4],each=nsexes*nages),endL=rep(obs[,5],each=nsexes*nages),
-                      Age=rep(ages,nsexes*nobs), Obs=as.vector(t(as.matrix(obs[,-(1:5)]))),
-                      Fit=as.vector(t(as.matrix(fit))))
-         # loads in okay with next line commented. Gears not
-         #  included in getCAs(), and we don't need for POP. AME
-         #   CAc$Gear <- as.integer(CAc$Gear)
-        CAc$Year <- as.integer(CAc$Year)
-        CAc$Age <- as.integer(CAc$Age)
-        if (!quiet)
-            cat("OK\n")
-        return(CAc)
-    }
-    getCAs <- function(sexes, ages) {
-        if (!quiet)
-            cat("CAs       ")
-        nsexes <- length(sexes)
-        nages <- length(ages)
-        nobs <- readVector("Number_of_survey_C@A", same.line=FALSE)
-        obs <- readMatrix("surveyyearsamplesizesex1a1sex1a2sex1a3",
-            nrow=nobs)
-        fit <- readMatrix("surveyyearsamplesizesex1a1sex1a2sex1a3",
-            nrow=nobs, header=2 * (nobs + 1))
-        CAs <- data.frame(Series=rep(obs[,1],each=nsexes*nages), Year=rep(obs[,2],each=nsexes*nages),
-                      SS=rep(obs[,3],each=nsexes*nages), Sex=rep(rep(sexes,each=nages),nobs),
-                      startL=rep(obs[,4],each=nsexes*nages),endL=rep(obs[,5],each=nsexes*nages),
-                      Age=rep(ages,nsexes*nobs), Obs=as.vector(t(as.matrix(obs[,-(1:5)]))),
-                      Fit=as.vector(t(as.matrix(fit))))
-        CAs$Series <- as.integer(CAs$Series)
-        CAs$Year <- as.integer(CAs$Year)
-        CAs$Age <- as.integer(CAs$Age)
-        if (!quiet)
-            cat("OK\n")
-        return(CAs)
-    }
-    getCLc <- function(sexes, lengths) {
-        if (!quiet)
-            cat("CLc       ")
-        nsexes <- length(sexes)
-        nlengths <- length(lengths)
-        nobs <- readVector("Number_of_Commercial_C@L", same.line=FALSE)
-        obs <- readMatrix("methodyearsamplesizesex1l1sex1l2sex1l3", nrow=nobs)                 # "Observed_C@L"  not unique
-        fit <- readMatrix("methodyearsamplesizesex1l1sex1l2sex1l3", nrow=nobs, header=nobs+1)  # "Predicted_C@L" not unique
-    
-        CLc <- data.frame(Series=rep(obs[,1],each=nsexes*nlengths), Year=rep(obs[,2],each=nsexes*nlengths),
-                      SS=rep(obs[,3],each=nsexes*nlengths), Sex=rep(rep(sexes,each=nlengths),nobs),
-                      startL=rep(obs[,4],each=nsexes*nlengths),endL=rep(obs[,5],each=nsexes*nlengths),
-                      Length=rep(lengths,nsexes*nobs), Obs=as.vector(t(as.matrix(obs[,-(1:5)]))),
-                      Fit=as.vector(t(as.matrix(fit))))
-        CLc$Series <- as.integer(CLc$Series)
-        CLc$Year <- as.integer(CLc$Year)
-        CLc$Length <- as.integer(CLc$Length)
-        if (!quiet)
-            cat("OK\n")
-        return(CLc)
-    }
-    getCLs <- function(sexes, lengths) {
-        if (!quiet)
-            cat("CLs       ")
-        nsexes <- length(sexes)
-        nlengths <- length(lengths)
-        nobs <- readVector("Number_of_surveyC@L",same.line=FALSE)
-        obs <- readMatrix("surveyyearsamplesizesex1l1sex1l2sex1l3", nrow=nobs)                     # "Observed_C@L"  not unique
-        fit <- readMatrix("surveyyearsamplesizesex1l1sex1l2sex1l3", nrow=nobs, header=2*(nobs+1))  # "Predicted_C@L" not unique
-        CLs <- data.frame(Series=rep(obs[,1],each=nsexes*nlengths), Year=rep(obs[,2],each=nsexes*nlengths),
-                      SS=rep(obs[,3],each=nsexes*nlengths), Sex=rep(rep(sexes,each=nlengths),nobs),
-                      startL=rep(obs[,4],each=nsexes*nlengths),endL=rep(obs[,5],each=nsexes*nlengths),
-                      Length=rep(lengths,nsexes*nobs), Obs=as.vector(t(as.matrix(obs[,-(1:5)]))),
-                      Fit=as.vector(t(as.matrix(fit))))
-        CLs$Series <- as.integer(CLs$Series)
-        CLs$Year <- as.integer(CLs$Year)
-        CLs$Length <- as.integer(CLs$Length)
-        if (!quiet)
-            cat("OK\n")
-        return(CLs)
-    }
-    getLA <- function(sexes, ages) {
-        if (!quiet)
-            cat("LA        ")
-        nsexes <- length(sexes)
-        nages <- length(ages)
-        nobs <- readVector("#femalesmales", same.line=FALSE,
-            file=latage.file, vector=latage.vector)
-        obs <- readMatrix("VonBertalanfy--Lenght-at-agefit--Likelihood",
-            nrow=sum(nobs), header=8)
-        obs <- data.frame(Sex=rep(sexes, nobs), Age=obs[,
-            1], Obs=obs[, 2])
-        owarn <- options(warn.conflicts=-1)
-        Linf <- readVector("VonBeratalanfy:Linf")[-(1:3)]
-        K <- readVector("VonBeratalanfy:k")[-(1:3)]
-        t0 <- readVector("VonBeratalanfy:to")[-(1:3)]
-        CV1 <- readVector("cvoftheFitbysex")[-(1:5)]
-        CVratio <- readVector("ratioofcv(L_an)/cv(L_a1)oftheFitbysex")[-(1:7)]
-        options(owarn)
-        sigmaLA <- readVector("#LinearrelationshipofsigmaL@A(1=age;2=length---ignoreifW@Aissupplied)",
-            same.line=FALSE, file=txt.file, vector=txt.vector)[1]
-        max.age <- c(max(obs$Age[obs$Sex == sexes[1]]), max(obs$Age[obs$Sex ==
-            sexes[2]]))
-        fit <- data.frame(Sex=rep(sexes, max.age), Age=c(1:max.age[1],
-            1:max.age[2]))
-        fit$Fit[fit$Sex == sexes[1]] <- Linf[1] * (1 - exp(-K[1] *
-            (fit$Age[fit$Sex == sexes[1]] - t0[1])))
-        fit$Fit[fit$Sex == sexes[2]] <- Linf[2] * (1 - exp(-K[2] *
-            (fit$Age[fit$Sex == sexes[2]] - t0[2])))
-        if (sigmaLA == 1) {
-            A <- rep(max(ages), 2)
-            a <- cbind(fit$Age[fit$Sex == sexes[1]], fit$Age[fit$Sex ==
-                sexes[2]])
-            fit$CV[fit$Sex == sexes[1]] <- CV1[1] + CV1[1] *
-                (CVratio[1] - 1)/(A[1] - 1) * (a[, 1] - 1)
-            fit$CV[fit$Sex == sexes[2]] <- CV1[2] + CV1[2] *
-                (CVratio[2] - 1)/(A[2] - 1) * (a[, 2] - 1)
-        }
-        if (sigmaLA == 2) {
-            L1 <- Linf * (1 - exp(-K * (1 - t0)))
-            Ln <- Linf * (1 - exp(-K * (max(ages) - t0)))
-            fit$CV[fit$Sex == sexes[1]] <- CV1[1] + CV1[1] *
-                (CVratio[1] - 1)/(Ln[1] - L1[1]) * (fit$Fit[fit$Sex ==
-                sexes[1]] - L1[1])
-            fit$CV[fit$Sex == sexes[2]] <- CV1[2] + CV1[2] *
-                (CVratio[2] - 1)/(Ln[2] - L1[2]) * (fit$Fit[fit$Sex ==
-                sexes[2]] - L1[2])
-        }
-        LA <- merge(obs, fit, by=c("Sex", "Age"), all=TRUE)
-        LA$Age <- as.integer(LA$Age)
-        LA$Fit <- LA$Fit
-        LA$CV <- LA$CV
-        if (!quiet)
-            cat("OK\n")
-        return(LA)
-    }
-    	getExtra=function(resvec) {
-		extra=list(
-			likelihoods=c(
-			"CPUE","Survey_Index","C@A_Commercial","C@A_survey","Prior_penalties"),  # Likelihoods
-			parameters=c(
-			"R0","avgR0","h",                                                      # Parameters (P)
-			"M1","M2",                                                             #  (P) Sex_specific
-			"Sfullest","SfullDelta","log_varLest","log_varRest",                   #  (P) Method_specific
-			"log_qCPUE","log_BetaCPUE",                                            #  (P) CPUE_index_specific
-			"log_qsurvey","surveySfull","survey_SfullDelta",
-			"log_surveyvarL","log_surveyvarR",                                     # (P)  Survey_index_specific
-			"log_RecDev"),                                                         #  (P) Recruitment_residuals
-			priors=c(
-			"R0_prior","h_prior",                                                  # Priors (I)
-			"M1_prior","M2_prior","Rinit_prior","uinit_prior","p_plusscale",       #  (I) Sex_specific
-			"p_Sfullest","p_Sfulldelta","log_varLest_prior","log_varRest_prior",   #  (I) Method_specific
-			"errSfull_prior","errvarL_prior","errvarR_prior",                      #  (I) Method_specific_and_annual
-			"log_qCPUE_prior","log_BetaCPUE_prior",                                #  (I) CPUE_index_specific
-			"qCPUEerr_prior",                                                      #  (I) CPUE_index_specific_and_annual
-			"log_qsurvey_prior","surveySfull_prior","p_surveySfulldelta",
-			"log_surveyvarL_prior","log_surveyvarR_prior"),                        #  (I) Survey_index_specific
-			residuals=c(
-			"p_log_InitialDev","p_log_RecDev")                                     # Recruitment_residuals
-		)
-		Nsexes=as.numeric(rev(strsplit(resvec[grep("^Nsexes",resvec)],split=" ")[[1]])[1])
-		Nsurveyindex=as.numeric(rev(strsplit(resvec[grep("^Nsurveyindex",resvec)],split=" ")[[1]])[1])
-		elist=sapply(extra,function(x,resvec) { 
-			ex=as.list(x); names(ex)=x
-			for (i in ex) {
-				expr=paste("index=grep(\"^",i," \",resvec)",sep="")
-				eval(parse(text=expr))
-				if (length(index)==1) {
-					if (i %in% c("M1_prior","M2_prior","uinit_prior","p_plusscale")) index=index + (1:Nsexes) - 1
-					if (i %in% c("log_qsurvey_prior","surveySfull_prior","p_surveySfulldelta",
-						"log_surveyvarL_prior","log_surveyvarR_prior")) index=index + (1:Nsurveyindex) - 1
-					exvec=strsplit(resvec[index],split=" ")
-					exmat=t(sapply(exvec,function(x){as.numeric(x[!is.element(x,c(i,""))])}))
-					if (nrow(exmat)==1) exres=as.vector(exmat)
-					else                exres=exmat
-#if (i=="log_qsurvey_prior") {browser();return() }
-					ex[[i]]=exres
-				}
-				else ex[[i]]="not found"
+	B    = obj$B
+	xlim = range(B$Year,na.rm=TRUE)
+	U    = B[,grep("U",names(B)),drop=FALSE] # need to use `drop' argument for ngear=1
+	ylim = range(U,na.rm=TRUE)
+	for (p in ptypes) {
+		if (p=="eps") postscript("exploit.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("exploit.png", units="in", res=pngres, width=6.5, height=4.5)
+		par(mfrow=c(1,1), mar=c(3,3.5,0.5,1), oma=c(0,0,0,0), mgp=c(2.4,0.5,0))
+		plot(0,0,xlim=xlim,ylim=ylim,type="n",xlab="",ylab="Exploitation rate", las=1, cex.lab=1.2, tcl=-0.4)
+		axis(1, at=intersect(seq(1900,3000,5),xlim[1]:xlim[2]), labels=FALSE, tcl=-0.2)
+		mtext("Year", side=1, line=1.75, cex=1.2)
+		abline(h=seq(0.05,0.95,0.05), lty=3, col="gainsboro")
+		sapply(ngear:1,function(g,x,y){
+			lines(x, y[,g], lty=ltyGear[g], col=colGear[g])
+			exheat = list(lo = y[,g] <= 0.05, mid = y[,g] > 0.05 & y[,g] <= 0.10, hi = y[,g] > 0.10)
+			for (j in 1:length(exheat)){
+				zex = exheat[[j]]
+				points(x[zex], y[,g][zex], cex=0.8, pch=pchGear[g], bg=switch(j,"gold","orange","red"), col=colGear[g])
 			}
-			return(ex) }, resvec=resvec, simplify=FALSE)
-
+		}, x = B$Year, y = U)
+		if (ngear>1) 
+			legend("topleft",bty="n",lty=ltyGear,pch=pchGear,legend=Cnames,inset=0.05,seg.len=4,pt.bg="white",col=colGear)
+			#legend("topleft",bty="n",lty=ltyGear,pch=pchGear,legend=paste0("gear ",1:ngear),inset=0.05,seg.len=4,pt.bg="white",col=colGear)
+		if (p %in% c("eps","png")) dev.off()
 	}
-	#---END SUBFUNCTIONS---------------------------
-    if (!file.exists(res.file))
-        stop("File ", res.file, " not found. Use / or \\\\ separators.")
-    res.vector <- readLines(res.file)
-    if (extra)
-	extra=getExtra(res.vector)
-       else extra=NULL
 
-    res.vector <- gsub("\"", "", gsub("\t", "", gsub(" ", "",
-        res.vector)))
-    if (!quiet)
-        cat("\nParsing text file ", res.file, ":\n\nPreamble  ",
-            sep="")
-    sexes <- if (readVector("Nsexes") == 1)
-        "Unisex"
-    else c("Female", "Male")
-    gears <- seq(1, length.out=readVector("Nmethods"))
-    surveys <- seq(1, length.out=readVector("Nsurveyindex"))
-    years <- seq(from=readVector("StartYear"), to=readVector("EndYear") +
-        1)
-    ages <- seq(from=1, to=readVector("Nages"))
-    lengths <- seq(from=readVector("First_length"), by=readVector("Length_class_increment"),
-        length.out=readVector("Number_of_length_classes"))
-    if (!quiet)
-        cat("OK\n")
-    model <- list()
-    model$N <- getN(sexes, years, ages)
-    model$B <- getB(years, gears)
-    rec <- model$N[model$N$Age == 1, ]
-    rec <- tapply(rec$N, rec$Year, sum)
-    model$B$R <- c(rec[-1], NA)
-    model$Sel <- getSel(gears, surveys, years, sexes, ages)
-    if (Dev)
-        model$Dev <- getDev(ages, years)
-    if (CPUE)
-        model$CPUE <- getCPUE(gears, years)
-    if (Survey)
-        model$Survey <- getSurvey(years)
-    if (CAc)
-        model$CAc <- getCAc(sexes, ages)
-    if (CAs)
-        model$CAs <- getCAs(sexes, ages)
-    if (CLc)
-        model$CLc <- getCLc(sexes, lengths)
-    if (CLs)
-        model$CLs <- getCLs(sexes, lengths)
-    if (LA) {
-        latage.file <- paste(dirname(res.file), "l_at_age.dat",
-            sep="/")
-        if (!file.exists(latage.file))
-            stop("File ", latage.file, " not found. Use / or \\\\ separators.")
-        latage.vector <- readLines(latage.file)
-        latage.vector <- gsub("\"", "", gsub("\t", "", gsub(" ",
-            "", latage.vector)))
-        txt.file <- gsub("\\.res", "\\.txt", res.file)
-        if (!file.exists(txt.file))
-            stop("File ", txt.file, " not found. Use / or \\\\ separators.")
-        txt.vector <- readLines(txt.file)
-        txt.vector <- gsub("\"", "", gsub("\t", "", gsub(" ",
-            "", txt.vector)))
-        model$LA <- getLA(sexes, ages)
-    }
-    model$extra=extra
-    if (!quiet)
-        cat("\n")
-    attr(model, "call") <- match.call()
-    attr(model, "scape.version") <- installed.packages()["scape",
-        "Version"]
-    attr(model, "info") <- info
-    class(model) <- "scape"
-    return(model) }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importCol2
+	## AME had added recruits.eps for POP, but that's MCMC, so moving
+	##  to plt.mcmcGraphs, changing that filename to recruitsMCMC.eps
+	##  and just adding here to do MPD for recruits.
+	for (p in ptypes) {
+		if (p=="eps") postscript("recruits.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("recruits.png", units="in", res=pngres, width=6.5, height=4)
+		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		plot(obj$B$Year, obj$B$R, type="o", xlab="Year",
+			ylab="Recruitment, Rt (1000s)", ylim=c(0, max(obj$B$R, na.rm=TRUE)))
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	## Plot the selectivity.
+	objRed = obj         ## Reduced object, just plotting Selectivity to age 20
+	ageP = objRed$Sel$P; names(ageP)=objRed$Sel$Age
+	selP = split(ageP,paste(objRed$Sel$Series,objRed$Sel$Sex,sep="."))
+	xmax = max(as.numeric(sapply(selP,function(x){names(x[is.element(x,1)])[1]})),na.rm=TRUE) #maximum minimum age when P first hits 1
+	if (is.na(xmax)) xmax = 20
+	if (any(round(unlist(currentRes$extra$parameters[c("log_varRest","log_surveyvarR")]),5)!=100)) xmax=40 ## temporary fix
+	objRed$Sel = objRed$Sel[objRed$Sel$Age <= xmax,]
+	for (p in ptypes) {
+		if (p=="eps")      postscript("selectivity.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("selectivity.png", units="in", res=pngres, width=6.5, height=4.5)
+		par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,xmax))
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	## Plot the catch at age
+	## NOTE: There is a bug in plotCA that prevents plotting multiple
+	##       series given a list of character vectors in series.
+	##         ACH: I'm not sure if this applies to CL
+
+	# RH: Removed a bunch of commented text and code by AME
+	#   Also transferred code manipulation for plotting MPD age fits
+	#   into a new function called `plotAges' (located in `plotFuns.r')
+	#   to handle both commercial and survey age fits.
+
+	cyrs = sort(unique(obj[["CAc"]][["Year"]]))
+	cgrp = split(cyrs,ceiling(seq_along(cyrs)/25))  ## RH (180417) changed maximum number of years on a page from 20 to 25
+	if (length(cgrp)==1)
+		plotAges(obj, what="c", maxcol=5, sexlab=sexlab, ptypes=ptypes, pngres=pngres, cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
+	else {
+		for (i in 1:length(cgrp))
+			plotAges(obj, what="c", maxcol=5, sexlab=sexlab, ptypes=ptypes, pngres=pngres, years=cgrp[[i]], set=LETTERS[i], cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
+	}
+	plotAges(obj, what="s", maxcol=5, sexlab=sexlab, ptypes=ptypes, pngres=pngres, cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
+
+	## Plot the fishery index (CPUE data I think)
+	## Plot the survey indices.
+
+	## Now do on one plot as postscript:
+	plotIndexNotLattice(obj, ssnames=ssnames, ptypes=ptypes, pngres=pngres ) # survey indices
+
+	## Single plot of CPUE:
+	plotCPUE(obj$CPUE, yLim=c(0, 200))
+
+	# Plot standardised residuals. Now doing four plots on one page.
+	# --------------------------------------------------------------
+	#  Commercial.
+	#  postscript("commAgeResids.eps", height=8.5, width=6.8, horizontal=FALSE,  paper="special")
+	#  par(mai=c(0.45,0.55,0.1,0.1)) # JAE changed  for each figure
+	#  par(omi=c(0,0,0.4,0))        # Outer margins of whole thing, inch
+	#   Outliers don't get plotted, except for qq plot
+	#  par(mfrow=c(4,1))
+	# RH revamp because PJS wants this by sex (in addition to original irregardless of sex)
+	objCAc = obj$CAc
+	for (g in sort(unique(objCAc$Series))) { # treat each gear type separately
+		objCAc.g = objCAc[is.element(objCAc$Series,g),]
+		stdRes.CAc.g = stdRes.CA( objCAc.g )
+		for (p in ptypes) {
+			pname = paste0("commAgeResSer",g)
+			if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
+			par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
+			plt.ageResidsPOP( stdRes.CAc.g, main="")
+			mtext(CAnames[g],side=3,outer=TRUE,line=0.25,cex=1.5)
+			mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
+			plt.yearResidsPOP(stdRes.CAc.g)
+			plt.cohortResids(stdRes.CAc.g)   # cohort resid, by year of birth
+			plt.ageResidsqqPOP(stdRes.CAc.g)
+			if (p %in% c("eps","png")) dev.off()
+		}
+		for (s in sort(unique(objCAc.g$Sex))) {
+			objCAc.g.s = objCAc.g[is.element(objCAc.g$Sex,s),]
+			stdRes.CAc.g.s = stdRes.CA( objCAc.g.s )
+			for (p in ptypes) {
+				pname = paste0("commAgeResSer",g,s)
+				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
+				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
+				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
+				plt.ageResidsPOP( stdRes.CAc.g.s, main="" ) 
+				mtext(paste0(CAnames[g]," - ",s),side=3,outer=TRUE,line=0.25,cex=1.5)
+				mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
+				plt.yearResidsPOP(stdRes.CAc.g.s)
+				plt.cohortResids(stdRes.CAc.g.s)   # cohort resid, by year of birth
+				plt.ageResidsqqPOP(stdRes.CAc.g.s)
+				if (p %in% c("eps","png")) dev.off()
+			}
+		}
+	}
+
+	# And now for surveys.
+	# AME adding - plotting the CA residuals for the two surveys:
+	# RH revamp because PJS wants this by sex (in addition to original irregardless of sex)
+	objCAs = obj$CAs
+	for (g in sort(unique(objCAs$Series))) { # treat each survey separately (g = survey number)
+		objCAs.g = objCAs[is.element(objCAs$Series,g),]
+		stdRes.CAs.g = stdRes.CA( objCAs.g )
+		for (p in ptypes) {
+			pname = paste0("survAgeResSer",g)
+			if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
+			par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
+			plt.ageResidsPOP( stdRes.CAs.g, main="")
+			mtext(Snames[g],side=3,outer=TRUE,line=0.25,cex=1.5)  ## g indexes Snames not SAnames
+			mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
+			plt.yearResidsPOP(stdRes.CAs.g)
+			plt.cohortResids(stdRes.CAs.g)   # cohort resid, by year of birth
+			plt.ageResidsqqPOP(stdRes.CAs.g)
+			if (p %in% c("eps","png")) dev.off()
+		}
+		for (s in sort(unique(objCAs.g$Sex))) {
+			objCAs.g.s = objCAs.g[is.element(objCAs.g$Sex,s),]
+			stdRes.CAs.g.s = stdRes.CA( objCAs.g.s )
+			for (p in ptypes) {
+				pname = paste0("survAgeResSer",g,s)
+				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
+				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
+				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
+				plt.ageResidsPOP( stdRes.CAs.g.s, main="" ) 
+				mtext(paste0(Snames[g]," - ",s),side=3,outer=TRUE,line=0.25,cex=1.5)  ## g indexes Snames not SAnames
+				mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
+				plt.yearResidsPOP(stdRes.CAs.g.s)
+				plt.cohortResids(stdRes.CAs.g.s)   # cohort resid, by year of birth
+				plt.ageResidsqqPOP(stdRes.CAs.g.s)
+				if (p %in% c("eps","png")) dev.off()
+			}
+		}
+	}
+#	seriesList <- sort( unique( obj$CAs$Series) )  
+#	nseries=length(seriesList)
+#	surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
+#	for ( i in 1:nseries ) {   # POP no fits for survey 3
+#		ii=seriesList[i]
+#		stdRes.CA.CAs=stdRes.CA( obj$CAs[obj$CAs$Series == ii,] )
+#		for (j in ptypes) {
+#			pname = paste0("survAgeResSer", ii)
+#			if (j=="eps") postscript(paste0(pname,".eps"), height=8.5, width=6.5, horizontal=FALSE,  paper="special")
+#			else if (j=="png") png(paste0(pname,".png"), res=pngres, height=8.5*pngres, width=6.5*pngres)
+#			par(mfrow=c(4,1), mai=c(0.45,0.55,0.1,0.1), omi=c(0,0,0.4,0), mgp=c(2,0.75,0))
+#			plt.ageResidsPOP(stdRes.CA.CAs, main="" )
+#			mtext(surveyHeadName[ii],side=3,outer=TRUE,line=0.25,cex=1.5)
+#			plt.yearResidsPOP(stdRes.CA.CAs)
+#			plt.cohortResids(stdRes.CA.CAs)   # cohort resid, by year of birth
+#			plt.ageResidsqqPOP(stdRes.CA.CAs)
+#			dev.off()
+#		}
+#	}
+
+	## Plot observed and expected mean ages from commercial and survey C@A data.
+	for (p in ptypes) {
+		if (p=="eps") postscript("meanAge.eps", width=7, height=8.5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("meanAge.png", units="in", res=pngres, width=7, height=8.5)
+		plotMeanAge(obj=currentRes)
+		if (is.element(p,c("eps","png"))) dev.off()
+	}
+
+	# Plot stock-recruitment function (based on MPD's)
+	# xLimSR and yLimSR fixed here for YMR to have Run 26 and 27 figs
+	#  on same scales. Use these first two values to scale to data:
+	# xLimSR =c(0, max(obj$B$SB))
+	# yLimSR=c(0, max(obj$B$R, na.rm=TRUE))
+	#xLimSR=c(0, max(c(max(obj$B$SB),45000)))   # so it draw bigger if necessary
+	#yLimSR=c(0, max(c(max(obj$B$R, na.rm=TRUE),55000)))
+	xLimSR=c(0, 1.5*max(obj$B$SB,na.rm=TRUE))   # so it draw bigger if necessary
+	xxx=(seq(0, xLimSR[2], length.out=100))
+	yyy=srFun(xxx)
+	yLimSR=c(0, 1.1*max(c(yyy,obj$B$R),na.rm=TRUE))
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("stockRecruit.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("stockRecruit.png", units="in", res=pngres, width=6.5, height=4)
+		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		plot(xxx, yyy, lwd=2, xlim=xLimSR, ylim=yLimSR, type="l",
+			xlab=expression( paste("Spawning biomass ",  italic(B)[italic(t)-1], " (tonnes) in year ", italic(t), "-1", sep="") ),
+			ylab=expression( paste("Recruitment ", italic(R)[italic(t)], " (1000s) in year ", italic(t), sep="") ) )
+		text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels=substring(as.character(years), 3), cex=0.6, col="blue")
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	##windows()
+	##plt.lengthResids( stdRes.CL( obj$CLs ),
+	##  main=paste("Survey",mainTitle,"Series",i) )
+	##if ( save )
+	##  savePlot( "surveyLengthResids", type="png" )
+	## plt.idx( obj$CPUE,  main="Commercial Fishery",save="fishResids" )
+	## plt.idx( obj$Survey,main="Survey",save="surveyResids" )
+  closeAllWin()
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.mpdGraphs
+
+
+#plt.mcmcGraphs-------------------------2014-09-23
+# plt.mcmcGraphsAndySAR.r - Andy adding in wmf's for SAR. Based
+#  on ymrScape.r. Just adding in the ones needed. 5th Feb 2012.
+#-------------------------------------------------
+# plt.mcmcGraphsFromPBSscape16oct12.r.   5th Feb 2012.
+#-------------------------------------------------
+#  AME editing (with *AME*) to give a policy option 
+#  to be specified in run-master.Snw. 16th August 2012.
+#-------------------------------------------------
+# From PBSawatea from Rowan, dated 16th Oct 2012. Have checked
+#  plt.mcmcGraphs() is identical to if I load PBSawatea and type
+#  plt.mcmcGraphs (except formatting). Need to add in .wmf for
+#  SAR - seemed to have that in ymrScape.r for YMR SAR, but the .wmf
+#  commands are not in this one yet. So edit this, call it pltmcmcGraphsAndySAR.r
+#  then send back to Rowan to put into package. May not have to edit any other files?
+#-------------------------------------------------
+# RH (2014-09-23)
+#  Aded arguments `ptype',`pngres', and `ngear'
+#  to render output figures in multiple formats
+#  (only `eps' and `png' at the moment), and
+#  to accommodate multiple gear types
+#-------------------------------------------AME/AM
+plt.mcmcGraphs <-
+function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE, 
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
+   ylim.recruitsMCMC=NULL, ylim.exploitMCMC=NULL,
+   ylim.VBcatch=NULL, ylim.BVBnorm=NULL,
+   xlim.snail=NULL, ylim.snail=NULL,
+   plotPolicies=names(projObj$Y[1:6]),
+   onePolicy=names(projObj$Y[2]), mpd=list(),
+   SAR.width=7.5, SAR.height=4, trevObj=NULL)
+# plotPolicies is 6 policies projections to plot *AME*
+# onePolicy is one to use for some figures *AME*
+#*AME*xlim.pdfrec was =c(0, 200000). Put options for others
+#  that will be useful if want to scale two model runs
+#  to the same ylim. If NULL then fits ylim automatically.
+{
+	panel.cor <- function(x, y, digits=2, prefix="",...)
+	{
+		usr <- par("usr"); on.exit(par(usr))
+		par(usr=c(0, 1, 0, 1))
+		r <- abs(cor(x, y))
+		txt <- format(c(r, 0.123456789), digits=digits)[1]
+		txt <- paste(prefix, txt, sep="")
+		text(0.5, 0.5, txt, cex=1.75)
+	}
+	panel.cor.small = eval(parse(text=sub("1\\.75", "1.25", deparse(panel.cor))))
+#browser();return()
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("recruitsMCMC.eps", width=6.25, height=4, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("recruitsMCMC.png", units="in", res=pngres, width=6.25, height=4)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotRmcmcPOP(mcmcObj$R, yLim=ylim.recruitsMCMC) # *AME*
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("exploitMCMC.eps", width=6.25, height=4*ngear, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("exploitMCMC.png", units="in", res=pngres, width=6.25, height=4*ngear)
+		par(mfrow=c(ngear,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		for (g in 1:ngear) {
+			gfile = mcmcObj$U[,grep(paste0("_",g),names(mcmcObj$U))]
+			names(gfile) = substring(names(gfile),1,4)
+			plotRmcmcPOP(gfile, yLab=paste0("Exploitation rate",ifelse(ngear>1,paste0(" - ",Cnames[g]),"")), yLim=ylim.exploitMCMC, yaxis.by=0.01)
+		}
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("pdfParameters.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("pdfParameters.png", units="in", res=pngres, width=6.25, height=7)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotDensPOPparsPrior(mcmcObj$P, lty.outer=2, between=list(x=0.3, y=0.2),mpd=mpd[["mpd.P"]])
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("pdfBiomass%d.eps", width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
+		else if (p=="png") png("pdfBiomass%d.png", units="in", res=pngres, width=6.5, height=8)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotDensPOP(mcmcObj$B/1000, xlab="Female spawning biomass, Bt (1000 t)", 
+			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, #panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
+			same.limits=TRUE, layout=c(4,5), lty.outer=2, mpd=mpd[["mpd.B"]]/1000) 
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("pdfRecruitment%d.eps", width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
+		else if (p=="png") png("pdfRecruitment%d.png", units="in", res=pngres, width=6.5, height=8)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotDensPOP(mcmcObj$R/1000, xlab="Recruitment, Rt (1000s)", 
+			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2,
+			same.limits=TRUE, layout=c(4,5), lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]]/1000)
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("pdfBiomass.eps", width=6.5, height=8, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("pdfBiomass.png", units="in", res=pngres, width=6.5, height=8)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotDensPOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, xlab="Female spawning biomass, Bt (1000 t)", 
+			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, #panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
+			same.limits=TRUE, lty.outer=2, mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000) #, layout=c(0,length(getYrIdx(names(mcmcObj$B)))) )
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("pdfRecruitment.eps", width=6.5, height=8, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("pdfRecruitment.png", units="in", res=pngres, width=6.5, height=8)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotDensPOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, xlab="Recruitment, Rt (1000s)", 
+			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2,
+			same.limits=TRUE, lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000) #, layout=c(4,5))
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("traceBiomass.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("traceBiomass.png", units="in", res=pngres, width=6.25, height=7)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotTracePOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, axes=TRUE, between=list(x=0.2, y=0.2),
+			xlab="Sample", ylab="Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000)
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("traceRecruits.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("traceRecruits.png", units="in", res=pngres, width=6.25, height=7)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotTracePOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), 
+			xlab="Sample", ylab="Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000)
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("traceParams.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("traceParams.png", units="in", res=pngres, width=6.25, height=7)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		idx <- apply(mcmcObj$P, 2, allEqual)
+		plotTracePOP(mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), 
+			xlab="Sample", ylab="Parameter estimate", mpd=mpd[["mpd.P"]][!idx])
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("splitChain.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("splitChain.png", units="in", res=pngres, width=6.25, height=7)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		#plotChains(mcmc=mcmcObj$P, axes=TRUE, pdisc=0, between=list(x=0, y=0), col.trace=c("green","red","blue"), xlab="Sample", ylab="Cumulative Frequency", cex.lab=1.5, yaxt="n")
+		plotChains(mcmc=mcmcObj$P, axes=TRUE, pdisc=0, between=list(x=0, y=0), col.trace=c("red","green3","blue"), xlab="Parameter Value", ylab="Cumulative Frequency", cex.axis=1.3, cex.lab=1.4, yaxt="n")
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("paramACFs.eps", width=8, height=8, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("paramACFs.png", width=8, height=8, units="in", res=pngres)
+		plotACFs(currentMCMC, lag.max=60)
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("VBcatch.eps", width=6.25, height=4.5*ngear, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("VBcatch.png", units="in", res=pngres, width=6.25, height=4.5*ngear)
+		par(mfrow=c(ngear,1), mar=c(3,3,0.5,1), oma=c(0,ifelse(ngear>1,2,0),0,0), mgp=c(1.75,0.5,0))
+		for (g in 1:ngear) {
+			gfile = mcmcObj$VB[,grep(paste0("_",g),names(mcmcObj$VB))]
+			names(gfile) = substring(names(gfile),1,4)
+			plotVBcatch(gfile, mpdObj, gear=g, yLab=ifelse(ngear==1,"Catch and vulnerable biomass (t)",Cnames[g]), yLim=c(0,max(sapply(gfile,quantile,quants5[5]))),cex.lab=1.25)
+			if (ngear>1) mtext("Catch and vulnerable biomass (t)",outer=TRUE,side=2,line=0.5,cex=1.5)
+		}
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+#	win.metafile("SARVBcatch.wmf", width=0.8*SAR.width, height=0.8*SAR.height)
+#	par(mai=c(0.72, 0.82, 0.2, 0.42), mgp=c(2,1,0))  
+#	plotVBcatch( mcmcObj$VB, currentRes, yLim=ylim.VBcatch)
+#	# mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
+#	dev.off()
+#
+	for (p in ptypes) {
+		if (p=="eps") postscript("BVBnorm.eps", width=6.25, height=5, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("BVBnorm.png", units="in", res=pngres, width=6.25, height=5)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plotBVBnorm(mcmcObj, xLeg=0.02, yLeg=0.2, yLim=ylim.BVBnorm, ngear=ngear, VB.col=c("blue","red"))
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+#    win.metafile("SARBVBnorm.wmf", height=SAR.height*0.7, width=SAR.width/2.3) # half width to do side-by-side
+#    par(mai=c(0.62, 0.65, 0.05, 0.05), mgp=c(2,1,0))
+#    plotBVBnorm(mcmcObj, xLeg=0.02, yLeg=0.25)
+#    #, yLim=c(0, 1.1))  # yLim fixed for YMR11 submission, yLeg increased for SAR 
+#    #  mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
+#    dev.off()
+
+#browser(); return()
+	options(scipen=10)
+	for (p in ptypes) {
+		if (p=="eps") postscript("Bproj.eps", width=6.25, height=7, horizontal=FALSE, paper="special")
+		else if (p=="png") png("Bproj.png", units="in", res=pngres, width=6.25, height=7)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plt.quantBio(mcmcObj$B, projObj$B, xyType="quantBox", policy=plotPolicies, save=FALSE)  # *AME* 
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("Rproj.eps", width=6.25, height=7, horizontal=FALSE, paper="special")
+		else if (p=="png") png("Rproj.png", units="in", res=pngres, width=6.25, height=7)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plt.quantBio(mcmcObj$R, projObj$R, xyType="quantBox", policy=plotPolicies, save=FALSE, yaxis.lab="Recruitment (1000s)")
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("RprojOnePolicy.eps", width=6.25, height=5, horizontal=FALSE, paper="special")
+		else if (p=="png") png("RprojOnePolicy.png", units="in", res=pngres, width=6.25, height=5)
+		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+		plt.quantBioBB0(mcmcObj$R, projObj$R, xyType="quantBox", policy=onePolicy, 
+			save=FALSE, xaxis.by=10, yaxis.lab="Recruitment (1000s)")    # *AME* (onePolicy)
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	for (p in ptypes) {
+		if (p=="eps") postscript("snail.eps", width=6.25, height=5, horizontal=FALSE, paper="special")
+		else if (p=="png") png("snail.png", units="in", res=pngres, width=6.25, height=5)
+		par(mfrow=c(1,1), mar=c(3,3.75,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.5,0))
+		plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=quants3[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=2010) ## RSR in 5RF
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	# Doing 6 pairs on a page:
+	npr = 6
+	nuP = length(use.Pnames)
+	npp = ceiling(nuP/npr) # number of pairs plots
+	for (i in 1:npp) {
+		if (i<npp) ii = (1:npr)+(i-1)*npr
+		else       ii = (nuP-npr+1):nuP
+		for (p in ptypes) {
+			pname = paste0("pairs",i)
+			if (p=="eps") postscript(paste0(pname,".eps"), width=7, height=7, horizontal=FALSE,  paper="special")
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=7, height=7)
+			par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+			pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
+			if (p %in% c("eps","png")) dev.off()
+		}
+	}
+	# Doing 1 pairs plot with all parameters
+	npp = 1
+	nuP = length(use.Pnames)
+	npr = ceiling(nuP/npp)
+	for (i in 1:npp) {
+		if (i<npp) ii = (1:npr)+(i-1)*npr
+		else       ii = (nuP-npr+1):nuP
+		for (p in ptypes) {
+			pname = "pairsPars"
+			if (p=="eps") postscript(paste0(pname,".eps"), width=10, height=10, horizontal=FALSE,  paper="special")
+			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=10, height=10)
+			par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+			pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor.small, cex.axis=1.25)
+			if (p %in% c("eps","png")) dev.off()
+		}
+	}
+
+	if (is.null(trevObj)) trevObj=trevorMCMC # created by Sweave code
+	names(trevObj) = gsub("_","",names(trevObj))
+	for (p in ptypes) {
+		if (p=="eps") postscript("pairsMSY.eps", width=7, height=7, horizontal=FALSE,  paper="special")
+		else if (p=="png") png("pairsMSY.png", units="in", res=pngres, width=7, height=7)
+		par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+		pairs(trevObj, col="grey25", pch=20, cex=.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
+		if (p %in% c("eps","png")) dev.off()
+	}
+
+	while(dev.cur() > 1)  dev.off()    # tidy up any remainingfrom the %d.eps
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.mcmcGraphs
 
 
 load.allResFiles <- function( resList=NULL )  
@@ -703,10 +781,10 @@ plotB2 <- function (model, what="d", series=NULL, years=NULL, axes=TRUE,
     Bframe <- x[x$Series %in% grep("B", series, value=TRUE),]
     Bframe$Series <- factor(Bframe$Series)
 
-    # Find the first year where there are fishery CPUE data.
+	## Find the first year where there are fishery CPUE data.
     cpueYear1 <- min( model$CPUE$Year[ !is.na( model$CPUE$Obs ) ] )
 
-    # Set all SB and VB values to NA for years less than cpueYear1.
+	## Set all SB and VB values to NA for years less than cpueYear1.
     Bframe$Value[ Bframe$Year < cpueYear1 ] <- NA
 
     Rframe <- x[x$Series == "R", ]
@@ -874,15 +952,15 @@ plotVBcatch=function(obj, currentRes1=currentRes,
 # RH -- following 3 lines for debugging only
 #g=1; ngear=1
 #test = currentMCMC$VB[,grep(paste0("_",g),names(currentMCMC$VB))]; names(test) = substring(names(test),1,4)
-#plotVBcatch(test, currentRes, gear=g, yLab=ifelse(ngear==1,"Catch and vulnerable biomass (t)",Cnames[g]), yLim=c(0,max(sapply(test,quantile,0.975))),cex.lab=1.25)
+#plotVBcatch(test, currentRes, gear=g, yLab=ifelse(ngear==1,"Catch and vulnerable biomass (t)",Cnames[g]), yLim=c(0,max(sapply(test,quantile,quants5[5]))),cex.lab=1.25)
 
-#plotBVBnorm----------------------------2014-09-22
-# AME doing, tried in separate file, but then changed that to
-#  lattice and wouldn't be good format for Arni's boxplots.
-#  Based on plotVBcatch (tweaking some)
-#  currentMCMC$B.  currentRes1 is local currentRes.
-#  xLab - x position for label, etc.
-#-------------------------------------------AME/RH
+## plotBVBnorm--------------------------2018-05-16
+## AME doing, tried in separate file, but then changed that to
+##  lattice and wouldn't be good format for Arni's boxplots.
+##  Based on plotVBcatch (tweaking some)
+##  currentMCMC$B.  currentRes1 is local currentRes.
+##  xLab - x position for label, etc.
+## -----------------------------------------AME/RH
 plotBVBnorm=function(mcmcObj,
    p = get("quants5"),
    xyType="quantBox",
@@ -912,18 +990,18 @@ plotBVBnorm=function(mcmcObj,
 		xLim = range(sapply(yrs,range))
 	VB.col = rep(VB.col,ngear)[1:ngear]
 
-	plot(0, 0, xlim=xLim, ylim=yLim, type="n", xlab="Year",ylab="Biomass relative to virgin",cex.lab=1.5)
+	plot(0, 0, xlim=xLim, ylim=yLim, type="n", xlab="Year",ylab="Biomass relative to unfished equilibrium",cex.lab=1.25)
 	axis(1, at=intersect(seq(1900,3000,5),xLim[1]:xLim[2]), tcl=tcl.val, labels=FALSE)
 	axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
 	points(yrs[[1]], BVB0med[[1]], type="p", col=B.col) 
 	for (i in 1:ngear)
 		points(yrs[[i+1]], BVB0med[[i+1]], type="l", col=VB.col[i])
-	legtxt = bquote(paste(B[t]/B[0], "    Spawning"))
+	legtxt = bquote(paste(italic(B[t])/italic(B)[0], "    Spawning"))
 	for (i in 1:ngear)
-		legtxt = c(legtxt, bquote(paste(V[t]/V[0], "    Vulnerable - ", .(tolower(Cnames[i])) ) ) )
+		legtxt = c(legtxt, bquote(paste(italic(V[t])/italic(V)[0], "    Vulnerable - ", .(tolower(Cnames[i])) ) ) )
 	addLegend(xLeg,yLeg,legend=as.expression(legtxt),bty="n", lty=c(0,rep(1,ngear)), pch=c(1, rep(NA,ngear)), col=c(B.col, VB.col))
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBVBnorm
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBVBnorm
 
 
 #plotRmcmcPOP---------------------------2014-09-19
@@ -1002,10 +1080,10 @@ closeAllWin <- function()
 
 graphics <- function( view="portrait" )
 {
-  if ( view=="portrait" )
-    windows( width=8.5, height=11 )
-  if ( view=="landscape" )
-    windows( width=11, height=8.5 )
+	if ( view=="portrait" )
+		do.call("windows", list(width=8.5, height=11, record=TRUE))
+	if ( view=="landscape" )
+		do.call("windows", list(width=11, height=8.5, record=TRUE))
 }
 
 panLab <- function( x, y, txt, ... )
@@ -1779,7 +1857,7 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 			par(mfrow=c(nseries,1), mar=c(1.75,2,2,0.5), oma=c(2,2,0,0), mgp=c(2,0.75,0))
 			plt.stdResids( result, xLim=range(result[!is.na(result$Obs), ]$Year)) # restrict years for plot
 			mtext( side=3, line=0, cex=1.0, outer=TRUE, surveyHeadName[i])
-			dev.off()
+			if (p %in% c("eps","png")) dev.off()
 		}
 	}
 }
@@ -1974,764 +2052,6 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotIndexNotLattice
 
 
-#plotChains-----------------------------2011-05-11
-# Plots cumulative fequency of 'nchains' by partitioning one trace.
-# Revised from 'plotTracePOP'
-# mcmc=data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
-#-------------------------------------------------
-plotChains=function (mcmc, nchains=3, pdisc=0.1, 
-   axes=FALSE, same.limits=FALSE, between=list(x=axes,y=axes), div=1, span=1/4,
-   log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
-   cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8, las=0, 
-   tck=0.5, tick.number=5, lty.trace=1, lwd.trace=1, col.trace="grey", 
-   lty.median=1, lwd.median=1, col.median="black", lty.quant=2, lwd.quant=1, 
-   col.quant="black", plot=TRUE, probs=get("quants3"), ...)  # AME probs
-{
-	panel.trace <- function(x, y, ...) {
-
-		panel.xyplot(x, y, type="n")
-		chainlink=rep(1:nchains,f)
-		for (i in 1:nchains) {
-			z=is.element(chainlink,i)
-			panel.xyplot(x[z], y[z], type="l", lty=lty.trace, lwd=2, col=rep(col.trace,nchains)[i])
-		}
-		#panel.xyplot(x, y, type="l", lty=lty.trace, lwd=lwd.trace, col=col.trace)
-	}
-
-	mcmc=mcmc[(round(pdisc*nrow(mcmc))+1):nrow(mcmc),]  # get rid of the first 'pdisc' (e.g., 10%)
-	relation <- if (same.limits) "same" else "free"
-	if (is.null(dim(mcmc))) {
-		mcmc.name <- rev(as.character(substitute(mcmc)))[1]
-		mcmc <- matrix(mcmc, dimnames=list(NULL, mcmc.name))
-	}
-	mcmc <- if (log) 
-		log(mcmc/div, base=base)
-	else mcmc/div
-	mcmc <- as.data.frame(mcmc)
-	n <- nrow(mcmc)
-	f=rep(round(n/nchains),nchains-1); f=c(f,n-sum(f))
-	p <- ncol(mcmc)
-	dat <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
-		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,f),p), Value=as.vector(as.matrix(mcmc)))
-	#mess = c(
-	#"require(grid, quietly=TRUE, warn.conflicts=FALSE)",
-	#"require(lattice, quietly=TRUE, warn.conflicts=FALSE)"
-	#)
-	#eval(parse(text=mess))
-	if (trellis.par.get()$background$col == "#909090") {
-		for (d in dev.list()) dev.off()
-		trellis.device(color=FALSE)
-	}
-	mymain <- list(label=main, cex=cex.main)
-	myxlab <- list(label=xlab, cex=cex.lab)
-	myylab <- list(label=ylab, cex=cex.lab)
-	myrot <- switch(as.character(las), `0`=0, `1`=0, `2`=0, `3`=90)     # AME changed '0'=90 to 0
-	myscales <- list(x=list(draw=axes, relation=relation, cex=cex.axis, tck=tck, tick.number=tick.number, rot=myrot), 
-		y= list(draw=axes, relation=relation, cex=cex.axis, tck=tck, tick.number=tick.number, rot=myrot))
-	mystrip <- list(cex=cex.strip)
-
-	dat$Index=paste(dat$Factor,dat$Chain,sep="-")
-	vList=split(dat$Value,dat$Index)
-	qList=sapply(vList,function(x){
-		xsort=sort(x)
-		xscal=xsort - min(xsort)
-		ycumu=cumsum(xscal)/sum(xscal)
-		out=cbind(x=xsort,y=ycumu)
-		return(out) }, simplify=FALSE )
-	dat$CumFreq=dat$ValueSort=NA
-	for (i in names(qList)) {
-		z=is.element(dat$Index,i)
-		dat$ValueSort[z]=qList[[i]][,"x"]
-		dat$CumFreq[z]  =qList[[i]][,"y"]
-	}
-	graph <- xyplot(CumFreq ~ ValueSort  | Factor, panel=panel.trace, 
-		data=dat, as.table=TRUE, between=between, main=mymain, 
-		xlab=myxlab, ylab=myylab, par.strip.text=mystrip, 
-		scales=myscales, ylim=c(0,1), ...)
-#browser();return()
-	if (plot) {
-		print(graph)
-		invisible(dat)
-	}
-	else {
-		invisible(graph)
-	}
-}
-#P=currentMCMC$P
-#plotChains(mcmc=P,axes=TRUE,between=list(x=0.15,y=0.2),col.trace=c("green","red","blue"),xlab="Sample",ylab="Cumulative Frequency")
-
-
-## Plotting CPUE and fit with error bars, copying plotIndexNotLattice from above.
-## obj=currentRes$CPUE
-## last modified: RH 180405
-##-------------------------
-plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
-   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
-{
-	seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
-	nseries=length(seriesList)
-	# surveyFigName =c("survIndGIG.eps", "survIndQCSsyn.eps", "survIndQCSshr.eps")
-	surveyHeadName=c("CPUE")
-	cvpro = tcall(PBSawatea)$cvpro
-	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
-	pwidth=6.0;  pheight=switch(nseries,5,8,9)
-	for (p in ptypes) {
-		pname = "CPUEser"
-		if (p=="eps") postscript(paste0(pname,".eps"), width=pwidth, height=pheight, horizontal=FALSE,  paper="special", onefile=FALSE)
-		else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=pwidth, height=pheight)
-		par(mfrow=c(nseries,1),mai=c(0.75,0.75,0,0.1),omi=c(0,0,0.25,0),mgp=c(2,.75,0))
-		# par(mai=c(0.25, 0.5, 0.3, 0.2)) # JAE changed  for each figure was for POP 0.45, 0.5, 0.3, 0.2
-		# par(omi=c(0.45,0.1,0,0))  # Outer margins of whole thing, inch
-		yrTicks=as.numeric( obj$Year)
-
-		for ( i in 1:nseries )
-		{
-			ii=Nsurv + i  # to index the CPUE cvpro
-			idx <- seriesList[i]==obj$Series
-			seriesVals=obj[idx,]
-			# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
-			seriesVals$Hi <- seriesVals$Obs * exp(bar * seriesVals$CV)
-			seriesVals$Lo <- seriesVals$Obs/exp(bar * seriesVals$CV)
-			# browser(); return()
-			yearsnotNA=seriesVals[ !is.na(seriesVals$Obs), ]$Year
-			# yearsPlot=min(yearsnotNA):max(yearsnotNA)
-			xLim=range(yearsnotNA)
-			if(i==1)
-				xLimAll=xLim    # range to use in next plot
-			xLimAll=range(xLim, xLimAll)    # range to use in next plot
-			#if(is.null(yLim))     
-			yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
-			plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-				li=seriesVals$Lo, xlim=xLim, ylim=yLim, xlab="Year",
-				ylab=paste("CPUE index:",seriesList[i]), gap=0, pch=21, col="blue", bg="cyan", lwd=2)
-			lines(seriesVals$Year, seriesVals$Fit, lwd=2)
-			axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-			if (is.numeric(cvpro[ii]) && round(cvpro[ii],5)!=0)
-				addLabel(0.95,0.95,paste("+ CV process error ",cvpro[ii],sep=""),adj=c(1,0),cex=0.8,col="slategrey")
-			# mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
-			# if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
-			# if(i==5)  mtext(side=1, line=0, cex=1, outer=TRUE, "Year")
-		}  # cex was 0.8 for POP
-	if (p %in% c("eps","png")) dev.off()
-	}
-}
-
-
-#plt.mcmcGraphs-------------------------2014-09-23
-# plt.mcmcGraphsAndySAR.r - Andy adding in wmf's for SAR. Based
-#  on ymrScape.r. Just adding in the ones needed. 5th Feb 2012.
-#-------------------------------------------------
-# plt.mcmcGraphsFromPBSscape16oct12.r.   5th Feb 2012.
-#-------------------------------------------------
-#  AME editing (with *AME*) to give a policy option 
-#  to be specified in run-master.Snw. 16th August 2012.
-#-------------------------------------------------
-# From PBSawatea from Rowan, dated 16th Oct 2012. Have checked
-#  plt.mcmcGraphs() is identical to if I load PBSawatea and type
-#  plt.mcmcGraphs (except formatting). Need to add in .wmf for
-#  SAR - seemed to have that in ymrScape.r for YMR SAR, but the .wmf
-#  commands are not in this one yet. So edit this, call it pltmcmcGraphsAndySAR.r
-#  then send back to Rowan to put into package. May not have to edit any other files?
-#-------------------------------------------------
-# RH (2014-09-23)
-#  Aded arguments `ptype',`pngres', and `ngear'
-#  to render output figures in multiple formats
-#  (only `eps' and `png' at the moment), and
-#  to accommodate multiple gear types
-#-------------------------------------------AME/AM
-plt.mcmcGraphs <-
-function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE, 
-   ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
-   ylim.recruitsMCMC=NULL, ylim.exploitMCMC=NULL,
-   ylim.VBcatch=NULL, ylim.BVBnorm=NULL,
-   xlim.snail=NULL, ylim.snail=NULL,
-   plotPolicies=names(projObj$Y[1:6]),
-   onePolicy=names(projObj$Y[2]), mpd=list(),
-   SAR.width=7.5, SAR.height=4, trevObj=NULL)
-# plotPolicies is 6 policies projections to plot *AME*
-# onePolicy is one to use for some figures *AME*
-#*AME*xlim.pdfrec was =c(0, 200000). Put options for others
-#  that will be useful if want to scale two model runs
-#  to the same ylim. If NULL then fits ylim automatically.
-{
-	panel.cor <- function(x, y, digits=2, prefix="",...)
-	{
-		usr <- par("usr"); on.exit(par(usr))
-		par(usr=c(0, 1, 0, 1))
-		r <- abs(cor(x, y))
-		txt <- format(c(r, 0.123456789), digits=digits)[1]
-		txt <- paste(prefix, txt, sep="")
-		text(0.5, 0.5, txt, cex=1.75)
-	}
-	panel.cor.small = eval(parse(text=sub("1\\.75", "1.25", deparse(panel.cor))))
-#browser();return()
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("recruitsMCMC.eps", width=6.25, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("recruitsMCMC.png", units="in", res=pngres, width=6.25, height=4)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotRmcmcPOP(mcmcObj$R, yLim=ylim.recruitsMCMC) # *AME*
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("exploitMCMC.eps", width=6.25, height=4*ngear, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("exploitMCMC.png", units="in", res=pngres, width=6.25, height=4*ngear)
-		par(mfrow=c(ngear,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		for (g in 1:ngear) {
-			gfile = mcmcObj$U[,grep(paste0("_",g),names(mcmcObj$U))]
-			names(gfile) = substring(names(gfile),1,4)
-			plotRmcmcPOP(gfile, yLab=paste0("Exploitation rate",ifelse(ngear>1,paste0(" - ",Cnames[g]),"")), yLim=ylim.exploitMCMC, yaxis.by=0.01)
-		}
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("pdfParameters.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("pdfParameters.png", units="in", res=pngres, width=6.25, height=7)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotDensPOPparsPrior(mcmcObj$P, lty.outer=2, between=list(x=0.3, y=0.2),mpd=mpd[["mpd.P"]])
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("pdfBiomass%d.eps", width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
-		else if (p=="png") png("pdfBiomass%d.png", units="in", res=pngres, width=6.5, height=8)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotDensPOP(mcmcObj$B/1000, xlab="Female spawning biomass, Bt (1000 t)", 
-			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, #panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
-			same.limits=TRUE, layout=c(4,5), lty.outer=2, mpd=mpd[["mpd.B"]]/1000) 
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("pdfRecruitment%d.eps", width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
-		else if (p=="png") png("pdfRecruitment%d.png", units="in", res=pngres, width=6.5, height=8)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotDensPOP(mcmcObj$R/1000, xlab="Recruitment, Rt (1000s)", 
-			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2,
-			same.limits=TRUE, layout=c(4,5), lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]]/1000)
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("pdfBiomass.eps", width=6.5, height=8, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("pdfBiomass.png", units="in", res=pngres, width=6.5, height=8)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotDensPOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, xlab="Female spawning biomass, Bt (1000 t)", 
-			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, #panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
-			same.limits=TRUE, lty.outer=2, mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000) #, layout=c(0,length(getYrIdx(names(mcmcObj$B)))) )
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("pdfRecruitment.eps", width=6.5, height=8, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("pdfRecruitment.png", units="in", res=pngres, width=6.5, height=8)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotDensPOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, xlab="Recruitment, Rt (1000s)", 
-			between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2,
-			same.limits=TRUE, lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000) #, layout=c(4,5))
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("traceBiomass.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("traceBiomass.png", units="in", res=pngres, width=6.25, height=7)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotTracePOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, axes=TRUE, between=list(x=0.2, y=0.2),
-			xlab="Sample", ylab="Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000)
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("traceRecruits.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("traceRecruits.png", units="in", res=pngres, width=6.25, height=7)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotTracePOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), 
-			xlab="Sample", ylab="Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000)
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("traceParams.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("traceParams.png", units="in", res=pngres, width=6.25, height=7)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		idx <- apply(mcmcObj$P, 2, allEqual)
-		plotTracePOP(mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), 
-			xlab="Sample", ylab="Parameter estimate", mpd=mpd[["mpd.P"]][!idx])
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("splitChain.eps", width=6.25, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("splitChain.png", units="in", res=pngres, width=6.25, height=7)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotChains(mcmc=mcmcObj$P, axes=TRUE, between=list(x=0.15, y=0.2), 
-			col.trace=c("green", "red", "blue"), xlab="Sample", ylab="Cumulative Frequency", pdisc=0.001)
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("paramACFs.eps", width=8, height=8, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("paramACFs.png", width=8, height=8, units="in", res=pngres)
-		plotACFs(currentMCMC,lag.max=60)
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("VBcatch.eps", width=6.25, height=4.5*ngear, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("VBcatch.png", units="in", res=pngres, width=6.25, height=4.5*ngear)
-		par(mfrow=c(ngear,1), mar=c(3,3,0.5,1), oma=c(0,ifelse(ngear>1,2,0),0,0), mgp=c(1.75,0.5,0))
-		for (g in 1:ngear) {
-			gfile = mcmcObj$VB[,grep(paste0("_",g),names(mcmcObj$VB))]
-			names(gfile) = substring(names(gfile),1,4)
-			plotVBcatch(gfile, mpdObj, gear=g, yLab=ifelse(ngear==1,"Catch and vulnerable biomass (t)",Cnames[g]), yLim=c(0,max(sapply(gfile,quantile,0.975))),cex.lab=1.25)
-			if (ngear>1) mtext("Catch and vulnerable biomass (t)",outer=TRUE,side=2,line=0.5,cex=1.5)
-		}
-		dev.off()
-	}
-
-#	win.metafile("SARVBcatch.wmf", width=0.8*SAR.width, height=0.8*SAR.height)
-#	par(mai=c(0.72, 0.82, 0.2, 0.42), mgp=c(2,1,0))  
-#	plotVBcatch( mcmcObj$VB, currentRes, yLim=ylim.VBcatch)
-#	# mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
-#	dev.off()
-#
-	for (p in ptypes) {
-		if (p=="eps") postscript("BVBnorm.eps", width=6.25, height=5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("BVBnorm.png", units="in", res=pngres, width=6.25, height=5)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plotBVBnorm(mcmcObj, xLeg=0.02, yLeg=0.2, yLim=ylim.BVBnorm, ngear=ngear, VB.col=c("blue","red"))
-		dev.off()
-	}
-
-#    win.metafile("SARBVBnorm.wmf", height=SAR.height*0.7, width=SAR.width/2.3) # half width to do side-by-side
-#    par(mai=c(0.62, 0.65, 0.05, 0.05), mgp=c(2,1,0))
-#    plotBVBnorm(mcmcObj, xLeg=0.02, yLeg=0.25)
-#    #, yLim=c(0, 1.1))  # yLim fixed for YMR11 submission, yLeg increased for SAR 
-#    #  mtext(SAR.main, side=3, font=1, cex=cex.main, line=line.main)
-#    dev.off()
-
-#browser(); return()
-	options(scipen=10)
-	for (p in ptypes) {
-		if (p=="eps") postscript("Bproj.eps", width=6.25, height=7, horizontal=FALSE, paper="special")
-		else if (p=="png") png("Bproj.png", units="in", res=pngres, width=6.25, height=7)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plt.quantBio(mcmcObj$B, projObj$B, xyType="quantBox",  policy=plotPolicies, save=FALSE)  # *AME* 
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("Rproj.eps", width=6.25, height=7, horizontal=FALSE, paper="special")
-		else if (p=="png") png("Rproj.png", units="in", res=pngres, width=6.25, height=7)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plt.quantBio(mcmcObj$R, projObj$R, xyType="quantBox", policy=plotPolicies,    # *AME*
-			save=FALSE, yaxis.lab="Recruitment (1000s)")
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("RprojOnePolicy.eps", width=6.25, height=5, horizontal=FALSE, paper="special")
-		else if (p=="png") png("RprojOnePolicy.png", units="in", res=pngres, width=6.25, height=5)
-		par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-		plt.quantBioBB0(mcmcObj$R, projObj$R, xyType="quantBox", policy=onePolicy, 
-			save=FALSE, xaxis.by=10, yaxis.lab="Recruitment (1000s)")    # *AME* (onePolicy)
-		dev.off()
-	}
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("snail.eps", width=6.25, height=5, horizontal=FALSE, paper="special")
-		else if (p=="png") png("snail.png", units="in", res=pngres, width=6.25, height=5)
-		par(mfrow=c(1,1), mar=c(3,3.75,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.5,0))
-		plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=c(0.1, 0.9), xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=2010) ## RSR in 5RF
-		dev.off()
-	}
-
-	# Doing 6 pairs on a page:
-	npr = 6
-	nuP = length(use.Pnames)
-	npp = ceiling(nuP/npr) # number of pairs plots
-	for (i in 1:npp) {
-		if (i<npp) ii = (1:npr)+(i-1)*npr
-		else       ii = (nuP-npr+1):nuP
-		for (p in ptypes) {
-			pname = paste0("pairs",i)
-			if (p=="eps") postscript(paste0(pname,".eps"), width=7, height=7, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=7, height=7)
-			par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-			pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
-			dev.off()
-		}
-	}
-	# Doing 1 pairs plot with all parameters
-	npp = 1
-	nuP = length(use.Pnames)
-	npr = ceiling(nuP/npp)
-	for (i in 1:npp) {
-		if (i<npp) ii = (1:npr)+(i-1)*npr
-		else       ii = (nuP-npr+1):nuP
-		for (p in ptypes) {
-			pname = "pairsPars"
-			if (p=="eps") postscript(paste0(pname,".eps"), width=10, height=10, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=10, height=10)
-			par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-			pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor.small, cex.axis=1.25)
-			dev.off()
-		}
-	}
-
-	if (is.null(trevObj)) trevObj=trevorMCMC # created by Sweave code
-	names(trevObj) = gsub("_","",names(trevObj))
-	for (p in ptypes) {
-		if (p=="eps") postscript("pairsMSY.eps", width=7, height=7, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("pairsMSY.png", units="in", res=pngres, width=7, height=7)
-		par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-		pairs(trevObj, col="grey25", pch=20, cex=.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
-		dev.off()
-	}
-
-	while(dev.cur() > 1)  dev.off()    # tidy up any remainingfrom the %d.eps
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.mcmcGraphs
-
-
-#plt.mpdGraphs--------------------------2016-11-29
-# Plot the MPD graphs to encapsulated postscript files.
-#-------------------------------------------------
-# RH (2014-09-23)
-#  Aded arguments `ptype',`pngres', and `ngear'
-#  to render output figures in multiple formats
-#  (only `eps' and `png' at the moment), and
-#  to accommodate multiple gear types
-#-------------------------------------------AME/RH
-plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
-   ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
-   pchGear=seq(21,20+ngear,1), ltyGear=seq(1,ngear,1), 
-   colGear=rep(c("black","blue"),ngear)[1:ngear])
-{
-	#AME some actually MCMC. # Doing as postscript now. # Taking some out for ymr.
-	# Does all MPD graphs below.  If save=TRUE then PNG file saved.
-	closeAllWin()
-
-  # Plot the biomass and catch.
-  # plotB2( obj,main=mainTitle )              
-  # plotBmcmcPOP(currentMCMC$B, currentRes)    # AME new one
-  # if ( save )                           # though not using now as
-  #  savePlot( "biomass",type="png" )    # spawning and catch on same
-                                        # axis isn't really sensible
-                                        # Doing plotVBcatch in
-                                        #  plt.mcmcGraphs above
-
-	# AME adding, plot exploitation rate, not writing new function:
-	# RH modified to deal with multiple commercial gears
-
-	B    = obj$B
-	xlim = range(B$Year,na.rm=TRUE)
-	U    = B[,grep("U",names(B)),drop=FALSE] # need to use `drop' argument for ngear=1
-	ylim = range(U,na.rm=TRUE)
-	for (p in ptypes) {
-		if (p=="eps") postscript("exploit.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("exploit.png", units="in", res=pngres, width=6.5, height=4.5)
-		par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-		plot(0,0,xlim=xlim,ylim=ylim,type="n",xlab="Year",ylab="Exploitation rate")
-		sapply(ngear:1,function(g,x,y){
-			lines(x, y[,g], lty=ltyGear[g], col=colGear[g])
-			points(x, y[,g], cex=0.9, pch=pchGear[g], bg="white", col=colGear[g])
-		}, x = B$Year, y = U)
-		if (ngear>1) 
-			legend("topleft",bty="n",lty=ltyGear,pch=pchGear,legend=Cnames,inset=0.05,seg.len=4,pt.bg="white",col=colGear)
-			#legend("topleft",bty="n",lty=ltyGear,pch=pchGear,legend=paste0("gear ",1:ngear),inset=0.05,seg.len=4,pt.bg="white",col=colGear)
-		dev.off()
-	}
-  # if ( save )
-  #  savePlot( "exploit",type="png" )
-  
-  # AME had added recruits.eps for POP, but that's MCMC, so moving
-  #  to plt.mcmcGraphs, changing that filename to recruitsMCMC.eps
-  #  and just adding here to do MPD for recruits.
-	for (p in ptypes) {
-		if (p=="eps") postscript("recruits.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("recruits.png", units="in", res=pngres, width=6.5, height=4)
-		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-		plot(obj$B$Year, obj$B$R, type="o", xlab="Year",
-			ylab="Recruitment, Rt (1000s)", ylim=c(0, max(obj$B$R, na.rm=TRUE)))
-		dev.off()
-	}
-
-  # Plot the selectivity.
-  # windows()
-  # objRed=obj      # Reduced object, just plotting Selectivity to 20
-  # objRed$Sel=objRed$Sel[objRed$Sel$Age < 21,]
-  # plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,20))
-  # if ( save )
-  #   savePlot( "selectivity", type="png" )
-	objRed = obj      # Reduced object, just plotting Selectivity to age 20
-	ageP = objRed$Sel$P; names(ageP)=objRed$Sel$Age
-	selP = split(ageP,paste(objRed$Sel$Series,objRed$Sel$Sex,sep="."))
-	xmax = max(as.numeric(sapply(selP,function(x){names(x[is.element(x,1)])[1]})),na.rm=TRUE) #maximum minimum age when P first hits 1
-	if (is.na(xmax)) xmax = 20
-	if (any(round(unlist(currentRes$extra$parameters[c("log_varRest","log_surveyvarR")]),5)!=100)) xmax=40 ## temporary fix
-	objRed$Sel = objRed$Sel[objRed$Sel$Age <= xmax,]
-	for (p in ptypes) {
-		if (p=="eps")      postscript("selectivity.eps", width=6.5, height=4.5, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("selectivity.png", units="in", res=pngres, width=6.5, height=4.5)
-		par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-		plotSel( objRed, main=paste(mainTitle,"Selectivity"), xlim=c(0,xmax))
-		dev.off()
-	}
-
-  # Plot the catch at age
-  # NOTE: There is a bug in plotCA that prevents plotting multiple
-  #       series given a list of character vectors in series.
-  #         ACH: I'm not sure if this applies to CL
-
-#browser();return()
-
-	# RH: Removed a bunch of commented text and code by AME
-	#   Also transferred code manipulation for plotting MPD age fits
-	#   into a new function called `plotAges' (located in `plotFuns.r')
-	#   to handle both commercial and survey age fits.
-
-	cyrs = .su(obj[["CAc"]][["Year"]])
-	cgrp = split(cyrs,ceiling(seq_along(cyrs)/20))
-	if (length(cgrp)==1)
-		plotAges(obj, what="c", maxcol=5, sexlab=sexlab, col.points="grey20", ptypes=ptypes, pngres=pngres)
-	else {
-		for (i in 1:length(cgrp))
-			plotAges(obj, what="c", maxcol=5, sexlab=sexlab, col.points="grey20", ptypes=ptypes, years=cgrp[[i]], set=LETTERS[i], pngres=pngres)
-	}
-	plotAges(obj, what="s", maxcol=4, sexlab=sexlab, ptypes=ptypes, pngres=pngres)
-
-
-  # Plot the fishery index (CPUE data I think)
-  # windows()
-  # plotIndex(obj, main=paste(mainTitle,"CPUE"), what="c", bar=1.96 )
-  # #plotIndex2( obj, main=mainTitle, what="c", bar=1.96 )
-  # if ( save )
-  #   savePlot( "fishIndex", type="png" )
-  
-  # Plot the survey indices.
-  # windows()
-  # plotIndex( obj, main=paste(mainTitle,"Survey Indices"), what="s", bar=1.96 )
-  # #plotIndex2( obj, main=mainTitle, what="s", bar=1.96 )
-  # if ( save )
-  #   savePlot( "surveyIndex", type="png" )
-  
-  # Now do on one plot as postscript:
-  plotIndexNotLattice(obj, ssnames=ssnames, ptypes=ptypes, pngres=pngres ) # survey indices
-
-  # Single plot of CPUE:
-  plotCPUE(obj$CPUE, yLim=c(0, 200))
-
-	# Plot standardised residuals. Now doing four plots on one page.
-	# --------------------------------------------------------------
-	#  Commercial.
-	#  postscript("commAgeResids.eps", height=8.5, width=6.8, horizontal=FALSE,  paper="special")
-	#  par(mai=c(0.45,0.55,0.1,0.1)) # JAE changed  for each figure
-	#  par(omi=c(0,0,0.4,0))        # Outer margins of whole thing, inch
-	#   Outliers don't get plotted, except for qq plot
-	#  par(mfrow=c(4,1))
-	# RH revamp because PJS wants this by sex (in addition to original irregardless of sex)
-	objCAc = obj$CAc
-#	CAnames   = tcall("PBSawatea")$Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
-#	assign("CAnames", CAnames, pos=1)
-	for (g in sort(unique(objCAc$Series))) { # treat each gear type separately
-		objCAc.g = objCAc[is.element(objCAc$Series,g),]
-		stdRes.CAc.g = stdRes.CA( objCAc.g )
-		for (p in ptypes) {
-			pname = paste0("commAgeResSer",g)
-			if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
-			par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
-			plt.ageResidsPOP( stdRes.CAc.g, main="")
-			mtext(CAnames[g],side=3,outer=TRUE,line=0.25,cex=1.5)
-			mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
-			plt.yearResidsPOP(stdRes.CAc.g)
-			plt.cohortResids(stdRes.CAc.g)   # cohort resid, by year of birth
-			plt.ageResidsqqPOP(stdRes.CAc.g)
-			dev.off()
-		}
-		for (s in sort(unique(objCAc.g$Sex))) {
-			objCAc.g.s = objCAc.g[is.element(objCAc.g$Sex,s),]
-			stdRes.CAc.g.s = stdRes.CA( objCAc.g.s )
-			for (p in ptypes) {
-				pname = paste0("commAgeResSer",g,s)
-				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
-				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
-				plt.ageResidsPOP( stdRes.CAc.g.s, main="" ) 
-				mtext(paste0(CAnames[g]," - ",s),side=3,outer=TRUE,line=0.25,cex=1.5)
-				mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
-				plt.yearResidsPOP(stdRes.CAc.g.s)
-				plt.cohortResids(stdRes.CAc.g.s)   # cohort resid, by year of birth
-				plt.ageResidsqqPOP(stdRes.CAc.g.s)
-				dev.off()
-			}
-		}
-	}
-
-	# And now for surveys.
-	# AME adding - plotting the CA residuals for the two surveys:
-	# RH revamp because PJS wants this by sex (in addition to original irregardless of sex)
-	objCAs = obj$CAs
-#	SAnames   = tcall("PBSawatea")$Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
-#	assign("SAnames", SAnames, pos=1)
-	for (g in sort(unique(objCAs$Series))) { # treat each survey separately (g = survey number)
-		objCAs.g = objCAs[is.element(objCAs$Series,g),]
-		stdRes.CAs.g = stdRes.CA( objCAs.g )
-		for (p in ptypes) {
-			pname = paste0("survAgeResSer",g)
-			if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
-			par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
-			plt.ageResidsPOP( stdRes.CAs.g, main="")
-			mtext(Snames[g],side=3,outer=TRUE,line=0.25,cex=1.5)  ## g indexes Snames not SAnames
-			mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
-			plt.yearResidsPOP(stdRes.CAs.g)
-			plt.cohortResids(stdRes.CAs.g)   # cohort resid, by year of birth
-			plt.ageResidsqqPOP(stdRes.CAs.g)
-			dev.off()
-		}
-		for (s in sort(unique(objCAs.g$Sex))) {
-			objCAs.g.s = objCAs.g[is.element(objCAs.g$Sex,s),]
-			stdRes.CAs.g.s = stdRes.CA( objCAs.g.s )
-			for (p in ptypes) {
-				pname = paste0("survAgeResSer",g,s)
-				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
-				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
-				plt.ageResidsPOP( stdRes.CAs.g.s, main="" ) 
-				mtext(paste0(Snames[g]," - ",s),side=3,outer=TRUE,line=0.25,cex=1.5)  ## g indexes Snames not SAnames
-				mtext("Standardised Residuals",side=2,outer=TRUE,line=0,cex=1.5)
-				plt.yearResidsPOP(stdRes.CAs.g.s)
-				plt.cohortResids(stdRes.CAs.g.s)   # cohort resid, by year of birth
-				plt.ageResidsqqPOP(stdRes.CAs.g.s)
-				dev.off()
-			}
-		}
-	}
-#	seriesList <- sort( unique( obj$CAs$Series) )  
-#	nseries=length(seriesList)
-#	surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)$Snames
-#	for ( i in 1:nseries ) {   # POP no fits for survey 3
-#		ii=seriesList[i]
-#		stdRes.CA.CAs=stdRes.CA( obj$CAs[obj$CAs$Series == ii,] )
-#		for (j in ptypes) {
-#			pname = paste0("survAgeResSer", ii)
-#			if (j=="eps") postscript(paste0(pname,".eps"), height=8.5, width=6.5, horizontal=FALSE,  paper="special")
-#			else if (j=="png") png(paste0(pname,".png"), res=pngres, height=8.5*pngres, width=6.5*pngres)
-#			par(mfrow=c(4,1), mai=c(0.45,0.55,0.1,0.1), omi=c(0,0,0.4,0), mgp=c(2,0.75,0))
-#			plt.ageResidsPOP(stdRes.CA.CAs, main="" )
-#			mtext(surveyHeadName[ii],side=3,outer=TRUE,line=0.25,cex=1.5)
-#			plt.yearResidsPOP(stdRes.CA.CAs)
-#			plt.cohortResids(stdRes.CA.CAs)   # cohort resid, by year of birth
-#			plt.ageResidsqqPOP(stdRes.CA.CAs)
-#			dev.off()
-#		}
-#	}
-
-#plotMeanAge----------------------------2016-12-08
-# Plot observed and expected mean ages from 
-# commercial and survey C@A data.
-#-----------------------------------------------RH
-#plotMeanAge =function(obj, ptypes=c("win"), useCA=T, useSA=T, CAnames="Trawl")
-#{
-	# Here plot the mean age for catch and surveys (`MAfun` in `utilsFun.r`)
-#browser();return()
-	MAc = MAfun(obj$CAc)       # catch mean age
-	MAs = MAfun(obj$CAs)       # surveys mean age
-	nseries = 0
-	MAp = character()
-	if (useCA) {
-		nseries = nseries + length(sort(unique(obj$CAc$Series)))
-		MAp = c(MAp, "MAc") }
-	if (useSA) {
-		nseries = nseries + length(sort(unique(obj$CAs$Series)))
-		MAp = c(MAp, "MAs") }
-	
-	if (nseries>0) {
-		MA.pjs = list()
-		for (p in ptypes) {
-			if (p=="eps") postscript("meanAge.eps", width=6.5, height=8.5, horizontal=FALSE,  paper="special")
-			else if (p=="png") png("meanAge.png", units="in", res=pngres, width=6.5, height=8.5)
-			par(mfrow=c(nseries,1), mar=c(1.75,2,2,0.5), oma=c(2,2,0,0), mgp=c(2,0.75,0))
-			for (m in MAp) {
-				MA   = get(m)
-				last = regexpr("-",names(MA$MAobs))-1
-				for ( i in 1:length(MA$J)) {   #1:length(unique(MAsSurvNum)) ) 
-					ii  = MA$J[i]
-					iii = substring(names(MA$MAobs),1,last)
-					z   = is.element(iii,ii)
-					if (p==ptypes[1]) {
-						for (k in setdiff(names(MA),"J"))
-							MA.pjs[[paste0(m,ii)]][[k]] = MA[[k]][z]
-					}
-#if (m=="MAs" && ii==2) {browser();return()}
-					ylim = extendrange(c(MA$MAobs[z]+MA$CI[z],MA$MAobs[z]-MA$CI[z],MA$MAexp[z]),f=0.1)
-					plot(MA$Yr[z],MA$MAobs[z],type="n",xlab="",ylab="", cex.axis=1.4, ylim=ylim)
-						#ylim=extendrange(c(MA$MAobs[z],MA$MAexp[z]),f=0.1))
-					points(MA$Yr[z], MA$MAexp[z], pch=22, type="o",col="blue", bg="white",cex=1.4)
-					CLlo = MA$MAobs[z]-MA$CI[z]
-					CLhi = MA$MAobs[z]+MA$CI[z]
-					xCI  = as.vector(rbind(MA$Yr[z],MA$Yr[z],rep(NA,length(MA$Yr[z]))))
-					yCI  = as.vector(rbind(CLlo,CLhi,rep(NA,length(CLlo))))
-					lines(xCI,yCI,col="green4")
-					points(MA$Yr[z],MA$MAobs[z], pch=20, col="green4", cex=1.4)
-					if (m=="MAc")
-						mtext(CAnames[i], side=3, line=0.25, cex=1, outer=FALSE)
-					else {
-						surveyHeadName = if (!exists("tcall")) ssnames[MAs$J] else tcall(PBSawatea)$Snames[MAs$J]
-						mtext(surveyHeadName[i], side=3, line=0.25, cex=1, outer=FALSE)
-					}
-				}
-				mtext("Mean Age (y)",side=2,line=0.25,cex=1.2,outer=T)
-				if (par()$mfg[1]==par()$mfg[3]) mtext("Year",side=1,line=0.75,cex=1.2,outer=T)
-			} ## end MAp
-			if (is.element(p,c("eps","png")))dev.off()
-		} ## end ptypes
-		assign("MA.pjs",MA.pjs,envir=.GlobalEnv)
-		dump("MA.pjs",file="MA.pjs.r")  ## for Paul
-		save("MA.pjs",file="MA.pjs.rda")
-	} ## end nseries
-#browser();return()
-#}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	# Plot stock-recruitment function (based on MPD's)
-	# xLimSR and yLimSR fixed here for YMR to have Run 26 and 27 figs
-	#  on same scales. Use these first two values to scale to data:
-	# xLimSR =c(0, max(obj$B$SB))
-	# yLimSR=c(0, max(obj$B$R, na.rm=TRUE))
-	#xLimSR=c(0, max(c(max(obj$B$SB),45000)))   # so it draw bigger if necessary
-	#yLimSR=c(0, max(c(max(obj$B$R, na.rm=TRUE),55000)))
-	xLimSR=c(0, 1.5*max(obj$B$SB,na.rm=TRUE))   # so it draw bigger if necessary
-	xxx=(seq(0, xLimSR[2], length.out=100))
-	yyy=srFun(xxx)
-	yLimSR=c(0, 1.1*max(c(yyy,obj$B$R),na.rm=TRUE))
-
-	for (p in ptypes) {
-		if (p=="eps") postscript("stockRecruit.eps", width=6.5, height=4, horizontal=FALSE,  paper="special")
-		else if (p=="png") png("stockRecruit.png", units="in", res=pngres, width=6.5, height=4)
-		par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-		plot(xxx, yyy, lwd=2, xlim=xLimSR, ylim=yLimSR, type="l",
-			xlab=expression( paste("Spawning biomass ",  italic(B)[italic(t)-1], " (t) in year ", italic(t), "-1", sep="") ),
-			ylab=expression( paste("Recruitment ", italic(R)[italic(t)], " (1000s) in year ", italic(t), sep="") ) )
-		text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels=substring(as.character(years), 3), cex=0.6, col="blue")
-		dev.off()
-	}
-
-  #windows()
-  #plt.lengthResids( stdRes.CL( obj$CLs ),
-  #  main=paste("Survey",mainTitle,"Series",i) )
-  #if ( save )
-  #  savePlot( "surveyLengthResids", type="png" )
-  # plt.idx( obj$CPUE,  main="Commercial Fishery",save="fishResids" )
-  # plt.idx( obj$Survey,main="Survey",save="surveyResids" )
-  closeAllWin()
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.mpdGraphs
-
 
 #plt.numR-------------------------------2011-08-31
 # Input an object from "load.allResFiles".
@@ -2780,184 +2100,6 @@ plt.numR <- function( obj, minYr=NULL )
   par( mfrow=c(1,1) )
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.numR
-
-
-#plt.quantBio---------------------------2011-08-31
-# From popScapeRuns2.r  - AME now replaced yLim to force 0.
-# This prints out tables (if run from command line), so be good to
-#  use as template for decisions tables once we have MSY.
-#----------------------------------------------AME
-plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
-                  p = get("quants5"),
-                  xyType="lines",
-                  lineType=c(3,2,1,2,3),
-                  refLines=NULL, xLim=NULL, yLim=NULL,
-                  userPrompt=FALSE, save=TRUE,
-                  yaxis.lab="Spawning biomass" )
-{
-  plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", ... )   #AME line.col="black", col is for filling rect
-  {
-    if ( new )
-      plot( xLim,yLim, type="n", xlab="",ylab="" )
-
-    yrs <- as.numeric(dimnames(obj)[[2]])
-
-    # Connect the quantiles with lines.
-    if ( xyType=="lines" )
-    {
-      for ( i in 1:nrow(obj) )
-      {
-        # Plot reconstructed biomass.
-        lines( yrs,obj[i,], lty=lineType[i],... )
-      }
-    }
-
-    # ARK vertical line-dot plot.
-    # Assumes that five quantiles requested, with median as one.
-    if ( xyType=="lineDot" )
-    {
-      points( yrs,obj[2,], pch=3, cex=0.5,... )
-      points( yrs,obj[3,], pch=1,... )
-      points( yrs,obj[4,], pch=3, cex=0.5,... )
-      segments( yrs,obj[1,], yrs,obj[5,], lty=1,... )
-    }
-
-    # Quantile boxplots - assumes five quantiles.
-    if ( xyType=="quantBox" )
-    {
-      delta <- 0.25
-      # Draw the outer whiskers.
-      segments( yrs,obj[1,], yrs,obj[5,], lty=1, col=line.col) #, ... )
-             #AME col=1 removed, col=line.col ... so can have red for projs
-      # Overlay the box.
-      for ( i in 1:length(yrs) )
-        rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i],
-             border=line.col, col="white")#AME border,col=NA (empty)
-      # Add the median.
-      segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col="black")     #line.col )   #AME black
-    }
-  }
-
-  # Plot quantiles of biomass using the posterior densities.
-  # If proj!=NULL then add the projections for all policies.
-  # If policy!=NULL than plot only the specified policy.
-
-  # Plotting ranges for reconstruction (1) and projection (2).
-  # ***
-  nCol <- min( length(policy),3 )
-  if ( !is.null(policy) )
-    nRow <- length( policy )/nCol
-
-  nRow <- 3
-  nCol <- 2
-
-  par( oma=c(2,2,1,1), mar=c(2,2,1.5,1), mfrow=c(nRow,nCol), userPrompt )     # AME mfcol -> mfrow to fill left to right
-
-  yrs1 <- NULL
-  yrs2 <- NULL
-  result1 <- NULL
-  result2 <- NULL
-
-  # Calculate the quantiles of the reconstructed biomass.
-  result1 <- apply( obj,2,quantile,probs=p )
-  yrs1 <- as.numeric(dimnames(result1)[[2]])
-
-  if ( is.null(yLim) )
-    # yLim <- range( result1 )
-    yLim=c(0, max( result1 ))
-
-  # Reconstructed biomass.
-  if ( is.null(projObj) )
-  {
-    plt.qB( result1,xLim=range(yrs1),yLim=yLim, xyType=xyType )
-    mtext( side=1, line=2, cex=1.0, "Year" )
-    mtext( side=2, line=2, cex=1.0, "Biomass" )
-  }
-
-  # Reconstructed biomass and projections.
-  if ( !is.null(projObj) )
-  {
-    # Get the policies to be plotted.
-    if ( is.null(policy) )
-      policyList <- names( projObj )
-    else
-      policyList <- policy
-
-    # Loop over the policies.
-    result2 <- as.list(policyList)
-    names( result2 ) <- policyList
-
-    iPage <- 1
-    nPolicies <- length(policyList)
-    for ( j in 1:nPolicies )
-    {
-      # Calculate quantiles of the projected biomass for policy.
-      pol <- policyList[j]
-      result2[[j]] <- apply( projObj[[pol]],2,quantile,probs=p )
-
-      # cat( "\n\nQuantiles of projection for policy=",
-      #   policyList[j],"\n" )
-      # print( result2[[j]] )
-
-      yrs2 <- as.numeric( dimnames(result2[[j]])[[2]] )
-      if ( is.null(xLim) )
-        xLim <- range( yrs1,yrs2 )
-      # yLim <- range( result1,result2[[j]] )  # AME to get same axes
-      # yLim <- c(0,yLim[2])
-
-      # Plot the quantiles of the biomass.
-      if ( xyType=="quantBox" )
-        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col=NA, line.col="black", med.col="red" )      
-      else
-        plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim,col="red" )
-
-      if ( !is.null(refLines) )
-        abline( v=refLines,lty=4 )
-
-      # Plot the quantiles of the projected biomass.
-      if ( xyType=="quantBox" )
-        plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, line.col="red")  # AME: col fills in box, I want to change line cols 
-      else
-        plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, col="red" )
-
-      #for ( i in 1:nrow(result2[[j]]) )
-      #  lines( yrs2,result2[[j]][i,],lty=lineType[i],lwd=2,col=2 )
-
-      abline( v=yrs2[1]-0.5, lty=2 )
-
-      mfg <- par( "mfg" )
-      if ( mfg[1]==1 & mfg[2]==1 )
-      {
-        mtext( side=1, line=0.8, cex=1.0, outer=TRUE, "Year" )
-                                       #AME line=0 changed
-        mtext( side=2, line=0.8, cex=1.0, outer=TRUE, yaxis.lab,
-           ) # "   and Spawning
-      }
-      mtext( side=3, line=0.25, cex=0.8,
-        paste( "Catch strategy:",policyList[j]) )
-
-      # Last panel on page or last policy.
-      if ( mfg[1]==mfg[3] & mfg[2]==mfg[4] | j==nPolicies )
-      {
-        if ( save )
-          savePlot( paste( "policyProj",iPage,sep=""), type="png" )
-        iPage <- iPage + 1
-
-        if ( j < nPolicies )
-        {
-          windows()
-          par( oma=c(2,2,1,1), mar=c(2,2,1.5,1),
-               mfcol=c(nRow,nCol), userPrompt )
-        }
-      }
-    }
-  }
-  par( mfrow=c(1,1) )
-
-  val <- list( recon=result1, proj=result2 )
-  val
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.quantBio
 
 
 #plt.quantBioBB0------------------------2011-08-31
@@ -3095,10 +2237,8 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
       #  lines( yrs2,result2[[j]][i,],lty=lineType[i],lwd=2,col=2 )
 
       abline( v=yrs2[1]-0.5, lty=2 )
-      axis(1, at=seq(xLim[1], xLim[2], by=xaxis.by),
-           tcl=tcl.val, labels=FALSE)
-      axis(2, at=seq(0, yLim[2], by=yaxis.by),
-           tcl=tcl.val, labels=FALSE)
+      axis(1, at=seq(xLim[1], xLim[2], by=xaxis.by), tcl=tcl.val, labels=FALSE)
+      axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
       
       # mfg <- par( "mfg" )
       # if ( mfg[1]==1 & mfg[2]==1 )

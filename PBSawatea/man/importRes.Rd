@@ -51,7 +51,7 @@ importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
   Hilborn, R., Maunder, M., Parma, A., Ernst, B., Payne, J., and Starr, P. (2003) 
   Coleraine: A generalized age-structured stock assessment model. User's manual version 2.0. 
   \emph{University of Washington Report} \bold{SAFS-UW-0116}. Available at: \cr
-  \url{http://fish.washington.edu/research/coleraine/pdf/coleraine.pdf}.
+  \url{https://tinyurl.com/y83fwgeb}.
 }
 \note{
   This import function is implemented for the Coleraine statistical
@@ -64,10 +64,18 @@ importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
   \emph{e.g.} \code{ll(x.cod); ll(x.cod$N); head(x.cod$N)}.
 }
 \seealso{
-  \code{\link[PBSawatea]{importCor}}, \code{\link[PBSawatea]{importPar}}, \code{\link[PBSawatea]{importStd}} \cr
-  \code{\link[PBSawatea]{runADMB}}, \code{\link[PBSawatea]{readAD}}, \code{\link[PBSawatea]{reweight}}, \code{\link[PBSawatea]{importCol2}} \cr
-  \code{\link[utils]{read.table}}, \code{\link[base]{readLines}}, and \code{\link[base]{scan}} to import any data. \cr
-  \code{\link[scape]{scape-package}} gives an overview of the package \pkg{scape}.
+  \code{\link[PBSawatea]{importCor}},
+  \code{\link[PBSawatea]{importPar}},
+  \code{\link[PBSawatea]{importStd}},
+  \code{\link[PBSawatea]{runADMB}},
+  \code{\link[PBSawatea]{readAD}},
+  \code{\link[PBSawatea]{reweight}}\cr
+  Import data:\cr
+  \code{\link[utils]{read.table}},
+  \code{\link[base]{readLines}},
+  \code{\link[base]{scan}}\cr
+  Overview of \pkg{scape} package:\cr
+  \code{\link[scape]{scape-package}}
 }
 \keyword{file}
 \keyword{interface}

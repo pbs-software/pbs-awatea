@@ -66,6 +66,7 @@
 %%----------------------------------------------------------
 %% !!!!! Load nccmath AFTER hyperref !!!!!
 %% (http://tex.stackexchange.com/questions/170353/nccmath-fleqn-numbering)
+%% Redefines `eqnarray' to work in the amsmath style (http://muug.ca/mirror/ctan/macros/latex/contrib/ncctools/doc/nccmath.pdf)
 \usepackage{nccmath}                    %% from web for fleqn (flus-left equations)
 
 %%\DeclareMathSizes{display size}{text size}{script size}{scriptscript size}.
@@ -190,6 +191,11 @@
 %%  there should be no [ALTHEADING] argument.  A sectioning command
 %%  is normally defined to \@startsection + its first six arguments.
 
+\newcommand{\secfnt}{\fontsize{12}{14}}
+\newcommand{\ssecfnt}{\fontsize{12}{14}}
+\newcommand{\sssecfnt}{\fontsize{12}{14}}
+\newcommand{\ssssecfnt}{\fontsize{11}{13}}
+
 %% How to add an extra level to sections with headings below \subsubsection
 %% https://tex.stackexchange.com/questions/60209/how-to-add-an-extra-level-of-sections-with-headings-below-subsubsection?noredirect=1&lq=1
 \usepackage{titlesec}
@@ -197,12 +203,13 @@
 
 \newcounter{subsubsubsection}[subsubsection]
 \renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
-\renewcommand\theparagraph{\thesubsubsubsection.\arabic{paragraph}} % optional; useful if paragraphs are to be numbered
+\renewcommand\theparagraph{\thesubsubsubsection.\arabic{paragraph}} %% optional; useful if paragraphs are to be numbered
+\renewcommand\thesubparagraph{\theparagraph.\arabic{subparagraph}}  %% optional; useful if subparagraphs are to be numbered
 
 \titleformat{\subsubsubsection}
-  {\normalfont\normalsize\bfseries}{\thesubsubsubsection}{0em}{}
+  {\normalfont\ssssecfnt\bfseries}{\thesubsubsubsection}{0.5em}{}
 \titlespacing*{\subsubsubsection}
-{18pt}{-6pt plus -0pt minus -0pt}{6pt plus 0pt}
+{0pt}{6pt plus -0pt minus -0pt}{6pt plus 0pt}%%{<left>}{<before-sep>}{<after-sep>}[<right-sep>] %% Recent CSAS docs show no indent
 
 \makeatletter                           %% Need this and \makeatother around these:
 
@@ -211,36 +218,36 @@
 \@ifclassloaded{book}{% 
   \renewcommand{\section}{\@startsection{section}{1}{0mm}%  %% name, level, indent
   {-18pt \@plus -0pt \@minus -0pt}{6pt \@plus 0pt}%         %% beforeskip afterskip
-  {\normalfont\large\bfseries\MakeUppercase}}%              %% style
+  {\normalfont\secfnt\bfseries\MakeUppercase}}%              %% style
 }{%
   \renewcommand{\section}{\@startsection{section}{1}{0mm}%  %% name, level, indent
   {-18pt \@plus -0pt \@minus -0pt}{6pt \@plus 0pt}%         %% beforeskip afterskip
-  {\centering\normalfont\large\bfseries\MakeUppercase}}%    %% style
+  {\centering\normalfont\secfnt\bfseries\MakeUppercase}}%    %% style
 }%
 %% Doesn't force upper case in Table of Contents though.
 
 \renewcommand{\subsection}{\@startsection%
 {subsection}{2}{0mm}%                                       %% name, level, indent
 {-12pt \@plus -0pt \@minus -0pt}{6pt \@plus 0pt}%           %% beforeskip afterskip
-{\normalfont\large\bf\MakeUppercase}}%                      %% style
+{\normalfont\ssecfnt\bf\MakeUppercase}}%                      %% style
 
 \renewcommand{\subsubsection}{\@startsection%
 {subsubsection}{3}{0mm}%                                    %% name, level, indent
 {-12pt \@plus -0pt \@minus -0pt}{6pt \@plus 0pt}%           %% beforeskip afterskip
-{\normalfont\large\bf}}%                                    %% style
+{\normalfont\sssecfnt\bf}}%                                    %% style
 
 \newcommand{\nonumsection}{\@startsection%
 {section}{1}{0mm}%                                          %% name, level, indent
 {-18pt \@plus -0pt \@minus -0pt}%                           %% beforeskip
 {6pt \@plus 0pt}%                                           %% afterskip
-{\centering\normalfont\large\bfseries\MakeUppercase}}%      %%style
+{\centering\normalfont\secfnt\bfseries\MakeUppercase}}%      %%style
 
 %% For Appendices
 \@ifclassloaded{book}
 {\renewcommand{\chapter}{\@startsection%
 {chapter}{1}{0mm}%                                          %% name, level, indent
 {-18pt \@plus -0pt \@minus -0pt}{6pt \@plus 0pt}%           %% beforeskip afterskip
-{\centering\normalfont\large\bfseries\MakeUppercase}}}%     %% style
+{\centering\normalfont\secfnt\bfseries\MakeUppercase}}}%     %% style
 
 %% How to add an extra level of sections with headings below \subsubsection
 %% https://tex.stackexchange.com/questions/60209/how-to-add-an-extra-level-of-sections-with-headings-below-subsubsection?noredirect=1&lq=1
@@ -254,19 +261,14 @@
   {\normalfont\normalsize\bfseries}}
 \def\toclevel@subsubsubsection{4}
 \def\toclevel@paragraph{5}
-\def\toclevel@paragraph{6}
+\def\toclevel@subparagraph{6}
 \def\l@subsubsubsection{\@dottedtocline{4}{7em}{4em}}
 \def\l@paragraph{\@dottedtocline{5}{10em}{5em}}
 \def\l@subparagraph{\@dottedtocline{6}{14em}{6em}}
 
 %% http://tex.stackexchange.com/questions/25989/spacing-in-headline-between-number-and-text
 %% Added by RH (2016-10-24)
-\renewcommand*{\@seccntformat}[1]{\csname the#1\endcsname\hspace{0.5em}}
-
-%% Under the default article class we can merely remove the formatting applied to the section counter by adding
-%% https://stackoverflow.com/questions/38292590/remove-section-numbers-latex
-%% \renewcommand*{\@seccntformat}[1]{} % but doesn't remove for subsubsubsection
-%% \renewcommand*{\numberline}[1]{}    % remove numbering from TOC
+\renewcommand*{\@seccntformat}[1]{\csname the#1\endcsname\hspace{0.5em}} %% only for three default section levels
 
 %%----------------------------------------------------------
 %% RH: In appendix tex files, you can use:
@@ -328,12 +330,12 @@
 \def\changemargin#1#2#3{\list{}{\rightmargin#2\leftmargin#1\topsep=#3}\item[]}
 \let\endchangemargin=\endlist
 %% Implementation:
-%%    \begin{changemargin}{<arg>}{<arg>}
+%%    \begin{changemargin}{<arg>}{<arg>}{<arg>}
 %%    \end{changemargin} 
 %% where <arg> is the distance you want to include on the margin (the first one
 %% defines the right-hand side margin, and the second defines the left-hand side one).
 %% So, for example, to add 0.5 cm to the margins on either side, you would have:
-%%    \begin{changemargin}{0.5cm}{0.5cm} 
+%%    \begin{changemargin}{0.5cm}{0.5cm}{1ex}
 %%       your text here  
 %%    \end{changemargin}
 %%%----------------------------------------------------------

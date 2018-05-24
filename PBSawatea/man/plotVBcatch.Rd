@@ -9,7 +9,7 @@
 }
 \usage{
 plotVBcatch(obj, currentRes1=currentRes,
-   p=c(0.025,0.25,0.5,0.75,0.975),
+   p=get("quants5"),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -47,7 +47,7 @@ plotVBcatch(obj, currentRes1=currentRes,
   which is currenly dysfunctional and not used (RH).
 }
 \seealso{
-  \code{\link{plotBmcmcPOP}}, \code{\link{plotB2}}
+  \code{\link{plotB2}}
 }
 \keyword{hplot}
 

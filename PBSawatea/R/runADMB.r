@@ -8,9 +8,6 @@ setClass ("AWATEAdata",
 #require(PBSmodelling)
 #source("utilFuns.r",local=FALSE)
 
-# Flush the cat down the console
-#.flush.cat = function(...) { cat(...); flush.console() } ## already in PBStools
-
 #runADMB--------------------------------2013-09-09
 # Run AD Model Builder code for Awatea
 #-----------------------------------------------RH
@@ -32,7 +29,9 @@ runADMB = function(
 	if (!doMPD)
 		cvpro = tcall(PBSawatea)$cvpro  ## retain cvpro from initially run MPD
 	if (locode) { 
-		load(paste0(system.file("data",package="PBSawatea"),"/gfcode.rda"))
+		#ici = sys.frame(sys.nframe())
+		#load(paste0(system.file("data",package="PBSawatea"),"/gfcode.rda"), envir=ici)
+#browser();return()
 		eval(parse(text="require(PBSmodelling, quietly=TRUE, warn.conflicts=FALSE)"))
 		source(paste(codePath,"PBSscape.r",sep="/"),local=FALSE)
 		source(paste(codePath,"runSweave.r",sep="/"),local=FALSE)
@@ -50,7 +49,7 @@ runADMB = function(
 		junkpat = c("^Awatea","^admodel","\\.pst$","\\.out$","\\.rpt$","\\.tmp$","^variance$","^results.dat$","^likelihood.dat$")
 		junkit  = sapply(junkpat,function(x){list.files(pattern=x)})
 		junkit  = sapply(junkit,setdiff,"Awatea.exe")
-		junk = sapply(junkit,function(x){ if (length(x)>0) for (i in x) if (file.exists(i)) file.remove(i)})
+		junk    = sapply(junkit,function(x){ if (length(x)>0) for (i in x) if (file.exists(i)) file.remove(i)})
 	}
 	runNoStr = pad0(runNo,2)
 	runname  = paste(strSpp,"run",runNoStr,sep="")
@@ -78,7 +77,7 @@ runADMB = function(
 	packList(stuff=c("awateaPath","codePath","wd","filename.ext","strSpp","runNo","N.reweight","cvpro","mean.age","runname","rundir"), target="PBSawatea")
 
 	if (doMPD) {
-		.flush.cat("Reweighting surveys and proportions-at-age...\n")
+		.flash.cat("Reweighting surveys and proportions-at-age...\n")
 		if (!file.exists(filename.ext)) stop("Specified input file does not exist")
 		file.controls = readAD(filename.ext)@controls
 		Ncpue = file.controls$Ncpue
@@ -86,7 +85,7 @@ runADMB = function(
 		cvpro = file.controls$cvpro # expanded cvpro determined by number of surveys and number of cpue series
 		sdnrfile = paste(prefix,runNoStr,"sdnr",sep=".")
 		#cat("#SDNR (Surveys, CPUE, CAs, CAc)\n",file=sdnrfile)
-		header = paste0("#SDNR -- ",ifelse(Nsurv>0,paste0("Surveys(",Nsurv,"), "),""),ifelse(Ncpue>0,paste0("CPUE(",Ncpue,"), "),""),"CAsurv, CAcomm\n")
+		header = paste0("#SDNR -- ",ifelse(Nsurv>0,paste0("Surveys(",Nsurv,"), "),""),ifelse(Ncpue>0,paste0("CPUE(",Ncpue,"), "),""),"CAsurv, CAcomm, devSDNR\n")
 		cat(header,file=sdnrfile)
 		cat("CVpro:",cvpro,"\n",file=sdnrfile,append=TRUE,sep=" ")
 #browser();return()
@@ -127,7 +126,7 @@ runADMB = function(
 				write(Robjnew,fileN)
 			}
 			expr=paste("mess = shell(cmd=\"awatea -ind ",fileN,argsMPD,"\", wait=TRUE, intern=TRUE)",sep=""); eval(parse(text=expr))
-			if (verbose)  .flush.cat(mess, sep="\n")
+			if (verbose)  .flash.cat(mess, sep="\n")
 			if (length(mess)<10) stop("Abnormal program termination")
 
 			fileR = gsub(paste("\\.",ext,"$",sep=""),".res",fileN)
@@ -164,7 +163,7 @@ runADMB = function(
 		mcname   = paste("MCMC",runNoStr,rwtNoStr,sep=".")
 	}
 	if (doMCMC) {
-		.flush.cat(paste("Running",mcmc,"MCMC iterations...\n"))
+		.flash.cat(paste("Running",mcmc,"MCMC iterations...\n"))
 		mcdir    = paste(wd,runname,mcname,sep="/")
 		if (!file.exists(mcdir)) dir.create(mcdir)
 		fileA = paste(prefix,runNoStr,rwtNoStr,c(ext,"res"),sep=".")
@@ -175,17 +174,17 @@ runADMB = function(
 		#}
 		#expr=paste("mess = shell(cmd=\"awatea -ind ",fileN," -mcmc ",format(mcmc,scientific=FALSE)," -mcsave ",
 		#	format(mcsave,scientific=FALSE),argsMCMC,"\", wait=TRUE, intern=TRUE)",sep="")
-		#.flush.cat(expr, sep="\n")
+		#.flash.cat(expr, sep="\n")
 		#eval(parse(text=expr))
-		#if (verbose)  .flush.cat(mess, sep="\n")
+		#if (verbose)  .flash.cat(mess, sep="\n")
 		expr=paste("shell(cmd=\"awatea -ind ",fileN," -mceval\" , wait=TRUE, intern=FALSE)",sep="")
-		.flush.cat(expr, sep="\n")
+		.flash.cat(expr, sep="\n")
 		eval(parse(text=expr))
 		
 		Robj="dummy4now"
 	}
 	if (doMSY) {
-		.flush.cat(paste("Running MSY yield calculations...\n"))
+		.flash.cat(paste("Running MSY yield calculations...\n"))
 		msyname  = paste("MSY",runNoStr,rwtNoStr,sep=".")
 		msydir   = paste(wd,runname,mcname,msyname,sep="/")
 		if (!file.exists(msydir)) dir.create(msydir)
@@ -209,7 +208,7 @@ runADMB = function(
 		infile = fix(infile,vnam,strategy) # replace the contents of infile with updated strategy
 		write(infile,fileN)                # overwrite the input file for MSY calculations
 		expr=paste("shell(cmd=\"awatea -ind ",fileN," -mceval\" , wait=TRUE, intern=FALSE)",sep="")
-		.flush.cat(expr, sep="\n")
+		.flash.cat(expr, sep="\n")
 		eval(parse(text=expr))
 		
 		Robj=list(ctlfile,strategy)
@@ -400,7 +399,7 @@ setMethod("write", signature(x = "AWATEAdata"),
 	invisible(nvec) } )
 #----------------------------------setMethod.write
 
-#setMethod.reweight---------------------2017-12-04
+#setMethod.reweight---------------------2018-04-11
 # Set the method for 'reweight' when using an AWATEA class.
 # Calculates reweighted values and populates S4 object.
 #-----------------------------------------------RH
@@ -500,7 +499,7 @@ setMethod("reweight", signature="AWATEAdata",
 		SDNR[ss] = sd(sser$NR)
 		## Check that this routine is repeated for the CPUE series below
 		if (do.cvpro && nrwt==0) {
-			.flush.cat(paste0("Francis reweight once only -- survey ", s, " with CVpro=",cvpro[s]),"\n")
+			.flash.cat(paste0("Francis reweight once only -- survey ", s, " with CVpro=",cvpro[s]),"\n")
 			if (round(cvpro[s],5)==0) {
 				survey$CVnew[zs] = survey$CV[zs]
 			} else {
@@ -514,7 +513,7 @@ setMethod("reweight", signature="AWATEAdata",
 		} else if (do.cvpro && nrwt>0) {
 			survey$CVnew[zs] = survey$CV[zs]
 		} else {
-			.flush.cat(paste0("SDNR reweight ", nrwt+1, " -- survey ", s, " with SDNR=",SDNR[ss]), "\n")
+			.flash.cat(paste0("SDNR reweight ", nrwt+1, " -- survey ", s, " with SDNR=",SDNR[ss]), "\n")
 			survey$CVnew[zs] = sser$CV * SDNR[ss]
 		}
 	}
@@ -535,7 +534,7 @@ setMethod("reweight", signature="AWATEAdata",
 			user = cpue[zu,]
 			SDNR[Useries[uu]] = sd(user[,"NR"])
 			if (do.cvpro && nrwt==0) {
-				.flush.cat(paste0("Francis reweight once only -- CPUE ", u, " with CVpro=",cvpro[s]),"\n")
+				.flash.cat(paste0("Francis reweight once only -- CPUE ", u, " with CVpro=",cvpro[s]),"\n")
 				if (round(cvpro[s],5)==0) {
 					cpue$CVnew[zu] = cpue$CV[zu]
 				} else {
@@ -549,14 +548,15 @@ setMethod("reweight", signature="AWATEAdata",
 			} else if (do.cvpro && nrwt>0) {
 				cpue$CVnew[zu] = cpue$CV[zu]
 			} else {
-				.flush.cat(paste0("SDNR reweight ", nrwt+1, " -- CPUE ", u, " with SDNR=",SDNR[Useries[uu]]), "\n")
+				.flash.cat(paste0("SDNR reweight ", nrwt+1, " -- CPUE ", u, " with SDNR=",SDNR[Useries[uu]]), "\n")
 				cpue$CVnew[zu] = user$CV * SDNR[Useries[uu]]
 			}
 		}
 	}
-	if (nrwt==0) .flush.cat("\n")
+	if (nrwt==0) .flash.cat("\n")
 
-	sdnr = rep(0,2); names(sdnr) = c("spa","cpa"); SDNR = c(SDNR,sdnr)
+#browser();return()
+	sdnr = rep(0,2); names(sdnr) = c("spa","cpa"); SDNR = c(SDNR,sdnr,dev=sum(abs(1-SDNR)))
 	wj   = NULL
 
 #if(nrwt==0) {browser();return()}
@@ -609,20 +609,20 @@ setMethod("reweight", signature="AWATEAdata",
 
 	if (!is.null(dots$sfile)) {
 		sfile=dots$sfile
-		.flush.cat(paste(dots$fileN," (",paste(names(SDNR),collapse=", "),")\n",sep=""))
-		.flush.cat(paste(round(SDNR,5),collapse="\t"),"\n\n",sep="")  # cat to console
+		.flash.cat(paste(dots$fileN," (",paste(names(SDNR),collapse=", "),")\n",sep=""))
+		.flash.cat(paste(round(SDNR,5),collapse="\t"),"\n\n",sep="")  # cat to console
 		cat("\n",dots$fileN,"\n",file=sfile,append=TRUE,sep="")
 		cat("SDNR: ",paste(round(SDNR,5),collapse="\t"),"\n",file=sfile,append=TRUE,sep="")
 		if (!is.null(wj)) {
-			.flush.cat(paste("wj (",paste(names(wj),collapse=", "),")\n",sep=""))
-			.flush.cat(paste(round(wj,5),collapse="\t"),"\n\n",sep="")  # cat to console
+			.flash.cat(paste("wj (",paste(names(wj),collapse=", "),")\n",sep=""))
+			.flash.cat(paste(round(wj,5),collapse="\t"),"\n\n",sep="")  # cat to console
 			cat("wj:   ",paste(round(wj,5),collapse="\t"),"\n",file=sfile,append=TRUE,sep="")
 		}
 	} 
 	#sMAR = MRfun(spa$Year,spa$Age,spa$Obs,spa$Fit) # srvey mean age residuals
 	#w = c((1/SDNR)[as.character(c(Sseries,Useries))],(1/SDNR^2)[c("cpa","spa")]) # lognormal and multinomial (Francis)
 	#f = c( cpa=CFfun(cpa$Year,cpa$SS,cpa$Age,cpa$Obs,cpa$Fit), spa=CFfun(spa$Year,spa$SS,spa$Age,spa$Obs,spa$Fit) )
-	obj@reweight = list(nrwt=nrwt+1, survey=survey,cpue=cpue,wNcpa=wNcpa,wNspa=wNspa,SDNR=SDNR,wj=wj)
+	obj@reweight = list(nrwt=nrwt+1,survey=survey,cpue=cpue,wNcpa=wNcpa,wNspa=wNspa,SDNR=SDNR,wj=wj)
 	return(obj)
 	} )
 #-------------------------------setMethod.reweight

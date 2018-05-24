@@ -1,14 +1,18 @@
-#===============================================================================
-# PBSawatea utility functions:
-#  importCor        : import Awatea parameter correlations.
-#  importEva        : import Awatea Hessian eigenvalues.
-#  importLik        : import Awatea likelihoods.
-#  importPar        : import Awatea parameters (all).
-#  importRes        : import Awatea results.
-#  importStd        : import Awatea output parameter standard deviations.
-#  makeErrMat       : mMake simple ageing error matrix for Awatea.
-#  tabSAR           : generate comma-del., 2-D tables from reference point objects.
-#===============================================================================
+##==============================================================================
+## PBSawatea utility functions:
+##  importCor        : import Awatea parameter correlations.
+##  importEva        : import Awatea Hessian eigenvalues.
+##  importLik        : import Awatea likelihoods.
+##  importPar        : import Awatea parameters (all).
+##  importRes        : import Awatea results.
+##  importStd        : import Awatea output parameter standard deviations.
+##  MAfun            : mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
+##  makeCmat         : make a 1-column matrix
+##  makeRmat         : make a -row matrix
+##  makeErrMat       : mMake simple ageing error matrix for Awatea.
+##  tabSAR           : generate comma-del., 2-D tables from reference point objects.
+##  tex.that.vec     : convert a vector to a phrase 'x, y, and z' (see texThatVec in PBStools for more advanced version)
+##==============================================================================
 
 #importCor------------------------------2012-07-30
 # Import Awatea parameter correlations.
@@ -44,18 +48,23 @@ importCor = function(cor.file) {
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importCor
 #test=importCor("something.cor")
 
+
 #importEva------------------------------2012-08-10
 # Import Awatea Hessian eigenvlaues.
 #-----------------------------------------------RH
-importEva = function(eva.file){
+importEva = function(eva.file)
+{
 	efile=as.numeric(read.table(eva.file,header=FALSE,sep=""))
 	out = list(eva=efile)
-	return(out) }
+	return(out)
+}
+
 
 #importLik------------------------------2012-08-08
 # Import Awatea likelihoods.
 #-----------------------------------------------RH
-importLik = function(lik.file) {
+importLik = function(lik.file)
+{
 	lfile = readLines(lik.file)
 	out = list(lik=lfile)
 	liks = lfile[!is.element(lfile,c("","**Likelihoods**"))]
@@ -71,10 +80,12 @@ importLik = function(lik.file) {
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importLik
 #test=importLik("likelihood.dat")
 
+
 #importPar------------------------------2012-07-27
 # Import all Awatea parameters.
 #-----------------------------------------------RH
-importPar = function(par.file) {
+importPar = function(par.file) 
+{
 	pfile = readLines(par.file)
 	out = list(par=pfile)
 	header = pfile[1]
@@ -99,7 +110,8 @@ importPar = function(par.file) {
 	names(vals)=pfile[vnampos]
 	out=c(out,vals)
 #browser();return()
-	return(out) }
+	return(out)
+}
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importPar
 #test=importPar("something.par")
 
@@ -119,20 +131,17 @@ importPar = function(par.file) {
 #-------------------------------------------------------------------RH
 
 importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE, 
-     Survey=FALSE, CAc=FALSE, CAs=FALSE, CLc=FALSE, CLs=FALSE, 
-     LA=FALSE, quiet=TRUE, extra=TRUE, sep=" ") {
-
+   Survey=FALSE, CAc=FALSE, CAs=FALSE, CLc=FALSE, CLs=FALSE, 
+   LA=FALSE, quiet=TRUE, extra=TRUE, sep=" ")
+{
 	#---SUBFUNCTIONS-------------------------------
-	# Flush the cat down the console
-	#.flush.cat = function(...) { cat(...); flush.console() }  ## already in PBStools
-
 	readVector <- function(keyword, same.line = TRUE, file = res.file,
 		vector = res.vector) {
 		line <- match(keyword, substring(vector, 1, nchar(keyword)))
 		v <- if (same.line)
 			as.numeric(scan(file, what = "", skip = line - 1, nlines = 1, quiet = TRUE)[-1])
 		else as.numeric(scan(file, what = "", skip = line, nlines = 1, quiet = TRUE))
-		if (!quiet) .flush.cat("vector...")
+		if (!quiet) .flash.cat("vector...")
 		return(v)
 	}
 	readMatrix <- function(keyword, nrow, header = FALSE, stripe = c("no",
@@ -145,11 +154,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		m <- switch(stripe, left = m[, seq(1, ncol(m)/2)], right = m[,
 			seq(ncol(m)/2 + 1, ncol(m))], upper = m[seq(1, nrow(m) -
 			1, by = 2), ], lower = m[seq(2, nrow(m), by = 2),], m)
-		if (!quiet) .flush.cat("matrix...")
+		if (!quiet) .flash.cat("matrix...")
 		return(m)
 	}
 	getN <- function(sexes, years, ages) {
-		if (!quiet) .flush.cat("N         ")
+		if (!quiet) .flash.cat("N         ")
 		nsexes <- length(sexes)
 		nyears <- length(years)
 		nages <- length(ages)
@@ -164,12 +173,12 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 			N <- data.frame(Sex = rep(sexes, each = nyears * nages), Year = rep(rep(years, each = nages),2), 
 				Age = rep(ages, 2 * nyears), N = as.vector(t(rbind(Nf,Nm))))
 		}
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(N)
 	}
 	getB <- function(years, gears) {
 		ngears <- length(gears)
-		if (!quiet) .flush.cat("B         ")
+		if (!quiet) .flash.cat("B         ")
 		vb <- readMatrix("Vulnerable_Biomass_by_Method_and_Year", nrow = ngears)
 		sb <- readVector("Spawning_Biomass_by_Year", same.line = FALSE)
 		# *** ADD in the exploitation rate, last year is missing and need
@@ -180,19 +189,19 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		# BUG FIX: Appears should call readMatrix to accommodate multiple gear series.
 		#          Then, sum over the gears to get total catch.
 		y <- readMatrix( "Total_Catch_by_Method_and_Year", nrow=ngears )
-		#y <- apply( y,2,sum,na.rm=T )
+		#y <- apply( y,2,sum,na.rm=TRUE )
 		#y <- c( y,NA )
 		y <- cbind( y, rep(NA,nrow(y)) )
 
 		B <- as.data.frame( cbind(years, t(vb), sb, t(y), t(U)) )
 		names(B) <- if (ngears == 1) c("Year", "VB", "SB", "Y", "U")
 		else c("Year", paste0("VB.",gears), "SB", paste0("Y.",gears), paste0("U.",gears) )
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(B)
 	}
 	getSel <- function(gears, surveys, years, sexes, ages) {
 		if (!quiet)
-			.flush.cat("Sel       ")
+			.flash.cat("Sel       ")
 		ngears <- length(gears)
 		nsurveys <- length(surveys)
 		nyears <- length(years)
@@ -212,21 +221,21 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 			rep(surveys, each = nsexes * nages), rep("Maturity", nsexes * nages)), 
 			Sex = rep(rep(sexes, each = nages), ngears + nsurveys + 1), 
 			Age = rep(ages, (ngears + nsurveys + 1) * nsexes), P = c(t(com), t(srv), mat))
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(Sel)
 	}
 	getDev <- function(ages, years) {
-		if (!quiet) .flush.cat("Dev       ")
+		if (!quiet) .flash.cat("Dev       ")
 		Dev <- list()
 		Dev$Initial <- readVector("log_InitialDev", same.line = TRUE)
 		names(Dev$Initial) <- ages[-c(1, length(ages))]
 		Dev$Annual <- readVector("log_RecDev", same.line = TRUE)
 		names(Dev$Annual) <- years[-length(years)]
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(Dev)
 	}
 	getCPUE <- function(gears, years) {
-		if (!quiet) .flush.cat("CPUE      ")
+		if (!quiet) .flash.cat("CPUE      ")
 		nseries <- readVector("NCPUEindex")
 		ngears <- length(gears)
 		nyears <- length(years)
@@ -239,11 +248,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		CPUE <- merge(sgkey, CPUE)
 		CPUE <- data.frame(Series = paste("Series ", CPUE$Series, "-", CPUE$Gear, sep = ""), 
 			Year = as.integer(CPUE$Year), Obs = CPUE$Obs, CV = CPUE$CV, Fit = CPUE$Fit)
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(CPUE)
 	}
 	getSurvey <- function(years) {
-		if (!quiet) .flush.cat("Survey    ")
+		if (!quiet) .flash.cat("Survey    ")
 		nyears <- length(years)
 		nseries <- readVector("Nsurveyindex")
 		obs <- readMatrix("indexyearvaluecv", nrow = readVector("Number_of_survey_data", same.line = FALSE))
@@ -253,11 +262,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		Survey <- merge(obs, fit, all = TRUE)
 		Survey$Series <- as.integer(Survey$Series)
 		Survey$Year <- as.integer(Survey$Year)
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(Survey)
 	}
 	getCAc <- function(sexes, ages) {
-		if (!quiet) .flush.cat("CAc       ")
+		if (!quiet) .flash.cat("CAc       ")
 		nsexes <- length(sexes)
 		nages <- length(ages)
 		nobs <- readVector("Number_of_Commercial_C@A", same.line=FALSE)
@@ -273,11 +282,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		#   CAc$Gear <- as.integer(CAc$Gear)
 		CAc$Year <- as.integer(CAc$Year)
 		CAc$Age <- as.integer(CAc$Age)
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(CAc)
 	}
 	getCAs <- function(sexes, ages) {
-		if (!quiet) .flush.cat("CAs       ")
+		if (!quiet) .flash.cat("CAs       ")
 		nsexes <- length(sexes)
 		nages <- length(ages)
 		nobs <- readVector("Number_of_survey_C@A", same.line = FALSE)
@@ -291,11 +300,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		CAs$Series <- as.integer(CAs$Series)
 		CAs$Year <- as.integer(CAs$Year)
 		CAs$Age <- as.integer(CAs$Age)
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(CAs)
 	}
 	getCLc <- function(sexes, lengths) {
-		if (!quiet) .flush.cat("CLc       ")
+		if (!quiet) .flash.cat("CLc       ")
 		nsexes <- length(sexes)
 		nlengths <- length(lengths)
 		nobs <- readVector("Number_of_Commercial_C@L", same.line=FALSE)
@@ -309,11 +318,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		CLc$Series <- as.integer(CLc$Series)
 		CLc$Year <- as.integer(CLc$Year)
 		CLc$Length <- as.integer(CLc$Length)
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(CLc)
 	}
 	getCLs <- function(sexes, lengths) {
-		if (!quiet) .flush.cat("CLs       ")
+		if (!quiet) .flash.cat("CLs       ")
 		nsexes <- length(sexes)
 		nlengths <- length(lengths)
 		nobs <- readVector("Number_of_surveyC@L",same.line=FALSE)
@@ -327,11 +336,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		CLs$Series <- as.integer(CLs$Series)
 		CLs$Year <- as.integer(CLs$Year)
 		CLs$Length <- as.integer(CLs$Length)
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(CLs)
 	}
 	getLA <- function(sexes, ages) {
-		if (!quiet) .flush.cat("LA        ")
+		if (!quiet) .flash.cat("LA        ")
 		nsexes <- length(sexes)
 		nages <- length(ages)
 		nobs <- readVector("#femalesmales", same.line = FALSE, file = latage.file, vector = latage.vector)
@@ -362,11 +371,11 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 			fit$CV[fit$Sex == sexes[1]] <- CV1[1] + CV1[1] * (CVratio[1] - 1)/(Ln[1] - L1[1]) * (fit$Fit[fit$Sex==sexes[1]] - L1[1])
 			fit$CV[fit$Sex == sexes[2]] <- CV1[2] + CV1[2] * (CVratio[2] - 1)/(Ln[2] - L1[2]) * (fit$Fit[fit$Sex==sexes[2]] - L1[2])
 		}
-		LA <- merge(obs, fit, by = c("Sex", "Age"), all = T)
+		LA <- merge(obs, fit, by = c("Sex", "Age"), all = TRUE)
 		LA$Age <- as.integer(LA$Age)
 		LA$Fit <- LA$Fit
 		LA$CV <- LA$CV
-		if (!quiet) .flush.cat("OK\n")
+		if (!quiet) .flash.cat("OK\n")
 		return(LA)
 	}
 	getExtra = function(resvec,sep=" ") {
@@ -463,7 +472,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		file.remove(paste(resfile,".temp",sep="")) }
 	on.exit( exitfun(res.file) )                                                           # restore original file and remove the temporary copy
 	res.vector <- readLines(res.file)
-	res.vector <- gsub("[?]","",res.vector,perl=T)
+	res.vector <- gsub("[?]","",res.vector,perl=TRUE)
 	writeLines(res.vector,con=res.file)
 
 	res.vector <- gsub("\t", " ", gsub(sep, " ", res.vector))
@@ -474,7 +483,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 
 	res.vector <- gsub("\"", "", gsub("\t", "", gsub(" ", "", res.vector)))
 	if (!quiet)
-		.flush.cat("\nParsing text file ", res.file, ":\n\nPreamble  ", sep = "")
+		.flash.cat("\nParsing text file ", res.file, ":\n\nPreamble  ", sep = "")
 	sexes   <- if (readVector("Nsexes") == 1) "Unisex"
 		else c("Female", "Male")
 	gears   <- seq(1, length.out = readVector("Nmethods"))
@@ -483,7 +492,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 	ages    <- seq(from = 1, to = readVector("Nages"))
 	lengths <- seq(from = readVector("First_length"), by = readVector("Length_class_increment"),
 		length.out = readVector("Number_of_length_classes"))
-	if (!quiet) .flush.cat("OK\n")
+	if (!quiet) .flash.cat("OK\n")
 	model   <- list()
 	model$N <- getN(sexes, years, ages)
 	model$B <- getB(years, gears)
@@ -521,7 +530,7 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 		model$LA <- getLA(sexes, ages)
 	}
 	model$extra = extra
-	if (!quiet) .flush.cat("\n")
+	if (!quiet) .flash.cat("\n")
 	attr(model, "call") <- match.call()
 	attr(model, "scape.version") <- installed.packages()["scape", "Version"]
 	attr(model, "info") <- info
@@ -534,7 +543,8 @@ importRes <- function (res.file, info="", Dev=FALSE, CPUE=FALSE,
 #importStd------------------------------2012-07-27
 # Import Awatea table of estimated parameters.
 #-----------------------------------------------RH
-importStd = function(std.file, vnam="name") {
+importStd = function(std.file, vnam="name") 
+{
 	sfile = readLines(std.file)
 	sfile = sub("std dev","std.dev",sfile)
 	sfile = gsub("]","",gsub("\\[",".",sfile))
@@ -549,77 +559,10 @@ importStd = function(std.file, vnam="name") {
 		eval(parse(text=paste(mess,collapse=";")))
 	}
 	file.remove("std.tmp")
-	return(out) }
+	return(out)
+}
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^importStd
 #test=importStd("something.std")
-
-#makeErrMat-----------------------------2011-05-05
-# Make a simple ageing error matrix for Awatea.
-#-----------------------------------------------RH
-makeErrMat = function(N=60, ondiag=0.8, offdiag=0.1, corner=0.9) {
-	errMat = diag(ondiag,N,N)
-	for (i in 1:(N-1))
-		errMat[i,i+1] = offdiag
-	for (j in 1:(N-1))
-		errMat[j+1,j] = offdiag
-	errMat[1,1] = errMat[N,N] = corner
-	write.table(errMat,file="errmat.dat",sep="\t",row.names=FALSE,col.names=FALSE)
-	return(errMat)
-}
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^makeErrMat
-
-#tabSAR---------------------------------2011-07-18
-# Generate comma-delimited, two-dimensional output tables from reference point objects.
-#  models - names of binary system files that store the decision tables.
-#  pnam   - name of list object containing matrices of reference probabilities.
-#  tnam   - names of matrices reporting times to reach reference points/criteria.
-#  cats   - catch strategies (subset) to report in output tables.
-#  digits - number of digits to retain after the decimal.
-#-----------------------------------------------RH
-tabSAR = function(models=paste("input-ymr",pad0(c(29,30),2),pad0(1,2),sep="."),
-    #prefix="input-ymr", run=c(29,30), rwt=1,
-    pnam = "refProbs3Gen90", tnam=c("Ttab0.5", "Ttab0.8", "Ttab0.95"),
-    cats = seq(0,2500,500), digits=2 ) {
-
-	#models = paste(prefix,pad0(run,2),pad0(rwt,2),sep=".")
-	files  = paste(models,"Tables.RData",sep="")
-	nfiles = length(files)
-	for (i in 1:nfiles) {
-		ifile = files[i]
-		load(ifile)
-
-		pcsv = gsub("Tables\\.RData","_prob.csv",ifile)  # output CSV name for probabilities
-		cat(models[i],"\n",file=pcsv)
-		cat("Annual catch,,,,Projection Year,,,\n",file=pcsv,append=TRUE)
-		probs = get(pnam)
-		cat(paste(c("strategy",dimnames(probs[[1]])[[2]]),collapse=","),"\n",file=pcsv,append=TRUE)
-		for (j in names(probs)) {
-			cat(paste("P(Bt > ",j,")",sep=""),"\n",file=pcsv,append=TRUE)
-			ptab = probs[[j]]
-			ptab = ptab[as.character(cats),]
-			mess = paste(paste(dimnames(ptab)[[1]],apply(ptab,1,function(x){
-				paste(show0(round(x,digits),digits,add2int=TRUE),collapse=",")}),sep=","),collapse="\n") # flatten table
-			cat(mess,"\n",file=pcsv,append=TRUE)
-		}
-
-		tcsv = gsub("Tables\\.RData","_targ.csv",ifile)  # output CSV name for years to target
-		cat(models[i],"\n",file=tcsv)
-		cat("Annual catch,,,,Target Reference,,\n",file=tcsv,append=TRUE)
-		for (k in tnam) {
-			ttab = get(k)
-			if (k==tnam[1])
-				cat(paste(c("strategy",dimnames(ttab)[[2]]),collapse=","),"\n",file=tcsv,append=TRUE)
-#browser();return()
-			cat(paste(as.numeric(substring(k,5))*100,"% confidence",sep=""),"\n",file=tcsv,append=TRUE)
-			ttab = ttab[as.character(cats),]
-			mess = paste(paste(dimnames(ttab)[[1]],apply(ttab,1,function(x){
-				paste(show0(round(x,digits),digits,add2int=TRUE),collapse=",")}),sep=","),collapse="\n") # flatten table
-			cat(mess,"\n",file=tcsv,append=TRUE)
-		}
-		
-	}
-}
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^tabSAR
 
 
 #MAfun----------------------------------2016-12-08
@@ -666,3 +609,96 @@ makeCmat =function(x,colname="Y") {
 	matrix(x,ncol=1,dimnames=list(names(x),colname)) }
 makeRmat =function(x,rowname="Y") {
 	matrix(x,nrow=1,dimnames=list(rowname,names(x))) }
+
+#makeErrMat-----------------------------2011-05-05
+# Make a simple ageing error matrix for Awatea.
+#-----------------------------------------------RH
+makeErrMat = function(N=60, ondiag=0.8, offdiag=0.1, corner=0.9) 
+{
+	errMat = diag(ondiag,N,N)
+	for (i in 1:(N-1))
+		errMat[i,i+1] = offdiag
+	for (j in 1:(N-1))
+		errMat[j+1,j] = offdiag
+	errMat[1,1] = errMat[N,N] = corner
+	write.table(errMat,file="errmat.dat",sep="\t",row.names=FALSE,col.names=FALSE)
+	return(errMat)
+}
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^makeErrMat
+
+#tabSAR---------------------------------2011-07-18
+# Generate comma-delimited, two-dimensional output tables from reference point objects.
+#  models - names of binary system files that store the decision tables.
+#  pnam   - name of list object containing matrices of reference probabilities.
+#  tnam   - names of matrices reporting times to reach reference points/criteria.
+#  cats   - catch strategies (subset) to report in output tables.
+#  digits - number of digits to retain after the decimal.
+#-----------------------------------------------RH
+tabSAR = function(models=paste("input-ymr",pad0(c(29,30),2),pad0(1,2),sep="."),
+    #prefix="input-ymr", run=c(29,30), rwt=1,
+    pnam = "refProbs3Gen90", tnam=c("Ttab0.5", "Ttab0.8", "Ttab0.95"),
+    cats = seq(0,2500,500), digits=2 )
+{
+	#models = paste(prefix,pad0(run,2),pad0(rwt,2),sep=".")
+	files  = paste(models,"Tables.RData",sep="")
+	nfiles = length(files)
+	for (i in 1:nfiles) {
+		ifile = files[i]
+		load(ifile)
+
+		pcsv = gsub("Tables\\.RData","_prob.csv",ifile)  # output CSV name for probabilities
+		cat(models[i],"\n",file=pcsv)
+		cat("Annual catch,,,,Projection Year,,,\n",file=pcsv,append=TRUE)
+		probs = get(pnam)
+		cat(paste(c("strategy",dimnames(probs[[1]])[[2]]),collapse=","),"\n",file=pcsv,append=TRUE)
+		for (j in names(probs)) {
+			cat(paste("P(Bt > ",j,")",sep=""),"\n",file=pcsv,append=TRUE)
+			ptab = probs[[j]]
+			ptab = ptab[as.character(cats),]
+			mess = paste(paste(dimnames(ptab)[[1]],apply(ptab,1,function(x){
+				paste(show0(round(x,digits),digits,add2int=TRUE),collapse=",")}),sep=","),collapse="\n") # flatten table
+			cat(mess,"\n",file=pcsv,append=TRUE)
+		}
+
+		tcsv = gsub("Tables\\.RData","_targ.csv",ifile)  # output CSV name for years to target
+		cat(models[i],"\n",file=tcsv)
+		cat("Annual catch,,,,Target Reference,,\n",file=tcsv,append=TRUE)
+		for (k in tnam) {
+			ttab = get(k)
+			if (k==tnam[1])
+				cat(paste(c("strategy",dimnames(ttab)[[2]]),collapse=","),"\n",file=tcsv,append=TRUE)
+#browser();return()
+			cat(paste(as.numeric(substring(k,5))*100,"% confidence",sep=""),"\n",file=tcsv,append=TRUE)
+			ttab = ttab[as.character(cats),]
+			mess = paste(paste(dimnames(ttab)[[1]],apply(ttab,1,function(x){
+				paste(show0(round(x,digits),digits,add2int=TRUE),collapse=",")}),sep=","),collapse="\n") # flatten table
+			cat(mess,"\n",file=tcsv,append=TRUE)
+		}
+		
+	}
+}
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^tabSAR
+
+## tex.that.vec-------------------------2018-05-07
+##  Convert a vector to a phrase 'x, y, and z'
+##  Generlly use 'texThatVec' in PBStools, 
+##   but this package does not load PBStools.
+## ---------------------------------------------RH
+tex.that.vec = function(vec, simplify=TRUE)
+{
+	if (length(vec)==1) return(paste0(vec))
+	if (simplify) {
+		if (is.character(vec))  vec = as.numeric(vec)
+		uvec = sort(unique(vec))
+		## User: A5C1D2H2I1M1N2O1R2T1 (140719)
+		## https://stackoverflow.com/questions/24837401/find-consecutive-values-in-vector-in-r
+		lvec = split(uvec,cumsum(c(1, diff(uvec) != 1)))
+		cvec = sapply(lvec, function(x) {
+			if (length(x)==1) return(paste0(x))
+			else return(paste0(x[1],"-",rev(x)[1]))
+		})
+	} else cvec = vec
+	texvec = paste0(paste0(cvec[1:(length(cvec)-1)], collapse=", "), ifelse(length(cvec)>2,",",""), " and ", rev(cvec)[1])
+	return(texvec)
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~tex.that.vec

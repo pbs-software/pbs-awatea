@@ -1,4 +1,4 @@
-#runSweave------------------------------2018-04-04
+#runSweave------------------------------2018-04-13
 # Create and run customised Sweave files for Awatea runs.
 # Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 #-----------------------------------------------RH
@@ -13,7 +13,7 @@ runSweave = function(
    Ncpue   = 0,
    Nsurvey = 3,
    Ngear   = 1,                       ## number of commercial gear types
-   NCAset  = 2,                       ## number of commercial catch-age-age plot sets (>1 when #CA years > 20)
+   NCAset  = 1,                       ## number of commercial catch-age-age plot sets (1 when #CA years <= 25, 2 when #CA years <=50, etc.)
    Snames  = paste0("Ser",1:Nsurvey), ## survey names (w/out spaces)
    SApos   = rep(TRUE,Nsurvey),       ## surveys with age composition data
    Cnames  = paste0("Gear",1:Ngear),  ## survey names (w/out spaces)
@@ -76,6 +76,7 @@ runSweave = function(
 	# First, get rid excess lines, annoying comments, and disabled code
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
+#browser();return()
 	notcode = union(grep("^%",tfile),grep("^#",tfile))
 	tfile = tfile[setdiff(1:length(tfile),notcode)]
 
@@ -100,7 +101,8 @@ runSweave = function(
 		else if (any(strSpp==c("RSR","rsr","439"))) sppname = "Redstripe Rockfish"
 		else sppname="Unspecified species"
 	} else {
-		data(gfcode,package="PBSawatea")
+		ici = sys.frame(sys.nframe())
+		data(gfcode,package="PBSawatea", envir=ici)
 		sppname = gfcode[is.element(gfcode$code3,strSpp),"name"]
 	}
 	tfile = gsub("@sppname", sppname, tfile)
@@ -115,6 +117,7 @@ runSweave = function(
 		Cnames = rep(Cnames,Ncpue)[1:Ncpue] # enforce same number of names as surveys
 	cnames = gsub(" ","",Cnames)
 	tfile  = gsub("@cpues",paste(cnames,collapse="\",\""),tfile)
+	tfile  = gsub("@Ncpue",Ncpue,tfile)
 
 #browser();return()
 	if (Nsex==1) {

@@ -12,13 +12,13 @@
 }
 \usage{
 plt.recdev(logRecDev, xint=5,
-   ptypes = c("eps", "png"), pngres = 150)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400)
 
 plt.recdevacf(logRecDev, muC, logvC, A, years, yr1,
-   ptypes=c("eps","png"), pngres=150)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, redo.Graphs=TRUE)
 
 plt.initagedev(logInitAgeDev, 
-   ptypes=c("eps","png"), pngres=150 )
+   ptypes=tcall(PBSawatea)$ptype, pngres=400)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -36,6 +36,7 @@ plt.initagedev(logInitAgeDev,
   \item{xint}{x-axis (year) intervals for small, unlabelled ticks}
   \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
   \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
+  \item{redo.Graphs}{\code{logical} -- if \code{TRUE}, re-create the figures.}
 }
 \details{
   The function \code{plt.recdev} plots annual log recuritment deviations.

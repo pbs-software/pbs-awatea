@@ -182,14 +182,14 @@ mpdMenu <- function()
           {
             # AME dividing years into 4 groups - note no 1985, 86,
             #  or 88 data
-            windows()
+            do.call("windows", list(record=TRUE))
             # plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i), what="c" )
             plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1978:1984 )
-            windows()
+            do.call("windows", list(record=TRUE))
             plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i, "(no 1985, 86 or 88)"), what="c", years=1985:1994 )  # no 85, 86 or 88
-            windows()
+            do.call("windows", list(record=TRUE))
             plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=1995:2001 )
-            windows()
+            do.call("windows", list(record=TRUE))
             plotCA( currentRes, series=i, main=paste("Comm",mainTitle,"Series",i), what="c", years=2002:2009 )
           }
         }
@@ -202,7 +202,7 @@ mpdMenu <- function()
           seriesList <- sort( unique( obj$CAs$Series) )
           for ( i in 1:length(seriesList) )
           {
-            windows()
+            do.call("windows", list(record=TRUE))
             plotCA( currentRes, series=i, main=paste("Survey",mainTitle,"Series",i), what="s" )
           }
         }
@@ -228,7 +228,7 @@ mpdMenu <- function()
         #ACH: I couldn't get plotIndex2 function to work in the limited time I had. AME changed these two to plotIndex
           plotIndex( currentRes, main=mainTitle, what="c", bar=1.96 )
           # Think that plots the CPUE, which we're not using (?)
-          windows()
+          do.call("windows", list(record=TRUE))
           plotIndex( currentRes, main=mainTitle, what="s", bar=1.96 )
         }
       },
@@ -240,7 +240,7 @@ mpdMenu <- function()
           seriesList <- sort( unique( obj$CAs$Series) )
           for ( i in 1:length(seriesList) )
           {
-            windows()
+            do.call("windows", list(record=TRUE))
             plt.ageResids( stdRes.CA( obj$CAs[
                 obj$CAs$Series == i,] ),
                 main=paste(mainTitle,"Survey",i))
@@ -347,14 +347,14 @@ mcmcMenu <- function()
         else
           #ACH 9/20/07: I'm changing the mfRow becasue the canary model has 68 years
           mfRow <- c(5,3)
-        windows(record=TRUE)
+        do.call("windows", list(record=TRUE))
         par( oma=c(2,2,1,1), mar=c(2,2,2,1), mfrow=mfRow )
         plotCumu( currentMCMC$B[,getYrIdx(names(currentMCMC$B))],
           auto.layout=FALSE, xlab="", ylab="", main="" )
         mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
         mtext( side=2, line=1, cex=1.0, outer=TRUE, "Biomass" )
 
-        windows()
+        do.call("windows", list(record=TRUE))
         par(mfrow=c(3,4), oma=c(2,2,1,1), mar=c(2,2,2,1) )
         idx <- apply( currentMCMC$P,2,allEqual )
         #ACH: Added the next few lines as a quick fix. Awatea now only outputs estimated parameters, thus the allEqual stuff is not necessary
@@ -364,7 +364,7 @@ mcmcMenu <- function()
         mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
         mtext( side=2, line=1, cex=1.0, outer=TRUE, "Value" )
         if(npars > 12) {
-            windows()
+            do.call("windows", list(record=TRUE))
             par(mfrow=c(3,4), oma=c(2,2,1,1), mar=c(2,2,2,1) )
             plotCumu( (currentMCMC$P[,!idx])[,13:22], auto.layout=FALSE )
             mtext( side=1, line=0.5, cex=1.0, outer=TRUE, "Iteration" )
@@ -375,12 +375,12 @@ mcmcMenu <- function()
         plotTrace( currentMCMC$R[,getYrIdx(
           names(currentMCMC$R))],axes=TRUE,
           xlab="Recruitment" )
-        windows()
+        do.call("windows", list(record=TRUE))
         par( oma=c(2,2,1,1), mar=c(2,2,2,1), mfrow=mfRow )
         plotTrace( currentMCMC$B[,getYrIdx(
           names(currentMCMC$B))],axes=TRUE,
           xlab="Biomass" )
-        windows()
+        do.call("windows", list(record=TRUE))
         idx <- apply( currentMCMC$P,2,allEqual )
         plotTrace( currentMCMC$P[,!idx], axes=TRUE )
       },

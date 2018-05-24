@@ -17,7 +17,8 @@ calc.projExpect2 ( obj, projObj, refList )
 calc.projProbs   ( obj, projObj, refYrs  )
 calc.projProbs2  ( obj, projObj, refList )
 calc.refProbs    ( projObj=currentProj$B, refPlist=refPointsList )
-calc.refProbsHist( projObj=currentProj$B, refPlist=refPointsHistList[c("blimHRP","btarHRP")] )
+calc.refProbsHist( projObj=currentProj$B, 
+   refPlist=refPointsHistList[c("blimHRP","btarHRP")] )
 }
 \arguments{
   \item{obj}{matrix of biomass MCMCs.}

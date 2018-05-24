@@ -10,10 +10,10 @@
 }
 \usage{
 plt.catch(years, Ct, xint=5, yint=250,
-   ptypes = c("eps", "png"), pngres = 150)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400)
 
 plt.biomass(years, Bt, xint=5, yint=2500,
-   ptypes=c("eps","png"), pngres=150, 
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, 
    pname="Bt", xlab="Year", ylab="Spawning biomass (t), Bt")
 }
 %- maybe also 'usage' for other objects documented here.

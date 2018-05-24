@@ -9,13 +9,13 @@
 }
 \usage{
 plt.quantBio(obj, projObj=NULL, policy=NULL, 
-     p=c(0.025,0.25,0.5,0.75,0.975), xyType="lines", 
+     p=get("quants5"), xyType="lines", 
      lineType=c(3,2,1,2,3), refLines=NULL, 
      xLim=NULL, yLim=NULL, userPrompt=FALSE, 
      save=TRUE, yaxis.lab="Spawning biomass" )
 
 plt.quantBioBB0(obj, projObj=NULL, policy=NULL, 
-     p=c(0.025,0.25,0.5,0.75,0.975), xyType="lines", 
+     p=get("quants5"), xyType="lines", 
      lineType=c(3,2,1,2,3), refLines=NULL, 
      xLim=NULL, yLim=NULL, userPrompt=FALSE, save=TRUE, 
      main="", cex.main="", tcl.val=-0.2, 
@@ -53,7 +53,7 @@ plt.quantBioBB0(obj, projObj=NULL, policy=NULL,
   \eqn{B_t/B_0}{Bt/B0} instead of \eqn{B_t}{Bt}.
 }
 \seealso{
-  \code{\link[PBSawatea]{plotBmcmcPOP}}, \code{\link[PBSawatea]{plotVBcatch}},
+  \code{\link[PBSawatea]{plotVBcatch}},
   \code{\link[PBSawatea]{plotBVBnorm}}, \code{\link[PBSawatea]{plotRmcmcPOP}}
 }
 \keyword{hplot}

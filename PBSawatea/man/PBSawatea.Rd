@@ -53,6 +53,6 @@
   R: A language and environment for statistical computing. 
   R Foundation for Statistical Computing, Vienna, Austria. \cr
   ISBN 3-900051-07-0 \cr
-  \url{http://www.R-project.org}
+  \url{https://www.r-project.org/}
 }
 \keyword{package}

@@ -10,7 +10,7 @@
 }
 \usage{
 plotBVBnorm(mcmcObj,
-   p=c(0.025,0.25,0.5,0.75,0.975),
+   p=get("quants5"),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -49,7 +49,7 @@ plotBVBnorm(mcmcObj,
   \code{currentRes1} is local \code{currentRes}.
 }
 \seealso{
-  \code{\link{plotVBcatch}}, \code{\link{plotBmcmcPOP}}
+  \code{\link{plotVBcatch}}
 }
 \keyword{hplot}
 

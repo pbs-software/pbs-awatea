@@ -8,7 +8,7 @@
   Plot CPUE fits to annual indices (only if the model uses CPUE). 
 }
 \usage{
-plt.cpue(cpueObj, ptypes=c("eps","png"), pngres=150)
+plt.cpue(cpueObj, ptypes=tcall(PBSawatea)$ptype, pngres=400)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

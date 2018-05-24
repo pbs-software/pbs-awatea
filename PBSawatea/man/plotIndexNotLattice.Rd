@@ -9,7 +9,7 @@
 \usage{
 plotIndexNotLattice(obj, main="", save=NULL,
    bar=1.96, ssnames=paste("Ser",1:9,sep=""),
-   ptypes = c("eps","png"), pngres=150, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
 }
 \arguments{
   \item{obj}{the MPD object created by the \code{importRes} function (e.g., \code{currentRes}).}
@@ -18,7 +18,7 @@ plotIndexNotLattice(obj, main="", save=NULL,
   \item{bar}{standard deviation of the normal distribution 
     (1.96 is the approximate value of the 97.5 percentile point).}
   \item{ssnames}{survey series names for figure labelling and image creation.}
-  \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
+  \item{ptypes}{plot types for the figures: \code{"eps"} = encapsulated postscript, \code{"png"} = portable network graphics.}
   \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
   \item{\dots}{\bold{not currently used}}
 }

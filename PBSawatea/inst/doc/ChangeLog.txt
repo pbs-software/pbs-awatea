@@ -5,12 +5,68 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.3.0 (2018-05-24)
+  * Documentation
+    + Added Rd files for new functions -- `mochaLatte', `plotACFs', `plotCI', `plotMeanAge', `plotTraj', and `tex.that.vec' (RH 180524)
+      - Fixed existing Rd files with Codoc errors identified by R check.
+  * PBSscape.r
+    + Created function `flash.cat' to replace use of PBStools' `flush.cat' because PBSawatea does not depend on PBStools. (RH 180523)
+    + Modified function `plotBVBnorm' to remove word `virgin' and to italicise parameters in legend. (RH 180516)
+    + Removed code for plotting mean ages and put it into a function called `plotMeanAge', which is where it started life. (RH 180416)
+    + Removed deprecated function `importCol2'. (RH 180416)
+    + Modified function `plotChains' to use `mochaLatte' and moved it from `PBSscape.r' into `plotFuns.r' (RH 180410)
+      - Deprecated previous version to `plotChains.lattice'.
+    + Switched position of functions `plt.mpdGraphs' and `plt.mcmcGraphs' so that MPD precedes MCMC.
+    + Process ongoing to move plotting functions to `plotFuns.r'.
+  * plotFuns.r
+    + Modified function `plt.quantBio' to better display the quantile boxes. (RH 180507)
+    + Created new function `plotTraj' to display all median trajectories (base+sens) in one figure. (RH 180504)
+    + Fixed bug in `plotSnail' to get the correct coordinate for the final-point cross-bars. (RH 180504)
+    + Created a new function `mochaLatte' (mockLattice) to potentially replace the need for lattice plots. (RH 180427)
+    + Modified function `plt.exploit' to show gradations warm colours at h=0.05 increments. (RH 180425)
+    + Modified function `plt.recdev' to show positive deviations in blue and negative in red. (RH 180425)
+    + Modified function `plotAges' (and calls in 'plt.mpdGraps') to better show fitted vs. observed props at age. (RH 180417)
+      - Note: scape and lattice functions (e.g., plotCA) are very time-consuming to manipulate; eventually replace them with our own code.
+    + Added function `plotMeanAge' which is now called from 'plt.mpdGraps' rather than having plotMeanAge code sitting bare in plt.mpdGraphs. (RH 180416)
+    + Sorted potting functions by name in the file.
+  * utilFuns.r
+    + Created a new function `tex.that.vec' to convert a vector to a phrase 'x, y, and z'. (RH 180507)
+      - Superceded by function `texThatVec' in `PBStools' which has been developed further.
+  * Sweave (was not updated in last revision even though changes are recorded there)
+    + Revised `run-master.Snw'
+      - Added new chunk `vicars_and_tarts' to deal with runs where the initial re-weighting was not performed and an MPD was generated as part of a previous MCMC.
+      - Sent `ptype' into tracking list object `PBSawatea' in `.PBSmodEnv'.
+    + Revised `run-masterMCMC.Snw'
+      - Saved `currentProj' later in the code so that it contains projected recruitment.
+      - Removed CPUE paramters from the MCMC object `currentMCMC$P'. (RH 180416)
+      - Updated method for determining closest catch policy to mean catch.
+      - Changed fixed quantile numbers to refer to either `quants3' or `quants5'.
+      - Inroduced use of `tex.that.vec' (which evolved into a new function `texThatVec' in PBStools).
+      - Tried to reduce the use of the word `percentile'.
+    + Wrapped up old Snw files into `ghosts-of-Sweave-past.7z' and deleted them.
+      - Yes I know the versioning system keeps track but I'm not taking chances.
+      - I'm pretty sure that Hadley is involved somehow...
+    + Added my (RH) most recent `resDocSty.sty' file.
+      - Yes I know that DFO CSAP has an `official' version, but I prefer to keep control of my beautiful documents.
+  * runSweave.r
+    + Modified function `runSweave' and `runSweaveMCMC' to pass on the value of `Ncpue' to their respective Sweave files. (RH 180416)
+    + Changed number of panels for annual catch-at-age fits from 20 to 25.
+    + Introduced the passing of `Ncpue' from the function to the MPD Sweave file.
+  * runSweaveMCMC.r
+    + Introduced the passing of `Ncpue' from the function to the MCMC Sweave file.
+  * runADMB.r
+    + Modified function `reweight' to show the sum of deviations of survey/cpue SDNRs from 1. (RH 180411)
+  * menuFuns.r
+    + Changed all calls to `windows' to a call to `do.call' to pass R check (RH 180523)
+      - Functions in this module have never been tested by moi and likely will never be used; think deprecation!
+
 1.2.2 (2018-04-06)
   * PBSscape.r
     + Removed function `plotIndex2' from PBSawatea as it does not seem to be used. (RH 180406)
     + Revised functions `plotIndexNotLattice' to better plot the survey indices. (RH 180406)
-    + Revised function `plotCPUE' to use the replacement function `plotCI'. (RH 180405)
-    + Created new function `plotCI' to replace `gplots::plotCI'. (RH 180405)
+    + Revised function `plotCPUE' to use the replacement function `plotCI' and moved it into `plotFuns.r'. (RH 180405)
+  * plotFuns.r
+    + Created new function `plotCI' to replace `gplots::plotCI'. (RH 180406)
   * Sweave
     + Revised `run-master.Snw' & 'run-masterMCMC.Snw. (RH 180405)
       - Stop creating eps figures if the choice is to use png figures, and vice-versa.

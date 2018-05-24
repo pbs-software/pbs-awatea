@@ -73,8 +73,7 @@ plotB2(model, what="d", series=NULL, years=NULL, axes=TRUE, div=1,
   functions.
 
   \code{\link[scape]{plotCA}}, \code{\link[scape]{plotCL}},
-  \code{\link[scape]{plotIndex}}, \code{\link[PBSawatea]{plotIndex2}}
-  and \code{\link[scape]{plotLA}} plot model fit and data.
+  \code{\link[scape]{plotIndex}}, and \code{\link[scape]{plotLA}} plot model fit and data.
 
   \code{\link[scape]{plotB}}, \code{\link[scape]{plotN}}, 
   and \code{\link[scape]{plotSel}} plot derived quantities.
