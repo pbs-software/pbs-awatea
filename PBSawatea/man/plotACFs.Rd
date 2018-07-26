@@ -8,12 +8,13 @@
   Plot ACFs for a set of estimated parameters from MCMC samples.
 }
 \usage{
-plotACFs(mcmcObj, lag.max = 60)
+plotACFs(mcmcObj, lag.max=60, lang="e")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{mcmcObj}{\code{list} -- collection of data frames from the MCMC, including \code{P} used by this function.}
   \item{lag.max}{\code{numeric} -- maximum lag at which to calculate the autocorelation function (see \code{\link[stats]{acf}}).}
+  \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
 }
 \details{
   Extracts the estimated parameters from the data frame \code{currentMCMC$P} and 
@@ -26,7 +27,7 @@ plotACFs(mcmcObj, lag.max = 60)
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-05-24}
+  Last modified \code{Rd: 2018-07-25}
 }
 \note{
   \emph{Caution} -- (from \code{plot.acf}) The confidence interval plotted in \code{plot.acf}

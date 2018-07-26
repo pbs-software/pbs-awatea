@@ -30,7 +30,8 @@ runSweave( wd = getwd(), strSpp="XYZ",
    sexlab  = c("Females","Males"),
    resdoc  = FALSE,
    redo.Graphs = TRUE,
-   ptype   = "png"
+   ptype   = "png",
+   lang    = c("e","f")
 ) 
 runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
 }
@@ -63,7 +64,9 @@ runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
     prefix \code{@rmresdoc} (denoting either working paper or research document), otherwise the lines are activated.}
   \item{redo.Graphs}{\code{logical} -- if \code{TRUE}, re-create the figures.}
   \item{ptype}{\code{character} -- plot type for the figures: \code{"png"} = portable network graphics, 
-    \code{"eps"} = encapsulated postscript.\cr\cr------ \code{runMPD} ------}
+    \code{"eps"} = encapsulated postscript.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).\cr\cr------ \code{runMPD} ------}
 
   \item{prefix}{\code{character} -- vector of \code{filename} prefix components delimited by \code{delim}.}
   \item{runs}{\code{numeric} -- vector of run number(s) for \code{runNo} in \code{runSweave}.}
@@ -81,24 +84,26 @@ runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
    tfile = gsub("@run.dir",run.dir,tfile)
    tfile = gsub("@fig.dir",mpd.dir,tfile)
    tfile = gsub("@running.awatea",running.awatea,tfile)
+   tfile = gsub("@redo.Graphs",redo.Graphs,tfile)
    tfile = gsub("@sexlab",deparse(sexlab),tfile)
    tfile = gsub("@sppcode",strSpp,tfile)
+   tfile = gsub("@ptype",ptype,tfile)
+   tfile = gsub("@lang",deparse(lang),tfile)
    }
-
-  
   Additionally, if Sweave lines are preceded by the following control variables (prefixed \sQuote{\code{@rm}}),
   the lines are either activated or removed depending on function argument inputs.
   \tabular{cccc}{
-    \bold{Sweave control} \tab \bold{function argument} \tab \bold{activate} \tab \bold{remove} \cr
-    \code{@rmsex}    \tab \code{Nsex}       \tab \code{>1}   \tab \code{1} \cr
-    \code{@rmcpue}   \tab \code{Ncpue}      \tab \code{>0}   \tab \code{0} \cr
-    \code{@rmCA}     \tab \code{sum(CApos)} \tab \code{>0}   \tab \code{0} \cr
-    \code{@rmSA}     \tab \code{sum(SApos)} \tab \code{>0}   \tab \code{0} \cr
-    \code{@rmCSA}    \tab \code{sum(CApos)+sum(SApos)} \tab \code{>0}   \tab \code{0} \cr
-    \code{@rmCA1}    \tab \code{NCAset} \tab \code{1}   \tab \code{!=1} \cr
-    \code{@rmCA2}    \tab \code{NCAset} \tab \code{2}   \tab \code{!=2}
+    \bold{Sweave control} \tab \bold{function argument} \tab \bold{activate when} \tab \bold{remove when} \cr
+    \code{@rmsex}    \tab \code{Nsex}          \tab \code{>1}    \tab \code{1} \cr
+    \code{@rmcpue}   \tab \code{Ncpue}         \tab \code{>0}    \tab \code{0} \cr
+    \code{@rmCA}     \tab \code{sum(CApos)}    \tab \code{>0}    \tab \code{0} \cr
+    \code{@rmSA}     \tab \code{sum(SApos)}    \tab \code{>0}    \tab \code{0} \cr
+    \code{@rmCSA}    \tab \code{sum(CApos)+sum(SApos)} \tab \code{>0} \tab \code{0} \cr
+    \code{@rmCA1}    \tab \code{NCAset}        \tab \code{1}     \tab \code{!=1} \cr
+    \code{@rmCA2}    \tab \code{NCAset}        \tab \code{2}     \tab \code{!=2} \cr
+    \code{@rmresdoc} \tab \code{resdoc}        \tab \code{FALSE} \tab \code{TRUE} \cr
+    \code{@rmROL}    \tab \code{strSpp=="ROL"} \tab \code{FALSE} \tab \code{TRUE}
   }
-
   The wrapper function \code{runMPD} essentially loops through \code{runSweave} 
   using \code{(i in runs)} and \code{(j in rwts)}.
 }
@@ -112,7 +117,7 @@ runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-05-24}
+  Last modified \code{Rd: 2018-07-25}
 }
 \note{
   Example Sweave files (\code{run-master.Snw}) can be found in the library directory: \cr

@@ -161,6 +161,19 @@
 
 %% First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
+
+linguaFranca = try(PBStools::linguaFranca, silent=T)
+if (class(linguaFranca)=="try-error") {
+	pbstoolsDevDir = "C:/Users/haighr/Files/Projects/R/Develop/PBStools/Authors/Rcode/develop"
+	if (file.exists(pbstoolsDevDir)) {
+		extraCode = c("linguaFranca") # ,"formatCatch", "crossTab")
+		for (i in extraCode)
+			source(paste0(pbstoolsDevDir,"/",i,".r")) ## to get the latest code
+	} else {
+		stop("You ned the function `linguaFranca' from the PBStools package")
+	}
+}
+
 ## get some names created by `runSweave()'
 Cnames  = tcall("PBSawatea")$Cnames        # names of commercial gear
 CAnames = Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
@@ -196,6 +209,7 @@ Nsex        = @nsex
 Ngear       = @ngear
 Ncpue       = @Ncpue    ## just pass it in through runSweaveMCMC{}
 resdoc      = @resdoc
+eval(parse(text=paste("lang=",deparse(@lang))))
 
 ## Re-instate cvpro after `runSweaveMCMC' wipes most files from user's working directory
 ## SDNR file (suffix = '.sdnr), present if re-weighting occurred for a Run
@@ -1077,7 +1091,7 @@ if(redo.Graphs)
 		plotPolicies = as.character(plotPolicy), #plotPolicies = names(currentProj$Y[1:6]),
 		onePolicy    = as.character(onePolicy),  #onePolicy = names(currentProj$Y[2]), 
 		mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R),
-		trevObj = trevorMCMC
+		trevObj = trevorMCMC, lang=lang
 	)
 # plt.mcmcGraphs( mcmcObj=currentMCMC, projObj=currentProj, save=TRUE, ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=Ngear, plotPolicies = as.character(plotPolicy), onePolicy = as.character(onePolicy), mpd=list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R), trevObj = trevorMCMC) # for debugging only
 # Change policy options if want other catch policies shown.

@@ -39,7 +39,7 @@ runADMB = function(
 		source(paste(codePath,"plotFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"utilFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"menuFuns.r",sep="/"),local=FALSE)
-		#assign("importCol2",importRes,envir=.GlobalEnv) # RH: removed importCol2 (2013-09-13)
+		#do.call("assign", args=list(x="importCol2", value=importRes, envir=.GlobalEnv)) # RH: removed importCol2 (2013-09-13)
 	}
 	awateaPath = gsub("/","\\\\",awateaPath)
 	syspath   = paste(syspath0,awateaPath,sep=";")
@@ -269,8 +269,8 @@ readAD = function(txt) {
 	suffix = c("res","lik","par","std","cor","eva")
 	for (j in suffix) {
 		jnam = gsub("\\.txt$",paste(".",j,sep=""),txtnam)
-		#assign(paste(j,"nam",sep=""),jnam)
-		if (!file.exists(jnam)) assign(paste(j,"dat",sep=""), list())
+		#do.call("assign", args=list(x=paste0(j,"nam"), value=jnam))
+		if (!file.exists(jnam)) do.call("assign", args=list(x=paste0(j,"dat"), value=list()))
 		else {
 			if (j=="res") {
 				resdat = importRes( res.file=jnam, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=FALSE, CLs=FALSE, CAs=TRUE, CAc=TRUE, extra=TRUE)

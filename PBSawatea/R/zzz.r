@@ -48,7 +48,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
 	"h.mpd",
 	"istock",
 	"J",
-	"likdat","lucent",
+	"likdat","linguaFranca","lucent",
 	"MAexp","mainTitle","MAobs","maxgrad","mess","minCpueYr",
 	"N","Ncpue","npars","Nsurv",
 	"obj",

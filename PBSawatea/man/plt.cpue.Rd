@@ -8,13 +8,15 @@
   Plot CPUE fits to annual indices (only if the model uses CPUE). 
 }
 \usage{
-plt.cpue(cpueObj, ptypes=tcall(PBSawatea)$ptype, pngres=400)
+plt.cpue(cpueObj, ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{cpueObj}{a CPUE object created by the \code{importRes} function (e.g., \code{currentRes$CPUE}).}
-  \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
-  \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
+  \item{cpueObj}{\code{data.frame} -- a CPUE object created by the \code{importRes} function (e.g., \code{currentRes$CPUE}).}
+  \item{ptypes}{\code{character} -- plot types for the figures: \code{"eps"} = encapsulated postscript, \code{"png"} = portable network graphics.}
+  \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{.png} file.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
 }
 \details{
   The function \code{plt.cpue} is only activated in the Sweave routine if the
@@ -23,7 +25,10 @@ plt.cpue(cpueObj, ptypes=tcall(PBSawatea)$ptype, pngres=400)
   shows the model fit through the CPUE points.
 }
 \author{
-  Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-26}
 }
 \seealso{
   \code{\link{plt.catch}}, \code{\link{plt.recdev}}, \code{\link{plt.bubbles}}

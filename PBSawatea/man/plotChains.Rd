@@ -13,7 +13,7 @@ plotChains(mcmc, nchains=3, pdisc=0.1, axes=FALSE, same.limits=FALSE,
    las=0, tck=0.4, tick.number=5, lty.trace=1, lwd.trace=1,
    col.trace="grey", lty.median=1, lwd.median=1,
    col.median="black", lty.quant=2, lwd.quant=1,
-   col.quant="black", plot=TRUE, probs=get("quants3"), ...)
+   col.quant="black", plot=TRUE, probs=get("quants3"), lang="e", ...)
 }
 \arguments{
   \item{mcmc}{MCMC chain(s) as a vector, data frame or \code{mcmc} object.}
@@ -48,6 +48,7 @@ plotChains(mcmc, nchains=3, pdisc=0.1, axes=FALSE, same.limits=FALSE,
   \item{col.quant}{colour of quantile trace.}
   \item{plot}{whether to draw plot.}
   \item{probs}{quantile values for quantile trace.}
+  \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
   \item{\dots}{passed to \code{panel.trace} (\bold{not used}).}
 }
 \value{
@@ -56,7 +57,10 @@ plotChains(mcmc, nchains=3, pdisc=0.1, axes=FALSE, same.limits=FALSE,
   \code{plot=FALSE}, a trellis object is returned.
 }
 \author{
-  Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-25}
 }
 \note{
   This idea stemmed from a discussion with PJS.

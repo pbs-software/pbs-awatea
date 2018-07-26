@@ -32,7 +32,8 @@ runSweaveMCMC (wd=getwd(), strSpp="XYZ",
    redo.Graphs = TRUE,
    skip.last.year = TRUE,
    ptype   = "png",
-   domeS   = FALSE
+   domeS   = FALSE,
+   lang    = c("e","f")
 )
 runMCMC(prefix=c("spp","area"), runs=1, rwts=0, ...)
 }
@@ -68,7 +69,10 @@ runMCMC(prefix=c("spp","area"), runs=1, rwts=0, ...)
   \item{ptype}{\code{character} -- plot type for the figures: \code{"png"} = portable network graphics, 
     \code{"eps"} = encapsulated postscript.}
   \item{domeS}{\code{logical} -- if \code{TRUE}, estimate the right-hand side of the selectivity curve,
-    i.e., assume dome-shaped selectivity.\cr\cr------ \code{runMCMC} ------}
+    i.e., assume dome-shaped selectivity.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).\cr\cr------ \code{runMCMC} ------}
+
 
   \item{prefix}{\code{character} -- vector of \code{filename} prefix components delimited by \code{delim}.}
   \item{runs}{\code{numeric} -- vector of run number(s) for \code{runNo} in \code{runSweaveMCMC}.}
@@ -95,17 +99,21 @@ runMCMC(prefix=c("spp","area"), runs=1, rwts=0, ...)
    tfile = gsub("@nsex",Nsex,tfile)
    tfile = gsub("@ngear",Ngear,tfile)
    tfile = gsub("@sppcode",strSpp,tfile)
+   tfile = gsub("@ptype",ptype,tfile)
+   tfile = gsub("@lang",deparse(lang),tfile)
    }
-
   Additionally, if Sweave lines are preceded by the following control variables (prefixed \sQuote{\code{@rm}}),
   the lines are either activated or removed depending on function argument inputs.
   \tabular{cccc}{
-    \bold{Sweave control} \tab \bold{function argument} \tab \bold{activate} \tab \bold{remove} \cr
-    \code{@rmsex}    \tab \code{Nsex}   \tab \code{>1}   \tab \code{1} \cr
-    \code{@rmcpue}   \tab \code{Ncpue}  \tab \code{>0}   \tab \code{0} \cr
-    \code{@rmhrp}    \tab \code{histRP} \tab \code{TRUE} \tab \code{FALSE} \cr
-    \code{@rmresdoc} \tab \code{wpaper}, \code{resdoc} \tab \code{FALSE} \tab \code{TRUE} \cr
-    \code{@rmROL}    \tab \code{strSpp} \tab \code{!="ROL"} \tab \code{=="ROL"}
+    \bold{Sweave control} \tab \bold{function argument} \tab \bold{activate when} \tab \bold{remove when} \cr
+    \code{@rmsex}    \tab \code{Nsex}          \tab \code{>1}    \tab \code{1} \cr
+    \code{@rmcpue}   \tab \code{Ncpue}         \tab \code{>0}    \tab \code{0} \cr
+    \code{@rmCA}     \tab \code{sum(CApos)}    \tab \code{>0}    \tab \code{0} \cr
+    \code{@rmSA}     \tab \code{sum(SApos)}    \tab \code{>0}    \tab \code{0} \cr
+    \code{@rmhrp}    \tab \code{histRP}        \tab \code{TRUE}  \tab \code{FALSE} \cr
+    \code{@rmresdoc} \tab \code{wpaper||resdoc}\tab \code{FALSE} \tab \code{TRUE} \cr
+    \code{@rmROL}    \tab \code{strSpp=="ROL"} \tab \code{FALSE} \tab \code{TRUE}\cr
+    \code{@rmdome}   \tab \code{domeS}         \tab \code{TRUE}  \tab \code{FALSE}
   }
 
   The function \code{runSweaveMCMC} will incorporate various supplementary tex files (history and results) if they are available in the working directory.
@@ -140,7 +148,7 @@ runMCMC(prefix=c("spp","area"), runs=1, rwts=0, ...)
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-05-24}
+  Last modified \code{Rd: 2018-07-25}
 }
 \note{
   Example Sweave files (\code{run-masterMCMC.Snw}) can be found in the library directory: \cr

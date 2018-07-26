@@ -9,15 +9,17 @@
 }
 \usage{
 plt.idx(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,sep=""),
-   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"), ...)
 }
 \arguments{
-  \item{obj}{a data frame with columns \code{Year}, \code{stdRes}, and \code{Fit}.}
-  \item{main}{title for the plot}
-  \item{save}{logical: if \code{TRUE}, save the figure to a raster file (\code{.png}).}
-  \item{ssnames}{survey series names for figure labelling and image creation.}
-  \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
-  \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
+  \item{obj}{\code{data.frame} -- data with columns \code{Year}, \code{stdRes}, and \code{Fit}.}
+  \item{main}{\code{character} -- title for the plot}
+  \item{save}{\code{logical} -- if \code{TRUE}, save the figure to a raster file (\code{.png}).}
+  \item{ssnames}{\code{character} -- survey series names for figure labelling and image creation.}
+  \item{ptypes}{\code{character} -- plot types for the figures: \code{"eps"} = encapsulated postscript, \code{"png"} = portable network graphics.}
+  \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{.png} file.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
   \item{\dots}{\bold{not used}}
 }
 \details{
@@ -25,6 +27,11 @@ plt.idx(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,sep=""),
 }
 \author{
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-26}
 }
 \note{
   The \code{save} option has been disabled for some reason.

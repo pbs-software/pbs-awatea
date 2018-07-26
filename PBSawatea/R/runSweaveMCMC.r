@@ -26,7 +26,8 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
    redo.Graphs = TRUE,                ## recreate all the figures (.eps, .wmf, .png)
    skip.last.year = TRUE,             ## remove last year of projections (set to FALSE for POP 5ABC in 2010)
    ptype   = "png",                   ## plot type --  either "eps" or "png"
-   domeS   = FALSE                    ## using dome-shaped selectivity?
+   domeS   = FALSE,                   ## logical -- using dome-shaped selectivity?
+   lang    = c("e","f")               ## language -- 'e'= English, 'f'= French (subdirectory)
 ) {
 	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
 	on.exit(ciao(wd))
@@ -50,7 +51,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		source(paste(codePath,"plotFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"utilFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"menuFuns.r",sep="/"),local=FALSE)
-		#assign("importCol2",importRes,envir=.GlobalEnv) # RH: removed importCol2 (2013-09-13)
+		#do.call("assign", args=list(x="importCol2", value=importRes, envir=.GlobalEnv)) # RH: removed importCol2 (2013-09-13)
 	}
 	cpue     = Ncpue > 0
 	runNoStr = pad0(runNo,2)
@@ -72,8 +73,15 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	if (file.exists(mc.dir)) 
 		setwd(mc.dir)
 	else {
-		stop(paste("MCMC directory << ",mc.dir," >> does not exist.\n",sep="")) }
+		stop(paste("MCMC directory << ",mc.dir," >> does not exist.\n",sep=""))
+	}
 		#dir.create(mc.dir); setwd(mc.dir) }
+	## Create a subdirectory called `french' for French-language figures
+	if (is.element("f",lang)) {
+		mc.dir.f = paste0(mc.dir,"/french")
+		if (!file.exists(mc.dir.f))
+			dir.create(mc.dir.f)
+	}
 	input.name = paste0(model.name,".txt") # Just in case I need this in future;
 	infile   = readAD(input.name)          # assumes user has included this input file with MCMC results
 
@@ -122,6 +130,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	tfile = gsub("@ngear",Ngear,tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
 	tfile = gsub("@ptype",ptype,tfile)
+	tfile = gsub("@lang",deparse(lang),tfile)
 	if (!locode) {
 		ici = sys.frame(sys.nframe())
 		data(gfcode,package="PBSawatea", envir=ici)

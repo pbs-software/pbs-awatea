@@ -10,7 +10,8 @@
 \usage{
 compB0(B, Mnams=NULL, ratios=c(0.4,0.8), 
    include=list(A1=TRUE, A2=TRUE, SSPM=TRUE, Bmsy=TRUE, Bt=TRUE),
-   t.yr=2011, boxwidth=0.6, figgy=FALSE, width=12, height=9, pngres=400, ...)
+   t.yr=2011, boxwidth=0.6, figgy=FALSE, width=12, height=9,
+   pngres=400, lang=c("e","f"), ...)
 }
 \arguments{
   \item{B}{\code{list} -- list of list of MCMC samples (see \bold{Details}); 
@@ -30,6 +31,8 @@ compB0(B, Mnams=NULL, ratios=c(0.4,0.8),
   \item{width}{\code{numeric} -- width of the output files in inches.}
   \item{height}{\code{numeric} -- height of the output files in inches.}
   \item{pngres}{\code{numeric} -- resolution (pixels/inch) of the \code{png} file, if it's created.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
   \item{\dots}{additional values for \code{\link[PBSawatea]{plotBox}}'s argument \code{pars}.}
 }
 \details{
@@ -55,7 +58,7 @@ compB0(B, Mnams=NULL, ratios=c(0.4,0.8),
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-05-24}
+  Last modified \code{Rd: 2018-07-25}
 }
 \note{
   Uses a modified version of \code{boxplot} called \code{\link[PBSawatea]{plotBox}}.

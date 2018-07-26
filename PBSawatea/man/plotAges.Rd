@@ -9,7 +9,7 @@
 }
 \usage{
 plotAges(obj, what="c", maxcol=5, sexlab=c("Females","Males"), 
-   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"), ...)
 }
 \arguments{
   \item{obj}{\code{list} -- the MPD object created by the \code{importRes} function (e.g., \code{currentRes}).}
@@ -18,6 +18,8 @@ plotAges(obj, what="c", maxcol=5, sexlab=c("Females","Males"),
   \item{sexlab}{\code{character} -- label(s) to rename sex on the plot (e.g., a user may wish to rename "Unisex" to "Female").}
   \item{ptypes}{\code{character} -- plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
   \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{png} file.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
   \item{...}{additional arguments for \code{plotCA} and internal control.}
 }
 \details{
@@ -27,7 +29,10 @@ plotAges(obj, what="c", maxcol=5, sexlab=c("Females","Males"),
   of the commercial \code{CAc} and/or survey \code{CAs} data in the MPD object.
 }
 \author{
-  Rowan Haigh and Andrew M. Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-25}
 }
 \seealso{
   \code{\link[scape]{plotCA}}, \code{\link[PBSawatea]{plt.bubbles}}, \code{\link[PBSawatea]{plt.recdev}}

@@ -12,7 +12,7 @@ plt.quantBio(obj, projObj=NULL, policy=NULL,
      p=get("quants5"), xyType="lines", 
      lineType=c(3,2,1,2,3), refLines=NULL, 
      xLim=NULL, yLim=NULL, userPrompt=FALSE, 
-     save=TRUE, yaxis.lab="Spawning biomass" )
+     save=TRUE, yaxis.lab="Spawning biomass", lang="e")
 
 plt.quantBioBB0(obj, projObj=NULL, policy=NULL, 
      p=get("quants5"), xyType="lines", 
@@ -20,7 +20,7 @@ plt.quantBioBB0(obj, projObj=NULL, policy=NULL,
      xLim=NULL, yLim=NULL, userPrompt=FALSE, save=TRUE, 
      main="", cex.main="", tcl.val=-0.2, 
      xaxis.by=1, yaxis.by=10000, xaxis.lab="Year", 
-     yaxis.lab="Spawning biomass" )
+     yaxis.lab="Spawning biomass", lang="e")
 }
 \arguments{
   \item{obj}{an Awatea MCMC object (\emph{e.g.}, \code{currentMCMC}).}
@@ -41,12 +41,18 @@ plt.quantBioBB0(obj, projObj=NULL, policy=NULL,
   \item{yaxis.by}{tick mark intervals for y-axis.}
   \item{xaxis.lab}{label for x-axis.}
   \item{yaxis.lab}{label for y-axis.}
+  \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
 }
 \value{
   List of the reconstructed (MCMC) and projected results.
 }
 \author{
-    Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-26}
 }
 \note{
   \code{plt.quantBioBB0} performs similarly as for \code{plt.quantBio} but uses

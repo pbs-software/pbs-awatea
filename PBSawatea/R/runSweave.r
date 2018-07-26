@@ -25,7 +25,8 @@ runSweave = function(
    sexlab  = c("Females","Males"),
    resdoc  = FALSE,                   ## is this build for a research document?
    redo.Graphs = TRUE,                ## recreate all the figures (.eps, .png)
-   ptype = "png"                      ## plot type --  either "eps" or "png"
+   ptype   = "png",                   ## plot type --  either "eps" or "png"
+   lang    = c("e","f")               ## language -- 'e'= English, 'f'= French (subdirectory)
 ) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","Rcode","Scode","qu","so",".First")),pos=1)
@@ -47,7 +48,7 @@ runSweave = function(
 		source(paste(codePath,"plotFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"utilFuns.r",sep="/"),local=FALSE)
 		source(paste(codePath,"menuFuns.r",sep="/"),local=FALSE)
-		#assign("importCol2",importRes,envir=.GlobalEnv) # RH: removed importCol2 (2013-09-13)
+		#do.call("assign", args=list(x="importCol2", value=importRes, envir=.GlobalEnv)) # RH: removed importCol2 (2013-09-13)
 	}
 	cpue     = Ncpue > 0
 	sexlab   = rep(sexlab,Nsex)[1:Nsex]
@@ -61,11 +62,18 @@ runSweave = function(
 	model.name = paste(prefix,runNoStr,rwtNoStr,sep=".")
 	mpdname  = paste("MPD",runNoStr,rwtNoStr,sep=".")
 	mpd.dir  = paste(run.dir,mpdname,sep="/")  # directory where all the postscript crap happens
-#browser();return()
 	if (file.exists(mpd.dir)) 
 		setwd(mpd.dir)
 	else {
-		dir.create(mpd.dir); setwd(mpd.dir) }
+		dir.create(mpd.dir); setwd(mpd.dir)
+	}
+	## Create a subdirectory called `french' for French-language figures
+	if (is.element("f",lang)) {
+		mpd.dir.f = paste0(mpd.dir,"/french")
+		if (!file.exists(mpd.dir.f))
+			dir.create(mpd.dir.f)
+	}
+#browser();return()
 	#if (!file.exists("run-master.Snw")) ## it will almost never exist in the MPD run directory
 	## This way, someone only using the package has a fighting chance of modifying the Snw:
 	if (!file.exists(paste(wd,"run-master.Snw",sep="/")))
@@ -89,6 +97,8 @@ runSweave = function(
 	tfile = gsub("@sexlab",deparse(sexlab),tfile)
 	tfile = gsub("@sppcode",strSpp,tfile)
 	tfile = gsub("@ptype",ptype,tfile)
+	tfile = gsub("@lang",deparse(lang),tfile)
+#browser();return()
 	if (locode) {
 		if (any(strSpp==c("POP","pop","396"))) sppname = "Pacific Ocean Perch"
 		else if (any(strSpp==c("YMR","ymr","440"))) sppname = "Yellowmouth Rockfish"

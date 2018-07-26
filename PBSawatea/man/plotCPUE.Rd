@@ -8,7 +8,7 @@
 }
 \usage{
 plotCPUE(obj, main="", save=NULL, bar=1.96, yLim=NULL, 
-   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"), ...)
 }
 \arguments{
   \item{obj}{data frame of CPUE indices from Awatea's results file
@@ -21,6 +21,8 @@ plotCPUE(obj, main="", save=NULL, bar=1.96, yLim=NULL,
   \item{ptypes}{\code{character} -- plot types for the figures: \code{eps} = encapsulated postscript, 
      \code{png} = portable network graphics.}
   \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{png} file.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
   \item{\dots}{\bold{not used}}
 }
 \value{
@@ -29,6 +31,11 @@ plotCPUE(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 }
 \author{
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-25}
 }
 \note{
   Copied code from \code{plotIndexNotLattice}.

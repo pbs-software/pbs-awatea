@@ -9,17 +9,19 @@
 \usage{
 plotIndexNotLattice(obj, main="", save=NULL,
    bar=1.96, ssnames=paste("Ser",1:9,sep=""),
-   ptypes=tcall(PBSawatea)$ptype, pngres=400, ...)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"), ...)
 }
 \arguments{
-  \item{obj}{the MPD object created by the \code{importRes} function (e.g., \code{currentRes}).}
-  \item{main}{title for figure}
+  \item{obj}{\code{list} -- the MPD object created by the \code{importRes} function (e.g., \code{currentRes}).}
+  \item{main}{\code{character} -- title for figure}
   \item{save}{\bold{not used}}
-  \item{bar}{standard deviation of the normal distribution 
+  \item{bar}{\code{numeric} -- standard deviation of the normal distribution 
     (1.96 is the approximate value of the 97.5 percentile point).}
-  \item{ssnames}{survey series names for figure labelling and image creation.}
-  \item{ptypes}{plot types for the figures: \code{"eps"} = encapsulated postscript, \code{"png"} = portable network graphics.}
-  \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
+  \item{ssnames}{\code{character} -- survey series names for figure labelling and image creation.}
+  \item{ptypes}{\code{character} -- plot types for the figures: \code{"eps"} = encapsulated postscript, \code{"png"} = portable network graphics.}
+  \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{.png} file.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
   \item{\dots}{\bold{not currently used}}
 }
 \value{
@@ -31,6 +33,11 @@ plotIndexNotLattice(obj, main="", save=NULL,
 }
 \author{
   Andrew M. Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-26}
 }
 \seealso{
   \code{\link{plt.idx}}

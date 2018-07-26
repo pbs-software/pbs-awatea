@@ -9,7 +9,7 @@
 \usage{
 plotTraj(dat, index, traj="B", y0=FALSE, lab.stock, 
    col=c("black","green4","blue","red","purple","orange"), 
-   png=FALSE, pngres=400, PIN=c(8,8), ...)
+   png=FALSE, pngres=400, PIN=c(8,8), lang=c("e","f"), ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,6 +27,8 @@ plotTraj(dat, index, traj="B", y0=FALSE, lab.stock,
   \item{png}{\code{logical} -- if \code{TRUE}, send the figure output to a \code{png} device.}
   \item{pngres}{\code{numeric} -- resolution (pixels/inch) for \code{png} file.}
   \item{PIN}{\code{numeric} -- vector of width and height (inches) for \code{png} file.}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
   \item{\dots}{\code{list} -- additional arguments for \code{lines} (\code{lty} only) and \code{legend}.}
 }
 \details{
@@ -40,7 +42,7 @@ plotTraj(dat, index, traj="B", y0=FALSE, lab.stock,
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-05-24}
+  Last modified \code{Rd: 2018-07-26}
 }
 \note{
   This function is geared for use after a number of Awatea model runs have been completed.

@@ -16,7 +16,7 @@ plotTracePOP(mcmc, axes=FALSE, same.limits=FALSE,
           col.trace="grey", lty.median=1, lwd.median=1,
           col.median="black", lty.quant=2, lwd.quant=1,
           col.quant="black", plot=TRUE, probs=get("quants3"),
-          mpd=mcmc[1, ], ...)
+          mpd=mcmc[1, ], lang="e", ...)
 }
 \arguments{
   \item{mcmc}{MCMC chain(s) as a vector, data frame or \code{mcmc}
@@ -51,6 +51,7 @@ plotTracePOP(mcmc, axes=FALSE, same.limits=FALSE,
   \item{plot}{whether to draw plot.}
   \item{probs}{quantile values for quantile trace.}
   \item{mpd}{vector of MPD values (from which MCMC search starts).}
+  \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
   \item{\dots}{passed to \code{panel.trace} (\bold{not used}).}
 }
 \value{
@@ -61,6 +62,14 @@ plotTracePOP(mcmc, axes=FALSE, same.limits=FALSE,
 \note{
   The \code{Args} function from the \pkg{gdata} package is recommended
   for reviewing the arguments, instead of \code{args}.
+}
+\author{
+  Andrew M. Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-26}
 }
 \seealso{
   \code{\link[lattice]{xyplot}} and \code{\link[lattice]{panel.loess}}

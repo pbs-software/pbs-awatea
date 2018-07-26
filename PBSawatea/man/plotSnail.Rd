@@ -9,8 +9,8 @@
   some wine connoiseurs call these plots \emph{snail trails}.
 }
 \usage{
-plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9), 
-   xLim=NULL, yLim=NULL, Lwd=1.5, ngear=1, assYrs=2011, outs=FALSE)
+plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL,
+   Lwd=1.5, ngear=1, assYrs=2011, outs=FALSE, lang="e")
 }
 \arguments{
   \item{BoverBmsy}{\code{numeric} -- matrix of \eqn{B_t}{Bt} over \eqn{B_{MSY}}{Bmsy}.}
@@ -23,6 +23,7 @@ plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9),
   \item{assYrs}{\code{numeric} -- \sQuote{current} model years of past assessments.}
   \item{outs}{\code{logical} -- if \code{TRUE}, extend the range of the 
     quantile box whiskers to include the outliers (all data).}
+  \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
 }
 \details{
   The graph attempts to show the time history of the exploitation rate 
@@ -31,6 +32,11 @@ plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9),
 }
 \author{
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-26}
 }
 \note{
   The term \emph{snail trail} comes from PJS.

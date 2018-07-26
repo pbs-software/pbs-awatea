@@ -5,6 +5,26 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.4.0 (2018-07-26)
+  * PBSscape.r
+    + Introduced new argument `lang' to produced figures in english and french. (RH 180710)
+      - For functions that use a lang loop, argument lang=c("e","f"); otherwise lang="e".
+      - Translation of english words and phrases is performed by the PBStools' function `linguaFranca'.
+    + Moved all plotting functions other than `plt.mpdGraphs' and `plt.mcmcGraphs' to `plotFuns.r' (RH 180710)
+      - Utility functions may be moved later to `utilFuns.r'.
+  * plotFuns.r
+    + Introduced new argument `lang' to produced figures in english and french. (RH 180710)
+      - For functions that use a lang loop, argument lang=c("e","f"); otherwise lang="e".
+    + Added all plotting functions other than `plt.mpdGraphs' and `plt.mcmcGraphs'. (RH 180710)
+  * Sweave
+    + Revised `run-master.Snw' & 'run-masterMCMC.Snw. (RH 180717)
+      - Now uses the `lang' argument in function calls, primarily to `plt.mpdGraphs' and `plt.mcmcGraphs'
+      - Simultaneoulsy creates english and french figures.
+  * runSweave|runSweaveMCMC
+    + Added new argument `lang' for the code to embed in the Sweave documents when processing for a model run. (RH 180712)
+  * Documentation
+    + Updated Rd files to include a description of the `lang' argument when used. (RH 180726)
+
 1.3.0 (2018-05-24)
   * Documentation
     + Added Rd files for new functions -- `mochaLatte', `plotACFs', `plotCI', `plotMeanAge', `plotTraj', and `tex.that.vec' (RH 180524)

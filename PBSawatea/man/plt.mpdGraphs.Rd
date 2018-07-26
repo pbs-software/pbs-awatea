@@ -12,7 +12,7 @@
 plt.mpdGraphs(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
    ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
    pchGear=seq(21,20+ngear,1), ltyGear=seq(1,ngear,1), 
-   colGear=rep(c("black","blue"),ngear)[1:ngear])
+   colGear=rep(c("black","blue"),ngear)[1:ngear], lang=c("e","f"))
 
 plt.mcmcGraphs(mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE, 
    ptypes=tcall(PBSawatea)$ptype, pngres=400, ngear=1,
@@ -21,35 +21,46 @@ plt.mcmcGraphs(mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
    xlim.snail=NULL, ylim.snail=NULL,
    plotPolicies=names(projObj$Y[1:6]),
    onePolicy=names(projObj$Y[2]), mpd=list(),
-   SAR.width=7.5, SAR.height=4, trevObj=NULL)
+   SAR.width=7.5, SAR.height=4, trevObj=NULL, lang=c("e","f"))
 }
 \arguments{
-  \item{obj}{an Awatea MPD results object (\emph{e.g.}, \code{currentRes})}
-  \item{save}{\bold{not used}}
-  \item{ssnames}{survey series names for figure labelling and image creation}
-  \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
-  \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
-  \item{ngear}{number of commercial gears}
-  \item{pchGear, ltyGear, colGear}{symbols, line types, and colours for plotting data by commercial gear.}
-  \item{mcmcObj}{an Awatea MCMC object (\emph{e.g.}, \code{currentMCMC})}
-  \item{projObj}{an Awatea projected biomass object (\emph{e.g.}, \code{currentProj})}
-  \item{mpdObj}{an Awatea MPD results object (\emph{e.g.}, \code{currentRes})}
-  \item{ylim.recruitsMCMC}{y-limits for the recruitsMCMC plot}
-  \item{ylim.exploitMCMC}{y-limits for the recruitsMCMC plot}
-  \item{ylim.VBcatch}{y-limits for the VBcatch plot}
-  \item{ylim.BVBnorm}{y-limits for the BVBnorm plot}
-  \item{xlim.snail}{x-limits for the snail-trail plot}
-  \item{ylim.snail}{y-limits for the snail-trail plot}
-  \item{plotPolicies}{six-policies projections to plot}
-  \item{onePolicy}{the one policy from the above six to use for some figures}
-  \item{mpd}{list of MPD values for parameters, biomass, and recruitment}
-  \item{SAR.width}{width (inches) of an output WMF file for SAR figures}
-  \item{SAR.height}{height (inches) of an output WMF file for SAR figures}
-  \item{trevObj}{various MCMC values suggested by Trevor Davies (Dalhousie) for comparison: \cr
+  \item{obj}{\code{list} -- an Awatea MPD results object (\emph{e.g.}, \code{currentRes})}
+  \item{save}{\code{logical} -- \bold{not used} \emph{deprecated}}
+  \item{ssnames}{\code{character} -- survey series names for figure labelling and image creation}
+  \item{ptypes}{\code{character} -- plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
+  \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{png} file.}
+  \item{ngear}{\code{numeric} -- number of commercial gears}
+  \item{pchGear, ltyGear, colGear}{\code{numeric|character} -- symbols, line types, and colours for plotting data by commercial gear.}
+  \item{mcmcObj}{\code{list} -- an Awatea MCMC object (\emph{e.g.}, \code{currentMCMC})}
+  \item{projObj}{\code{list} -- an Awatea projected biomass object (\emph{e.g.}, \code{currentProj})}
+  \item{mpdObj}{\code{list} -- an Awatea MPD results object (\emph{e.g.}, \code{currentRes})}
+  \item{ylim.recruitsMCMC}{\code{numeric} -- y-limits for the recruitsMCMC plot}
+  \item{ylim.exploitMCMC}{\code{numeric} -- y-limits for the recruitsMCMC plot}
+  \item{ylim.VBcatch}{\code{numeric} -- y-limits for the VBcatch plot}
+  \item{ylim.BVBnorm}{\code{numeric} -- y-limits for the BVBnorm plot}
+  \item{xlim.snail}{\code{numeric} -- x-limits for the snail-trail plot}
+  \item{ylim.snail}{\code{numeric} -- y-limits for the snail-trail plot}
+  \item{plotPolicies}{\code{numeric} -- six-policies projections to plot}
+  \item{onePolicy}{\code{numeric} -- the one policy from the above six to use for some figures}
+  \item{mpd}{\code{list} -- list of MPD values for parameters, biomass, and recruitment}
+  \item{SAR.width}{\code{numeric} -- width (inches) of an output WMF file for SAR figures}
+  \item{SAR.height}{\code{numeric} -- height (inches) of an output WMF file for SAR figures}
+  \item{trevObj}{\code{data.frame} -- various MCMC values suggested by Trevor Davies (Dalhousie) for comparison:
     \code{c("h", "M_1", "M_2", "B0", "MSY", "Bmsy", "umsy")}. }
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
 }
 \details{
-  Creates a whole heap of encapsulated postscript (eps) and portable network graphics (png) files.
+  Creates a whole heap of encapsulated postscript (\code{.eps}) and/or 
+  portable network graphics (\code{.png}) files, depending on the plot 
+  types specified in \code{ptypes}.
+  Due to endless problems with postscript files (not to mention
+  their potentially humungous sizes), \code{.png} files are favoured
+  for stock assessment documents by the CSAP/CSAS office.
+
+  As of July 2018, english plot are dumped into the current working
+  directory (as per usual) while french plots, using the same file names,
+  are dumped into a subdirectory called \sQuote{\code{french}}.
 }
 \value{
   \bold{plt.mpdGraphs} creates the following EPS (and/or PNG) files: \cr
@@ -87,6 +98,11 @@ plt.mcmcGraphs(mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 }
 \author{
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-25}
 }
 \note{
   The function is currently set up to send figures to encapsulated postscript (eps)

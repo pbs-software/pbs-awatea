@@ -16,7 +16,7 @@ plotBVBnorm(mcmcObj,
    refLines=NULL, xLim=NULL, yLim=NULL,
    userPrompt=FALSE, save=TRUE, xLeg=0.05, yLeg=0.2, 
    yaxis.by=0.05, tcl.val=-0.2,
-   B.col="black", VB.col="black", ngear=1, ...)
+   B.col="black", VB.col="black", ngear=1, lang="e", ...)
 }
 
 \arguments{
@@ -36,10 +36,16 @@ plotBVBnorm(mcmcObj,
   \item{B.col}{colour for spawning biomass.}
   \item{VB.col}{colour for vulnerable biomass.}
   \item{ngear}{number of commercial gear codes}
+  \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
   \item{\dots}{\bold{not used}}
 }
 \author{
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-25}
 }
 \note{
   AME: tried in separate file, but then changed that to

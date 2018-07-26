@@ -155,6 +155,19 @@
 
 %% First set up workspace:
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
+
+linguaFranca = try(PBStools::linguaFranca, silent=T)
+if (class(linguaFranca)=="try-error") {
+	pbstoolsDevDir = "C:/Users/haighr/Files/Projects/R/Develop/PBStools/Authors/Rcode/develop"
+	if (file.exists(pbstoolsDevDir)) {
+		extraCode = c("linguaFranca") # ,"formatCatch", "crossTab")
+		for (i in extraCode)
+			source(paste0(pbstoolsDevDir,"/",i,".r")) ## to get the latest code
+	} else {
+		stop("You ned the function `linguaFranca' from the PBStools package")
+	}
+}
+
 ## Note: '@variables' replaced by function 'runSweave'.
 cwd            = "@cwd"       ## Top level directory; all models occur below this one. 
 sigdig         = 5            ## Number of significant digits to output in tables
@@ -169,7 +182,9 @@ strSpp         = "@strSpp"
 run.dir        = "@run.dir"
 fig.dir        = "@fig.dir"
 running.awatea =  @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+eval(parse(text=paste("lang=",deparse(@lang))))
 eval(parse(text=paste("sexlab=",deparse(@sexlab))))
+sexlab.f = gsub("Males",eval(parse(text=deparse("m\u{00E2}les"))),gsub("Females","femelles",sexlab))  ## gsub very tricky when using unicode accents
 @ 
 %% In cases where the initial re-weighting was not performed and an MPD was generated as part of an MCMC.
 <<vicars_and_tarts, echo=FALSE>>=
@@ -539,11 +554,11 @@ ptab = function(xx)
 
 if(redo.Graphs){
   ## Calls function (defined in PBSscape.r) that creates most of the plots
-  plt.mpdGraphs( obj=currentRes, save=TRUE, ssnames=c("@surveys"), ngear=Ngears, pngres=400)
+  plt.mpdGraphs( obj=currentRes, save=TRUE, ssnames=c("@surveys"), ngear=Ngears, pngres=400, lang=lang) ## `lang' specified in call to `runSweave'
   ## some now more correctly use MCMC results
 
-  plt.idx( currentRes$Survey,main="Survey Indices",ssnames=c("@surveys"), pngres=400) # wasn't called 
-  plt.idx( currentRes$CPUE,main="CPUE Indices", ssnames=c("@cpues"), pngres=400) ## PBSawatea in .PBSmodEnv will have Cnames
+  plt.idx( currentRes$Survey, main="Survey Indices", ssnames=c("@surveys"), pngres=400, lang=lang) # wasn't called 
+  plt.idx( currentRes$CPUE, main="CPUE Indices", ssnames=c("@cpues"), pngres=400, lang=lang) ## PBSawatea in .PBSmodEnv will have Cnames
 
   #  in plt.mpdGraphs. Doing it here spits out SD of standardised 
   #  residuals also. May be useful for iterative reweighting?
@@ -843,13 +858,13 @@ Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right)
 
 if(redo.Graphs){
 
-plt.catch(years, Ct, xint=5, yint=diff(pretty(unlist(Ct)))[1])
-plt.biomass(years, Bt.mpd, yint=diff(pretty(unlist(Bt.mpd)))[1], pname="Bt", ylab="Spawning biomass (t), Bt")
-plt.biomass(years, Bt.mpd/B0.mpd, yint=diff(pretty(unlist(Bt.mpd/B0.mpd)))[1], pname="BtB0", xlab="", ylab="Spawning biomass relative to unfished, Bt/B0")
-plt.biomass(years,VtV0.mpd,yint=0.1,pname="VtV0",ylab="Vulnerable biomass relative to unfished, Vt/V0")
-@rmcpue plt.cpue(cpueObj=currentRes$CPUE)
-plt.recdev(logRecDev.mpd) # log recruitment deviations
-plt.initagedev(logInitAgeDev.mpd) # Initial age deviations figure
+plt.catch(years, Ct, xint=5, yint=diff(pretty(unlist(Ct)))[1], lang=lang)
+plt.biomass(years, Bt.mpd, yint=diff(pretty(unlist(Bt.mpd)))[1], ylab="Spawning biomass (t), Bt", pname="Bt", lang=lang)
+plt.biomass(years, Bt.mpd/B0.mpd, yint=diff(pretty(unlist(Bt.mpd/B0.mpd)))[1], ylab="Spawning biomass relative to unfished, Bt/B0", pname="BtB0", lang=lang)
+plt.biomass(years, VtV0.mpd, yint=0.1, ylab="Vulnerable biomass relative to unfished, Vt/V0", pname="VtV0", lang=lang)
+@rmcpue plt.cpue(cpueObj=currentRes$CPUE, lang=lang)
+plt.recdev(logRecDev.mpd, lang=lang) # log recruitment deviations
+plt.initagedev(logInitAgeDev.mpd, lang=lang) # Initial age deviations figure
 
 ##---plotBarsFigs---
 ## Second two are not made automatically - got from Rowan for 05.01. 
@@ -857,30 +872,35 @@ plt.initagedev(logInitAgeDev.mpd) # Initial age deviations figure
 ## Note: 1 is males in plotBars.
 ## Latest from Rowan, I may want to switch to have females first
 ## year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year"]]),8)
+
 year.plotBar = round(quantile(years,seq(0,1,len=6)))
-if (nsex==1) {
-	if (ptype=="eps")
-		plotBars(currentRes,type="N",sex=3,fill="green",eps=TRUE,win=FALSE,year=year.plotBar)
-	if (ptype=="png")
-		plotBars(currentRes,type="N",sex=3,fill="green",png=TRUE,win=FALSE,year=year.plotBar)
-} else {
-	if (ptype=="eps") {
-		plotBars(currentRes,type="N",sex=2,fill="pink",eps=TRUE,win=FALSE,year=year.plotBar)
-		plotBars(currentRes,type="N",sex=1,fill="skyblue",eps=TRUE,win=FALSE,year=year.plotBar)
+fout = fout.e = "ageBars"
+for (l in lang) {
+	if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	if (nsex==1) {
+		if (ptype=="eps")
+			plotBars(currentRes, type="N", sex=3, fill="green", eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+		if (ptype=="png")
+			plotBars(currentRes,type="N",sex=3,fill="green",png=TRUE,win=FALSE,year=year.plotBar, lang=l, fout=fout)
+	} else {
+		if (ptype=="eps") {
+			plotBars(currentRes, type="N", sex=2, fill="pink",    eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+			plotBars(currentRes, type="N", sex=1, fill="skyblue", eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+		}
+		if (ptype=="png") {
+			plotBars(currentRes, type="N", sex=2, fill="pink",    png=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+			plotBars(currentRes, type="N", sex=1, fill="skyblue", png=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+		}
 	}
-	if (ptype=="png") {
-		plotBars(currentRes,type="N",sex=2,fill="pink",png=TRUE,win=FALSE,year=year.plotBar)
-		plotBars(currentRes,type="N",sex=1,fill="skyblue",png=TRUE,win=FALSE,year=year.plotBar)
-	}
-}
+} ## end l (lang) loop
 
 } ## end redo.Graphs
 
 ## `plt.recdevacf' needs to be run to assign `yearsForACF' to the global environment
-plt.recdevacf(logRecDev.mpd, muC.mpd, logvC.mpd, A, years, yr1=firstYearOfAgeData, redo.Graphs=redo.Graphs) # ACF of log recruitment deviations
+plt.recdevacf(logRecDev.mpd, muC.mpd, logvC.mpd, A, years, yr1=firstYearOfAgeData, redo.Graphs=redo.Graphs, lang=lang) # ACF of log recruitment deviations
 
 ## `plt.bubbles' needs to be run to assign `residsCAcFem', `residsCAcMale', `residsCAsFem', and `residsCAsMale' to the global environment
-plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs) # Bubble plots of observed and fitted ages
+plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble plots of observed and fitted ages
 
 @
 

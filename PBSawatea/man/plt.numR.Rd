@@ -4,7 +4,7 @@
   Plot Numbers at Age at Equilibrium
 }
 \description{
-  Plot numbers at age at equilibrium. Plot recruitment (age 1).
+  Plot numbers at age at equilibrium. Plot recruitment (age 1). (\emph{possibly deprecated})
 }
 \usage{
 plt.numR(obj, minYr = NULL)
@@ -18,6 +18,7 @@ plt.numR(obj, minYr = NULL)
 }
 \note{
   Not sure what this plot is used for (RH).
+  Appears to be called only in the \code{menuFuns.r} module (which has not been used for centuries).
 }
 \seealso{
   \code{\link{plotRmcmcPOP}}

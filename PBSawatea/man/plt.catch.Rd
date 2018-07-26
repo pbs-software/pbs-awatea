@@ -10,24 +10,26 @@
 }
 \usage{
 plt.catch(years, Ct, xint=5, yint=250,
-   ptypes=tcall(PBSawatea)$ptype, pngres=400)
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"))
 
 plt.biomass(years, Bt, xint=5, yint=2500,
    ptypes=tcall(PBSawatea)$ptype, pngres=400, 
-   pname="Bt", xlab="Year", ylab="Spawning biomass (t), Bt")
+   pname="Bt", xlab="Year", ylab="Spawning biomass (t), Bt", lang=c("e","f"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{years}{numeric vector of years}
-  \item{Ct}{vector or matrix of annual catches; if a matrix, then rows=years and cols=gear.}
-  \item{Bt}{vector or matrix of annual biomass; if a matrix, then rows=years and cols=gear.}
-  \item{xint}{x-axis (year) intervals for small, unlabelled ticks}
-  \item{yint}{y-axis (catch or biomass) intervals for small, unlabelled ticks}
-  \item{ptypes}{plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
-  \item{pngres}{resolution (pixels/inch) for the \code{png} file.}
-  \item{pname}{prefix name for an image file}
-  \item{xlab}{label for the x-axis}
-  \item{ylab}{label for the y-axis}
+  \item{years}{\code{numeric} -- vector of years}
+  \item{Ct}{\code{numeric} -- vector or matrix of annual catches; if a matrix, then rows=years and cols=gear.}
+  \item{Bt}{\code{numeric} -- vector or matrix of annual biomass; if a matrix, then rows=years and cols=gear.}
+  \item{xint}{\code{numeric} -- x-axis (year) intervals for small, unlabelled ticks}
+  \item{yint}{\code{numeric} -- y-axis (catch or biomass) intervals for small, unlabelled ticks}
+  \item{ptypes}{\code{character} -- plot types for the figures: \code{eps} = encapsulated postscript, \code{png} = portable network graphics.}
+  \item{pngres}{\code{numeric} -- resolution (pixels/inch) for the \code{png} file.}
+  \item{pname}{\code{character} -- prefix name for an image file}
+  \item{xlab}{\code{character} -- label for the x-axis}
+  \item{ylab}{\code{character} -- label for the y-axis}
+  \item{lang}{\code{character} -- a vector of letters that denote the language for output:
+    currently only \code{"e"} (english) and \code{"f"} (french).}
 }
 \details{
   The function \code{plt.catch} plots catch as vertical bars and spits out 
@@ -37,7 +39,10 @@ plt.biomass(years, Bt, xint=5, yint=2500,
   various biomass inputs (e.g., \eqn{B_t}, \eqn{B_t/B_0}, \eqn{V_{tg}/V_{0g}}).
 }
 \author{
-  Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-26}
 }
 \seealso{
   \code{\link{plt.cpue}}, \code{\link{plt.recdev}}, \code{\link{plt.bubbles}}

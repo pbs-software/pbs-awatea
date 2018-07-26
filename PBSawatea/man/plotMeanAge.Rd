@@ -4,16 +4,17 @@
   Plot Mean Age
 }
 \description{
-  Plot model MPD estimates of mean age and observed mean age (with 95% confidence interval).
+  Plot model MPD estimates of mean age and observed mean age (with 95\% confidence interval).
 }
 \usage{
-plotMeanAge(obj, useCA=TRUE, useSA=TRUE, CAnames)
+plotMeanAge(obj, useCA=TRUE, useSA=TRUE, CAnames, lang="e")
 }
 \arguments{
   \item{obj}{\code{list} -- The model's MPD object, usually \code{currentRes}.}
   \item{useCA}{\code{logical} -- if \code{TRUE}, then plot mean ages from the commercial fishery.}
   \item{useSA}{\code{logical} -- if \code{TRUE}, then plot mean ages from the surveys.}
   \item{CAnames}{\code{character} -- commercial fishery names, those that have composition (age) data.}
+  \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
 }
 \details{
   Provides a diagnostic plot, recommended by Francis (2011), that compares the model's
@@ -34,7 +35,7 @@ plotMeanAge(obj, useCA=TRUE, useSA=TRUE, CAnames)
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-05-24}
+  Last modified \code{Rd: 2018-07-26}
 }
 \seealso{
 \code{\link[PBSawatea]{importPar}},

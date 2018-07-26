@@ -31,8 +31,8 @@ get.resFile <- function( resFile=NULL )
 
 	newRes <- importRes( res.file=resFile, Dev=TRUE, CPUE=TRUE,
 		Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE)
-	assign( "currentRes", newRes, pos=1 )
-	assign( "resFile",resFile )
+	do.call("assign", args=list(x="currentRes", value=newRes, envir=.GlobalEnv))
+	do.call("assign", args=list(x="resFile", value=resFile))
 	cat( "\nLoaded Awatea res file: ",resFile,"\n\n" )
 	#print( ll( currentRes ) ) ## RH: this is the only `gdata' function used and importing gdata causes problems
 
@@ -63,9 +63,9 @@ mainMenu <- function()
       {
          loadMenu()
 #        resFile <- get.resFile( resFile )
-#        assign( "resFile",resFile,pos=1 )
+#        do.call("assign", args=list(x="resFile", value=resFile, envir=.GlobalEnv))
 #        currentRes <- importCol( res.file=resFile, Dev=TRUE, CPUE=TRUE, Survey=TRUE, CAc=TRUE )
-#        assign( "currentRes", currentRes, pos=1 )
+#        do.call("assign", args=list(x="currentRes", value=currentRes, envir=.GlobalEnv))
 #        cat( "\nLoaded Awatea res file: \n\n" )
 #        print( ll( currentRes ) )
       },
@@ -103,29 +103,29 @@ loadMenu <- function()
       {
         # Awatea res file.
         resFile <- get.resFile( resFile )
-        assign( "resFile",resFile,pos=1 )
+        do.call("assign", args=list(x="resFile", value=resFile, envir=.GlobalEnv))
       },
       {
         # Awatea MCMC.
         currentMCMC <- importMCMC( dir=".", quiet=FALSE )
-        assign( "currentMCMC", currentMCMC, pos=1 )
+        do.call("assign", args=list(x="currentMCMC", value=currentMCMC, envir=.GlobalEnv))
       },
       {
         # Awatea projection.
         currentProj <- importProj( dir=".", quiet=FALSE )
-        assign( "currentProj", currentProj, pos=1 )
+        do.call("assign", args=list(x="currentProj", value=currentProj, envir=.GlobalEnv))
       },
       {
         tmp <- load.allResFiles()
-        assign( "resFileList",tmp,pos=1 )
+        do.call("assign", args=list(x="resFileList", value=tmp, envir=.GlobalEnv))
         cat( "\nAll Awatea res files in working directory loaded...\n" )
       },
       {
         # Delay difference.
         currentMCMC <- importMCMC.ddiff()
-        assign( "currentMCMC", currentMCMC, pos=1 )
+        do.call("assign", args=list(x="currentMCMC", value=currentMCMC, envir=.GlobalEnv))
         currentProj <- importProj.ddiff()
-        assign( "currentProj", currentProj, pos=1 )
+        do.call("assign", args=list(x="currentProj", value=currentProj, envir=.GlobalEnv))
       }
     )
   }
@@ -291,11 +291,11 @@ mcmcMenu <- function()
     switch( choice,
 #      {
 #        currentMCMC <- importMCMC( dir=".", quiet=FALSE )
-#        assign( "currentMCMC", currentMCMC, pos=1 )
+#        do.call("assign", args=list(x="currentMCMC", value=currentMCMC, envir=.GlobalEnv))
 #      },
 #      {
 #        currentProj <- importProj( dir=".", quiet=FALSE )
-#        assign( "currentProj", currentProj, pos=1 )
+#        do.call("assign", args=list(x="currentProj", value=currentProj, envir=.GlobalEnv))
 #      },
       {
         plt.quantBio( currentMCMC$B,currentProj$B, policy=policy,
@@ -303,7 +303,7 @@ mcmcMenu <- function()
       },
       {
         currentProbs <- calc.projProbs2( currentMCMC$B, currentProj$B, refs )
-        assign( "currentProbs",currentProbs, pos=1 )
+        do.call("assign", args=list(x="currentProbs", value=currentProbs, envir=.GlobalEnv))
         out.pmTables( currentProbs,fileName="pmProbs" )
         # AME: This works:
         # test = calc.projProbs( currentMCMC$B, currentProj$B,
@@ -314,7 +314,7 @@ mcmcMenu <- function()
 #                         refYrs=c(1972,1985) )
 
         currentExpt <- calc.projExpect2( currentMCMC$B, currentProj$B, refs )
-        assign( "currentExpt",currentExpt, pos=1 )
+        do.call("assign", args=list(x="currentExpt", value=currentExpt, envir=.GlobalEnv))
         out.pmTables( currentExpt,fileName="pmExpt",dec=2 )
         # AME: after runSweaveMCMC, this works:   ...
         # currentExpt <- calc.projExpect( currentMCMC$B, currentProj$B, c(1940, 1990) )
