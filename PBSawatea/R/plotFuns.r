@@ -128,7 +128,7 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 			} else if (f=="wmf" && .Platform$OS.type=="windows") {
 				do.call("win.metafile",list(filename=paste0(fout,".wmf"), width=width, height=height))
 			}
-			par(mar=c(3.5,5,0.5,0.5),cex=ifelse(f%in%c("png","eps"),1,1.2),xaxs="i")
+			par(mar=c(3.5,5,0.5,1),cex=ifelse(f%in%c("png","eps"),1,1.2),xaxs="i")
 			plotBox(xBox,xlim=xlim,ylim=ylim,yaxs="i",las=1,xaxt="n",yaxt="n",xlab="",ylab="",
 				pars=list(boxwex=boxwidth,medlwd=2,whisklty=1,medcol=medcol,staplecol=staplecol,whiskcol=whiskcol,boxfill=boxfill,...)) 
 			ypos = par()$usr[4]-.025*diff(par()$usr[3:4])
@@ -233,7 +233,7 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cquantile.vec
 
 
-## Function: mochaLatte-----------------2018-04-24
+## Function: mochaLatte-----------------2018-07-30
 ##  An alternative to lattice plots (mockLattice)
 ##----------------------------------------------RH
 mochaLatte = function(dat, xfld, yfld, ffld, panel, 
@@ -255,6 +255,8 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 	facs = as.character(unique(dat[,ffld]))
 	nfac = length(facs)
 	rc   = .findSquare(nfac)
+	if (rc[1]>rc[2]) rc = rev(rc)  ## more visually pleasing when more columns than rows
+	strip$cex = strip$cex * (rc[1]^(-0.2))
 	dots = list(...)
 	if (is.null(dots$mar)) mar=c(3,3,0.5,0.5) else mar = dots$mar
 	if (is.null(dots$oma)) oma=c(0,0,0,0)     else oma = dots$oma
@@ -505,7 +507,7 @@ plotB2 <- function (model, what="d", series=NULL, years=NULL, axes=TRUE,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotB2
 
 
-## plotBars-----------------------------2018-07-11
+## plotBars-----------------------------2018-07-30
 ## Plot barplots of specific year age proportions.
 ## ---------------------------------------------RH
 plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]), 
@@ -572,7 +574,7 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 				za=is.element(a,age)
 				ypos = (b[za]/max(b))* max(mat[,,ii])
 				lines(xpos,ypos,lwd=3,col="black")
-				lines(xpos,ypos,lwd=1,col=f)
+				#lines(xpos,ypos,lwd=1,col=f)
 			}
 			if (nage>15) {
 				AGE = seq(5,200,5)
@@ -582,7 +584,7 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 			}
 			addLabel(0.95, 0.95, linguaFranca(ii,lang), adj=c(1,1), cex=1.75, font=2)
 			if (i==year[1])
-				addLegend(0.975, 0.875, legend=paste0(Sex," M = ",M), fill=fill, bty="n", yjust=1, xjust=1)
+				addLegend(0.975, 0.875, legend=paste0(linguaFranca(Sex,lang)," M = ",M), fill=fill, bty="n", yjust=1, xjust=1)
 		}
 		if (any(k==c("eps","png"))) dev.off()
 	}
@@ -718,7 +720,7 @@ plotBVBnorm=function(mcmcObj,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBVBnorm
 
 
-##plotChains----------------------------2018-04-10
+##plotChains----------------------------2018-07-30
 ## Plots cumulative fequency of 'nchains' by partitioning one trace.
 ## Revised from 'plotTracePOP'
 ## mcmc=data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
@@ -737,11 +739,11 @@ plotChains=function (mcmc, nchains=3, pdisc=0.1,
 		unpackList(dots)
 		if (is.null(dots$xlim)) xlim = range(x,na.rm=TRUE)
 		if (is.null(dots$ylim)) ylim = range(y,na.rm=TRUE)
-		abline (h=0.5, lty=3, lwd=1, col="gainsboro")
+		abline (h=0.5, lty=3, lwd=1, col="grey")
 		chainlink = rep(1:nchains,ff)
 		for (i in 1:nchains) {
 			z = is.element(chainlink,i)
-			lines(x[z], y[z], lty=lty.trace, lwd=2, col=rep(col.trace,nchains)[i])
+			lines(x[z], y[z], lty=rep(lty.trace,nchains)[i], lwd=2, col=rep(col.trace,nchains)[i])
 			#lines(x[z], y[z], lty=1, lwd=2, col=c("red","green4","blue"))
 		}
 	}
@@ -920,7 +922,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 				#if(is.null(yLim))     
 				yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
 				plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi,
-					li=seriesVals$Lo, xlim=xLim, ylim=yLim, xlab="Year",
+					li=seriesVals$Lo, xlim=xLim, ylim=yLim, xlab=linguaFranca("Year",l),
 					ylab=paste0(linguaFranca("CPUE index",l), ": ", linguaFranca(seriesList[i],l)), 
 					gap=0, pch=21, col="blue", bg="cyan", lwd=2)
 				lines(seriesVals$Year, seriesVals$Fit, lwd=2)
@@ -1276,7 +1278,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	nseries=length(seriesList)
 	surveyHeadName = if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
 	surveyHeadName = gsub("QC Sound", "QCS", surveyHeadName)
-	surveyHeadName.f = gsub("Historical","historique", gsub("Triennial","triennal", gsub("Synoptic","synoptique", surveyHeadName)))
+	#surveyHeadName.f = gsub("Historical","historique", gsub("Triennial","triennal", gsub("Synoptic","synoptique", surveyHeadName)))
 	cvpro = tcall(PBSawatea)$cvpro
 	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
 
@@ -1307,12 +1309,12 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 					xlim=xLim, ylim=yLim, xlab="", ylab="", gap=0, pch=19) # restrict years for plot, does error bars
 				lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 				axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-				mtext( side=3, line=0.25, cex=ifelse(nseries>2,1.2,1.5), outer=FALSE, ifelse(l=="f",surveyHeadName.f[i],surveyHeadName[i])) #  outer=TRUE
+				mtext( side=3, line=0.25, cex=ifelse(nseries>2,1.2,1.5), outer=FALSE, linguaFranca(surveyHeadName[i],l)) #  outer=TRUE
 				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
 					addLabel(0.95, 0.95, paste0(linguaFranca("+ CV process error = ",l), cvpro[i]), adj=c(1,1),cex=0.8,col=cvcol)
 				if(i==nseries) {
-					mtext(side=2, line=0, cex=1.5, outer=TRUE, text=ifelse(l=="f","biomasse relative","Relative biomass"))
-					mtext(side=1, line=0, cex=1.5, outer=TRUE, text=ifelse(l=="f","ann\u{00E9}e","Year"))
+					mtext(side=2, line=0, cex=1.5, outer=TRUE, text=linguaFranca("Relative biomass",l))
+					mtext(side=1, line=0, cex=1.5, outer=TRUE, text=linguaFranca("Year",l))
 				}
 			}
 			if (p %in% c("eps","png")) dev.off()
@@ -1330,7 +1332,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8.5)
-			par(mfrow=c(nseries,1), mar=c(0,2,0,0.5), oma=c(3.2,3,0.5,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(nseries,1), mar=c(0,2,0,1), oma=c(3.2,3,0.5,0), mgp=c(1.75,0.5,0))
 			for ( i in 1:length(seriesList) ) {
 				idx <- seriesList[i]==objSurv$Series
 				yrTicks=as.numeric( objSurv$Year[idx])        ## all years
@@ -1355,14 +1357,14 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 				axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
 				axis( side=1, at=YrTicks, tcl=-0.4, labels=ifelse(i==nseries,TRUE,FALSE),cex.axis=1.2)
 				#mtext(side=4, line=1.5, cex=0.8, outer=FALSE, paste0(strwrap(surveyHeadName[i],10),collapse="\n"))
-				mtext(side=2, line=1.75, cex=ifelse(nseries>2,1,1.5), outer=FALSE, ifelse(l=="f",surveyHeadName.f[i],surveyHeadName[i]), col="blue")
+				mtext(side=2, line=1.75, cex=ifelse(nseries>2,1,1.5), outer=FALSE, linguaFranca(surveyHeadName[i],l), col="blue")
 				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
 					addLabel(0.95, 0.95, paste0(linguaFranca("+ CV process error = ",l), cvpro[i]), adj=c(1,1), cex=.8+(.05*(nseries-1)), col=cvcol)
 				if(i==nseries) {
 					#axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
 					#axis( side=1, at=YrTicks, tcl=-0.4, labels=TRUE)
-					mtext(side=1, line=2,   cex=1.5, outer=TRUE, text=ifelse(l=="f","ann\u{00E9}e","Year"))
-					mtext(side=2, line=1.2, cex=1.5, outer=TRUE, text=ifelse(l=="f","biomasse relative","Relative biomass"))
+					mtext(side=1, line=2,   cex=1.5, outer=TRUE, text=linguaFranca("Year",l))
+					mtext(side=2, line=1.2, cex=1.5, outer=TRUE, text=linguaFranca("Relative biomass",l))
 				}
 			} ## cex was 0.8 for POP
 			if (p %in% c("eps","png")) dev.off()
@@ -1386,7 +1388,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=6.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=6.5)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			#postscript("survIndSer3.eps", height=6.0, width=6.0, horizontal=FALSE,  paper="special")   # height was 6 for POP
 			yrTicks=yrsspan
 			#YrTicks=intersect(seq(1900,2100,10),yrTicks) ## decadal ticks (doesn't work for short survey in odd years)
@@ -1453,10 +1455,10 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 				else if (p=="png") png(paste0(fout, i, ".png"), units="in", res=pngres, width=6.5, height=6.5)
 				par(mfrow=c(1,1), mar=c(3,3.25,2,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 				plotCI(seriesVals$Year, seriesVals$Obs, ui=seriesVals$Hi, li=seriesVals$Lo, 
-					xlim=xLim, ylim=yLim, xlab=ifelse(l=="f","ann\u{00E9}e","Year"), ylab=ifelse(l=="f","biomasse relative","Relative biomass"), gap=0, pch=19, cex.lab=1.5)
+					xlim=xLim, ylim=yLim, xlab=linguaFranca("Year",l), ylab=linguaFranca("Relative biomass",l), gap=0, pch=19, cex.lab=1.5)
 				lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 				axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
-				mtext( side=3, line=0.25, cex=1.5, outer=FALSE, ifelse(l=="f",surveyHeadName.f[i],surveyHeadName[i])) #  outer=TRUE
+				mtext( side=3, line=0.25, cex=1.5, outer=FALSE, linguaFranca(surveyHeadName[i],l)) #  outer=TRUE
 				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
 					addLabel(0.95, 0.95, paste0(linguaFranca("+ CV process error = ",l), cvpro[i]), adj=c(1,0), cex=0.8, col=cvcol)
 				if (p %in% c("eps","png")) dev.off()
@@ -1488,7 +1490,7 @@ plotMeanAge =function(obj, useCA=TRUE, useSA=TRUE, CAnames, lang="e")
 	
 	if (nseries>0) {
 		MA.pjs = list()
-		par(mfrow=c(nseries,1), mar=c(1.75,3,2,0.5), oma=c(2.5,2.5,0,0), mgp=c(2,0.75,0))
+		par(mfrow=c(nseries,1), mar=c(1.75,3,2,1), oma=c(2.5,2.5,0,0), mgp=c(2,0.75,0))
 		for (m in MAp) {
 			MA   = get(m)
 			last = regexpr("-",names(MA$MAobs))-1
@@ -1747,7 +1749,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotTracePOP
 
 
-## plotTraj-----------------------------2018-07-16
+## plotTraj-----------------------------2018-08-02
 ## Show all median trajectories (base+sens) in one figure.
 ## ---------------------------------------------RH
 plotTraj = function(dat, index, traj="B", y0=FALSE, lab.stock, 
@@ -1767,7 +1769,8 @@ plotTraj = function(dat, index, traj="B", y0=FALSE, lab.stock,
 	Bmsy.q5   = list()  ## not always needed
 	tcol      = rep(col,Nruns)[1:Nruns]
 	legtxt    = sen.lab  ## defined in global data object 'stock'
-	ylabs     = c("Spawning Biomass","Vulnerable Biomass","Recruitment","Exploitation Rate",expression(italic(B[t])/italic(B)[0]),"Unknown")
+	## ylabs needs to be a list if mixing character elements with expressions
+	ylabs     = list("Spawning Biomass","Vulnerable Biomass","Recruitment","Exploitation Rate",expression(italic(B[t])/italic(B)[0]),"Unknown")
 	names(ylabs) = c("B","VB","R","U","BtB0","NA")
 	for (i in 1:Nruns) {
 		ii = run.rwts[i]
@@ -1814,7 +1817,8 @@ plotTraj = function(dat, index, traj="B", y0=FALSE, lab.stock,
 			})
 			mtext(linguaFranca("Year",l), side=1, line=1.75, cex=1)
 			#ylab = ifelse(jj=="B","Spawning Biomass",ifelse(jj=="VB","Vulneerable Biomass",ifelse(jj=="R","Recruitment",ifelse(jj=="U","Exploitation Rate","Unknown"))))
-			mtext(linguaFranca(ylabs[jj],l), side=2, line=1.8, cex=1.2)
+#browser();return()
+			mtext(linguaFranca(ylabs[[jj]],l), side=2, line=1.8, cex=1.2)
 			if (j==1) addLegend(0.02, 0, col=tcol, seg.len=3, legend=linguaFranca(legtxt[1:Nruns],l), bty="n", xjust=0, yjust=0, lwd=1, ...)
 			if (Ntraj==1) {
 				axis(1,at=intersect(seq(1900,2500,5),x),labels=FALSE,tcl=-0.2)
@@ -1822,7 +1826,6 @@ plotTraj = function(dat, index, traj="B", y0=FALSE, lab.stock,
 			}
 			box()
 		}
-#browser();return()
 		if (png) dev.off()
 	} ## end l (lang) loop
 	do.call("assign", args=list(x="trajSens", value=trajMat, envir=.GlobalEnv))
@@ -2167,7 +2170,7 @@ plt.bubbles = function(mpdObj, nsex=2,
 						for (p in ptypes) {
 							if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=ifelse(nr==1,6,8), horizontal=FALSE,  paper="special")
 							else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6, height=ifelse(nr==1,6,8))
-							par(mfrow=c(nr,1), mar=c(2,3.5,2,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+							par(mfrow=c(nr,1), mar=c(2,3.5,2,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 							junk=sapply(1:nr,function(s,x,n){ # nr = no. rows = ngear or nsurv
 								plotBubbles(x[[s]], dnam=TRUE, size=0.10, hide0=TRUE, main=linguaFranca(n[s],l), prettyaxis=TRUE, las=1)
 								mtext(linguaFranca("Age",l), side=2, line=2, cex=1.2)
@@ -2386,7 +2389,7 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 			for (p in ptypes) {
 				if (p=="eps") postscript(paste0(fout,".eps"), height=6, width=5, horizontal=FALSE,  paper="special")
 				else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, height=6, width=5)
-				par(mfrow=c(nseries,1), mar=c(1.75,2,2,0.5), oma=c(2,2,0,0), mgp=c(2,0.75,0))
+				par(mfrow=c(nseries,1), mar=c(1.75,2,2,1), oma=c(2,2,0,0), mgp=c(2,0.75,0))
 				plt.stdResids( result, xLim=range(result[!is.na(result$Obs), ]$Year), lang=l) # restrict years for plot
 				mtext( side=3, line=0, cex=1.0, outer=TRUE, text=linguaFranca(surveyHeadName[i],l))
 				if (p %in% c("eps","png")) dev.off()

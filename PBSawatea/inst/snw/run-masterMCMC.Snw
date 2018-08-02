@@ -163,16 +163,18 @@
 <<setupworkspace, echo=FALSE, results=hide>>= # hide the results 
 
 linguaFranca = try(PBStools::linguaFranca, silent=T)
+createFdir   = try(PBStools::createFdir, silent=T)
+pbstoolsDevDir = "C:/Users/haighr/Files/Projects/R/Develop/PBStools/Authors/Rcode/develop"
 if (class(linguaFranca)=="try-error") {
-	pbstoolsDevDir = "C:/Users/haighr/Files/Projects/R/Develop/PBStools/Authors/Rcode/develop"
 	if (file.exists(pbstoolsDevDir)) {
-		extraCode = c("linguaFranca") # ,"formatCatch", "crossTab")
+		extraCode = c("linguaFranca", "createFdir") # ,"formatCatch", "crossTab")
 		for (i in extraCode)
 			source(paste0(pbstoolsDevDir,"/",i,".r")) ## to get the latest code
 	} else {
-		stop("You ned the function `linguaFranca' from the PBStools package")
+		stop("You need the function `linguaFranca' from the PBStools package")
 	}
 }
+source(paste0(pbstoolsDevDir,"/","linguaFranca.r")) ## for now just use the latest...
 
 ## get some names created by `runSweave()'
 Cnames  = tcall("PBSawatea")$Cnames        # names of commercial gear
@@ -1203,7 +1205,7 @@ if (resdoc) {
 %======================START FIGURES=======================
 \onefig{traceParams}{MCMC traces for the estimated parameters\Sexpr{print(in.area)}. Grey lines show the \numMCMC~samples for each parameter, solid lines show the cumulative median (up to that sample), and dashed lines show the cumulative 2.5 and 97.5 quantiles.  Red circles are the MPD estimates. For parameters other than $M$ (if estimated), subscripts $\leq \Sexpr{Nsurv}$ correspond to fishery-independent surveys, and subscripts $\geq \Sexpr{Nsurv+1}$ denote the commercial fishery. Parameter notation is described in Appendix~\eqnchapter.}
 
-\onefig{splitChain}{Diagnostic plot\Sexpr{from.area} obtained by dividing the MCMC chain of \numMCMC~MCMC samples into three segments, and overplotting the cumulative distributions of the first segment (green), second segment (red) and final segment (blue).}
+\onefig{splitChain}{Diagnostic plot\Sexpr{from.area} obtained by dividing the MCMC chain of \numMCMC~MCMC samples into three segments, and overplotting the cumulative distributions of the first segment (red), second segment (blue) and final segment (black).}
 % overplotting the cumulative distributions, removing the first 100, then plotting the cumulative distributions for samples 101-400 (green), 301-700 (red) and 701-1000 (blue). }
 
 \onefig{paramACFs}{Autocorrelation plots for the estimated parameters from the MCMC output. Horizontal dashed blue lines delimit the 95\% confidence interval for each parameter's set of lagged correlations.}

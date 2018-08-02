@@ -143,7 +143,7 @@ do.call("assign", args=list(x="quants5", value=c(0.05,0.25,0.50,0.75,0.95), envi
 ##                                                                    #
 ## 16-Apr-06  Modified importCol2 to take Awatea output (ACH)         #
 ##            Added 0.5 to Year when plotting indices                 #
-## 05-Sep-07  Minor modifications to plot age instead of length by    #                                    PJS                                       #
+## 05-Sep-07  Minor modifications to plot age instead of length by PJS#
 ## 12-Aug-10  Commenting out mainMenu() to run from a script. AME.    #
 ## **-Aug-10  Many further changes specific to POP assessment. AME    #
 ## **-Sep-10   "                                                      #
@@ -187,7 +187,7 @@ do.call("assign", args=list(x="quants5", value=c(0.05,0.25,0.50,0.75,0.95), envi
 ## BUG FIX: Original importCol appears not to recognize multiple fishery series.
 
 
-## plt.mpdGraphs------------------------2018-07-10
+## plt.mpdGraphs------------------------2018-07-30
 ## Plot the MPD graphs to encapsulated postscript files.
 ## -----------------------------------------------
 ## RH (2014-09-23)
@@ -266,23 +266,35 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	if (any(round(unlist(currentRes$extra$parameters[c("log_varRest","log_surveyvarR")]),5)!=100)) xmax=40 ## temporary fix
 	objRed$Sel = objRed$Sel[objRed$Sel$Age <= xmax,]
 	sel.f = objRed$Sel
-	## Note: switch to using function `linguaFranca' (in utilFuns.r)
-	sel.f$Series = linguaFranca(sel.f$Series,"f")
-	sel.f$Sex = linguaFranca(sel.f$Sex,"f")
+
+	## linguafranca takes too long on big vectors so shorten to unique
+	user.f  = unique(sel.f$Series)
+	## scape::plotSel looks for records labelled "Maturity" so cannot convert to french
+	not.mat = !is.element(user.f,"Maturity")
+	user.f  = linguaFranca(user.f[not.mat],"f")
+	not.maturity = !is.element(sel.f$Series,"Maturity")
+	sel.f$Series[not.maturity] = user.f[sel.f$Series[not.maturity]]
+
+	usex.f  = unique(sel.f$Sex)
+	usex.f  = linguaFranca(usex.f,"f")
+	sel.f$Sex = usex.f[sel.f$Sex]
+
 	objRed.f = objRed
 	objRed.f$Sel = sel.f
-
 	fout = fout.e = "selectivity"
 	for (l in lang) {
 		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
 		for (p in ptypes) {
 			if (p=="eps")      postscript(paste0(fout,".eps"), width=6.5, height=4.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=4.5)
-			par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+			## regular par settings are ignored in lattice::xyplot -- need to fiddle with lattice settings
+			#par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+			par.sel = list(layout.widths = list(left.padding=-0.5, right.padding=-0.5),
+				layout.heights=list(top.padding=0.5, main.key.padding=-0.75, bottom.padding=-2))
 			if (l=="f")
-				plotSel(objRed.f, main=paste0("s\u{00E9}lectivit\u{00E9} du ", linguaFranca(mainTitle,l)), xlim=c(0,xmax))
+				plotSel(objRed.f, main=paste0("s\u{00E9}lectivit\u{00E9} du ", linguaFranca(mainTitle,l)), xlim=c(0,xmax), par.settings=par.sel)
 			else
-				plotSel(objRed, main=paste0(mainTitle, " Selectivity"), xlim=c(0,xmax))
+				plotSel(objRed, main=paste0(mainTitle, " Selectivity"), xlim=c(0,xmax), par.settings=par.sel)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -548,7 +560,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=4, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=4)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plotRmcmcPOP(mcmcObj$R, yLim=ylim.recruitsMCMC, lang=l) # *AME*
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
@@ -560,7 +572,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=4*ngear, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=4*ngear)
-			par(mfrow=c(ngear,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(ngear,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			for (g in 1:ngear) {
 				gfile = mcmcObj$U[,grep(paste0("_",g),names(mcmcObj$U))]
 				names(gfile) = substring(names(gfile),1,4)
@@ -576,11 +588,16 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plotDensPOPparsPrior(mcmcObj$P, lty.outer=2, between=list(x=0.3, y=0.2), mpd=mpd[["mpd.P"]], lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
+
+	## regular par settings are ignored in lattice|trellis plots -- need to fiddle with lattice settings
+	#par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+	par.BR = list(layout.widths = list(left.padding=1, right.padding=0, ylab.axis.padding=2, ylab=0.5),
+		layout.heights=list(top.padding=0, main.key.padding=-0.75, bottom.padding=0, xlab.axis.padding=0, xlab=0.5))
 
 	fout = fout.e = "pdfBiomass%d"
 	for (l in lang) {
@@ -588,8 +605,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-			plotDensPOP(mcmcObj$B/1000, xlab=paste0(linguaFranca("Female spawning biomass",l),", Bt (1000 t)"), between=list(x=0.2, y=0.2), ylab=linguaFranca("Density",l), lwd.density=2, same.limits=TRUE, layout=c(4,5), lty.outer=2, mpd=mpd[["mpd.B"]]/1000, lang=l) 
+			#par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			plotDensPOP(mcmcObj$B/1000, xlab=paste0(linguaFranca("Female spawning biomass",l),", Bt (1000 t)"), between=list(x=0.2, y=0.2), ylab=linguaFranca("Density",l), lwd.density=2, same.limits=TRUE, layout=c(4,5), lty.outer=2, mpd=mpd[["mpd.B"]]/1000, lang=l, par.settings=par.BR) 
 			#panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
@@ -601,8 +618,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-			plotDensPOP(mcmcObj$R/1000, xlab="Recruitment, Rt (1000s)", between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, same.limits=TRUE, layout=c(4,5), lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]]/1000, lang=l)
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			plotDensPOP(mcmcObj$R/1000, xlab="Recruitment, Rt (1000s)", between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, same.limits=TRUE, layout=c(4,5), lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]]/1000, lang=l, par.settings=par.BR)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -613,8 +630,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-			plotDensPOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, xlab="Female spawning biomass, Bt (1000 t)", between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, same.limits=TRUE, lty.outer=2, mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000, lang=l)
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			plotDensPOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, xlab="Female spawning biomass, Bt (1000 t)", between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, same.limits=TRUE, lty.outer=2, mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000, lang=l, par.settings=par.BR)
 			#panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
 			#, layout=c(0,length(getYrIdx(names(mcmcObj$B)))) )
 			if (p %in% c("eps","png")) dev.off()
@@ -627,8 +644,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-			plotDensPOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, xlab="Recruitment, Rt (1000s)", between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, same.limits=TRUE, lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000, lang=l) #, layout=c(4,5))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			plotDensPOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, xlab="Recruitment, Rt (1000s)", between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, same.limits=TRUE, lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000, lang=l, par.settings=par.BR) #, layout=c(4,5))
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -639,7 +656,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plotTracePOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), xlab="Sample", ylab="Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000, lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
@@ -651,7 +668,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plotTracePOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), xlab="Sample", ylab="Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000, lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
@@ -663,7 +680,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			idx <- apply(mcmcObj$P, 2, allEqual)
 			plotTracePOP(mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), xlab="Sample", ylab="Parameter estimate", mpd=mpd[["mpd.P"]][!idx], lang=l)
 			if (p %in% c("eps","png")) dev.off()
@@ -676,9 +693,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
-			#plotChains(mcmc=mcmcObj$P, axes=TRUE, pdisc=0, between=list(x=0, y=0), col.trace=c("green","red","blue"), xlab="Sample", ylab="Cumulative Frequency", cex.lab=1.5, yaxt="n")
-			plotChains(mcmc=mcmcObj$P, axes=TRUE, pdisc=0, between=list(x=0, y=0), col.trace=c("red","green3","blue"), xlab="Parameter Value", ylab="Cumulative Frequency", cex.axis=1.3, cex.lab=1.4, yaxt="n", lang=l)
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))  ## mar and oma ignored, fixed in call to `mochaLatte'
+			plotChains(mcmc=mcmcObj$P, axes=TRUE, pdisc=0, between=list(x=0, y=0), col.trace=c("red","blue","black"), xlab="Parameter Value", ylab="Cumulative Frequency", cex.axis=1.2, cex.lab=1.4, yaxt="n", lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -744,7 +760,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plt.quantBio(mcmcObj$B, projObj$B, xyType="quantBox", policy=plotPolicies, save=FALSE, lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
@@ -756,7 +772,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plt.quantBio(mcmcObj$R, projObj$R, xyType="quantBox", policy=plotPolicies, save=FALSE, yaxis.lab="Recruitment (1000s)", lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
@@ -768,7 +784,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=5)
-			par(mfrow=c(1,1), mar=c(3,3,0.5,0.5), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			plt.quantBioBB0(mcmcObj$R, projObj$R, xyType="quantBox", policy=onePolicy, save=FALSE, xaxis.by=10, yaxis.lab="Recruitment (1000s)", lang=l) ## *AME* (onePolicy)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
@@ -780,7 +796,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=5)
-			par(mfrow=c(1,1), mar=c(3,3.75,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.5,0))
+			par(mfrow=c(1,1), mar=c(3,3.75,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.5,0))
 			plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=quants3[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=2010, lang=l) ## RSR in 5RF
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
@@ -800,7 +816,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 				pname = paste0(fout,i)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=7, height=7, horizontal=FALSE,  paper="special")
 				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=7, height=7)
-				par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+				par(mar=c(2,2,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 				pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
@@ -820,7 +836,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 				pname = fout
 				if (p=="eps") postscript(paste0(pname,".eps"), width=10, height=10, horizontal=FALSE,  paper="special")
 				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=10, height=10)
-				par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+				par(mar=c(2,2,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 				pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor.small, cex.axis=1.25)
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
@@ -835,7 +851,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=7, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=7, height=7)
-			par(mar=c(2,2,0.5,0.5), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+			par(mar=c(2,2,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 			pairs(trevObj, col="grey25", pch=20, cex=.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop

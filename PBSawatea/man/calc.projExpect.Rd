@@ -35,7 +35,7 @@ calc.refProbsHist( projObj=currentProj$B,
   \code{...................}{Compare reference years to projection years.} \cr
   \code{calc.projProbs2....}{Calculate the probability of being greater than \code{refYrs}.} \cr
   \code{...................}{Compare reference years to projection years.} \cr
-  \code{calc.refProbs......}{Calculate the reference probabilities (based on \code{calc.projProbs2}).}
+  \code{calc.refProbs......}{Calculate the reference probabilities (based on \code{calc.projProbs2}).}\cr
   \code{calc.refProbsHist..}{Calculate the historical reference probabilities.}
 }
 \value{
@@ -43,6 +43,11 @@ calc.refProbsHist( projObj=currentProj$B,
 }
 \author{
   Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
+  Last modified \code{Rd: 2018-07-26}
 }
 \seealso{
   \code{\link[PBSawatea]{calc.refVal}}

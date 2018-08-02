@@ -1,6 +1,6 @@
 Package:     PBSawatea
-Version:     1.4.0
-Date:        2018-07-26
+Version:     1.4.1
+Date:        2018-08-02
 Title:       Tools for Running Awatea and Visualizing the Results
 Authors@R: c(
    person("Rowan", "Haigh", role = c("aut", "cre"), email = "rowan.haigh@dfo-mpo.gc.ca"),
