@@ -1,17 +1,34 @@
-%===============================================================================
-% run-master.Snw revised for Redstripe Rockfish (2017-12-01, 2018-03-21)
-% run-master.Snw revised for Pacific Ocean Perch 5ABC (2016-11-30, 2017-06-06)
-% run-master.Snw revised for Rock Sole and Silvergray Rockfish (2013-09-23)
-% ymrrun5-0.Snw. 5/4/11.
-% ymrrun2-5.Snw - from Rowan's run2 output. Fifth reweighting.
-%   Also adding in automatic table of parameter values. 28th March 2011
-% ymrrun1dos.Snw - automatically plot MPD output from Awatea, using scape.
-%   Awatea results.dat file must be in directory above, this one used just for figures. 23rd Feburary 2011.
-% POP2001admb6.Snw - changing t to be true years, not 1,2,3....
-%  18th August 2010.
-% POP2001admb5.Snw - having a parameter for model start year and  start of age-data. 20th July 2010
-% POP2001admb4.Snw - making sure output is as automated as much as possible.
-%===============================================================================
+%%===============================================================================
+%% History of use:
+%% ---------------
+%% Widow Rockfish (2019)
+%% Redstripe Rockfish North & South (2018)
+%%   -- Added capability of creating figures in english and french.
+%% Pacific Ocean Perch 5ABC (2017)
+%%   -- saved current objects as .rda to help build the final appendix F;
+%%   -- fixed serious flaw with cvpro=0.
+%% Redbanded Rockfish (2014)
+%% Yellowtail Rockfish (2014)
+%%   -- modified to deal with more than one fishing gear|fleet.
+%% Rock Sole (2013)
+%%   -- modified to deal with one-sex model.
+%% Silvergray Rockfish (2013)
+%% Pacific Ocean Perch 3CD & 5DE (2012)
+%% Yellowmouth Rockfish (2011)
+%%   -- Added in generation-time projections for COSEWIC RPA.
+%% Pacific Ocean Perch 5ABC (2010)
+%%   -- First assessment Offshore Rockfish assessment using Awatea|Coleraine
+%% =================
+%% ymrrun5-0.Snw. 5/4/11.
+%% ymrrun2-5.Snw - from Rowan's run2 output. Fifth reweighting.
+%%   Also adding in automatic table of parameter values. 28th March 2011
+%% ymrrun1dos.Snw - automatically plot MPD output from Awatea, using scape.
+%%   Awatea results.dat file must be in directory above, this one used just for figures. 23rd Feburary 2011.
+%% POP2001admb6.Snw - changing t to be true years, not 1,2,3....
+%%  18th August 2010.
+%% POP2001admb5.Snw - having a parameter for model start year and  start of age-data. 20th July 2010
+%% POP2001admb4.Snw - making sure output is as automated as much as possible.
+%%===============================================================================
 \documentclass[11pt]{book}   
 % \documentclass[12pt]{article}
 
@@ -26,18 +43,10 @@
 %\usepackage{epsfig}     %% called in resDocSty
 % \usepackage{placeins}
 
-%\def\AppLet{F}          %% Appendix letter
 \def\startP{1}           %% page start (default=1)
 \def\startF{0}           %% figure start counter (default=0)
 \def\startT{0}           %% table start counter (default=0)
 \def\bfTh{{\bf \Theta}}  %% bold Theta
-
-% Enable or disable two following lines based on whether the document is an appendix or not.
-%\renewcommand{\theequation}{\AppLet.\arabic{equation}}
-%\renewcommand{\thefigure}{\AppLet.\arabic{figure}}
-
-% \renewcommand{\rmdefault}{phv}   % Arial
-% \renewcommand{\sfdefault}{phv}   % Arial
 
 % \newcommand{\eb}{\begin{eqnarray}}
 % \newcommand{\ee}{\end{eqnarray}}
@@ -54,9 +63,9 @@
 
 \newcommand{\ptype}{@ptype} %% eps or png files supported
 
-% Last line of http://www.latex-community.org/forum/viewtopic.php?f=45&t=4336, a German guy says: 
-%    You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
-%    Apparently shouldn't have just one argument.
+%% Last line of http://www.latex-community.org/forum/viewtopic.php?f=45&t=4336, a German guy says: 
+%%   You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
+%%   Apparently shouldn't have just one argument.
 
 \newcommand\onefig[2]{    % filename is #1, text is #2
   \begin{figure}[h!]
@@ -137,7 +146,7 @@
 \setcounter{page}{\startP}
 \setcounter{figure}{\startF}
 \setcounter{table}{\startT}
-\setcounter{secnumdepth}{3}    % to number subsubheadings-ish
+\setcounter{secnumdepth}{3}    %% to number subsubheadings-ish
 
 \setcounter{chapter}{5}    % for stand-alone chapters (5=E, 6=F)
 \renewcommand{\thechapter}{\Alph{chapter}} % ditto
@@ -186,7 +195,7 @@ fig.dir        = "@fig.dir"
 running.awatea =  @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
 eval(parse(text=paste("lang=",deparse(@lang))))
 eval(parse(text=paste("sexlab=",deparse(@sexlab))))
-sexlab.f = gsub("Males",eval(parse(text=deparse("m\u{00E2}les"))),gsub("Females","femelles",sexlab))  ## gsub very tricky when using unicode accents
+sexlab.f = gsub("Males",eval(parse(text=deparse("m\u{00E2}les"))),gsub("Females","femelles",sexlab))  ## gsub tricky when using unicode accents
 @ 
 %% In cases where the initial re-weighting was not performed and an MPD was generated as part of an MCMC.
 <<vicars_and_tarts, echo=FALSE>>=
@@ -223,9 +232,9 @@ if(running.awatea) {
 %%##############################################################################
 \chapter*{Appendix~\thechapter. MPD Model Results}
 
-\newcommand{\LH}{DRAFT -- Non-citable working paper}  % Set to {} for final ResDoc
+\newcommand{\LH}{DRAFT -- Non-citable working paper}  %% Set to {} for final ResDoc
 %\newcommand{\RH}{\Sexpr{paste("From ", model.name, ".txt", sep="")}}
-\newcommand{\RH}{CSAP WP 2015GRF08}
+\newcommand{\RH}{CSAP WP 2014GRF00}
 \newcommand{\LF}{\Sexpr{model.name}}
 %\newcommand{\LF}{\Sexpr{paste0("@sppname"," (",area.name,")")}}
 \newcommand{\RF}{Appendix~\thechapter ~-- MPD Model Results}
@@ -319,57 +328,57 @@ rpType <- "quantBox"
 if ("eps" %in% ptype)
 	lattice::trellis.device(device="postscript", color=TRUE)   # for colour .eps
 
-# Assign the "*.res" file name from Awatea for analysis.
-# This file must be loaded via the menu.
-# Alternately, assign a res object already imported to "currentRes".
+## Assign the "*.res" file name from Awatea for analysis.
+## This file must be loaded via the menu.
+## Alternately, assign a res object already imported to "currentRes".
 
-# This now goes up a directory and just gets results.dat
-# resFileList <- load.allResFiles()
-# So don't need to reload when have menus? Commenting out those. AME.
-# AME adding so we have one as currentRes:
-# currentRes = resFileList[[1]]
-# *** CHANGE this to load in model.name
-# currentRes <- importCol2("../results.dat", Dev=T, CPUE=T, Survey=T, CLc=T, CLs=T, CAs=T, CAc=T)
+## This now goes up a directory and just gets results.dat
+## resFileList <- load.allResFiles()
+## So don't need to reload when have menus? Commenting out those. AME.
+## AME adding so we have one as currentRes:
+## currentRes = resFileList[[1]]
+## *** CHANGE this to load in model.name
+## currentRes <- importCol2("../results.dat", Dev=T, CPUE=T, Survey=T, CLc=T, CLs=T, CAs=T, CAc=T)
 
 setwd(fig.dir) 
 
-# Had been using importCol2, but Rowan updates importRes in the
-#  package so switch to that. CSDiff on the functions gives only
-#  minor modifications, and summary of outputs is the same.
+## Had been using importCol2, but Rowan updates importRes in the
+##  package so switch to that. CSDiff on the functions gives only
+##  minor modifications, and summary of outputs is the same.
 currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
 	Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
 
-# WHEN TIME, change this in importRes function, see:     
-#  model$B$R <- c(rec[-1], NA)     and check emails from Arni, seems
-#  to be same problem as for MCMC.
-#  Then check where recruits are used (stock recruit plot, and recruitment plots and deviations). Fixing here for now, late in writing
-#  up POP 3CD and 5DE, but am changing SR plot also.
-#  First value is number of 1 year-olds in 1940 (first year of run, 
-#  hardwired for now), last takes off the NA that got added in 
-#  importRes. So be best to correct importRes. Or call recruits
-#  age-0, but that will require more work and verifying.
-#  Think it may have originally been set up to be recruits in year
-#  t are the number of age-1's in year t+1. Maybe.
-#===RH=== fixed in importRes.r so no longer need this adjustment
-#currentRes$B$R = c( sum(currentRes$N[currentRes$N$Year == "1940" & currentRes$N$Age == "1", ]$N),  currentRes$B$R[-length(currentRes$B$R)] )  
+## WHEN TIME, change this in importRes function, see:     
+##  model$B$R <- c(rec[-1], NA)     and check emails from Arni, seems
+##  to be same problem as for MCMC.
+##  Then check where recruits are used (stock recruit plot, and recruitment plots and deviations). Fixing here for now, late in writing
+##  up POP 3CD and 5DE, but am changing SR plot also.
+##  First value is number of 1 year-olds in 1940 (first year of run, 
+##  hardwired for now), last takes off the NA that got added in 
+##  importRes. So be best to correct importRes. Or call recruits
+##  age-0, but that will require more work and verifying.
+##  Think it may have originally been set up to be recruits in year
+##  t are the number of age-1's in year t+1. Maybe.
+##===RH=== fixed in importRes.r so no longer need this adjustment
+##currentRes$B$R = c( sum(currentRes$N[currentRes$N$Year == "1940" & currentRes$N$Age == "1", ]$N),  currentRes$B$R[-length(currentRes$B$R)] )  
 
 currentPar = importPar(paste(run.dir,"/", model.name, ".par", sep=""))
-# Assign a generic title for use in some plots.
+## Assign a generic title for use in some plots.
 mainTitle <- "@sppname"
 
-# Get the number of sexes (1 or 2)
+## Get the number of sexes (1 or 2)
 nsex = length(grep("^M1",names(currentPar)))
 
-# Minimum data year for tuning index.
-# minCpueYr <- 1940
-#ACH: I'm not sure exactly what this is for but I set it to the start year
+## Minimum data year for tuning index.
+## minCpueYr <- 1940
+## ACH: I'm not sure exactly what this is for but I set it to the start year
 
-# Get the commercial and survey index series
+## Get the commercial and survey index series
 Cser=unique(currentRes$CPUE$Series);   
 NCser=length(Cser)
-# There has to be a dummy CPUE series in the input, but the 
-#  likelihood switch says whether it is being fitted. Seems
-#  that the calculated likelihood is 0 if not fitted:
+## There has to be a dummy CPUE series in the input, but the 
+##  likelihood switch says whether it is being fitted. Seems
+##  that the calculated likelihood is 0 if not fitted:
 if(all(currentRes$extra$likelihoods$CPUE==0)) { NCser = 0 }
 #if(NCser > 1) stop("priorInput construction assumes one CPUE series so needs updating in run-masterMCMC.Snw, also recDev acf plot")
 
@@ -400,17 +409,16 @@ Ncpue = @Ncpue
 
 firstYearOfAgeData = min( c(currentRes$CAc[,"Year"], currentRes$CAs[,"Year"]))      # For recDevAcf.eps
 
-# This was for saving to an .RData file to load into 
-#  ../../../POPdeterminR/POPdeterminR.r   to run deterministic model.
-# First give variable names that match my write up, then save them 
-#  all.
-# First set are to be used as input, second set as confirmation.
-# For YMR, for now commenting out ones from MCMC.
+## This was for saving to an .RData file to load into 
+##  ../../../POPdeterminR/POPdeterminR.r   to run deterministic model.
+## First give variable names that match my write up, then save them all.
+## First set are to be used as input, second set as confirmation.
+## For YMR, for now commenting out ones from MCMC.
 
-#T = diff(range(currentRes$B[,"Year"]))+1        # doesn't seem to be needed and screws up code when using `T` for TRUE
-#Ct = currentRes$B$Y[-length(currentRes$B$Y)]    # Takes off 2011 value - automated in MCMC I think
+#T = diff(range(currentRes$B[,"Year"]))+1        ## doesn't seem to be needed and screws up code when using `T` for TRUE
+#Ct = currentRes$B$Y[-length(currentRes$B$Y)]    ## Takes off 2011 value - automated in MCMC I think
 years = currentRes$B[,"Year"]
-Ct = currentRes$B[,-1][,grep("Y",names(currentRes$B[,-1])),drop=FALSE] # needed in case Ngear > 1
+Ct = currentRes$B[,-1][,grep("Y",names(currentRes$B[,-1])),drop=FALSE] ## needed in case Ngear > 1
 Ct = Ct[-nrow(Ct),,drop=FALSE]
 row.names(Ct) = years[-length(years)]
 CATCH = apply(Ct,1,sum)
@@ -427,62 +435,60 @@ mat = currentRes$Sel[is.element(currentRes$Sel$"Series","Maturity") & is.element
 # M2 = currentMCMC$P[1,"M_2"]           # MPD is first line of MCMC
 #Rt = currentRes$B$R[-length(currentRes$B$R)]   # Remove final NA for 2011, # Not needed now, as fixed early on.
 
-Rt.mpd = currentRes$B$R # for Kendra
+Rt.mpd = currentRes$B$R ## for Kendra (ROL 2013)
 
-# For confirmation:
-# R0.mpd = currentMCMC$P[1,"R_0"] #Matches numbers from Ro_So_VB.pst,
-                                  # but wasn't going to use that 
-                                  #  before?
+## For confirmation:
+# R0.mpd = currentMCMC$P[1,"R_0"] ## Matches numbers from Ro_So_VB.pst, but wasn't going to use that before?
 # h.mpd  = currentMCMC$P[1,"h"]
 Nats.mpd = currentRes$N
 if(currentRes$extra$priors$Rinit_prior[1] > 0 & currentRes$extra$priors$Rinit_prior[7] != 1) stop("Not starting from unfished equilibrium, so need to fix B0 values")
 
-# Virgin_Spawning_Biomass  Change if get above error message
+## Virgin_Spawning_Biomass  Change if get above error message
 Bt.mpd = currentRes$B$SB
-B0.mpd = Bt.mpd[1]                # = currentRes$extra$biomass$Virgin_Spawning_Biomass
-By.mpd = Bt.mpd[length(Bt.mpd)]   # final year spawning biomass
-ByB0.mpd = By.mpd/B0.mpd          # depletion spawning biomass
+B0.mpd = Bt.mpd[1]                           ## = currentRes$extra$biomass$Virgin_Spawning_Biomass
+By.mpd = Bt.mpd[length(Bt.mpd)]              ## final year spawning biomass
+ByB0.mpd = By.mpd/B0.mpd                     ## depletion spawning biomass
 
-# Virgin_Vulnerable_Biomass (one for each gear type, retain matrix sructure)
+## Virgin_Vulnerable_Biomass (one for each gear type, retain matrix sructure)
 Ngears = currentRes$extra$general$Nmethods
 Vt.mpd = currentRes$B[,grep("VB",names(currentRes$B)),drop=FALSE] # need to use `drop' argument for Ngears=1
-V0.mpd = Vt.mpd[1,,drop=FALSE]             # = currentRes$extra$biomass$Virgin_Vulnerable_Biomass
-Vy.mpd = Vt.mpd[nrow(Vt.mpd),,drop=FALSE]  # final year vulnerable biomass
-VyV0.mpd = Vy.mpd/V0.mpd                   # depletion vulnerable biomass
+V0.mpd = Vt.mpd[1,,drop=FALSE]               ## = currentRes$extra$biomass$Virgin_Vulnerable_Biomass
+Vy.mpd = Vt.mpd[nrow(Vt.mpd),,drop=FALSE]    ## final year vulnerable biomass
+VyV0.mpd = Vy.mpd/V0.mpd                     ## depletion vulnerable biomass
 VtV0.mpd = sapply(1:Ngears,function(g,x,y){x[,g]/y[,g]},x=Vt.mpd,y=V0.mpd) # Vt relative to V0
 
-# Exploitation rate (retain matrix structure in case there is more than one gear)
-#ut.mpd   = currentRes$B$U[-length(currentRes$B$U)]  # remove final NA (RH: only works for one gear)
+## Exploitation rate (retain matrix structure in case there is more than one gear)
+#ut.mpd   = currentRes$B$U[-length(currentRes$B$U)]  ## remove final NA (RH: only works for one gear)
 ut.mpd = currentRes$B[,grep("U",names(currentRes$B)),drop=FALSE] 
-ut.mpd = ut.mpd[-nrow(ut.mpd),,drop=FALSE] # need to use `drop' argument for Ngears=1
+ut.mpd = ut.mpd[-nrow(ut.mpd),,drop=FALSE]   ## need to use `drop' argument for Ngears=1
 
-logRecDev.mpd = currentRes$Dev$Annual      # epsilon_t
-    # = currentRes$extra$parameters$log_RecDev
-    #   mean is 0.  Haven't had to tweak when tweaking R index
-logInitAgeDev.mpd = currentRes$Dev$Initial # deviations for initial age structure, ages 2+ mean is 0
+logRecDev.mpd = currentRes$Dev$Annual        ## epsilon_t
+   ## = currentRes$extra$parameters$log_RecDev
+   ##   mean is 0.  Haven't had to tweak when tweaking R index
+logInitAgeDev.mpd = currentRes$Dev$Initial   ## deviations for initial age structure, ages 2+ mean is 0
 
-# From Rowan's extra function, to give the mpd's:
+## From Rowan's extra function, to give the mpd's:
 R0.mpd = currentRes$extra$parameters$R0
 M1.mpd = currentRes$extra$parameters$M1[1]
 M2.mpd = currentRes$extra$parameters$M1[2]
 h.mpd = currentRes$extra$parameters$h
-qvec.mpd = exp(currentRes$extra$parameters$log_qsurvey) # surveys
+qvec.mpd = exp(currentRes$extra$parameters$log_qsurvey) ## surveys
 
-# CPUE:    # exists but not calculated if no CPUE series
-qCPUE.mpd = exp(currentRes$extra$parameters$log_qCPUE)  # q for CPUE
+## CPUE: exists but not calculated if no CPUE series
+qCPUE.mpd = exp(currentRes$extra$parameters$log_qCPUE)  ## q for CPUE
 betaCPUE.mpd = exp(currentRes$extra$parameters$log_BetaCPUE)
 
-# survey selectivities (on for each survey):
+## survey selectivities (on for each survey):
 muvec.mpd = currentRes$extra$parameters$surveySfull
 deltavec.mpd = currentRes$extra$parameters$survey_SfullDelta
 logvvec.mpd = currentRes$extra$parameters$log_surveyvarL
 
-# commercial selectivities (one for each gear):
+## commercial selectivities (one for each gear):
 muC.mpd = currentRes$extra$parameters$Sfullest
 deltaC.mpd = currentRes$extra$parameters$SfullDelta
 logvC.mpd = currentRes$extra$parameters$log_varLest
 
-# From Rowan's extra function, to give the priors, not all are _prior
+## From Rowan's extra function, to give the priors, not all are _prior
 R0.prior = currentRes$extra$priors$R0_prior
 M.prior  = currentRes$extra$priors$M1_prior
 if (nsex==1) {
@@ -495,142 +501,140 @@ if (nsex==1) {
 h.prior = currentRes$extra$priors$h_prior
 logqvec.prior = currentRes$extra$priors$log_qsurvey_prior # surveys, matrix
 
-# Extras now being estimated for POP 3CD, since starting model not
-#  at equilibrium. Using Awatea input names for now, change once
-#  decide mathematical symbols for writing up and understanding.
-#  Comments for now are from the Awatea .txt input file.
+## Extras now being estimated for POP 3CD, since starting model not
+##  at equilibrium. Using Awatea input names for now, change once
+##  decide mathematical symbols for writing up and understanding.
+##  Comments for now are from the Awatea .txt input file.
 
-# Not in currentRes$extra$priors, but is in ...$residuals:
-# deviates (log?) for initial age structure: uniform or normal only
+## Not in currentRes$extra$priors, but is in ...$residuals:
+## deviates (log?) for initial age structure: uniform or normal only
 log.init.dev.prior = currentRes$extra$residuals$p_log_InitialDev
 
-# Also not in currentRes$extra$priors
-#log rec dev prior (uniform or normal only)	
+## Also not in currentRes$extra$priors
+##log rec dev prior (uniform or normal only)
 log.rec.dev.prior = currentRes$extra$residuals$p_log_RecDev
 sigmaR = log.rec.dev.prior[6]
 if(sigmaR != log.init.dev.prior[6]) 
 	{stop("Standard deviations for recruitment deviations and initial age structure deviations need to be the same")}
 
-# Exponentiated and bias corrected deviations (need sigmaR)
+## Exponentiated and bias corrected deviations (need sigmaR)
 recDev.mpd = exp(logRecDev.mpd - (sigmaR^2)/2)
 initAgeDev.mpd = exp(logInitAgeDev.mpd - (sigmaR^2)/2 )
-    # devitations for initial age structure, ages 2+
+   ## devitations for initial age structure, ages 2+
 
-#Initial R ( = # 1-yr olds in yr 1/R0; unfished = 1)
+## Initial R ( = # 1-yr olds in yr 1/R0; unfished = 1)
 Rinit.prior = currentRes$extra$priors$Rinit_prior
-Rinit.mpd = currentPar$Rinit                # From par file
+Rinit.mpd = currentPar$Rinit                           ## From par file
 
-#Initial u (exploitation rate for initial age structure; 0=unfished)
-uinit.prior = currentRes$extra$priors$uinit_prior  # One row each sex
+## Initial u (exploitation rate for initial age structure; 0=unfished)
+uinit.prior = currentRes$extra$priors$uinit_prior      ## One row each sex
 if (nsex==1) uinit.prior = matrix(uinit.prior,nrow=1)
 uinit1.mpd = currentPar$uinit.1
 uinit2.mpd = currentPar$uinit.2  # NULL if Unisex
 
-#Plus scale
-plusScale.prior = currentRes$extra$priors$p_plusscale  # One row each sex. rho_s in write up
+## Plus scale
+plusScale.prior = currentRes$extra$priors$p_plusscale  ## One row each sex. rho_s in write up
 if (nsex==1) plusScale.prior = matrix(plusScale.prior,nrow=1)
 rho1.mpd = currentPar$plusscale.1
 rho2.mpd = currentPar$plusscale.2  # NULL if Unisex
 
-# CPUE:
-logqCPUE.prior    = currentRes$extra$priors$log_qCPUE       # cpue, matrix
+## CPUE:
+logqCPUE.prior    = currentRes$extra$priors$log_qCPUE       ## cpue, matrix
 logbetaCPUE.prior = currentRes$extra$priors$log_BetaCPUE
-logqCPUEerr.prior = currentRes$extra$priors$qCPUEerr_prior  # error on the q ????
+logqCPUEerr.prior = currentRes$extra$priors$qCPUEerr_prior  ## error on the q ????
 
-# survey selectivities (all matrices):
+## survey selectivities (all matrices):
 muvec.prior = currentRes$extra$priors$surveySfull_prior
 deltavec.prior = currentRes$extra$priors$p_surveySfulldelta 
 logvvec.prior = currentRes$extra$priors$log_surveyvarL_prior
 
-# commercial selectivities (one for each gear type, not always position 6, RH):
-muC.prior = currentRes$extra$priors$p_Sfullest    # comm mu
+## commercial selectivities (one for each gear type, not always position 6, RH):
+muC.prior = currentRes$extra$priors$p_Sfullest              ## comm mu
 deltaC.prior = currentRes$extra$priors$p_Sfulldelta
 logvC.prior = currentRes$extra$priors$log_varLest_prior
 
 ## Function to use for priors in table. Must read in a vector of 
 ##  length, and outputs it in the format for the table.
-ptab = function(xx) 
-  { print(paste(c(xx[1], " & (", xx[2], ",", xx[3], ") & ", xx[4], " & (", xx[5], ",", xx[6], ") & ", xx[7]), sep="", collapse="")) 
-  }
-
+ptab = function(xx) {
+	print(paste0(c(xx[1], " & (", xx[2], ",", xx[3], ") & ", xx[4], " & (", xx[5], ",", xx[6], ") & ", xx[7]), collapse="")) 
+}
 
 if(redo.Graphs){
   ## Calls function (defined in PBSscape.r) that creates most of the plots
   plt.mpdGraphs( obj=currentRes, save=TRUE, ssnames=c("@surveys"), ngear=Ngears, pngres=400, lang=lang) ## `lang' specified in call to `runSweave'
   ## some now more correctly use MCMC results
 
-  plt.idx( currentRes$Survey, main="Survey Indices", ssnames=c("@surveys"), pngres=400, lang=lang) # wasn't called 
-  plt.idx( currentRes$CPUE, main="CPUE Indices", ssnames=c("@cpues"), pngres=400, lang=lang) ## PBSawatea in .PBSmodEnv will have Cnames
+  plt.idx( currentRes$Survey, main="Survey Indices", ssnames=c("@surveys"), pngres=400, lang=lang)  ## wasn't called 
+  plt.idx( currentRes$CPUE, main="CPUE Indices", ssnames=c("@cpues"), pngres=400, lang=lang)        ## PBSawatea in .PBSmodEnv will have Cnames
 
-  #  in plt.mpdGraphs. Doing it here spits out SD of standardised 
-  #  residuals also. May be useful for iterative reweighting?
-  # close.allWin()
+  ##  in plt.mpdGraphs. Doing it here spits out SD of standardised 
+  ##  residuals also. May be useful for iterative reweighting?
+  ## close.allWin()
 
-  # For fits:
-  #> windows(); plotBubbles(yy, dnam=TRUE, size=0.08, hide0=TRUE)
-  #>
+  ## For fits:
+  ##> windows(); plotBubbles(yy, dnam=TRUE, size=0.08, hide0=TRUE)
 
-  # Also want to do catches and biomass predictions
-  # plot(years[-length(years)], Ct)
-  # > plot(years, Bt.mpd, ylim=c(0,200000))
-  # > plot(years, Bt.mpd, ylim=c(0,120000))
-  # > plot(years[-length(years)], Ct)
-  #browser();return()
+  ## Also want to do catches and biomass predictions
+  ## plot(years[-length(years)], Ct)
+  ## > plot(years, Bt.mpd, ylim=c(0,200000))
+  ## > plot(years, Bt.mpd, ylim=c(0,120000))
+  ## > plot(years[-length(years)], Ct)
+  ##browser();return()
 
 }## end redo.Graphs
 
-# not saving for YMR for now (don't have all these variables, though
-#  just MPDs so don't need MCMC output).  [These were from MCMC's]
-#save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
-#save.image(file="run23all.RData")
+## not saving for YMR for now (don't have all these variables, though
+## just MPDs so don't need MCMC output).  [These were from MCMC's]
+# save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
+# save.image(file="run23all.RData")
 
-# See popScape2.r for pairs plots, from:
-# Copy and run this for pairs plots        to
+## See popScape2.r for pairs plots, from:
+## Copy and run this for pairs plots        to
 # text(currentRes$B$SB, currentRes$B$U, 1:72)
 @ 
 
-% Keep this for now in case do use it
-% \begin{table}[tp]
-% \caption{\label{tab:parfix} Names and values of the fixed parameter values. First column is written-up model notation (as for POP Appendix), then corresponding Awatea input and export names, then the value. $^*$ indicates value is not automatically updated here from {\tt .res} file. Some fixed values are deferred to the next Table, to keep, for example, selectivities grouped together. [???...In Awatea, some parameters are always written as the log of that parameter, (though note that for $v_{gL}$, $g=1,2$, the input name does not explicitly mention that it is the logarithm, but it does for $g=4$)].}
-% \begin{tabular}{llll} 
-% \hline
-% Parameter & Awatea input name & Awatea export name & Value\\ 
-% \hline %\\[-.5ex]
-% %
-% $A$ & Max.~age in model & - & \Sexpr{A}\\
-%  - & Start year & - & \Sexpr{min(years)}\\
-%  - & Last year of catch & - & \Sexpr{max(years)-1}\\
-% $\log v_{R}$ & Log variance of rhs of & 100$^*$\\
-%   & selectivity curves & \\
-% HERE & & & \\
-% $\mu_1$ & Survey L full, row 1 & surveySfull\_1 & \\
-% $\mu_2$ & Survey L full, row 2 & surveySfull\_2 & \\
-% % $\mu_3$ & Survey L full, row 3 & surveySfull\_3 & \\
-% $\mu_4$ & S fullest & Sfullest\_1 & \\
-% $\log v_{1L}$ & Survey variance L, row 1 & log\_surveyvarL\_1 & \\
-% $\log v_{2L}$ & Survey variance L, row 2 & log\_surveyvarL\_2 & \\
-% % $\log v_{3L}$ & Survey variance L, row 3 & log\_surveyvarL\_3 & \\
-% $\log v_{4L}$ & Log variance of left side of selectivity & log\_varLest\_1 & \\
-%               & ~~curve by length (for both sexes) & & \\
-% $\Delta_1$ & Survey L full delta & surveySfulldeltaest\_1 & \\
-% $\Delta_2$ & Survey L full delta & surveySfulldeltaest\_2 & \\
-% % $\Delta_3$ & Survey L full delta & surveySfulldeltaest\_3 & \\
-% $\Delta_4$ & S fullest & Sfulldelta\_1 & \\
-% $\log q_1$ & Log q survey, row 1 & log\_qsurvey\_1 & \\
-% $\log q_2$ & Log q survey, row 2 & log\_qsurvey\_2 & \\
-% $\log q_3$ & Log q survey, row 3 & log\_qsurvey\_3 & \\
-% $M_1$ & M (natural mortality), row 1 & M1\_1 & \\
-% $M_2$ & M (natural mortality), row 2 & M1\_2 & \\
-% $R_0$ & R0 (recruitment in virgin condition) & R0 & \\
-% $h$ & h (steepness of spawner-recruit curve) & h & \\
-% \hline
-% \end{tabular}	
-% \end{table}
+%% Keep this for now in case do use it
+%% \begin{table}[tp]
+%% \caption{\label{tab:parfix} Names and values of the fixed parameter values. First column is written-up model notation (as for POP Appendix), then corresponding Awatea input and export names, then the value. $^*$ indicates value is not automatically updated here from {\tt .res} file. Some fixed values are deferred to the next Table, to keep, for example, selectivities grouped together. [???...In Awatea, some parameters are always written as the log of that parameter, (though note that for $v_{gL}$, $g=1,2$, the input name does not explicitly mention that it is the logarithm, but it does for $g=4$)].}
+%% \begin{tabular}{llll} 
+%% \hline
+%% Parameter & Awatea input name & Awatea export name & Value\\ 
+%% \hline %\\[-.5ex]
+%% %
+%% $A$ & Max.~age in model & - & \Sexpr{A}\\
+%%  - & Start year & - & \Sexpr{min(years)}\\
+%%  - & Last year of catch & - & \Sexpr{max(years)-1}\\
+%% $\log v_{R}$ & Log variance of rhs of & 100$^*$\\
+%%   & selectivity curves & \\
+%% HERE & & & \\
+%% $\mu_1$ & Survey L full, row 1 & surveySfull\_1 & \\
+%% $\mu_2$ & Survey L full, row 2 & surveySfull\_2 & \\
+%% % $\mu_3$ & Survey L full, row 3 & surveySfull\_3 & \\
+%% $\mu_4$ & S fullest & Sfullest\_1 & \\
+%% $\log v_{1L}$ & Survey variance L, row 1 & log\_surveyvarL\_1 & \\
+%% $\log v_{2L}$ & Survey variance L, row 2 & log\_surveyvarL\_2 & \\
+%% % $\log v_{3L}$ & Survey variance L, row 3 & log\_surveyvarL\_3 & \\
+%% $\log v_{4L}$ & Log variance of left side of selectivity & log\_varLest\_1 & \\
+%%               & ~~curve by length (for both sexes) & & \\
+%% $\Delta_1$ & Survey L full delta & surveySfulldeltaest\_1 & \\
+%% $\Delta_2$ & Survey L full delta & surveySfulldeltaest\_2 & \\
+%% % $\Delta_3$ & Survey L full delta & surveySfulldeltaest\_3 & \\
+%% $\Delta_4$ & S fullest & Sfulldelta\_1 & \\
+%% $\log q_1$ & Log q survey, row 1 & log\_qsurvey\_1 & \\
+%% $\log q_2$ & Log q survey, row 2 & log\_qsurvey\_2 & \\
+%% $\log q_3$ & Log q survey, row 3 & log\_qsurvey\_3 & \\
+%% $M_1$ & M (natural mortality), row 1 & M1\_1 & \\
+%% $M_2$ & M (natural mortality), row 2 & M1\_2 & \\
+%% $R_0$ & R0 (recruitment in virgin condition) & R0 & \\
+%% $h$ & h (steepness of spawner-recruit curve) & h & \\
+%% \hline
+%% \end{tabular}	
+%% \end{table}
 
 \clearpage
 \section{Tables -- MPD Results}
 
-%---Table 1-----------------------------
+%%---Table 1-----------------------------
 \begin{table}[h!]
 \caption{Estimated biomass, spawning ($B$) and vulnerable ($V$), in \Sexpr{years[length(years)]} and relative to virgin biomass ($B_0$, $V_0$) in \Sexpr{years[1]}.}
 \label{tab:biomass}
@@ -649,8 +653,8 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 
 \qquad % or \hspace{2em}
 
-%---Table 2-----------------------------
-% Remove for Appendix G write-up.
+%%---Table 2-----------------------------
+%% Remove for Appendix G write-up.
 \begin{table}[!h]
 \caption{Priors and MPD estimates for estimated parameters. Prior information -- distributions: 0~=~uniform, 1~=~normal, 2~=~lognormal, 5~=~beta}
 \label{tab:parest}
@@ -658,7 +662,7 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 % $^*$ indicates value is not automatically updated here from {\tt .res} file. [???...In Awatea, some parameters are always written as the log of that parameter, (though note that for $v_{gL}$, $g=1,2$, the input name does not explicitly mention that it is the logarithm, but it does for $g=4$)].}
 \begin{tabular}{cccccc} 
 \hline \\ [-1.5ex]
-% Parameter & Awatea input name & Awatea export name & Value\\ 
+%% Parameter & Awatea input name & Awatea export name & Value\\ 
 %\multicolumn{6}{l}{{\bf Parameter in write-up, Awatea input name, Awatea export name}} \\
 {\bf Phase} & {\bf Range} & {\bf Type} & {\bf (Mean,SD)} & {\bf Initial} & {\bf MPD} \\ [1ex]
 \hline \\ [-1.5ex]
@@ -695,21 +699,20 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 \Sexpr{ptab(Rinit.prior)} & \Sexpr{signif(Rinit.mpd, sigdig)} \\
 \\ [-1.5ex]
 
-% Had to import from .par file. Had thought would be able
-%  to get from the ratio of R0.mpd and the sum of age-1 fish and
-%  the first year, which is:
-% # currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,]
-% # currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,"N"]
-% [1] 656.821 656.821
-% # sum(currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,"N"])                  $
-% 1313.642       so ratio of this over R0.mpd is 0.795.
-% But above we have
-% # Rt = currentRes$B$R[-length(currentRes$B$R)]    - fixed
-%                                       # Remove final NA for 2011,
-%  but Rt[1] is 3514, > R0.mpd = 1652 and >> what I calc from N in 
-%   1976 above        
+%% Had to import from .par file. Had thought would be able
+%%  to get from the ratio of R0.mpd and the sum of age-1 fish and
+%%  the first year, which is:
+%%  currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,]
+%%  currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,"N"]
+%%  [1] 656.821 656.821
+%% sum(currentRes$N[currentRes$N$Year == 1976 & currentRes$N$Age == 1,"N"])
+%%  1313.642       so ratio of this over R0.mpd is 0.795.
+%% But above we have
+%%  Rt = currentRes$B$R[-length(currentRes$B$R)]    - fixed
+%% Remove final NA for 2011,
+%%  but Rt[1] is 3514, > R0.mpd = 1652 and >> what I calc from N in 1976 above
 
-% Had to remove lines specifying plusScale.prior as code would crash even when commented out. ?!?
+%% Had to remove lines specifying plusScale.prior as code would crash even when commented out. ?!?
 \hline
 \end{tabular}	
 \end{table}
@@ -818,9 +821,9 @@ like.Surveys.rnd = c(like.Surveys.rnd, NA, NA, NA, NA)
                   # To automatically put NA's into table.
 @ 
 
-%---Table 4-----------------------------
-% Move to the end when putting in Appendix G.
-% Get numbers from chunk above
+%%---Table 4-----------------------------
+%% Move to the end when putting in Appendix G.
+%% Get numbers from chunk above
 \begin{table}[!p]
 \centering
 \caption{Negative log-likelihoods and objective function from the MPD results for the two models. Parameters and likelihood symbols are defined in Appendix F. For indices ($\hat{I}_{tg}$) and proportions-at-age ($\hat{p}_{atgs}$), subscripts $g=1...\Sexpr{Nsurv}$ refer to the trawl surveys and subscript $g=\Sexpr{Nsurv+1}+$ refers to the commercial fishery.}
@@ -840,9 +843,9 @@ Survey 1 & $\log \mbox{L}_{3} \left( \bfTh | \left\{ \hat{I}_{t1} \right\} \righ
 @rmCA CAc 1    & $\log \mbox{L}_{2} \left( \bfTh | \left\{ \hat{p}_{at\Sexpr{Nsurv+1}s} \right\} \right)$ & \Sexpr{round(currentRes$extra$likelihoods$"C@A_Commercial"[1], dig=2)} \\[6pt]
 Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right) - \log \left( \pi( \bfTh ) \right)$ & \Sexpr{round(currentRes$extra$likelihoods$Prior_penalties, dig=2)} \\[6pt]  
 
-% Still not convinced  about that, as think there should be a likelihood for recruitment
-%  residuals, though we may have resolved that before (YMR or QCS POP)   % AHA _ it's because the recruitment residuals epsilon_t sum to 0
-% so the rest of L_1 likelihood function is incorporated into the prior part
+%% Still not convinced  about that, as think there should be a likelihood for recruitment
+%%  residuals, though we may have resolved that before (YMR or QCS POP)   % AHA _ it's because the recruitment residuals epsilon_t sum to 0
+%% so the rest of L_1 likelihood function is incorporated into the prior part
 \hline
 ~ & Objective function $f( \bfTh)$ & \Sexpr{currentPar$fval} \\
 % Add reweighting values & & \\
@@ -855,7 +858,7 @@ Prior    & $\log \mbox{L}_{1} \left( \bfTh | \left\{ \epsilon_t \right\} \right)
 
 \newpage
 
-% Making figures (code in plotFuns.r)
+%% Making figures (code in plotFuns.r)
 <<simple_figs, results=hide, echo=FALSE>>=
 
 if(redo.Graphs){
@@ -915,15 +918,15 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 @rmresdoc \onefig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}    % Not on same year axis.
 
-% Individual surveys:
+%% Individual surveys:
 %=======Next line will be expanded to accommodate multiple surveys=======
-% \onefig{survIndSer4-1}{Fit to fishery-independent survey 1 for run \Sexpr{model.name}.}
+%\onefig{survIndSer4-1}{Fit to fishery-independent survey 1 for run \Sexpr{model.name}.}
 
-% Andy tried replacing survey 1 with *at*surveys - seemed to work okay for survey index fits, but got warnings.
+%% Andy tried replacing survey 1 with *at*surveys - seemed to work okay for survey index fits, but got warnings.
 
 %@rmresdoc \onefig{survIndSer3}{Index series of \Sexpr{Nsurv} surveys and commercial CPUE (dashed line), all normalised to their respective means within the span of years covered by all surveys. The plot provides a crude diagnostic to see if indices are giving conflicting signals. \Sexpr{if(NCser==0) paste("(Note that CPUE isn't being used in the model fitting.)")}}
 
-% \onefig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
+%\onefig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
 
 %=======Next line will be expanded to accommodate multiple surveys=======
 \onefig{survRes@survey1}{Residuals of fits of model to \Sexpr{Snames[1]} survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
@@ -937,7 +940,7 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 @rmresdoc @rmCA \onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
 
-% PJS thinks these plots are useless
+%% PJS thinks these plots are useless
 % @rmCA \onefig{CAcFitFem}{Estimated proportions-at-age of females that are vulnerable to the fishery. Only years for which commercial data are used in the model are shown. Details as for Figure \ref{fig:CAcObsFem}.}
 
 \clearpage % otherwise too many unprocessed floats
@@ -971,7 +974,7 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 \clearpage 
 
-% Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
+%% Was going to fix this to stop figure going off the end, but too fiddly so keep it as is for now. Could add a size option to twofig.
 %=======Next line will be expanded to accommodate multiple surveys=======
 @rmSA \twofig{ageSurvFemaleSer1}{ageSurvMaleSer1}{Observed and predicted proportions-at-age for \Sexpr{Snames[1]} survey.}
 
@@ -992,7 +995,7 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 \clearpage 
 
-% number of years of survey age data * (number age classes -1) * 2
+%% number of years of survey age data * (number age classes -1) * 2
 
 @rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) with 95\% confidence intervals and model estimates (joined open squares) for the commercial and survey age data.}
 

@@ -10,24 +10,25 @@
 }
 \usage{
 findTarget(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, 
-    ratio=0.5, target=B0.MCMC, conf=0.95, plotit=FALSE, retVal="N")
+   ratio=0.5, target=B0.MCMC, conf=0.95, plotit=FALSE, retVal="N", op=">")
 }
 \arguments{
-  \item{Vmat}{matrix of projected biomass values \eqn{B_{Nt}}{B[N,t]}, \cr
+  \item{Vmat}{\code{matrix} -- projected biomass values \eqn{B_{Nt}}{B[N,t]}, \cr
     where \eqn{N} = number of MCMCs and \eqn{t} = projection year.}
-  \item{yrU}{user-specified projection years.}
-  \item{yrG}{number of years \eqn{G} for a moving target window (\emph{e.g.}, 
+  \item{yrU}{\code{numeric} -- user-specified projection years.}
+  \item{yrG}{\code{numeric} -- number of years \eqn{G} for a moving target window (\emph{e.g.}, 
      3 YMR generations = 90y); might not work for all possibilities.}
-  \item{ratio}{recovery target ratio \eqn{R}.}
-  \item{target}{recovery target values \eqn{T_N}{T[N]} \cr
+  \item{ratio}{\code{numeric} -- recovery target ratio \eqn{R}.}
+  \item{target}{\code{numeric} -- recovery target values \eqn{T_N}{T[N]} \cr
      = \code{B0.MCMC} for ratios of \eqn{B_0}{B0}; \cr
      = \code{Bmsy.MCMC} for ratios of \eqn{B_{MSY}}{Bmsy}; \cr
      = \code{Bt.MCMC} for moving window of \eqn{B_{N,t-G}}{B[N,t-G]}. }
-  \item{conf}{confidence level \eqn{C} required.}
-  \item{plotit}{logical: if \code{TRUE}, plot the probability \eqn{p_t}{p[t]} of exceeding target reference point.}
-  \item{retVal}{character name of object to return: \cr
+  \item{conf}{\code{numeric} -- confidence level \eqn{C} required.}
+  \item{plotit}{\code{logical} -- if \code{TRUE}, plot the probability \eqn{p_t}{p[t]} of exceeding target reference point.}
+  \item{retVal}{\code{character} -- name of object to return: \cr
     \code{retVal="N"} : creates global object \code{"Ttab"} (see below); \cr
     \code{retVal="p.hi"} : creates global object \code{"Ptab"} (see below). }
+  \item{op}{\code{character} -- binary operator for comparing values in atomic vectors.}
 }
 \details{
   As this function uses Bayesian output, there are \eqn{N} (\emph{e.g.}, 1000)
@@ -65,7 +66,10 @@ findTarget(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90,
   if it exists in the function.
 }
 \author{
-  Rowan Haigh, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2018-10-15}
 }
 \seealso{
   \code{\link{runSweaveMCMC}}

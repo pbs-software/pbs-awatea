@@ -5,6 +5,17 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.4.2 (2018-10-17) [Rcheck=T, Rbuild=F]
+  * Documentation
+    + Updated `README.md' file that appears for PBSawatea on GitHub. (RH 181017)
+  * PBSscape.r
+    + Added argument `op' to function `calc.refProbs', `calc.refProbsHist', and `findTarget'. (RH 181015)
+      - To allow for P(B>Brfpt) and P(u<urfpt) or vice versa, where op = >|<.
+      - Note that Forrest et al. use probability of being in bad place, where Haigh et al. use prob of being in a good place.
+      - Rob Tadey (GMU) prefers the latter (glass-half-full kinda guy).
+  * Sweave
+    + Changed calls to `calc.refProbs', `calc.refProbsHist', and `findTarget' with new argument `op'. (RH 181015)
+
 1.4.1 (2018-08-02) [Rcheck=F, Rbuild=F]
   * Sweave
     + Modified plot description for `plotChains' plot (RH 180802)

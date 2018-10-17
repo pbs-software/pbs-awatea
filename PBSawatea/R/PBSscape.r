@@ -932,6 +932,7 @@ panLegend <- function( x, y, legTxt, ... )
 ##-------------------------------------------------------------------#
 
 ## calc.projExpect----------------------2011-08-31
+## Only used in 'menu.r' (probably should be deprecated)
 ## Calculate the expectation of projection to reference.
 ## Compare refYears to projection years.
 ## --------------------------------------------AME
@@ -978,9 +979,10 @@ calc.projExpect <- function( obj, projObj, refYrs )
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projExpect
 
 
-#calc.projExpect2-----------------------2011-08-31
-# Calculate expectation (projection biomass / reference biomass).
-#----------------------------------------------AME
+## calc.projExpect2---------------------2011-08-31
+## Only used in 'menu.r' (probably should be deprecated)
+## Calculate expectation (projection biomass / reference biomass).
+## --------------------------------------------AME
 calc.projExpect2 <- function( obj, projObj, refList )
 {
   policyList <- names(projObj)
@@ -1035,10 +1037,11 @@ calc.projExpect2 <- function( obj, projObj, refList )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projExpect2
 
 
-#calc.projProbs-------------------------2011-08-31
-# Calculate the probability of being greater than refYears.
-# Compare refYears to projection years.
-#----------------------------------------------AME
+## calc.projProbs-----------------------2011-08-31
+## Only used in 'menu.r' (probably should be deprecated)
+## Calculate the probability of being greater than refYears.
+## Compare refYears to projection years.
+## --------------------------------------------AME
 calc.projProbs <- function( obj, projObj, refYrs )
 {
   policyList <- names(projObj)
@@ -1079,13 +1082,14 @@ calc.projProbs <- function( obj, projObj, refYrs )
   print( result )
   result
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projProbs
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projProbs
 
 
-#calc.projProbs2------------------------2011-08-31
-# Calculate the probability of being greater than refYears.
-# Compare refYears to projection years.
-#----------------------------------------------AME
+## calc.projProbs2----------------------2011-08-31
+## Only used in 'menu.r' (probably should be deprecated)
+## Calculate the probability of being greater than refYears.
+## Compare refYears to projection years.
+## --------------------------------------------AME
 calc.projProbs2 <- function( obj, projObj, refList )
 {
   policyList <- names(projObj)
@@ -1137,111 +1141,119 @@ calc.projProbs2 <- function( obj, projObj, refList )
   result$refs <- refList
   result
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projProbs2
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.projProbs2
 
 
-#calc.refProbs--------------------------2011-08-31
-# Calculate the reference probabilities (basing on calc.projProbs2)
-#----------------------------------------------AME
-calc.refProbs <- function( projObj=currentProj$B, refPlist=refPointsList )  
+## calc.refProbs------------------------2018-10-15
+## Calculate the reference probabilities
+## (based on calc.projProbs2)
+## --------------------------------------------AME
+calc.refProbs <- function( projObj=currentProj$B, 
+   refPlist=refPointsList, op=">")
 {
-  # refPlist will be a list, LRP, URP and Bmsy are defaults with values for each draw
-  policyList <- names(projObj)
-  nPolicies <- length(policyList)
+	## refPlist will be a list, LRP, USR and Bmsy are defaults with values for each draw
+	policyList <- names(projObj)
+	nPolicies <- length(policyList)
 
-  projYrs <- dimnames( projObj[[1]] )[[2]]
-  nProjYrs <- length(projYrs)
-  
-  nRefPoints=length(names(refPlist))  # refYears <- refList$refYrs
-    # nRefYrs <- nrow( refYears )
-    # funs <- refList$funVec
-  # browser(); return()
-  # Final results, each reference point stored as list element.
-  result <- as.list(1:nRefPoints)   # to get right number of list elements (1,2,3, but
-                                    #  they'll get overwritten)
-  names( result ) <- names(refPlist)
+	projYrs <- dimnames( projObj[[1]] )[[2]]
+	nProjYrs <- length(projYrs)
 
-  # Loop over the reference points.
-  for ( i in 1:nRefPoints )
-  {
-    # Create a results matrix for nPolicies (j), nProjYr (k).
-    val <- matrix( NA, nrow=nPolicies,ncol=nProjYrs )
-    dimnames( val ) <- list( policyList,projYrs )
+	nRefPoints=length(names(refPlist))
+		# refYears <- refList$refYrs
+		# nRefYrs <- nrow( refYears )
+		# funs <- refList$funVec
 
-    # Build reference years and coerce to character for indexing.
-    # period <- as.character( c( refYears[i,1]:refYears[i,2] ) )
-
-    # Calculate the reference value for the performance measure.
-    # refVal <- calc.refVal( obj,period,funs[[i]] )
-    refVal=refPlist[[i]]
-    
-    # Loop over the catch level policies.
-    for ( j in 1:nPolicies )
-    {
-      # These are the projection results for policy j.
-      proj <- projObj[[j]]
-
-      # Loop over the projection years.
-      for ( k in 1:ncol(proj) )
-      {
-         tmp <- proj[,k] > refVal
-         val[j,k] <- sum( tmp ) / length(tmp)
-      }
-    }
-    result[[i]] <- val
-  }
-  cat( "\n\nProbability of projection biomass > reference point:\n\n" )
-  # print( data.frame( refPointsrefYears,funs ) )
-  # cat( "\n" )
-  print( result )
-  # result$refs <- refPlist
-  result
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refProbs
-
-
-#calc.refProbsHist----------------------2013-09-23
-# Calculate the reference probabilities (basing on calc.projProbs2)
-#-----------------------------------------------RH
-calc.refProbsHist <- function( projObj=currentProj$B, refPlist=refPointsHistList[c("blimHRP","btarHRP")] )  
-{
-	# refPlist will be a list, LRP, URP and Bmsy are defaults with values for each draw
-	policyList=names(projObj)
-	nPolicies =length(policyList)
-	projYrs   =dimnames( projObj[[1]] )[[2]]
-	nProjYrs  =length(projYrs)
-	nRefPoints=length(names(refPlist))  # refYears <- refList$refYrs
-	# Final results, each reference point stored as list element.
-	result    =sapply(as.list(1:nRefPoints),function(x){NULL},simplify=FALSE) # to get right number of list elements, but they'll get overwritten
+	## Final results, each reference point stored as list element.
+	result <- as.list(1:nRefPoints) ## to get right number of list elements (1,2,3, but they'll get overwritten)
 	names( result ) <- names(refPlist)
-	# Loop over the reference points.
-	for ( i in names(refPlist) )
+
+	## Loop over the reference points.
+	for ( i in 1:nRefPoints )
 	{
-		# Retrieve the reference value for the performance measure.
-		refVal=refPlist[[i]]
-		if (is.null(refVal))  next
-		# Create a results matrix for nPolicies (j), nProjYr (k).
+		## Create a results matrix for nPolicies (j), nProjYr (k).
 		val <- matrix( NA, nrow=nPolicies,ncol=nProjYrs )
 		dimnames( val ) <- list( policyList,projYrs )
-		# Loop over the catch level policies.
+
+		## Build reference years and coerce to character for indexing.
+		# period <- as.character( c( refYears[i,1]:refYears[i,2] ) )
+
+		## Calculate the reference value for the performance measure.
+		# refVal <- calc.refVal( obj,period,funs[[i]] )
+		refVal=refPlist[[i]]
+
+		## Loop over the catch level policies.
 		for ( j in 1:nPolicies )
 		{
-			# These are the projection results for policy j.
+			## These are the projection results for policy j.
 			proj <- projObj[[j]]
-			# Loop over the projection years.
+
+			## Loop over the projection years.
 			for ( k in 1:ncol(proj) )
 			{
-				tmp <- proj[,k] > refVal
+				#tmp <- proj[,k] > refVal
+				tmp <- eval(call(op, proj[,k], refVal)) ## operator generalised (RH 181015)
 				val[j,k] <- sum( tmp ) / length(tmp)
 			}
 		}
 		result[[i]] <- val
 	}
-	cat( "\n\nProbability of projection biomass > reference point:\n\n" )
+	cat( "\n\nProbability of projection biomass ", op, " reference point:\n\n" )
+	## print( data.frame( refPointsrefYears,funs ) )
+	# cat( "\n" )
 	print( result )
+	## result$refs <- refPlist
 	return(result)
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refProbsHist
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refProbs
+
+
+## calc.refProbsHist--------------------2018-10-15
+## Calculate the reference probabilities
+## (based on calc.projProbs2)
+## ---------------------------------------------RH
+calc.refProbsHist <- function( projObj=currentProj$B, 
+   refPlist=refPointsHistList[c("blimHRP","btarHRP")], op=">")
+{
+	## refPlist will be a list, LRP, USR and Bmsy are defaults with values for each draw
+	policyList=names(projObj)
+	nPolicies =length(policyList)
+	projYrs   =dimnames( projObj[[1]] )[[2]]
+	nProjYrs  =length(projYrs)
+	nRefPoints=length(names(refPlist))  # refYears <- refList$refYrs
+
+	## Final results, each reference point stored as list element.
+	result    =sapply(as.list(1:nRefPoints),function(x){NULL},simplify=FALSE) # to get right number of list elements, but they'll get overwritten
+	names( result ) <- names(refPlist)
+
+	## Loop over the reference points.
+	for ( i in names(refPlist) )
+	{
+		## Retrieve the reference value for the performance measure.
+		refVal=refPlist[[i]]
+		if (is.null(refVal))  next
+		## Create a results matrix for nPolicies (j), nProjYr (k).
+		val <- matrix( NA, nrow=nPolicies,ncol=nProjYrs )
+		dimnames( val ) <- list( policyList,projYrs )
+		## Loop over the catch level policies.
+		for ( j in 1:nPolicies )
+		{
+			## These are the projection results for policy j.
+			proj <- projObj[[j]]
+			## Loop over the projection years.
+			for ( k in 1:ncol(proj) )
+			{
+				#tmp <- proj[,k] > refVal
+				tmp <- eval(call(op, proj[,k], refVal)) ## operator generalised (RH 181015)
+				val[j,k] <- sum( tmp ) / length(tmp)
+			}
+		}
+		result[[i]] <- val
+	}
+	cat( "\n\nProbability of projection biomass ", op, " reference point:\n\n" )
+	print(result)
+	return(result)
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refProbsHist
 
 
 #calc.refVal----------------------------2011-08-31
@@ -1264,7 +1276,7 @@ calc.refVal <- function( obj, refYrs, fun=mean )
   # Extract relevant columns and apply function to rows.
   # Coerce to a matrix to accommodate single year reference.
 
-  tmp <- matrix( obj[,refYrs],ncol=length(refYrs) )
+  tmp <- matrix( obj[,refYrs], ncol=length(refYrs) )
   result <- apply( tmp,1,fun )
   result
 }
@@ -1530,19 +1542,19 @@ function (dir=getwd(), error.rep=1)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~msyCalc
 
 
-#refPoints------------------------------2011-08-31
-# Call from Sweave as  refPoints() or, in full:
-# refPoints(currentMCMC, currentProj, currentMSY, refLevels=c(0.4, 0.8, 1))
-#----------------------------------------------AME
+## refPoints----------------------------2011-08-31
+## Call from Sweave as  refPoints() or, in full:
+## refPoints(currentMCMC, currentProj, currentMSY, refLevels=c(0.4, 0.8, 1))
+## --------------------------------------------AME
 refPoints <- function( mcmcObj=currentMCMC, projObj=currentProj,
                      msyObj=currentMSY, refLevels=c(0.4, 0.8, 1))
                      # refLevels are %age of msyObj
 {
-  refPlist=as.list(c("LRP", "URP", "Bmsy"))  # Can't have 0.4Bmsy
-  names(refPlist)=c("LRP", "URP", "Bmsy")   # as numeric at start. '0.4Bmsy'
+  refPlist=as.list(c("LRP", "USR", "Bmsy"))  # Can't have 0.4Bmsy
+  names(refPlist)=c("LRP", "USR", "Bmsy")   # as numeric at start. '0.4Bmsy'
   for(i in 1:length(refLevels))
     {
-    refPlist[[i]]=refLevels[i] * msyObj$B
+    refPlist[[i]] = refLevels[i] * msyObj$B
     }
   return(refPlist)
 }
@@ -1586,85 +1598,89 @@ refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
 
 
-#findTarget-----------------------------2013-02-20
-#  To derive decision tables for moving windows and find
-#  the times to achieve recovery with given confidence.
-#   Vmat  =matrix of projected B-values (MCMC projections x Year)
-#   yrP   =user-specified projection years
-#   yrG   =number of years for moving target window (e.g, 90y=3 YMR generations). Might not work for all possibilities.
-#   ratio =recovery target ratio
-#   target=recovery target values (e.g., B0, Bmsy).
-#           =B0.MCMC for ratios of B0
-#           =Bmsy.MCMC for ratios of Bmsy
-#           =Bt.MCMC for moving window
-#   conf  =confidence level required
-#   plotit=logical to plot the probability of Bt/target
-#   retVal=character name of object to return
-#    retVal="N", look for the global object "Ttab" (number of years
-#     to acheive target)
-#    retVal="p.hi" gives global object "Ptab", a list of decision
-#     tables where row is the catch option and column is the year
-#     Values are probabilities of acheiving target.
-#  (2012-02-20) 'xhi=x>=r' change to 'xhi=x>r'
-#-----------------------------------------------RH
-findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0.5, target=B0.MCMC,
-    conf=0.95, plotit=FALSE, retVal="N") {
-	
-	# oldpar=par(no.readonly=TRUE);  on.exit(par(oldpar))
-	yrA   =as.numeric(dimnames(Vmat)[[2]])   # years available
-	yrP   =sort(intersect(yrA,yrU))          # years for proj
-	yr0   =yrP[1]; yrN=rev(yrP)[1]         # 
+## findTarget --------------------------2018-10-15
+##  To derive decision tables for moving windows and find
+##  the times to achieve recovery with given confidence.
+##  Note: only seems to be used in RPA situations (RH 181015)
+##   Vmat   = matrix of projected B-values (MCMC projections x Year)
+##   yrP    = user-specified projection years
+##   yrG    = number of years for moving target window (e.g, 90y=3 YMR generations). Might not work for all possibilities.
+##   ratio  = recovery target ratio
+##   target = recovery target values (e.g., B0, Bmsy).
+##          = B0.MCMC for ratios of B0
+##          = Bmsy.MCMC for ratios of Bmsy
+##          = Bt.MCMC for moving window
+##   conf   = confidence level required
+##   plotit = logical to plot the probability of Bt/target
+##   retVal = character name of object to return
+##          = "N", look for the global object "Ttab" (number of years to acheive target)
+#           = "p.hi" gives global object "Ptab", a list of decision tables where row is the catch option and column is the year.
+##  Values are probabilities of acheiving target.
+##  (2012-02-20) 'xhi=x>=r' change to 'xhi=x>r'
+## ---------------------------------------------RH
+findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, 
+   ratio=0.5, target=B0.MCMC, conf=0.95, plotit=FALSE, retVal="N", op=">")
+{
+	## oldpar=par(no.readonly=TRUE);  on.exit(par(oldpar))
+	yrA   =as.numeric(dimnames(Vmat)[[2]])   ## years available
+	yrP   =sort(intersect(yrA,yrU))          ## years for proj
+	yr0   =yrP[1]; yrN=rev(yrP)[1]
 
-	vmat=Vmat[,is.element(dimnames(Vmat)[[2]],as.character(yrP))]             # include only yrP years
+	vmat=Vmat[,is.element(dimnames(Vmat)[[2]],as.character(yrP))]             ## include only yrP years
 	if (is.data.frame(target) || is.matrix(target)) {
-		yrM  =yrP - yrG                                                        # moving target years
-		yrM1 =intersect(as.numeric(dimnames(target)[[2]]),yrM)                 # available target years from MCMC
-		if (length(yrM1)==0) {                                                   # projection not long enough for any overlap with 3 generations
+		yrM  =yrP - yrG                                                        ## moving target years
+		yrM1 =intersect(as.numeric(dimnames(target)[[2]]),yrM)                 ## available target years from MCMC
+		if (length(yrM1)==0) {                                                 ## projection not long enough for any overlap with 3 generations
 			if (retVal=="N") return(NA)
 			else {p.hi=rep(NA,length(yrP)); names(p.hi)=yrP }; return(p.hi) }
-		yrMr =range(yrM1)                                                      # range of years to use from MCMC
-		targM=target[,as.character(yrM1)]                                      # target data from MCMC
-		yrM2 =setdiff(yrM,yrM1)                                                # missing target years (can occur before and after the MCMC years)
-#browser(); return()
+		yrMr =range(yrM1)                                                      ## range of years to use from MCMC
+		targM=target[,as.character(yrM1)]                                      ## target data from MCMC
+		yrM2 =setdiff(yrM,yrM1)                                                ## missing target years (can occur before and after the MCMC years)
+
 		if (length(yrM2)>0) {
 			nrow=dim(target)[1]
 			if (any(yrM2<yrMr[1])) {
-				yrMo =yrM2[yrM2<yrMr[1]]                                         # years of data older than MCMCs
+				yrMo =yrM2[yrM2<yrMr[1]]                                         ## years of data older than MCMCs
 				ncol =length(yrMo)
 				targ0=matrix(rep(target[,as.character(yrM1[1])],ncol),
-					nrow=nrow, ncol=ncol, dimnames=list(1:nrow,yrMo))               # repeat B0 (first column)
-				targM=cbind(as.data.frame(targ0),targM)                          # moving target
+					nrow=nrow, ncol=ncol, dimnames=list(1:nrow,yrMo))             ## repeat B0 (first column)
+				targM=cbind(as.data.frame(targ0),targM)                          ## moving target
 			}
 			if (any(yrM2>yrMr[2])) {
-				yrMn =yrM2[yrM2>yrMr[2]]                                         # years of data newer than MCMCs
+				yrMn =yrM2[yrM2>yrMr[2]]                                         ## years of data newer than MCMCs
 				ncol =length(yrMn)
-				targN=vmat[,as.character(yrMn)]                                  # start using projections
-				targM=cbind(targM,targN)                                         # moving target
+				targN=vmat[,as.character(yrMn)]                                  ## start using projections
+				targM=cbind(targM,targN)                                         ## moving target
 			}
 		}
-		rats=vmat/targM                                                        # matrix of ratios Bt/ moving target
+		rats=vmat/targM                                                        ## matrix of ratios Bt/ moving target
 	}
-	else    # if it's a vector, so no moving window
-		rats=apply(vmat,2,function(x,targ){x/targ},targ=target)                # matrix of ratios Bt/ target (B0 or Bmsy)
-	p.hi=apply(rats,2,function(x,r){xhi=x>r; sum(xhi)/length(xhi)},r=ratio)  # vector of probabilities Bt/B0 > target ratio for each year.
-	# p.hi can become each row of a decision table (AME checked
-	#  the numbers for 0.4 Bmsy match my existing
-	#  independent calculations). Need to save this for moving window.
-#browser(); return()
-	z.hi=p.hi >= conf                                                         # logical: is p.hi >= confidence limit specified
+	else    ## if it's a vector, so no moving window
+		rats=apply(vmat,2,function(x,targ){x/targ},targ=target)                ## matrix of ratios Bt/ target (B0 or Bmsy)
 
-	if (all(z.hi))       yrT=yr0                      # all p.hi exceed the confidence level
-	else if (!any(z.hi)) yrT=yrN                      # no  p.hi exceed the confidence level
+	#p.hi=apply(rats,2,function(x,r){xhi=x>r; sum(xhi)/length(xhi)},r=ratio)  ## vector of probabilities Bt/B0 > target ratio for each year.
+
+	## vector of probabilities Bt/B0 op (>|<) target ratio for each year.
+	p.hi=apply(rats,2,function(x,r){xhi= eval(call(op,x,r)); sum(xhi)/length(xhi)}, r=ratio)
+
+	## p.hi can become each row of a decision table (AME checked)
+	##  the numbers for 0.4 Bmsy match my existing
+	##  independent calculations). Need to save this for moving window.
+
+	z.hi=p.hi >= conf                                                         ## logical: is p.hi >= confidence limit specified
+
+	if (all(z.hi))       yrT=yr0                      ## all p.hi exceed the confidence level
+	else if (!any(z.hi)) yrT=yrN                      ## no  p.hi exceed the confidence level
 	else {
-		pdif=diff(p.hi)                                # one-year change in trend
-		z1=diff(p.hi)>0                                # logical: trend increasing?
-		z2=c(pdif[-1],FALSE)>0                         # logical: trend one period later increasing?
-		z3=z.hi[-1]                                    # does the probability of equalling or exceeding the target ratio exceed the confidence level?
-		z =z1 & z2 & z3                                # logical: potential years when target reached
-		if (!any(z)) yrT=yrN                           # target not reached within the projection period
-		else         yrT=as.numeric(names(z)[z][1])    # first year when target reached
+		pdif=diff(p.hi)                                ## one-year change in trend
+		z1=diff(p.hi)>0                                ## logical: trend increasing?
+		z2=c(pdif[-1],FALSE)>0                         ## logical: trend one period later increasing?
+		z3=z.hi[-1]                                    ## does the probability of equalling or exceeding the target ratio exceed the confidence level?
+		z =z1 & z2 & z3                                ## logical: potential years when target reached
+		if (!any(z)) yrT=yrN                           ## target not reached within the projection period
+		else         yrT=as.numeric(names(z)[z][1])    ## first year when target reached
 	}
-	N=yrT - yr0                                       # number of years to reach target
+	N=yrT - yr0                                       ## number of years to reach target
 	if (plotit) {
 		par(mar=c(4,5,0.5,0.5))
 		#ylim=c(0, max(p.hi,ratio))
@@ -1677,7 +1693,7 @@ findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, ratio=0.5
 	}
 	eval(parse(text=paste("return(",retVal,")",sep=""))) 
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~findTarget
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~findTarget
 
 
 #importProjRec--------------------------2013-02-13
