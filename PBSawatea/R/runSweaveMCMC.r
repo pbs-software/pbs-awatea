@@ -146,7 +146,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	#yrsub = intersect(seq(1900,3000,5),years)
 	#Nyrsub = length(yrsub)
 
-	packList(stuff=c("Snames","SApos","Cnames","CApos","ptype"), target="PBSawatea")
+	packList(stuff=c("runNo","rwtNo","Snames","SApos","Cnames","CApos","ptype"), target="PBSawatea")
 
 	if (Nsex==1) {
 		z0    = grep("@rmsex",tfile)

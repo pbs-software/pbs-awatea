@@ -13,7 +13,8 @@ runSweave = function(
    Ncpue   = 0,
    Nsurvey = 3,
    Ngear   = 1,                       ## number of commercial gear types
-   NCAset  = 1,                       ## number of commercial catch-age-age plot sets (1 when #CA years <= 25, 2 when #CA years <=50, etc.)
+   NCAset  = 1,                       ## number of pages to display catch-age-age plot sets (deprecated: 1 when #CA years <= 25, 2 when #CA years <=50, etc.)
+   maxcol  = 5,                       ## maximum # columns per page for CA plots
    Snames  = paste0("Ser",1:Nsurvey), ## survey names (w/out spaces)
    SApos   = rep(TRUE,Nsurvey),       ## surveys with age composition data
    Cnames  = paste0("Gear",1:Ngear),  ## survey names (w/out spaces)
@@ -98,6 +99,8 @@ runSweave = function(
 	tfile = gsub("@sppcode",strSpp,tfile)
 	tfile = gsub("@ptype",ptype,tfile)
 	tfile = gsub("@lang",deparse(lang),tfile)
+	tfile = gsub("@NCAset",NCAset,tfile)
+	tfile = gsub("@maxcol",maxcol,tfile)
 #browser();return()
 	if (locode) {
 		if (any(strSpp==c("POP","pop","396"))) sppname = "Pacific Ocean Perch"
@@ -118,7 +121,7 @@ runSweave = function(
 	tfile = gsub("@sppname", sppname, tfile)
 	tfile = gsub("@strSpp", strSpp, tfile)
 
-	packList(stuff=c("Snames","SApos","Cnames","CApos","ptype"), target="PBSawatea")
+	packList(stuff=c("runNo","rwtNo","Snames","SApos","Cnames","CApos","ptype"), target="PBSawatea")
 	#if (exists("tput")) tput(Snames)
 	snames = rep(Snames,Nsurvey)[1:Nsurvey] # enforce same number of names as surveys
 	snames = gsub(" ","",snames)
@@ -183,10 +186,10 @@ runSweave = function(
 		tfile = gsub("@rmROL ","",tfile)    # assumes space after @rmROL for readability in `run-Master.Snw`
 	}
 
+#browser();return()
 	## Deal with CA figures that have been split by selecting @rmCA1, @rmCA2, etc. that is appropriate based on NCAset argument
 	tfile = tfile[-grep(paste0("@rmCA[",paste0(setdiff(0:9,NCAset),collapse=""),"]"),tfile)] ## get rid of @rmCA's without the NCAset suffix
 	tfile = gsub(paste0("@rmCA",NCAset," "),"",tfile) ## assumes space after @rmCAN for readability in `run-master.Snw`
-#browser();return()
 
 	# Start expanding lines using bites
 	# IMPORTANT: each element string below must be a unique match to a place in `run-Master.Smw'

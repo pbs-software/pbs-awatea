@@ -180,22 +180,24 @@ if (class(linguaFranca)=="try-error") {
 source(paste0(pbstoolsDevDir,"/","linguaFranca.r")) ## for now just use the latest...
 
 ## Note: '@variables' replaced by function 'runSweave'.
-cwd            = "@cwd"       ## Top level directory; all models occur below this one. 
-sigdig         = 5            ## Number of significant digits to output in tables
-redo.Graphs    = @redo.Graphs ## whether to redo the graphs or not (set to FALSE if just editing the text).
+cwd             = "@cwd"       ## Top level directory; all models occur below this one. 
+sigdig          = 5            ## Number of significant digits to output in tables
+redo.Graphs     = @redo.Graphs ## whether to redo the graphs or not (set to FALSE if just editing the text).
 @
 
 %% '@variables' replaced by function 'runSweave' to create individual Sweaves for runs and reweightings.
 <<modelname, echo=FALSE>>=
-model.name     = "@model.name"
-area.name      = strsplit(model.name,split="[-\\.]")[[1]][2]
-strSpp         = "@strSpp"
-run.dir        = "@run.dir"
-fig.dir        = "@fig.dir"
-running.awatea =  @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
-eval(parse(text=paste("lang=",deparse(@lang))))
-eval(parse(text=paste("sexlab=",deparse(@sexlab))))
-sexlab.f = gsub("Males",eval(parse(text=deparse("m\u{00E2}les"))),gsub("Females","femelles",sexlab))  ## gsub tricky when using unicode accents
+model.name      = "@model.name"
+area.name       = strsplit(model.name,split="[-\\.]")[[1]][2]
+strSpp          = "@strSpp"
+run.dir         = "@run.dir"
+fig.dir         = "@fig.dir"
+running.awatea  =  @running.awatea   # 0 if just loading previous '.rep'; 1 if rerunning Awatea
+eval(parse(text = paste("lang=",deparse(@lang))))
+eval(parse(text = paste("sexlab=",deparse(@sexlab))))
+sexlab.f        = gsub("Males",eval(parse(text=deparse("m\u{00E2}les"))),gsub("Females","femelles",sexlab))  ## gsub tricky when using unicode accents
+NCAset          = @NCAset  ##  number of pages for commercial age series
+maxcol          = @maxcol  ##  number of columns per page for commercial age series
 @ 
 %% In cases where the initial re-weighting was not performed and an MPD was generated as part of an MCMC.
 <<vicars_and_tarts, echo=FALSE>>=
@@ -880,8 +882,8 @@ plt.initagedev(logInitAgeDev.mpd, lang=lang) # Initial age deviations figure
 
 year.plotBar = round(quantile(years,seq(0,1,len=6)))
 fout = fout.e = "ageBars"
-for (l in lang) {
-	if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+	fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 	if (nsex==1) {
 		if (ptype=="eps")
 			plotBars(currentRes, type="N", sex=3, fill="green", eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)

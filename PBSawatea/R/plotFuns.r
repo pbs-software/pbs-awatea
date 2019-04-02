@@ -114,8 +114,8 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 	if (figgy) figout = c("eps","pdf","png","wmf","win") else figout="win"
 	fout = fout.e = paste("CompB0-",spp,"-(",paste(names(xBox),collapse=","),")",sep="")
 
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (f in figout) {
 			if (f=="png") {
 				png(paste(fout,".png",sep=""), units="in", res=pngres, width=width, height=height)
@@ -330,7 +330,7 @@ plotACFs =function(mcmcObj, lag.max=60, lang="e") #, ptypes=tcall(PBSawatea)$pty
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotACFs
 
 
-## plotAges-----------------------------2018-07-10
+## plotAges-----------------------------2018-12-18
 ##  Plot the MPD model fits to age data
 ##  (commercial or survey) using the awkward 
 ##  scape function `plotCA'.
@@ -357,22 +357,23 @@ plotAges = function(obj, what="c", maxcol=5, sexlab=c("Females","Males"),
 		ncols   = min(maxcol,max(nyrs,1))
 		nrows   = ceiling(nyrs/ncols)
 		age.layout = rev(c(nrows,ncols)) # backwards in stupid lattice
+#browser();return()
 		## page width & page height
 		pwidth  = ifelse(ncols>2,8,ifelse(ncols>1,6,4))
-		pheight = ifelse(nrows>2,8,ifelse(nrows>1,6,4))
+		#pheight = ifelse(nrows>2,8,ifelse(nrows>1,6,4))
+		pheight = nrows/ncols*pwidth
 		CA.sex = unique(obj[[seriesType]][["Sex"]])
 		for(plot.sex in CA.sex) {
 			j = grep(plot.sex,CA.sex)
 			fout = fout.e = paste0(ifelse(what=="c","ageComm","ageSurv"), plot.sex,"Ser",ii) ## need the right series for plot
-			for (l in lang) {
-				if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+			for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+				fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 				## legend key:
 				CA.key = list(text = list(lab= c(ifelse(l=="f", "obs", "Obs"), ifelse(l=="f", "pr\u{00E9}d", "Pred"))), lines=list(col=c("black",ifelse(plot.sex=="Male","blue","red")), cex = c(1,NA)), type=c("p","l"), x=ifelse(ncols>2,0.85,ifelse(ncols>1,0.8,0.75)), y=ifelse(nrows>2,-0.04,ifelse(nrows>1,-0.06,-0.12)), pch=c(20,NA), lwd=2, between=0.8)
 				for (p in ptypes) {
 					#pname = paste0(ifelse(what=="c","ageComm","ageSurv"), plot.sex,"Ser",ii) ## need the right series for plot
 					set  = if (!is.null(list(...)$set)) list(...)$set else ""
 					pnames = paste0(fout,set)
-#browser();return()
 					if (p=="eps") postscript(paste0(pnames,".eps"), width=pwidth, height=pheight, horizontal=FALSE,  paper="special", onefile=FALSE)
 					else if (p=="png") png(paste0(pnames,".png"), units="in", res=pngres, width=pwidth, height=pheight)
 					plotCA( obj, what=what, ylab=linguaFranca("Proportion",l), xlab=linguaFranca("Age class",l), sex=plot.sex, layout= age.layout, key=CA.key, main=paste0(linguaFranca(seriesName[i],l), " - ", linguaFranca(sexlab[j],l)), pch=16, col.lines=ifelse(plot.sex=="Male","dodgerblue","red"), lwd.lines=2 , series=ii, ...)  ## need to pass the right series ii
@@ -891,11 +892,13 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 	surveyHeadName=c("CPUE")
 	cvpro = tcall(PBSawatea)$cvpro
 	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro=0
+	unpackList(tcall(PBSawatea)[c("runNo","rwtNo")])
+
 	pwidth=6.0;  pheight=switch(nseries,5,8,9)
 
 	fout = fout.e = "CPUEser"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			#pname = "CPUEser"
 			if (p=="eps") postscript(paste0(fout,".eps"), width=pwidth, height=pheight, horizontal=FALSE, paper="special", onefile=FALSE)
@@ -930,7 +933,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 #browser();return()
 				if (Ncpue==0)
 					addLabel(0.95, 0.95, linguaFranca("CPUE not used",l), adj=c(1,0), cex=0.8, col="slategrey")
-				else if (is.numeric(cvpro[ii]) && round(cvpro[ii],5)!=0)
+				else if (is.numeric(cvpro[ii]) && round(cvpro[ii],5)!=0 && rwtNo>0)
 					addLabel(0.95, 0.95, paste0(linguaFranca("+ CV process error = ",l), cvpro[ii]), adj=c(1,0), cex=0.8, col="slategrey")
 				# mtext( side=3, line=0.25, cex=0.8, outer=FALSE, surveyHeadName[i]) #  outer=TRUE
 				# if(i==3)  mtext( side=2, line=-0.5, cex=1, outer=TRUE,"Relative biomass")
@@ -1280,14 +1283,15 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	surveyHeadName = gsub("QC Sound", "QCS", surveyHeadName)
 	#surveyHeadName.f = gsub("Historical","historique", gsub("Triennial","triennal", gsub("Synoptic","synoptique", surveyHeadName)))
 	cvpro = tcall(PBSawatea)$cvpro
-	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro="unknown"
+	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro=0
+	unpackList(tcall(PBSawatea)[c("runNo","rwtNo")])
 
 	# (1) Plot the survey indices 
 	yrTicks=min(objSurv$Year):max(objSurv$Year)
 	rc = .findSquare(nseries)
 	fout = fout.e = "survIndSer"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8.5)
@@ -1310,7 +1314,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 				lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 				axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
 				mtext( side=3, line=0.25, cex=ifelse(nseries>2,1.2,1.5), outer=FALSE, linguaFranca(surveyHeadName[i],l)) #  outer=TRUE
-				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
+				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0 && rwtNo>0)
 					addLabel(0.95, 0.95, paste0(linguaFranca("+ CV process error = ",l), cvpro[i]), adj=c(1,1),cex=0.8,col=cvcol)
 				if(i==nseries) {
 					mtext(side=2, line=0, cex=1.5, outer=TRUE, text=linguaFranca("Relative biomass",l))
@@ -1327,8 +1331,8 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	xLimmaxsurvIndSer3=NA
 	XLIM=numeric()
 	fout = fout.e = "survIndSer2"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8.5)
@@ -1358,7 +1362,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 				axis( side=1, at=YrTicks, tcl=-0.4, labels=ifelse(i==nseries,TRUE,FALSE),cex.axis=1.2)
 				#mtext(side=4, line=1.5, cex=0.8, outer=FALSE, paste0(strwrap(surveyHeadName[i],10),collapse="\n"))
 				mtext(side=2, line=1.75, cex=ifelse(nseries>2,1,1.5), outer=FALSE, linguaFranca(surveyHeadName[i],l), col="blue")
-				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
+				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0 && rwtNo>0)
 					addLabel(0.95, 0.95, paste0(linguaFranca("+ CV process error = ",l), cvpro[i]), adj=c(1,1), cex=.8+(.05*(nseries-1)), col=cvcol)
 				if(i==nseries) {
 					#axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE)
@@ -1383,8 +1387,8 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	maxcpue=max(sapply(norcpue,max))
 
 	fout = fout.e = "survIndSer3"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=6.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=6.5)
@@ -1448,8 +1452,8 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 		yLim=c(0, max(seriesVals$Hi, na.rm=TRUE))
 
 		fout = fout.e = "survIndSer4-"
-		for (l in lang) {
-			if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				if (p=="eps") postscript(paste0(fout, i, ".eps"), width=6.5, height=6.5, horizontal=FALSE,  paper="special")
 				else if (p=="png") png(paste0(fout, i, ".png"), units="in", res=pngres, width=6.5, height=6.5)
@@ -1459,7 +1463,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 				lines(seriesVals$Year, seriesVals$Fit, lwd=2)
 				axis( side=1, at=yrTicks, tcl=-0.2, labels=FALSE )
 				mtext( side=3, line=0.25, cex=1.5, outer=FALSE, linguaFranca(surveyHeadName[i],l)) #  outer=TRUE
-				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0)
+				if (is.numeric(cvpro[i]) && round(cvpro[i],5)!=0 && rwtNo>0)
 					addLabel(0.95, 0.95, paste0(linguaFranca("+ CV process error = ",l), cvpro[i]), adj=c(1,0), cex=0.8, col=cvcol)
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
@@ -1602,14 +1606,14 @@ plotRmcmcPOP=function(obj,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotRmcmcPOP
 
 
-## plotSnail----------------------------2018-07-12
+## plotSnail----------------------------2019-01-09
 ## Plot snail-trail plots for MCMC analysis.
 ##  AME: replacing "2010" with as.character(currYear - 1)
 ##  RH: added assYrs = years past with estimated Bcurr
 ##      from previous assessment(s), e.g., 5ABC QCS c(2011, 2017)
 ## -----------------------------------------AME/RH
 plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, 
-	Lwd=1.5, ngear=1, assYrs=2011, outs=FALSE, lang="e") ## outs = outliers
+	Lwd=1.5, ngear=1, assYrs=NULL, outs=FALSE, lang="e") ## outs = outliers
 {
 	## BU -- B = spawning biomass, U = harvest rate (or exploitation rate)
 	BUlist = as.list(0:ngear); names(BUlist)=c("Spawning Biomass",Cnames[1:ngear])
@@ -1649,7 +1653,8 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL,
 		points(BUmed[[1]][1], BUmed[[i+1]][1], pch=21, col=1, bg=colStart[i], cex=1.2)
 		xend = rev(BUmed[[1]])[1]
 		yend = rev(BUmed[[i+1]])[1]
-		points(BUmed[[1]][as.character(assYrs)], BUmed[[i+1]][as.character(assYrs)], pch=21, col=1, bg=colAss[i], cex=1.2)
+		if (!is.null(assYrs))
+			points(BUmed[[1]][as.character(assYrs)], BUmed[[i+1]][as.character(assYrs)], pch=21, col=1, bg=colAss[i], cex=1.2)
 		for (j in 1:length(P)) {
 			q = P[[j]]
 			lty = ifelse(j==1 && outs, 3, 1)
@@ -1664,7 +1669,6 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL,
 			segments(xend, yqlo, xend, yqhi, col=lucent(colLim[i],0.5), lty=lty, lwd=lwd)
 		}
 		points(xend, yend, pch=21, cex=1.2, col=colLim[i], bg=colStop[i])
-#browser();return()
 	}
 	if (ngear>1)  addLegend(0.95, 0.80, legend=linguaFranca(Cnames,lang), lty=1, lwd=Lwd, col=colSlime, seg.len=4, xjust=1, bty="n", cex=0.8)
 	box()
@@ -1791,8 +1795,8 @@ plotTraj = function(dat, index, traj="B", y0=FALSE, lab.stock,
 	if (missing(lab.stock)) lab.stock = istock
 	
 	fout = fout.e = paste0(lab.stock,".Sens.Traj.",paste0(traj,collapse="+"))
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		if (png) png(paste0(fout,".png"), units="in", res=pngres, width=PIN[1], height=PIN[2])
 		par(mfrow=.findSquare(Ntraj), mar=c(3,3.5,0.5,0), oma=c(0,0,0,1), mgp=c(2,0.5,0))
 		x = trajYears; xlim = range(x)
@@ -2094,8 +2098,8 @@ plt.biomass = function(years, Bt, xint=5, yint=2500,
 	pchGear = seq(21,20+ngear,1)
 	colGear = rep(c("black","blue"),ngear)[1:ngear]
 	fout = fout.e = pname
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6, height=5)
@@ -2165,8 +2169,8 @@ plt.bubbles = function(mpdObj, nsex=2,
 				do.call("assign", args=list(x=ijk, value=ijk.list, envir=.GlobalEnv))
 				if (redo.Graphs) {
 					fout = fout.e = ijk
-					for (l in lang) {
-						if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+					for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+						fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 						for (p in ptypes) {
 							if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=ifelse(nr==1,6,8), horizontal=FALSE,  paper="special")
 							else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6, height=ifelse(nr==1,6,8))
@@ -2215,8 +2219,8 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 	pchGear=seq(21,20+ngear,1)
 	colGear=rep(c("black","blue"),ngear)[1:ngear]
 	fout = fout.e = "catch"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=4.5)
@@ -2232,8 +2236,8 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
 	fout = fout.e = "catchSmall"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=3, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6, height=3)
@@ -2301,8 +2305,8 @@ plt.cpue = function(cpueObj, #xint=5, yint=2.5,
 	xlim = range(cpueObj$Year[zobs])
 	ylim = range(c(cpueObj$Obs[zobs],cpueObj$Fit[zobs]))
 	fout = fout.e = "CPUEfit"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=6, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6, height=5)
@@ -2384,8 +2388,8 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 		result <- stdRes.index( obj[idx,], label=paste(main,"Series",i) )
 		#pname = surveyFigName[i]
 		fout = fout.e = surveyFigName[i]
-		for (l in lang) {
-			if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				if (p=="eps") postscript(paste0(fout,".eps"), height=6, width=5, horizontal=FALSE,  paper="special")
 				else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, height=6, width=5)
@@ -2409,8 +2413,8 @@ plt.initagedev = function(logInitAgeDev,
    ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"))
 {
 	fout = fout.e = "initAgeDev"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, height=5, width=6)
@@ -2785,8 +2789,8 @@ plt.recdev = function(logRecDev, xint=5, #yint=0.1,
 {
 	x = as.numeric(names(logRecDev)); xlim = range(x); xsmall = intersect(seq(1900,2100,xint),x)
 	fout = fout.e = "recDev"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6, height=4)
@@ -2825,8 +2829,8 @@ plt.recdevacf = function(logRecDev, muC, logvC, A, years, yr1,
 	logRecDevForACF = logRecDev[as.character(yearsForACF)]
 	if (redo.Graphs) {
 		fout = fout.e = "recDevAcf"
-		for (l in lang) {
-			if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
 				else if (p=="png") png(paste0(fout,".png"), width=6, height=5, units="in", res=pngres)

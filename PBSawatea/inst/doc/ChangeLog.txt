@@ -5,6 +5,25 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.4.3 (2019-01-07) [Rcheck=F, Rbuild=F]
+  * PBSscape.r
+    + Changed renaming of output figure files in language loop. (RH 190107)
+      - Now use `switch' (as in PBStools) instead of conditional `if'.
+    + Changed CA-fit output from specifying number of years on a page to specifying number pages a priori and calculating yrs/page. (RH 181218)
+  * plotFuns.r
+    + Changed renaming of output figure files in language loop (see PBSscape). (RH 190107)
+    + Keep track of `runNo' and rwtNo' in global list object `PBSawatea' to know when a plot is calculating an un-weighted index (rwt=0) (RH 181231).
+  * runSweave.r
+    + Added new argument `maxcol'; pass `maxcol' and `NCAset' to `run-master.Snw' (RH 181231)
+    + Pass `runNo' and `rwtNo' to global list object `PBSawatea'. (RH 181231)
+  * runSweaveMCMC.r
+    + Pass `runNo' and `rwtNo' to global list object `PBSawatea'. (RH 181231)
+  * Sweave
+    + Revised `run-master.Snw' (RH 181231)
+      - Added new variables `maxcol' and `NCAset' to be populated by function `runSweave'
+    + Changed renaming of output figure files in language loop (see PBSscape). (RH 190107)
+    + Fixed small bug (missing close brace for \Sexpr) in plotSnail figure caption. (RH 190107)
+
 1.4.2 (2018-10-17) [Rcheck=T, Rbuild=F]
   * Documentation
     + Updated `README.md' file that appears for PBSawatea on GitHub. (RH 181017)

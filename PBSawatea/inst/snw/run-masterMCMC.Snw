@@ -193,8 +193,12 @@ CAnames = Cnames[tcall("PBSawatea")$CApos] ## names of commercial gear with ages
 Snames  = tcall("PBSawatea")$Snames        ## names of surveys
 SAnames = Snames[tcall("PBSawatea")$SApos] ## names of surveys with ages
 
-cwd     = "@cwd"            ## Top level directory; all models occur below this one. 
-sigdig  = 4                 ## Number of significant digits to output in tables
+cwd     = "@cwd"    ## Top level directory; all models occur below this one. 
+sigdig  = 4         ## Number of significant digits to output in tables (not used in MCMC Snw)
+sigdig.ptab = 4     ## Significant digits for parameter tables
+decdig.ptab = 3     ## Decimal places for parameter tables
+decdig.dtab = 2     ## Decimal places for decision tables
+#           = ifelse(resdoc,2,3)    ## number of decimal places to give (AME likes 2)
 redo.Graphs = @redo.Graphs  ## whether to redo the graphs or not (set to FALSE if just editing the text).
 @ 
 
@@ -223,6 +227,31 @@ Ngear       = @ngear
 Ncpue       = @Ncpue    ## just pass it in through runSweaveMCMC{}
 resdoc      = @resdoc
 eval(parse(text=paste("lang=",deparse(@lang))))
+
+if (is.element(spp.name,c("RSR"))){
+	assYrs = c(2010, 2018)
+} else if (is.element(spp.name,c("POP"))){
+	if (is.element(area.name,c("5ABC"))){
+		assYrs = c(2001, 2010, 2017)
+	} else if (is.element(area.name,c("3CD","5DE"))){
+		assYrs = c(2012)
+	}
+} else if (is.element(spp.name,c("WAP"))){
+	assYrs = c(2017)
+} else if (is.element(spp.name,c("SBF"))){
+	assYrs = c(2016)
+} else if (is.element(spp.name,c("SGR","SST","YYR"))){
+	assYrs = c(2015)
+} else if (is.element(spp.name,c("ARF","RBR","YTR"))){
+	assYrs = c(2014)
+} else if (is.element(spp.name,c("ROL","SGR"))){
+	assYrs = c(2013)
+} else if (is.element(spp.name,c("YMR"))){
+	assYrs = c(2011)
+} else {
+	assYrs = NULL
+}
+
 
 ## Re-instate cvpro after `runSweaveMCMC' wipes most files from user's working directory
 ## SDNR file (suffix = '.sdnr), present if re-weighting occurred for a Run
@@ -930,7 +959,7 @@ if (any(spp.name=="ROL")){
 ## For snail plots:
 currentMCMC$UoverUmsy = as.data.frame(apply(currentMCMC$U, 2, function(x,y){ x/y },  y=umsy.MCMC))    # No transpose
 UoverUmsy.med = apply(currentMCMC$UoverUmsy, 2, median)
-## qtab(currentMCMC$UoverUmsy[,"2010"], dig=3 )    agrees with values below in the table
+## qtab(currentMCMC$UoverUmsy[,"2010"], dig=decdig.ptab )    agrees with values below in the table
 
 currentMCMC$BoverBmsy = as.data.frame(apply(currentMCMC$B, 2, function(x,y){ x/y },  y=Bmsy.MCMC))    # No transpose, also agrees with table below
 BoverBmsy.med = apply(currentMCMC$BoverBmsy, 2, median)
@@ -1099,17 +1128,23 @@ if(redo.Graphs)
 ## See help for other options.
 ## close.allWin()
 
-# function to use for priors in MPD table. Must read in a vector of 
-#  length, and outputs it in the format for the table.
+## Priors tabulation for priors in MPD table.
+## Must read in a vector of length, and outputs it in the format for the table.
 ptab = function(xx) {
 	print(paste0(c(xx[1], " & [", xx[2], ",", xx[3], "] & ", xx[4], " & [", xx[5], ",", xx[6], "] & ", xx[7]), collapse="")) 
 }
+## Quantile tabulation summary using decimal places
 qtab = function(xx.MCMC, dig=0) {  ## dig is number of dec places
 	print(paste0( c( prettyNum(round(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=","),
 		" & ", prettyNum(round(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=","),
 		" & ", prettyNum(round(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=",")), collapse=""))
 }
-
+## Quantile tabulation summary using significant digits
+stab = function(xx.MCMC, dig=3) {  ## dig is number sig digits
+	print(paste0( c( prettyNum(signif(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=","), 
+		" & ", prettyNum(signif(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=","),
+		" & ", prettyNum(signif(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=",")), collapse=""))
+}
 ## to give median (5%-95%) to put in text.
 med5.95 = function(xx.MCMC, dig=0){  ## dig is number of dec places
 	print(paste0( c( prettyNum(round(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=","),
@@ -1121,11 +1156,7 @@ med5.95 = function(xx.MCMC, dig=0){  ## dig is number of dec places
 ##  of significant digits. NOT USED, just doing 4 decimal places for all. 
 ## sapply(signif(x,3), sprintf, fmt="%#.3g")   # try that for 
 ##  1.3001  to be 1.300.   Haven't played with yet.
-qqtab = function(xx.MCMC, dig=3) {  ## dig is number sig digits
-	print(paste0( c( prettyNum(signif(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=","), 
-		" & ", prettyNum(signif(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=","),
-		" & ", prettyNum(signif(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=",")), collapse=""))
-}
+
 ## not saving for YMR for now (don't have all these variables, though
 ## just MPDs so don't need MCMC output).  [These were from MCMC's]
 ## save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
@@ -1250,7 +1281,18 @@ if (length(muMed)>0) {
 %\label{fig:compBmsy} 
 %\end{figure}
 
-\onefig{snail}{Phase plot through time of the medians of the ratios $B_t/B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_{t-1} / u_\mathrm{MSY}$ (the exploitation rate in year $t-1$ relative to $u_\mathrm{MSY}$)\Sexpr{for.area}. The filled green circle is the starting year (\Sexpr{startYear+1}). Years then proceed from light grey through to dark grey with the final year (\Sexpr{currYear}) as a filled cyan circle, and the blue lines represent the \Sexpr{quants3[1]} and \Sexpr{quants3[3] quantiles of the posterior distributions for the final year. The filled gold circle indicates the status in 2010 ($B_{2010}/B_\mathrm{MSY}$, $u_{2009}/u_\mathrm{MSY}$), which coincides with the previous assessment in 2011. Red and green vertical dashed lines indicate the Precautionary Approach provisional limit and upper stock reference points (0.4, 0.8 $\Bmsy$), and the horizontal grey dotted line indicates $u$ at MSY.} %% Cannot have braces {} within an \Sexpr{} (stupid)
+<<assYrs, results=hide, echo=FALSE>>=
+if (is.null(assYrs)) {
+	assSentence = ""
+} else {
+	NassY = length(assYrs)
+	assSentence = paste0("The filled gold circle", ifelse(NassY>1,"s",""), " indicate", ifelse(NassY>1,"","s"), " the status in ", texThatVec(assYrs), ", which coincide", ifelse(NassY>1,"","s"), " with", ifelse(NassY>1,""," a"), " previous assessment", ifelse(NassY>1,"s",""), " for this species. ")
+}
+@
+
+\onefig{snail}{Phase plot through time of the medians of the ratios $B_t/B_\mathrm{MSY}$ (the spawning biomass in year $t$ relative to $B_\mathrm{MSY}$) and $u_{t-1} / u_\mathrm{MSY}$ (the exploitation rate in year $t-1$ relative to $u_\mathrm{MSY}$)\Sexpr{for.area}. The filled green circle is the starting year (\Sexpr{startYear+1}). Years then proceed from light grey through to dark grey with the final year (\Sexpr{currYear}) as a filled cyan circle, and the blue lines represent the \Sexpr{quants3[1]} and \Sexpr{quants3[3]} quantiles of the posterior distributions for the final year. \Sexpr{assSentence} Red and green vertical dashed lines indicate the Precautionary Approach provisional limit and upper stock reference points (0.4, 0.8 $\Bmsy$), and the horizontal grey dotted line indicates $u$ at MSY.} %% Cannot have braces {} within an \Sexpr{} (stupid)
+
+%The filled gold circle indicates the status in 2010 ($B_{2010}/B_\mathrm{MSY}$, $u_{2009}/u_\mathrm{MSY}$), which coincides with the previous assessment in 2011. 
 
 \onefig{Bproj}{Projected biomass (t) under different constant catch strategies (t)\Sexpr{for.area}; boxplots show the \Sexpr{tex.that.vec(quants5)} quantiles from the MCMC results. For each of the \numMCMC~samples from the MCMC posterior, the model was run forward in time (red, with medians in black) with a constant catch, and recruitment was simulated from the stock-recruitment function with lognormal error (see Appendix~\eqnchapter). \Sexpr{refCatSentence}}
 
@@ -1278,7 +1320,7 @@ if (length(muMed)>0) {
 @resultsMPDtabs % RH: MPD tables will be inserted here from the working directory (e.g., from `resultsMPDtabs-run16.tex`)
 
 <<tabmcmc, results=tex, echo=FALSE>>=
-	tabdigits = 3      # number of decimal places to give
+	tabdigits = decdig.ptab      ## number of decimal places to give
 	tabmcmc  = t(sapply(currentMCMC$P,quantile,quants3))
 	if (exists("formatCatch")) { tabmcmc = formatCatch(tabmcmc,N=4) } else { tabmcmc["R_0",] = round(tabmcmc["R_0",]) }
 	names.mcmc = rownames(tabmcmc)
@@ -1340,13 +1382,13 @@ $B_{\Sexpr{currYear}}$             & \Sexpr{qtab(Bcurr.MCMC[,1])} \\
 %=======Next line will be expanded to accommodate multiple gears=======
 $V_{\Sexpr{currYear},g=\Sexpr{GI[1]}}$             & \Sexpr{qtab(VBcurr.MCMC[,1])} \\
 
-$B_{\Sexpr{currYear}} / B_0$       & \Sexpr{qtab(Bcurr.MCMC[,1] / B0.MCMC[,1], dig=3)} \\
+$B_{\Sexpr{currYear}} / B_0$       & \Sexpr{qtab(Bcurr.MCMC[,1] / B0.MCMC[,1], dig=decdig.ptab)} \\
 %=======Next line will be expanded to accommodate multiple gears=======
-$V_{\Sexpr{currYear},g=\Sexpr{GI[1]}} / V_{0,g=\Sexpr{GI[1]}}$     & \Sexpr{qtab(VBcurr.MCMC[,1]/VB0.MCMC[,1], dig=3)} \\
+$V_{\Sexpr{currYear},g=\Sexpr{GI[1]}} / V_{0,g=\Sexpr{GI[1]}}$     & \Sexpr{qtab(VBcurr.MCMC[,1]/VB0.MCMC[,1], dig=decdig.ptab)} \\
 
 %=======Next line will be expanded to accommodate multiple gears=======
-$u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}}$             & \Sexpr{qtab(upenult.MCMC[,1],dig=3)} \\
-$u_\mathrm{max}$       & \Sexpr{qtab(umax.MCMC, dig=3)} \\
+$u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}}$             & \Sexpr{qtab(upenult.MCMC[,1],dig=decdig.ptab)} \\
+$u_\mathrm{max}$       & \Sexpr{qtab(umax.MCMC, dig=decdig.ptab)} \\
 \hline
 % & & & \\ %CSAS in Ottawa wants blank rows removed (AME 170427)
 & \multicolumn{3}{c}{MSY-based quantities}\\
@@ -1354,26 +1396,26 @@ $\mathrm{MSY}$                    & \Sexpr{qtab(msy.MCMC)} \\
 $B_\mathrm{MSY}$       &  \Sexpr{qtab(Bmsy.MCMC)} \\
 $0.4 B_\mathrm{MSY}$   &  \Sexpr{qtab(0.4*Bmsy.MCMC)} \\
 $0.8 B_\mathrm{MSY}$   &  \Sexpr{qtab(0.8*Bmsy.MCMC)} \\
-$B_{\Sexpr{currYear}} / B_\mathrm{MSY}$ & \Sexpr{qtab(Bcurr.MCMC[,1] / Bmsy.MCMC, dig=3)} \\
-$B_\mathrm{MSY} / B_0$ &  \Sexpr{qtab(Bmsy.MCMC / B0.MCMC[,1], dig=3)} \\
+$B_{\Sexpr{currYear}} / B_\mathrm{MSY}$ & \Sexpr{qtab(Bcurr.MCMC[,1] / Bmsy.MCMC, dig=decdig.ptab)} \\
+$B_\mathrm{MSY} / B_0$ &  \Sexpr{qtab(Bmsy.MCMC / B0.MCMC[,1], dig=decdig.ptab)} \\
 %
 $V_\mathrm{MSY}$       & \Sexpr{qtab(VBmsy.MCMC)} \\
 %=======Next line will be expanded to accommodate multiple gears=======
-$V_\mathrm{MSY} / V_{0,g=\Sexpr{GI[1]}}$ & \Sexpr{qtab(VBmsy.MCMC/VB0.MCMC[,1], dig=3)} \\
+$V_\mathrm{MSY} / V_{0,g=\Sexpr{GI[1]}}$ & \Sexpr{qtab(VBmsy.MCMC/VB0.MCMC[,1], dig=decdig.ptab)} \\
 %
-$u_\mathrm{MSY}$       & \Sexpr{qtab(umsy.MCMC, dig=3)} \\
+$u_\mathrm{MSY}$       & \Sexpr{qtab(umsy.MCMC, dig=decdig.ptab)} \\
 %=======Next line will be expanded to accommodate multiple gears=======
-$u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.MCMC[,1]/umsy.MCMC, dig=3)} \\
+$u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenult.MCMC[,1]/umsy.MCMC, dig=decdig.ptab)} \\
 \hline
 @rmhrp  & & & \\
 @rmhrp & \multicolumn{3}{c}{History-based quantities}\\
 @rmhrp $B_\mathrm{Lim}$  & \Sexpr{qtab(refPointsHistList$blimHRP)} \\
 @rmhrp $B_\mathrm{Tar}$  & \Sexpr{qtab(refPointsHistList$btarHRP)} \\
-@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Lim}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$blimHRP, dig=3)} \\
-@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Tar}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$btarHRP, dig=3)} \\
-@rmhrp $u_\mathrm{Tar}$       & \Sexpr{qtab(refPointsHistList$utarHRP, dig=3)} \\  % note to future: should this have Ngear dimensions?
+@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Lim}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$blimHRP, dig=decdig.ptab)} \\
+@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Tar}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$btarHRP, dig=decdig.ptab)} \\
+@rmhrp $u_\mathrm{Tar}$       & \Sexpr{qtab(refPointsHistList$utarHRP, dig=decdig.ptab)} \\  % note to future: should this have Ngear dimensions?
 @rmhrp %=======Next line will be expanded to accommodate multiple gears=======
-@rmhrp $u_{\Sexpr{currYear-@one}} / u_\mathrm{Tar}$ & \Sexpr{qtab(upenult.MCMC[,1]/refPointsHistList$utarHRP, dig=3)} \\
+@rmhrp $u_{\Sexpr{currYear-@one}} / u_\mathrm{Tar}$ & \Sexpr{qtab(upenult.MCMC[,1]/refPointsHistList$utarHRP, dig=decdig.ptab)} \\
 @rmhrp \hline
 \end{tabular}
 \end{table}
@@ -1388,7 +1430,7 @@ $u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(upenu
 %% strategy & 2011 & 2012 & 2013 & 2014 & 2015 & 2016 \\
 
 <<tables, results=tex, echo=FALSE>>=
-tabdigits = ifelse(resdoc,2,3)    ## number of decimal places to give (AME likes 2)
+tabdigits = decdig.dtab
 
 #=====TABLE: DEFAULT DFO MSY REFERENCE POINTS=====
 if (exists("refProbs10") || exists("refProbs5")) {

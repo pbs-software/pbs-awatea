@@ -679,26 +679,32 @@ tabSAR = function(models=paste("input-ymr",pad0(c(29,30),2),pad0(1,2),sep="."),
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^tabSAR
 
-## tex.that.vec-------------------------2018-05-07
+
+## tex.that.vec-------------------------2019-01-09
 ##  Convert a vector to a phrase 'x, y, and z'
-##  Generlly use 'texThatVec' in PBStools, 
-##   but this package does not load PBStools.
+##  Generally use 'texThatVec' in PBStools if avaialable,
+##   but this package does not rely on PBStools.
+##  The code below is not maintained as it is in PBStools.
 ## ---------------------------------------------RH
 tex.that.vec = function(vec, simplify=TRUE)
 {
-	if (length(vec)==1) return(paste0(vec))
-	if (simplify) {
-		if (is.character(vec))  vec = as.numeric(vec)
-		uvec = sort(unique(vec))
-		## User: A5C1D2H2I1M1N2O1R2T1 (140719)
-		## https://stackoverflow.com/questions/24837401/find-consecutive-values-in-vector-in-r
-		lvec = split(uvec,cumsum(c(1, diff(uvec) != 1)))
-		cvec = sapply(lvec, function(x) {
-			if (length(x)==1) return(paste0(x))
-			else return(paste0(x[1],"-",rev(x)[1]))
-		})
-	} else cvec = vec
-	texvec = paste0(paste0(cvec[1:(length(cvec)-1)], collapse=", "), ifelse(length(cvec)>2,",",""), " and ", rev(cvec)[1])
+	if (exists("texThatVec")) {
+		texvec = texThatVec(vec, simplify=simplify)
+	} else {
+		if (length(vec)==1) return(paste0(vec))
+		if (simplify) {
+			if (is.character(vec))  vec = as.numeric(vec)
+			uvec = sort(unique(vec))
+			## User: A5C1D2H2I1M1N2O1R2T1 (140719)
+			## https://stackoverflow.com/questions/24837401/find-consecutive-values-in-vector-in-r
+			lvec = split(uvec,cumsum(c(1, diff(uvec) != 1)))
+			cvec = sapply(lvec, function(x) {
+				if (length(x)==1) return(paste0(x))
+				else return(paste0(x[1],"-",rev(x)[1]))
+			})
+		} else cvec = vec
+		texvec = paste0(paste0(cvec[1:(length(cvec)-1)], collapse=", "), ifelse(length(cvec)>2,",",""), " and ", rev(cvec)[1])
+	}
 	return(texvec)
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~tex.that.vec

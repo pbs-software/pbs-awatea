@@ -46,7 +46,7 @@ runADMB = function(
 	Sys.setenv(PATH=syspath)
 	# Be careful when using this that it doesn't destroy files other than those from Awatea
 	if (clean) {
-		junkpat = c("^Awatea","^admodel","\\.pst$","\\.out$","\\.rpt$","\\.tmp$","^variance$","^results.dat$","^likelihood.dat$")
+		junkpat = c("^[Aa]watea","^admodel","\\.log$","\\.pst$","\\.out$","\\.rpt$","\\.tmp$","^variance$","^results.dat$","^likelihood.dat$")
 		junkit  = sapply(junkpat,function(x){list.files(pattern=x)})
 		junkit  = sapply(junkit,setdiff,"Awatea.exe")
 		junk    = sapply(junkit,function(x){ if (length(x)>0) for (i in x) if (file.exists(i)) file.remove(i)})

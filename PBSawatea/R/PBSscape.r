@@ -216,8 +216,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	U    = B[,grep("U",names(B)),drop=FALSE] # need to use `drop' argument for ngear=1
 	ylim = range(U,na.rm=TRUE)
 	fout = fout.e = "exploit"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=4.5)
@@ -245,8 +245,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	##  to plt.mcmcGraphs, changing that filename to recruitsMCMC.eps
 	##  and just adding here to do MPD for recruits.
 	fout = fout.e = "recruits"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=4)
@@ -282,8 +282,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	objRed.f = objRed
 	objRed.f$Sel = sel.f
 	fout = fout.e = "selectivity"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps")      postscript(paste0(fout,".eps"), width=6.5, height=4.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=4.5)
@@ -310,14 +310,16 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	#   to handle both commercial and survey age fits.
 
 	cyrs = sort(unique(obj[["CAc"]][["Year"]]))
-	cgrp = split(cyrs,ceiling(seq_along(cyrs)/25))  ## RH (180417) changed maximum number of years on a page from 20 to 25
+	#cgrp = split(cyrs,ceiling(seq_along(cyrs)/25))  ## RH (180417) changed maximum number of years on a page from 20 to 25
+	cppp = ceiling(length(cyrs)/NCAset)              ## panels per page
+	cgrp = split(cyrs,ceiling(seq_along(cyrs)/cppp)) ## RH (181218) control number of years on a page by specifying number pages a priori
 	if (length(cgrp)==1)
-		plotAges(obj, what="c", maxcol=5, sexlab=sexlab, ptypes=ptypes, pngres=pngres, lang=lang, cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
+		plotAges(obj, what="c", maxcol=maxcol, sexlab=sexlab, ptypes=ptypes, pngres=pngres, lang=lang, cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
 	else {
 		for (i in 1:length(cgrp))
-			plotAges(obj, what="c", maxcol=5, sexlab=sexlab, ptypes=ptypes, pngres=pngres, lang=lang, years=cgrp[[i]], set=LETTERS[i], cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
+			plotAges(obj, what="c", maxcol=maxcol, sexlab=sexlab, ptypes=ptypes, pngres=pngres, lang=lang, years=cgrp[[i]], set=LETTERS[i], cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
 	}
-	plotAges(obj, what="s", maxcol=5, sexlab=sexlab, ptypes=ptypes, pngres=pngres, lang=lang, cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
+	plotAges(obj, what="s", maxcol=maxcol, sexlab=sexlab, ptypes=ptypes, pngres=pngres, lang=lang, cex.lab=1.2, cex.axis=1, col.point=lucent("black",0.8), cex.points=0.4)
 
 	## Plot the fishery index (CPUE data I think)
 	## Plot the survey indices.
@@ -343,8 +345,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 		stdRes.CAc.g = stdRes.CA( objCAc.g )
 
 		fout = fout.e = "commAgeResSer"
-		for (l in lang) {
-			if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				pname = paste0(fout,g)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
@@ -364,8 +366,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 			objCAc.g.s = objCAc.g[is.element(objCAc.g$Sex,s),]
 			stdRes.CAc.g.s = stdRes.CA( objCAc.g.s )
 			fout = fout.e = "commAgeResSer"
-			for (l in lang) {
-				if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+			for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+				fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 				for (p in ptypes) {
 					pname = paste0(fout,g,s)
 					if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
@@ -391,8 +393,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 		objCAs.g = objCAs[is.element(objCAs$Series,g),]
 		stdRes.CAs.g = stdRes.CA( objCAs.g )
 		fout = fout.e = "survAgeResSer"
-		for (l in lang) {
-			if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				pname = paste0(fout,g)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
@@ -412,8 +414,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 			objCAs.g.s = objCAs.g[is.element(objCAs.g$Sex,s),]
 			stdRes.CAs.g.s = stdRes.CA( objCAs.g.s )
 			fout = fout.e = "survAgeResSer"
-			for (l in lang) {
-				if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+			for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+				fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 				for (p in ptypes) {
 					pname = paste0(fout,g,s)
 					if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
@@ -452,8 +454,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 
 	## Plot observed and expected mean ages from commercial and survey C@A data.
 	fout = fout.e = "meanAge"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=7, height=8.5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=7, height=8.5)
@@ -476,8 +478,8 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	yLimSR=c(0, 1.1*max(c(yyy,obj$B$R),na.rm=TRUE))
 
 	fout = fout.e = "stockRecruit"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=4)
@@ -555,8 +557,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 #browser();return()
 
 	fout = fout.e = "recruitsMCMC"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=4, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=4)
@@ -567,8 +569,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "exploitMCMC"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=4*ngear, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=4*ngear)
@@ -583,8 +585,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "pdfParameters"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
@@ -600,8 +602,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		layout.heights=list(top.padding=0, main.key.padding=-0.75, bottom.padding=0, xlab.axis.padding=0, xlab=0.5))
 
 	fout = fout.e = "pdfBiomass%d"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8)
@@ -613,8 +615,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "pdfRecruitment%d"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8)
@@ -625,8 +627,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "pdfBiomass"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8)
@@ -639,8 +641,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "pdfRecruitment"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=8)
@@ -651,8 +653,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "traceBiomass"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
@@ -663,8 +665,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "traceRecruits"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
@@ -675,8 +677,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "traceParams"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
@@ -688,8 +690,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "splitChain"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
@@ -700,8 +702,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "paramACFs"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=8, height=8, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), width=8, height=8, units="in", res=pngres)
@@ -711,8 +713,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "VBcatch"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=4.5*ngear, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=4.5*ngear)
@@ -734,8 +736,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 #	dev.off()
 #
 	fout = fout.e = "BVBnorm"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=5)
@@ -755,8 +757,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 #browser(); return()
 	options(scipen=10)
 	fout = fout.e = "Bproj"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
@@ -767,8 +769,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "Rproj"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
@@ -779,8 +781,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "RprojOnePolicy"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=5)
@@ -791,13 +793,13 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	} ## end l (lang) loop
 
 	fout = fout.e = "snail"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=5)
 			par(mfrow=c(1,1), mar=c(3,3.75,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.5,0))
-			plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=quants3[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=2010, lang=l) ## RSR in 5RF
+			plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=quants3[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=assYrs, lang=l) ## RSR in 5RF
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -810,8 +812,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		if (i<npp) ii = (1:npr)+(i-1)*npr
 		else       ii = (nuP-npr+1):nuP
 		fout = fout.e = "pairs"
-		for (l in lang) {
-			if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				pname = paste0(fout,i)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=7, height=7, horizontal=FALSE,  paper="special")
@@ -830,8 +832,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		if (i<npp) ii = (1:npr)+(i-1)*npr
 		else       ii = (nuP-npr+1):nuP
 		fout = fout.e = "pairsPars"
-		for (l in lang) {
-			if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				pname = fout
 				if (p=="eps") postscript(paste0(pname,".eps"), width=10, height=10, horizontal=FALSE,  paper="special")
@@ -846,8 +848,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	if (is.null(trevObj)) trevObj = trevorMCMC ## created by Sweave code
 	names(trevObj) = gsub("_","",names(trevObj))
 	fout = fout.e = "pairsMSY"
-	for (l in lang) {
-		if (l=="f") fout = paste0("./french/",fout.e)  ## could repeat for other languages
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=7, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=7, height=7)
