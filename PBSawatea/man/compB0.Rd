@@ -1,10 +1,10 @@
 \name{compB0}
 \alias{compB0}
 \title{
-  Compare Reference Criteria and Points Relative to B0
+  Compare Reference Criteria and Points in B0 Space
 }
 \description{
-  Compare COSWEIC reference criteria and DFO reference points relative to \eqn{B_0}{B0}. \cr
+  Compare COSEWIC reference criteria and DFO reference points relative to \eqn{B_0}{B0}. \cr
   The figure concept comes from Chris Woods (PBS).
 }
 \usage{
@@ -33,7 +33,7 @@ compB0(B, Mnams=NULL, ratios=c(0.4,0.8),
   \item{pngres}{\code{numeric} -- resolution (pixels/inch) of the \code{png} file, if it's created.}
   \item{lang}{\code{character} -- a vector of letters that denote the language for output:
     currently only \code{"e"} (english) and \code{"f"} (french).}
-  \item{\dots}{additional values for \code{\link[PBSawatea]{plotBox}}'s argument \code{pars}.}
+  \item{\dots}{additional values for \code{\link[PBSawatea]{quantbox}}'s argument \code{pars}.}
 }
 \details{
   An example of the input list \code{B}: \cr
@@ -57,15 +57,22 @@ compB0(B, Mnams=NULL, ratios=c(0.4,0.8),
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-25}
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2019-05-31}
 }
 \note{
-  Uses a modified version of \code{boxplot} called \code{\link[PBSawatea]{plotBox}}.
+  Uses a modified version of \code{boxplot} called \code{\link[PBSawatea]{quantbox}}.
 }
 \seealso{
-  \code{\link[PBSawatea]{plotBox}}, \code{\link[scape]{importMCMC}}, \code{\link[PBSawatea]{msyCalc}} \cr
-  \code{\link[grDevices]{plotmath}}, \code{\link[graphics]{boxplot}}, \code{\link[graphics]{bxp}}
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{quantbox}},
+  \code{\link[scape]{importMCMC}},
+  \code{\link[PBSawatea]{msyCalc}} \cr
+In package \pkg{grDevices}:\cr
+  \code{\link[grDevices]{plotmath}},
+  \code{\link[graphics]{boxplot}}\cr
+In package \pkg{graphics}:\cr
+  \code{\link[graphics]{bxp}}
 }
 \keyword{hplot}
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

@@ -28,8 +28,8 @@ importFrom("grDevices", "boxplot.stats", "colorRampPalette", "dev.cur",
 
 importFrom("Hmisc", "Cbind", "panel.xYplot")
 
-importFrom("stats", "acf", "cor", "lowess", "median", "na.pass",
-           "qqnorm", "quantile", "rnorm", "runif", "sd", "var")
+importFrom("stats", "acf", "cor", "fitted", "lowess", "median", "na.pass",
+           "qqnorm", "quantile", "residuals", "rnorm", "runif", "sd", "smooth.spline", "var")
 
 importFrom("utils", "Sweave", "data", "flush.console", "help",
            "installed.packages", "menu", "read.table", "tail", "write.table")

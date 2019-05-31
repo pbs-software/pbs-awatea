@@ -9,14 +9,14 @@
 }
 \usage{
 plotTracePOP(mcmc, axes=FALSE, same.limits=FALSE,
-          between=list(x=axes,y=axes), div=1, span=1/4, log=FALSE,
-          base=10, main=NULL, xlab=NULL, ylab=NULL, cex.main=1.2,
-          cex.lab=1, cex.strip=0.8, cex.axis=0.8,
-          las=0, tck=0.5, tick.number=5, lty.trace=1, lwd.trace=1,
-          col.trace="grey", lty.median=1, lwd.median=1,
-          col.median="black", lty.quant=2, lwd.quant=1,
-          col.quant="black", plot=TRUE, probs=get("quants3"),
-          mpd=mcmc[1, ], lang="e", ...)
+   between=list(x=axes,y=axes), div=1, span=1/4, log=FALSE,
+   base=10, main=NULL, xlab=NULL, ylab=NULL, cex.main=1.2,
+   cex.lab=1, cex.strip=0.8, cex.axis=0.8,
+   las=0, tck=0.5, tick.number=5, lty.trace=1, lwd.trace=1,
+   col.trace="grey", lty.median=1, lwd.median=1,
+   col.median="black", lty.quant=2, lwd.quant=1,
+   col.quant="black", plot=TRUE, probs=tcall(quants3),
+   mpd=mcmc[1, ], lang="e", ...)
 }
 \arguments{
   \item{mcmc}{MCMC chain(s) as a vector, data frame or \code{mcmc}
@@ -64,25 +64,33 @@ plotTracePOP(mcmc, axes=FALSE, same.limits=FALSE,
   for reviewing the arguments, instead of \code{args}.
 }
 \author{
-  Andrew M. Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+First created by:\cr
+  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew M. Edwards}, PBS, DFO, Nanaimo BC
 
+Modified by:\cr
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-26}
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2019-05-31}
 }
 \seealso{
-  \code{\link[lattice]{xyplot}} and \code{\link[lattice]{panel.loess}}
-  are the underlying drawing functions, and
-  \code{\link[coda]{traceplot}} is a similar non-trellis plot.
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{plotDensPOP}},
+  \code{\link[PBSawatea]{panelChains}} -- MCMC traces\cr
+In package \pkg{lattice}:\cr
+  \code{\link[lattice]{xyplot}},
+  \code{\link[lattice]{panel.loess}} -- underlying drawing functions\cr
+In package \pkg{coda}:\cr
+  \code{\link[coda]{traceplot}} -- non-trellis plot\cr
+In package \pkg{plotMCMC}:\cr
+  \code{\link[plotMCMC]{plotDens}},
+  \code{\link[plotMCMC]{plotQuant}}
+  \code{\link[plotMCMC]{plotTrace}},
+  \code{\link[plotMCMC]{plotAuto}},
+  \code{\link[plotMCMC]{plotCumu}},
+  \code{\link[plotMCMC]{plotSplom}}  -- diagnostic plots
 
-  \code{\link[plotMCMC]{plotTrace}}, \code{\link[plotMCMC]{plotAuto}}, \code{\link[plotMCMC]{plotCumu}}, and
-  \code{\link[plotMCMC]{plotSplom}} are diagnostic plots.
-
-  \code{\link{plotDensPOP}}, \code{\link[plotMCMC]{plotDens}}, \code{\link[plotMCMC]{plotQuant}}, and 
-  \code{\link{plotChains}} are posterior plots.
-
-  \code{\link[plotMCMC]{plotMCMC-package}} gives an overview of the \pkg{plotMCMC} package.
+  Note: \code{\link[plotMCMC]{plotMCMC-package}} gives an overview of the \pkg{plotMCMC} package.
 }
 % Graphics
 \keyword{hplot}

@@ -5,8 +5,9 @@
   Plot a Set of Figures for MPD and MCMC Runs
 }
 \description{
-  Plot a set of encapsulated postscript (\code{.eps}) and portable network graphics (\code{.png}) figures  for the MPD (mode of the posterior distribution)
-  and MCMC (Monte Carlo Markoff Chain) results.
+  Plot a set of portable network graphics (\code{.png}) (and/or
+  encapsulated postscript (\code{.eps})) figures for the MPD(mode of
+  the posterior distribution) and MCMC (Monte Carlo Markoff Chain) results.
 }
 \usage{
 plt.mpdGraphs(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
@@ -63,56 +64,62 @@ plt.mcmcGraphs(mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
   are dumped into a subdirectory called \sQuote{\code{french}}.
 }
 \value{
-  \bold{plt.mpdGraphs} creates the following EPS (and/or PNG) files: \cr
-  \code{exploit.eps............}{annual exploitation rate,} \cr
-  \code{recruits.eps...........}{annual recruitment at age 1,} \cr
-  \code{selectivity.eps........}{selectivity curves for commercial gear(s) and survey(s),} \cr
-  \code{ageComm.eps............}{fits to annual commercial age composition (panel plots),} \cr
-  \code{ageSurv.eps............}{fits to annual survey age composition (panel plots),} \cr
-  \code{survIndSer.eps.........}{four figures of survey indices (calls \code{\link{plotIndexNotLattice}}),} \cr
-  \code{CPUEser.eps............}{CPUE indices with error bars (calls \code{\link{plotCPUE}}),} \cr
-  \code{commAgeResids.eps......}{standardised age residuals for commercial gear by sex,} \cr
-  \code{survAgeResidsSer.eps...}{standardised age residuals for surveys by sex,} \cr
-  \code{meanAge.eps............}{mean age for catch and surveys,} \cr
-  \code{stockRecruit.eps.......}{stock recruitment function.} \cr
+  \bold{plt.mpdGraphs} creates the following PNG (and/or EPS) files: \cr
+  \code{exploit.png............}{annual exploitation rate,} \cr
+  \code{recruits.png...........}{annual recruitment at age 1,} \cr
+  \code{selectivity.png........}{selectivity curves for commercial gear(s) and survey(s),} \cr
+  \code{ageComm.png............}{fits to annual commercial age composition (panel plots),} \cr
+  \code{ageSurv.png............}{fits to annual survey age composition (panel plots),} \cr
+  \code{survIndSer.png.........}{four figures of survey indices (calls \code{\link{plotIndexNotLattice}}),} \cr
+  \code{CPUEser.png............}{CPUE indices with error bars (calls \code{\link{plotCPUE}}),} \cr
+  \code{commAgeResids.png......}{standardised age residuals for commercial gear by sex,} \cr
+  \code{survAgeResidsSer.png...}{standardised age residuals for surveys by sex,} \cr
+  \code{meanAge.png............}{mean age for catch and surveys,} \cr
+  \code{stockRecruit.png.......}{stock recruitment function.} \cr
 
   \bold{plt.mcmcGraphs} creates the following postscript files: \cr
-  \code{recruitsMCMC.eps.......}{boxplots of annual MCMC recruitment,} \cr
-  \code{exploitMCMC.eps........}{boxplots of annual MCMC exploitation rate,} \cr
-  \code{pdfParameters.eps......}{density panel plots of MCMC parameter priors and posteriors,} \cr
-  \code{pdfBiomass.eps.........}{density panel plots of annual female spawning biomass,} \cr
-  \code{pdfRecruitment.eps.....}{density panel plots of annual recuitment,} \cr
-  \code{selectivityMCMC.eps....}{\bold{not currently implemented},} \cr
-  \code{traceBiomass.eps.......}{panel plots of annual spawning biomass with running quantiles,} \cr
-  \code{traceRecruits.eps......}{panel plots of annual recruitmwent traces with running quantiles,} \cr
-  \code{traceParams.eps........}{panel plots of parameter traces with running quantiles,} \cr
-  \code{splitChain.eps.........}{panel plots of cumulative parameter estimate chains,} \cr
-  \code{VBcatch.eps............}{boxplots of annual vulnerable biomass and barplots of catch,} \cr
-  \code{BVBnorm.eps............}{spawning and vulnerable biomass relative to their virgin levels,} \cr
-  \code{Bproj.eps..............}{boxplots of spawning biomass -- MCMCs and projections,} \cr
-  \code{Rproj.eps..............}{boxplots of recruitment -- MCMCs and projections,} \cr
-  \code{RprojOnePolicy.eps.....}{boxplots of recruitment for one catch policy,} \cr
-  \code{snail.eps..............}{time series of \eqn{u_t/u_{MSY}}{ut/umsy} \emph{vs.} \eqn{B_t/B_{MSY}}{Bt/Bmsy},} \cr
-  \code{pairs[1,...,n].eps.....}{pairs plot of parameter MCMC samples (6 pars/page).} \cr
-  \code{pairsMSY.eps...........}{pairs plot of MCMC samples for MSY-related parameters.}
+  \code{recruitsMCMC.png.......}{boxplots of annual MCMC recruitment,} \cr
+  \code{exploitMCMC.png........}{boxplots of annual MCMC exploitation rate,} \cr
+  \code{pdfParameters.png......}{density panel plots of MCMC parameter priors and posteriors,} \cr
+  \code{pdfBiomass.png.........}{density panel plots of annual female spawning biomass,} \cr
+  \code{pdfRecruitment.png.....}{density panel plots of annual recuitment,} \cr
+  \code{selectivityMCMC.png....}{\bold{not currently implemented},} \cr
+  \code{traceBiomass.png.......}{panel plots of annual spawning biomass with running quantiles,} \cr
+  \code{traceRecruits.png......}{panel plots of annual recruitmwent traces with running quantiles,} \cr
+  \code{traceParams.png........}{panel plots of parameter traces with running quantiles,} \cr
+  \code{splitChain.png.........}{panel plots of cumulative parameter estimate chains,} \cr
+  \code{VBcatch.png............}{boxplots of annual vulnerable biomass and barplots of catch,} \cr
+  \code{BVBnorm.png............}{spawning and vulnerable biomass relative to their virgin levels,} \cr
+  \code{Bproj.png..............}{boxplots of spawning biomass -- MCMCs and projections,} \cr
+  \code{Rproj.png..............}{boxplots of recruitment -- MCMCs and projections,} \cr
+  \code{RprojOnePolicy.png.....}{boxplots of recruitment for one catch policy,} \cr
+  \code{snail.png..............}{time series of \eqn{u_{t-1}/u_\mathrm{MSY}}{u[t-1]/u[MSY]} \emph{vs.} \eqn{B_t/B_\mathrm{MSY}}{B[t]/B[MSY]},} \cr
+  \code{pairs[1,...,n].png.....}{pairs plot of parameter MCMC samples (6 pairs/page).} \cr
+  \code{pairsMSY.png...........}{pairs plot of MCMC samples for MSY-related parameters.}
 }
 \author{
-  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+First created by:\cr
+  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew M. Edwards}, PBS, DFO, Nanaimo BC
 
+Modified by:\cr
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-25}
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2019-05-31}
 }
 \note{
-  The function is currently set up to send figures to encapsulated postscript (eps)
-  and/or portable network graphics (png) files only. If a user wants other file types
+  The function is currently set up to send figures to portable network graphics
+  (png) and/or encapsulated postscript (eps) files only. If a user wants other file types
   (e.g., windows metafiles), then additional lines of code need to be added to invoke
   the appropriate device(s).
 }
 \seealso{
-  \code{\link{plt.mcmcGraphs}}, \code{\link{plotIndexNotLattice}}, 
-  \code{\link{plotCPUE}}, \code{\link{plotChains}}, \code{\link{plotSnail}}
+In package \pkg{PBSawatea}:\cr
+  \code{\link{plt.mcmcGraphs}},
+  \code{\link{panelChains}},
+  \code{\link{plotIndexNotLattice}},
+  \code{\link{plotCPUE}},
+  \code{\link{plotSnail}}
 }
 \keyword{hplot}
 \keyword{connection}% __ONLY ONE__ keyword per line

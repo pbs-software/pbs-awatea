@@ -9,13 +9,13 @@
 }
 \usage{
 plt.quantBio(obj, projObj=NULL, policy=NULL, 
-     p=get("quants5"), xyType="lines", 
+     p=tcall(quants5), xyType="lines", 
      lineType=c(3,2,1,2,3), refLines=NULL, 
      xLim=NULL, yLim=NULL, userPrompt=FALSE, 
      save=TRUE, yaxis.lab="Spawning biomass", lang="e")
 
 plt.quantBioBB0(obj, projObj=NULL, policy=NULL, 
-     p=get("quants5"), xyType="lines", 
+     p=tcall(quants5), xyType="lines", 
      lineType=c(3,2,1,2,3), refLines=NULL, 
      xLim=NULL, yLim=NULL, userPrompt=FALSE, save=TRUE, 
      main="", cex.main="", tcl.val=-0.2, 

@@ -1,18 +1,157 @@
 ##==============================================================================
 ## PBSawatea utility functions:
+##  combGear         : Combine catches by year from multiple gear types.
+##  findTarget       : Derive decision tables for MSY-based ref.pts. and for moving windows
+##  getNpan          : Get panel number when inside a multi-panel plot.
 ##  importCor        : import Awatea parameter correlations.
 ##  importEva        : import Awatea Hessian eigenvalues.
 ##  importLik        : import Awatea likelihoods.
 ##  importPar        : import Awatea parameters (all).
 ##  importRes        : import Awatea results.
 ##  importStd        : import Awatea output parameter standard deviations.
-##  MAfun            : mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
+##  MAfun.           : mean age function (Chris Francis, 2011, weighting assumption T3.4, p.1137)
 ##  makeCmat         : make a 1-column matrix
 ##  makeRmat         : make a -row matrix
 ##  makeErrMat       : mMake simple ageing error matrix for Awatea.
 ##  tabSAR           : generate comma-del., 2-D tables from reference point objects.
-##  tex.that.vec     : convert a vector to a phrase 'x, y, and z' (see texThatVec in PBStools for more advanced version)
+##  tex.that vec     : convert a vector to a phrase 'x, y, and z' (see texThatVec in PBStools for more advanced version)
 ##==============================================================================
+
+
+## combGear ----------------------------2019-05-01
+## Combine catches by year from multiple gear types.
+## Specifically to collapse VB output from Awatea.
+## ---------------------------------------------RH
+combGear = function(dat, fn=function(x){sum(x,na.rm=TRUE)})
+{
+	ayrs = as.numeric(substring(colnames(dat),1,4))
+	#aval = cut(ayrs,breaks=(min(ayrs)-1):max(ayrs),labels=FALSE)
+	yrs  = unique(ayrs); #names(yrs) = unique(aval)
+	if (length(ayrs)==length(yrs)) {
+		out = dat
+		dimnames(out) = list(rownames(dat), yrs)
+	} else {
+		out = array(0, dim=c(nrow(dat),length(yrs)), dimnames=list(rownames(dat), yrs))
+		for (i in yrs) {
+			ii = as.character(i)
+			jj = grep(ii, colnames(dat))
+			out[,ii] = apply(dat[,jj,drop=FALSE],1,fn)
+		}
+	}
+	return(out)
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~combGear
+
+
+## findTarget --------------------------2018-10-15
+##  To derive decision tables for moving windows and find
+##  the times to achieve recovery with given confidence.
+##  Note: only seems to be used in RPA situations (RH 181015)
+##   Vmat   = matrix of projected B-values (MCMC projections x Year)
+##   yrP    = user-specified projection years
+##   yrG    = number of years for moving target window (e.g, 90y=3 YMR generations). Might not work for all possibilities.
+##   ratio  = recovery target ratio
+##   target = recovery target values (e.g., B0, Bmsy).
+##          = B0.MCMC for ratios of B0
+##          = Bmsy.MCMC for ratios of Bmsy
+##          = Bt.MCMC for moving window
+##   conf   = confidence level required
+##   plotit = logical to plot the probability of Bt/target
+##   retVal = character name of object to return
+##          = "N", look for the global object "Ttab" (number of years to acheive target)
+#           = "p.hi" gives global object "Ptab", a list of decision tables where row is the catch option and column is the year.
+##  Values are probabilities of acheiving target.
+##  (2012-02-20) 'xhi=x>=r' change to 'xhi=x>r'
+## ---------------------------------------------RH
+findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, 
+   ratio=0.5, target=B0.MCMC, conf=0.95, plotit=FALSE, retVal="N", op=">")
+{
+	## oldpar=par(no.readonly=TRUE);  on.exit(par(oldpar))
+	yrA   =as.numeric(dimnames(Vmat)[[2]])   ## years available
+	yrP   =sort(intersect(yrA,yrU))          ## years for proj
+	yr0   =yrP[1]; yrN=rev(yrP)[1]
+
+	vmat=Vmat[,is.element(dimnames(Vmat)[[2]],as.character(yrP))]             ## include only yrP years
+	if (is.data.frame(target) || is.matrix(target)) {
+#browser();return()
+		yrM  = yrP - yrG                                                        ## moving target years
+		yrM1 = intersect(as.numeric(dimnames(target)[[2]]),yrM)                 ## available target years from MCMC
+		if (length(yrM1)==0) {                                                 ## projection not long enough for any overlap with 3 generations
+			if (retVal=="N") return(NA)
+			else {p.hi=rep(NA,length(yrP)); names(p.hi)=yrP }; return(p.hi) }
+		yrMr =range(yrM1)                                                      ## range of years to use from MCMC
+		targM=target[,as.character(yrM1)]                                      ## target data from MCMC
+		yrM2 =setdiff(yrM,yrM1)                                                ## missing target years (can occur before and after the MCMC years)
+
+		if (length(yrM2)>0) {
+			nrow=dim(target)[1]
+			if (any(yrM2<yrMr[1])) {
+				yrMo =yrM2[yrM2<yrMr[1]]                                         ## years of data older than MCMCs
+				ncol =length(yrMo)
+				targ0=matrix(rep(target[,as.character(yrM1[1])],ncol),
+					nrow=nrow, ncol=ncol, dimnames=list(1:nrow,yrMo))             ## repeat B0 (first column)
+				targM=cbind(as.data.frame(targ0),targM)                          ## moving target
+			}
+			if (any(yrM2>yrMr[2])) {
+				yrMn =yrM2[yrM2>yrMr[2]]                                         ## years of data newer than MCMCs
+				ncol =length(yrMn)
+				targN=vmat[,as.character(yrMn)]                                  ## start using projections
+				targM=cbind(targM,targN)                                         ## moving target
+			}
+		}
+		rats=vmat/targM                                                        ## matrix of ratios Bt/ moving target
+	}
+	else    ## if it's a vector, so no moving window
+		rats=apply(vmat,2,function(x,targ){x/targ},targ=target)                ## matrix of ratios Bt/ target (B0 or Bmsy)
+
+	#p.hi=apply(rats,2,function(x,r){xhi=x>r; sum(xhi)/length(xhi)},r=ratio)  ## vector of probabilities Bt/B0 > target ratio for each year.
+
+	## vector of probabilities Bt/B0 op (>|<) target ratio for each year.
+	p.hi=apply(rats,2,function(x,r){xhi= eval(call(op,x,r)); sum(xhi)/length(xhi)}, r=ratio)
+
+	## p.hi can become each row of a decision table (AME checked)
+	##  the numbers for 0.4 Bmsy match my existing
+	##  independent calculations). Need to save this for moving window.
+
+	z.hi=p.hi >= conf                                                         ## logical: is p.hi >= confidence limit specified
+
+	if (all(z.hi))       yrT=yr0                      ## all p.hi exceed the confidence level
+	else if (!any(z.hi)) yrT=yrN                      ## no  p.hi exceed the confidence level
+	else {
+		pdif=diff(p.hi)                                ## one-year change in trend
+		z1=diff(p.hi)>0                                ## logical: trend increasing?
+		z2=c(pdif[-1],FALSE)>0                         ## logical: trend one period later increasing?
+		z3=z.hi[-1]                                    ## does the probability of equalling or exceeding the target ratio exceed the confidence level?
+		z =z1 & z2 & z3                                ## logical: potential years when target reached
+		if (!any(z)) yrT=yrN                           ## target not reached within the projection period
+		else         yrT=as.numeric(names(z)[z][1])    ## first year when target reached
+	}
+	N=yrT - yr0                                       ## number of years to reach target
+	if (plotit) {
+		par(mar=c(4,5,0.5,0.5))
+		#ylim=c(0, max(p.hi,ratio))
+		ylim=c(min(p.hi,0.5),1)
+		plot(yr0:yrN,p.hi,type="n",ylim=ylim,ylab="",mgp=c(2.0,0.75,0))
+		lines(yr0:yrN,p.hi,col="grey")
+		points(yr0:yrN,p.hi,pch=20,col="orange",cex=1.2)
+		mtext(text=expression(p~~frac(B[t],B[Target]) ), side=2, line=1.5, cex=1.5)
+		abline(h=conf,v=yrT,col="dodgerblue")
+	}
+	eval(parse(text=paste("return(",retVal,")",sep=""))) 
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~findTarget
+
+
+## getNpan------------------------------2019-05-10
+##  Get panel number when inside a multi-panel plot.
+## ---------------------------------------------RH
+getNpan = function()
+{
+	mfg=par()$mfg
+	mfg[2]+(mfg[1]-1)*mfg[4]
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~getNpan
+
 
 #importCor------------------------------2012-07-30
 # Import Awatea parameter correlations.

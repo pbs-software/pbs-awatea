@@ -18,6 +18,7 @@ runSweave( wd = getwd(), strSpp="XYZ",
    Nsurvey = 3,
    Ngear   = 1,
    NCAset  = 1,
+   maxcol  = 5,
    Snames  = paste0("Ser",1:Nsurvey),
    SApos   = rep(TRUE,Nsurvey),
    Cnames  = paste0("Gear",1:Ngear),
@@ -51,6 +52,7 @@ runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
   \item{NCAset}{\code{numeric} -- number of commercial catch-age-age plot sets (separate figures).
     It is best to limit the number of panels (years) per page to 20; therefore 
     \code{NCAset=1} for \eqn{\le}{<=}20 CA years, \code{NCAset=2} for \eqn{\le}{<=}40 CA years, and so on.}
+  \item{maxcol}{\code{numeric} -- maximum number of columns per page for CA plots.}
   \item{Snames}{\code{character} -- survey names for figure labelling and image creation.}
   \item{SApos}{\code{logical} -- vector of length \code{Nsurvey} denoting which surveys have ageing data.}
   \item{Cnames}{\code{character} -- gear names for figure labelling and image creation.}
@@ -116,15 +118,17 @@ runMPD(prefix=c("spp","area"), runs=1, rwts=0, ...)
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-25}
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2019-05-31}
 }
 \note{
   Example Sweave files (\code{run-master.Snw}) can be found in the library directory: \cr
   \code{.../R/.../library/PBSawatea/snw/}
 }
 \seealso{
-  \code{\link[PBSawatea]{runSweaveMCMC}}, \code{\link[PBSawatea]{runADMB}}
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{runSweaveMCMC}},
+  \code{\link[PBSawatea]{runADMB}}
 }
 \keyword{character}
 \keyword{manip}

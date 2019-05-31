@@ -8,7 +8,7 @@
   posterior probability density function.
 }
 \usage{
-plotDensPOP(mcmc, probs=get("quants3")[c(1, 3)], points=FALSE, axes=TRUE,
+plotDensPOP(mcmc, probs=tcall(quants3)[c(1, 3)], points=FALSE, axes=TRUE,
      same.limits=FALSE, between=list(x=axes,y=axes), div=1,
      log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL,
      cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.7,
@@ -19,7 +19,7 @@ plotDensPOP(mcmc, probs=get("quants3")[c(1, 3)], points=FALSE, axes=TRUE,
      cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,
      mpd = mcmc[1, ], lang="e", ...)
 
-plotDensPOPpars(mcmc, probs=get("quants3")[c(1, 3)], points=FALSE, 
+plotDensPOPpars(mcmc, probs=tcall(quants3)[c(1, 3)], points=FALSE, 
      axes=TRUE, same.limits=FALSE, between=list(x=axes,y=axes), 
      div=1, log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
      cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.7, 
@@ -30,7 +30,7 @@ plotDensPOPpars(mcmc, probs=get("quants3")[c(1, 3)], points=FALSE,
      cex.points=1, col.points="black", plot=TRUE, MPD.height=0.04,
      mpd = mcmc[1, ], lang="e", ...) 
 
-plotDensPOPparsPrior(mcmc, probs=get("quants3")[c(1, 3)], points=FALSE, 
+plotDensPOPparsPrior(mcmc, probs=tcall(quants3)[c(1, 3)], points=FALSE, 
      axes=TRUE, same.limits=FALSE, between=list(x=axes,y=axes), 
      div=1, log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
      cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.7, 

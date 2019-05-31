@@ -1,8 +1,8 @@
-#runSweaveMCMC--------------------------2018-04-16
-# Create and run customised Sweave files for Awatea MCMC runs.
-# Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
-# Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
-#-----------------------------------------------RH
+## runSweaveMCMC------------------------2019-04-25
+## Create and run customised Sweave files for Awatea MCMC runs.
+## Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
+## Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
+## ---------------------------------------------RH
 runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
    filename="spp-area-00.txt",        ## name of Awatea .txt file in 'run.dir' to run
    runNo   = 1,
@@ -140,6 +140,8 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	spplatin = gfcode[is.element(gfcode$code3,strSpp),"latin"]
 	tfile = gsub("@sppname", sppname ,tfile)
 	mcmc  = read.table("params.pst",header=TRUE)
+	if (Ncpue==0)
+		mcmc = mcmc[,grep("CPUE",colnames(mcmc),invert=T)]  ## in case log_qCPUE was 'estimated' by accident
 	ncol  = dim(mcmc)[2]
 	Nfigs = ceiling(ncol/6)
 	#years = infile@controls$YrStart:(infile@controls$YrEnd+1)
@@ -172,7 +174,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	}
 	tfile  = gsub("@Ncpue",Ncpue,tfile)
 	
-	# Remove catch-at-age lines if no catch-at-age data
+	## Remove catch-at-age lines if no catch-at-age data
 	if (sum(CApos)==0) {
 		z0    = grep("@rmCA",tfile)
 		tfile = tfile[setdiff(1:length(tfile),z0)]
@@ -191,14 +193,14 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		if (length(z0) > 0)
 			tfile = tfile[setdiff(1:length(tfile),z0)]
 	} else {
-		tfile = gsub("@rmhrp ","",tfile) # assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
+		tfile = gsub("@rmhrp ","",tfile) ## assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
 	}
 	if (!domeS) { ## right hand variance of selectivity is used (dome-shaped selectivty)
 		z0    = grep("@rmdome",tfile)
 		if (length(z0) > 0)
 			tfile = tfile[setdiff(1:length(tfile),z0)]
 	} else {
-		tfile = gsub("@rmdome ","",tfile) # assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
+		tfile = gsub("@rmdome ","",tfile) ## assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
 	}
 	if (wpaper||resdoc) {
 		resdoc = TRUE
@@ -206,29 +208,28 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		if (any(grepl("@rmresdoc",tfile))) {
 			z0 = grep("@rmresdoc",tfile)
 			tfile = tfile[setdiff(1:length(tfile),z0)] }
-		if (strSpp=="ROL" && any(grepl("@rmROL",tfile))) {   # Kendra-specific removals
+		if (strSpp=="ROL" && any(grepl("@rmROL",tfile))) {  ## Kendra-specific removals
 			z0 = grep("@rmROL",tfile)
 			tfile = tfile[setdiff(1:length(tfile),z0)]
 		} else {
-			tfile = gsub("@rmROL ","",tfile)    # assumes space after @rmROL for readability in `run-MasterMCMC.Snw`
+			tfile = gsub("@rmROL ","",tfile)    ## assumes space after @rmROL for readability in `run-MasterMCMC.Snw`
 		}
 	}
 	else {
 		resdoc = FALSE
 		tfile = gsub("@resdoc",FALSE,tfile)
-		tfile = gsub("@rmresdoc ","",tfile) # assumes space after @rmresdoc for readability in `run-MasterMCMC.Snw`
-		tfile = gsub("@rmROL ","",tfile)    # assumes space after @rmROL for readability in `run-MasterMCMC.Snw`
+		tfile = gsub("@rmresdoc ","",tfile) ## assumes space after @rmresdoc for readability in `run-MasterMCMC.Snw`
+		tfile = gsub("@rmROL ","",tfile)    ## assumes space after @rmROL for readability in `run-MasterMCMC.Snw`
 	}
-#browser();return()
 
-	# Start expanding lines using bites
+	## Start expanding lines using bites
 	SpriorBites = c("log_qsurvey_prior\\[1,]", "surveySfull_prior\\[1,]", "p_surveySfulldelta\\[1,]", "log_surveyvarL_prior\\[1,]", "log_surveyvarR_prior\\[1,]")
 	CpriorBites = c("p_Sfullest\\[1,]", "p_Sfulldelta\\[1,]", "log_varLest_prior\\[1,]", "log_varRest_prior\\[1,]")
 	#cpueBites   = c("log q_999")
 	nineBites   = c("mu_999", "Delta_999", "log v_999L", "log v_999R", "log q_999")
-	gearBites   = c("qtab\\(VB0.MCMC\\[,1])","qtab\\(VBcurr.MCMC\\[,1])","qtab\\(upenult.MCMC\\[,1],dig=3)",
+	gearBites   = c("qtab\\(VB0.MCMC\\[,1])","qtab\\(VBcurr.MCMC\\[,1])","qtab\\(Ucurr.MCMC\\[,1],dig=3)",
 		"qtab\\(VBcurr.MCMC\\[,1]/VB0.MCMC\\[,1]", "qtab\\(VBmsy.MCMC/VB0.MCMC\\[,1]", 
-		"qtab\\(upenult.MCMC\\[,1]/umsy.MCMC", "qtab\\(upenult.MCMC\\[,1]/refPointsHistList$utarHRP")
+		"qtab\\(Ucurr.MCMC\\[,1]/umsy.MCMC", "qtab\\(Ucurr.MCMC\\[,1]/refPointsHistList$utarHRP")
 	figBites    = c("onefig\\{pairs1\\}")
 
 	biteMe = function(infile, bites, N, CSpos=SApos, allsub=TRUE) { # bug fix: need to supply SApos or CApos
@@ -292,7 +293,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else
 		tfile = gsub("\\\\input","%\\\\input",tfile)
 
-	# Final clean-up of empty lines ( cannot because paragraphs delineation is squashed)
+	## Final clean-up of empty lines ( cannot because paragraphs delineation is squashed)
 	#tfile = tfile[setdiff(1:length(tfile),grep("^$",tfile))]
 
 	## No real need to change the name any longer

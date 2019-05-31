@@ -9,7 +9,7 @@
 }
 \usage{
 plotVBcatch(obj, currentRes1=currentRes,
-   p=get("quants5"),
+   p=tcall(quants5),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,

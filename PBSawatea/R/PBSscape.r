@@ -6,8 +6,14 @@
 ## -----------------------------------------AME/RH
 
 ## Force this globally (without have to make a documentation file)
-do.call("assign", args=list(x="quants3", value=c(0.05,0.50,0.95), envir=.GlobalEnv))
-do.call("assign", args=list(x="quants5", value=c(0.05,0.25,0.50,0.75,0.95), envir=.GlobalEnv))
+do.call("assign", args=list(x="quants3", value=c(0.05,0.50,0.95), envir=.PBSmodEnv))
+do.call("assign", args=list(x="quants5", value=c(0.05,0.25,0.50,0.75,0.95), envir=.PBSmodEnv))
+#do.call("assign", args=list(x="outline", value=TRUE, envir=.GlobalEnv))  ## turn outliers in boxplots on/off
+do.call("assign", args=list(x="boxpars", value=list(
+	boxwex=0.8, staplewex=0.5, 
+	medlwd=2, medcol=lucent("slategrey",0.75), 
+	outwex=0.5, whisklty=1, outpch=3, outcex=0.5, outcol=lucent("grey20",0.5)
+	), envir=.PBSmodEnv))
 
 ## Flush the cat down the console (change to '.flash.cat' to avoid conflict with function in PBStools)
 ## Note: `.flush.cat' already in PBStools but this package is not assumed to be loaded.
@@ -391,6 +397,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	objCAs = obj$CAs
 	for (g in sort(unique(objCAs$Series))) { # treat each survey separately (g = survey number)
 		objCAs.g = objCAs[is.element(objCAs$Series,g),]
+		if (all(objCAs.g$Fit==0)) next  ## don't plot age fits if they are not fitted
 		stdRes.CAs.g = stdRes.CA( objCAs.g )
 		fout = fout.e = "survAgeResSer"
 		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
@@ -684,7 +691,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
 			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
 			idx <- apply(mcmcObj$P, 2, allEqual)
-			plotTracePOP(mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), xlab="Sample", ylab="Parameter estimate", mpd=mpd[["mpd.P"]][!idx], lang=l)
+			plotTracePOP(mcmc=mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), xlab="Sample", ylab="Parameter estimate", mpd=mpd[["mpd.P"]][!idx], lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -696,7 +703,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=7)
 			par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))  ## mar and oma ignored, fixed in call to `mochaLatte'
-			plotChains(mcmc=mcmcObj$P, axes=TRUE, pdisc=0, between=list(x=0, y=0), col.trace=c("red","blue","black"), xlab="Parameter Value", ylab="Cumulative Frequency", cex.axis=1.2, cex.lab=1.4, yaxt="n", lang=l)
+			panelChains(mcmc=mcmcObj$P, axes=TRUE, pdisc=0, between=list(x=0, y=0), col.trace=c("red","blue","black"), xlab="Parameter Value", ylab="Cumulative Frequency", cex.axis=1.2, cex.lab=1.4, yaxt="n", lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -707,7 +714,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=8, height=8, horizontal=FALSE,  paper="special")
 			else if (p=="png") png(paste0(fout,".png"), width=8, height=8, units="in", res=pngres)
-			plotACFs(currentMCMC, lag.max=60, lang=l)
+			plotACFs(mcmc=mcmcObj$P, lag.max=60, lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -722,7 +729,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			for (g in 1:ngear) {
 				gfile = mcmcObj$VB[,grep(paste0("_",g),names(mcmcObj$VB))]
 				names(gfile) = substring(names(gfile),1,4)
-				plotVBcatch(gfile, mpdObj, gear=g, yLab=ifelse(ngear==1, "Catch and vulnerable biomass (t)", Cnames[g]), yLim=c(0,max(sapply(gfile,quantile,quants5[5]))), cex.lab=1.25, lang=l)
+				plotVBcatch(gfile, mpdObj, gear=g, yLab=ifelse(ngear==1, "Catch and vulnerable biomass (t)", Cnames[g]), yLim=c(0,max(sapply(gfile,quantile,tcall(quants5)[5]))), cex.lab=1.25, lang=l)
 				if (ngear>1) mtext(linguaFranca("Catch and vulnerable biomass (t)",l), outer=TRUE, side=2, line=0.5, cex=1.5, textLab=c(linguaFranca("catch",l), linguaFranca("vulnerable",l)) )
 			}
 			if (p %in% c("eps","png")) dev.off()
@@ -799,7 +806,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=5)
 			par(mfrow=c(1,1), mar=c(3,3.75,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.5,0))
-			plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=quants3[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=assYrs, lang=l) ## RSR in 5RF
+			plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=tcall(quants3)[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=assYrs, lang=l) ## RSR in 5RF
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	} ## end l (lang) loop
@@ -1598,104 +1605,6 @@ refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
 	return(refPlist)
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
-
-
-## findTarget --------------------------2018-10-15
-##  To derive decision tables for moving windows and find
-##  the times to achieve recovery with given confidence.
-##  Note: only seems to be used in RPA situations (RH 181015)
-##   Vmat   = matrix of projected B-values (MCMC projections x Year)
-##   yrP    = user-specified projection years
-##   yrG    = number of years for moving target window (e.g, 90y=3 YMR generations). Might not work for all possibilities.
-##   ratio  = recovery target ratio
-##   target = recovery target values (e.g., B0, Bmsy).
-##          = B0.MCMC for ratios of B0
-##          = Bmsy.MCMC for ratios of Bmsy
-##          = Bt.MCMC for moving window
-##   conf   = confidence level required
-##   plotit = logical to plot the probability of Bt/target
-##   retVal = character name of object to return
-##          = "N", look for the global object "Ttab" (number of years to acheive target)
-#           = "p.hi" gives global object "Ptab", a list of decision tables where row is the catch option and column is the year.
-##  Values are probabilities of acheiving target.
-##  (2012-02-20) 'xhi=x>=r' change to 'xhi=x>r'
-## ---------------------------------------------RH
-findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90, 
-   ratio=0.5, target=B0.MCMC, conf=0.95, plotit=FALSE, retVal="N", op=">")
-{
-	## oldpar=par(no.readonly=TRUE);  on.exit(par(oldpar))
-	yrA   =as.numeric(dimnames(Vmat)[[2]])   ## years available
-	yrP   =sort(intersect(yrA,yrU))          ## years for proj
-	yr0   =yrP[1]; yrN=rev(yrP)[1]
-
-	vmat=Vmat[,is.element(dimnames(Vmat)[[2]],as.character(yrP))]             ## include only yrP years
-	if (is.data.frame(target) || is.matrix(target)) {
-		yrM  =yrP - yrG                                                        ## moving target years
-		yrM1 =intersect(as.numeric(dimnames(target)[[2]]),yrM)                 ## available target years from MCMC
-		if (length(yrM1)==0) {                                                 ## projection not long enough for any overlap with 3 generations
-			if (retVal=="N") return(NA)
-			else {p.hi=rep(NA,length(yrP)); names(p.hi)=yrP }; return(p.hi) }
-		yrMr =range(yrM1)                                                      ## range of years to use from MCMC
-		targM=target[,as.character(yrM1)]                                      ## target data from MCMC
-		yrM2 =setdiff(yrM,yrM1)                                                ## missing target years (can occur before and after the MCMC years)
-
-		if (length(yrM2)>0) {
-			nrow=dim(target)[1]
-			if (any(yrM2<yrMr[1])) {
-				yrMo =yrM2[yrM2<yrMr[1]]                                         ## years of data older than MCMCs
-				ncol =length(yrMo)
-				targ0=matrix(rep(target[,as.character(yrM1[1])],ncol),
-					nrow=nrow, ncol=ncol, dimnames=list(1:nrow,yrMo))             ## repeat B0 (first column)
-				targM=cbind(as.data.frame(targ0),targM)                          ## moving target
-			}
-			if (any(yrM2>yrMr[2])) {
-				yrMn =yrM2[yrM2>yrMr[2]]                                         ## years of data newer than MCMCs
-				ncol =length(yrMn)
-				targN=vmat[,as.character(yrMn)]                                  ## start using projections
-				targM=cbind(targM,targN)                                         ## moving target
-			}
-		}
-		rats=vmat/targM                                                        ## matrix of ratios Bt/ moving target
-	}
-	else    ## if it's a vector, so no moving window
-		rats=apply(vmat,2,function(x,targ){x/targ},targ=target)                ## matrix of ratios Bt/ target (B0 or Bmsy)
-
-	#p.hi=apply(rats,2,function(x,r){xhi=x>r; sum(xhi)/length(xhi)},r=ratio)  ## vector of probabilities Bt/B0 > target ratio for each year.
-
-	## vector of probabilities Bt/B0 op (>|<) target ratio for each year.
-	p.hi=apply(rats,2,function(x,r){xhi= eval(call(op,x,r)); sum(xhi)/length(xhi)}, r=ratio)
-
-	## p.hi can become each row of a decision table (AME checked)
-	##  the numbers for 0.4 Bmsy match my existing
-	##  independent calculations). Need to save this for moving window.
-
-	z.hi=p.hi >= conf                                                         ## logical: is p.hi >= confidence limit specified
-
-	if (all(z.hi))       yrT=yr0                      ## all p.hi exceed the confidence level
-	else if (!any(z.hi)) yrT=yrN                      ## no  p.hi exceed the confidence level
-	else {
-		pdif=diff(p.hi)                                ## one-year change in trend
-		z1=diff(p.hi)>0                                ## logical: trend increasing?
-		z2=c(pdif[-1],FALSE)>0                         ## logical: trend one period later increasing?
-		z3=z.hi[-1]                                    ## does the probability of equalling or exceeding the target ratio exceed the confidence level?
-		z =z1 & z2 & z3                                ## logical: potential years when target reached
-		if (!any(z)) yrT=yrN                           ## target not reached within the projection period
-		else         yrT=as.numeric(names(z)[z][1])    ## first year when target reached
-	}
-	N=yrT - yr0                                       ## number of years to reach target
-	if (plotit) {
-		par(mar=c(4,5,0.5,0.5))
-		#ylim=c(0, max(p.hi,ratio))
-		ylim=c(min(p.hi,0.5),1)
-		plot(yr0:yrN,p.hi,type="n",ylim=ylim,ylab="",mgp=c(2.0,0.75,0))
-		lines(yr0:yrN,p.hi,col="grey")
-		points(yr0:yrN,p.hi,pch=20,col="orange",cex=1.2)
-		mtext(text=expression(p~~frac(B[t],B[Target]) ), side=2, line=1.5, cex=1.5)
-		abline(h=conf,v=yrT,col="dodgerblue")
-	}
-	eval(parse(text=paste("return(",retVal,")",sep=""))) 
-}
-##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~findTarget
 
 
 #importProjRec--------------------------2013-02-13

@@ -4,25 +4,33 @@
   Plot MCMC Traces
 }
 \description{
-  Plot  traces from MCMC samples.
+  Plot traces from MCMC samples.
 }
 \usage{
 plt.allTraces(obj, bioYrList=NULL, recYrList=NULL, save=TRUE)
 }
 \arguments{
-  \item{obj}{vector of MCMC samples.}
-  \item{bioYrList}{years to plot spawning biomass traces.}
-  \item{recYrList}{years to plot recruitment traces.}
-  \item{save}{logical: if \code{TRUE}, save figure to a raster file (\code{.jpg}).}
+  \item{obj}{\code{numeric} -- vector of MCMC samples.}
+  \item{bioYrList}{\code{numeric} -- years to plot spawning biomass traces.}
+  \item{recYrList}{\code{numeric} -- years to plot recruitment traces.}
+  \item{save}{\code{logical} -- if \code{TRUE}, save figure to a raster file (\code{.jpg}).}
 }
 \author{
-  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+First created by:\cr
+  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew M. Edwards}, PBS, DFO, Nanaimo BC
+
+Maintained by:\cr
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2019-05-31}
 }
 \note{
   Appears to be some figure requested by PJS.
 }
 \seealso{
-  \code{\link{plotChains}}
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{panelChains}}
 }
 \keyword{hplot}
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

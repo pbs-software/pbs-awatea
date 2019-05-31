@@ -4,13 +4,14 @@
 ##  cquantile            : cumulative quantile, from cumuplot
 ##  cquantile.vec        : get one probability at a time
 ##  mochaLatte           : alternative to lattice plots (mockLattice)
+##  panelBoxes           : Plot quantile plots using 'nchains' to delimit separate boxes.
+##  panelChains..........: Plot cumulative fequency of 'nchains' by partitioning one trace
+##  panelTraces..........: Plot sequential trace of MCMC samples with running median and (0.05, 0.95) quantiles
 ##  plotACFs             : plot ACFs for the estimated parameters
 ##  plotAges             : plot the MPD model fits to age data
 ##  plotB2               : [deprecated?] only gets called in menuFuns.r
 ##  plotBars             : barplots of specific year age proportions
-##  plotBox              : modified boxplot with quantile whiskers
 ##  plotBVBnorm          : plot spawnining & vulnerable biomass relative to unfished equilibrium
-##  plotChains           : plot cumulative fequency of 'nchains' by partitioning one trace
 ##  plotCI               : plot points with confidence intervals
 ##  plotCPUE             : plot CPUE and fit with error bars
 ##  plotDensPOP          : edited plotMCMC::plotDens function
@@ -31,6 +32,9 @@
 ##  plt.quantBio         : plot quantiles of reconstructed and projected biomass|recruits
 ##  plt.recdev           : log recruitment deviations figure 
 ##  plt.recdevacf        : auto-correlation function of the log recruitment deviations
+##  quantBox             : redefine boxplot to show quantiles
+##  plotBox              : modified boxplot with quantile whiskers
+##  splineCPUE           : Fit spline curves through CPUE data to determine CV process error.
 
 ##==============================================================================
 
@@ -129,7 +133,7 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 				do.call("win.metafile",list(filename=paste0(fout,".wmf"), width=width, height=height))
 			}
 			par(mar=c(3.5,5,0.5,1),cex=ifelse(f%in%c("png","eps"),1,1.2),xaxs="i")
-			plotBox(xBox,xlim=xlim,ylim=ylim,yaxs="i",las=1,xaxt="n",yaxt="n",xlab="",ylab="",
+			quantbox(xBox,xlim=xlim,ylim=ylim,yaxs="i",las=1,xaxt="n",yaxt="n",xlab="",ylab="",
 				pars=list(boxwex=boxwidth,medlwd=2,whisklty=1,medcol=medcol,staplecol=staplecol,whiskcol=whiskcol,boxfill=boxfill,...)) 
 			ypos = par()$usr[4]-.025*diff(par()$usr[3:4])
 			cex.txt = ifelse(f%in%"win",1.0,1.2)
@@ -233,11 +237,12 @@ cquantile.vec <- function(z, prob)  # cumulative quantile of vector
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cquantile.vec
 
 
-## Function: mochaLatte-----------------2018-07-30
+## mochaLatte---------------------------2019-05-21
 ##  An alternative to lattice plots (mockLattice)
 ##----------------------------------------------RH
-mochaLatte = function(dat, xfld, yfld, ffld, panel, 
-   strip=list(col=lucent("black",0.5), bg=lucent("moccasin",0.5), height=0.1, cex=1.4), ...)
+mochaLatte = function(dat, xfld, yfld, ffld, panel,
+   strip=list(col=lucent("black",0.5), bg=lucent("moccasin",0.5), height=0.1, cex=1.4), 
+   fn.ylim=range, ...)
 {
 	opar = par(no.readonly=TRUE)
 	on.exit(par(opar))
@@ -255,29 +260,55 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 	facs = as.character(unique(dat[,ffld]))
 	nfac = length(facs)
 	rc   = .findSquare(nfac)
-	if (rc[1]>rc[2]) rc = rev(rc)  ## more visually pleasing when more columns than rows
+	#if (rc[1]>rc[2]) rc = rev(rc)  ## more visually pleasing when more columns than rows
+	if (rc[1]<rc[2]) rc = rev(rc)  ## more visually pleasing when more columns than rows
 	strip$cex = strip$cex * (rc[1]^(-0.2))
 	dots = list(...)
 	if (is.null(dots$mar)) mar=c(3,3,0.5,0.5) else mar = dots$mar
-	if (is.null(dots$oma)) oma=c(0,0,0,0)     else oma = dots$oma
+	if (is.null(dots$oma)) oma=c(4,4,0.5,1)   else oma = dots$oma
 	if (is.null(dots$mgp)) mgp=c(2,0.5,0)     else mgp = dots$mgp
+#browser();return()
 	par(mfrow=rc, mar=mar, oma=oma, mgp=mgp)
 	for (i in facs) {
 		idat = dat[is.element(dat[,ffld],i),]
 		if (is.null(dots$xlim)) xlim = range(idat[,xfld], na.rm=TRUE) else xlim = dots$xlim
-		if (is.null(dots$ylim)) ylim = range(idat[,yfld], na.rm=TRUE) else ylim = dots$ylim
-		ylim[2] = ylim[2] + diff(ylim)*strip$height ## add space for latte foam
-		hzero = mar[2]==0  ## plots joined horizontally
-		vzero = mar[1]==0  ## plots joined vertically
-		do.call("plot", c(list(x=0, y=0, type="n", xlim=xlim, ylim=ylim, xaxt=ifelse(hzero,"n","s"), yaxt=ifelse(hzero,"n","s"), xlab="", ylab=""),
-			dots[setdiff(names(dots),c("xlim","ylim","xlab","ylab"))]))
-		if (hzero && par()$mfg[2]==1)
-			do.call("axis", c(list(side=2), dots[setdiff(names(dots),c("xlim","ylim"))]))
-		if (hzero && !vzero) {
-			xticks = getlab(xlim, p=0.025)
-			do.call("axis", c(list(side=1, at=xticks[["tck"]], labels=xticks[["sho"]]), dots[setdiff(names(dots),c("xlim","ylim"))]))
+		if (is.null(dots$ylim)){
+			yval = idat[,yfld]
+			names(yval) = idat[,xfld]
+			ylim = round(fn.ylim(yval),5)
+		} else {
+			ylim = dots$ylim
 		}
-		panel(x=idat[,xfld], y=idat[,yfld], ...)
+#browser(); return()
+		yticks    = getlab(ylim, p=0.05)
+		ylim[2]   = ylim[2] + diff(ylim)*strip$height ## add space for latte foam
+		hzero     = mar[2]==0  ## plots joined horizontally
+		vzero     = mar[1]==0  ## plots joined vertically
+		#do.call("plot", c(list(x=0, y=0, type="n", xlim=xlim, ylim=ylim, xaxt=ifelse(vzero,"n","n"), yaxt=ifelse(hzero,"n","n"), xlab="", ylab=""), dots[setdiff(names(dots), c("xlim","ylim","xlab","ylab","xfac","yfac"))]))
+		exclude = c("xlim","ylim","xlab","ylab","xfac","yfac","outline")
+		evalCall(plot, c(list(x=0, y=0, type="n", xlim=xlim, ylim=ylim, xaxt=ifelse(vzero,"n","n"), yaxt=ifelse(hzero,"n","n"), xlab="", ylab=""), dots[setdiff(names(dots), exclude)]), checkdef=T, checkpar=T)
+		#dots[setdiff(names(dots), c("xlim","ylim","xlab","ylab","xfac","yfac"))]), checkdef=T, checkpar=T)
+#browser(); return()
+		if ((!vzero&&!hzero) || vzero || (hzero && par()$mfg[2]==1)){
+			exclude = c("xlim","ylim","xfac","yfac","outline")
+			#do.call("axis", c(list(side=2, at=yticks[["tck"]], labels=yticks[["sho"]]), dots[setdiff(names(dots),c("xlim","ylim","xfac","yfac"))]))
+			evalCall(axis, c(list(side=2, at=yticks[["tck"]], labels=yticks[["sho"]]), dots[setdiff(names(dots),exclude)]), checkdef=T, checkpar=T)
+		}
+		if ((!vzero&&!hzero) || (hzero && !vzero) || i%in%rev(facs)[1:rc[2]] ) {
+			if (!is.null(dots$xfac)) {
+				xticks = unique(dat[,xfld])
+				exclude = c("xlim","ylim","xfac","yfac", "outline")
+				#do.call("axis", c(list(side=1, at=xticks, labels=dots$xfac), dots[setdiff(names(dots),c("xlim","ylim","xfac","yfac"))]))
+				evalCall(axis, c(list(side=1, at=xticks, labels=dots$xfac), dots[setdiff(names(dots),exclude)]), checkdef=T, checkpar=T)
+			} else {
+				xticks = getlab(xlim, p=0.025)
+#browser();return()
+				exclude = c("xlim","ylim","xfac","yfac","exclude")
+				#do.call("axis", c(list(side=1, at=xticks[["tck"]], labels=xticks[["sho"]]), dots[setdiff(names(dots),c("xlim","ylim","xfac","yfac"))]))
+				evalCall(axis, c(list(side=1, at=xticks[["tck"]], labels=xticks[["sho"]]), dots[setdiff(names(dots),exclude)]), checkdef=T, checkpar=T)
+			}
+		}
+		panel(x=idat[,xfld], y=idat[,yfld], dots[setdiff(names(dots),c("xfac","yfac"))])
 		#legend("topleft", legend=i, x.intersp=0, box.col=strip$col, bg=strip$bg)
 		strip$xbox = par()$usr[c(1,1,2,2)]
 		strip$ybox = rep(par()$usr[4],4)
@@ -289,26 +320,218 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 		box()
 	}
 	if (!is.null(dots$xlab))
-		mtext(text=dots$xlab, side=1, line=0.25, outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
+		mtext(text=dots$xlab, side=1, line=par()$oma[1]*0.6, outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
 	if (!is.null(dots$ylab))
-		mtext(text=dots$ylab, side=2, line=2.75, outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
+		mtext(text=dots$ylab, side=2, line=par()$oma[2]*0.4, outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
 #browser();return()
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~mochaLatte
+
+
+## panelBoxes---------------------------2019-05-21
+##  Plot quantile plots using 'nchains' to delimit separate boxes.
+##  mcmc=data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
+##  Very difficult to manipulate trellis plots (RH)
+## -----------------------------------------------
+panelBoxes=function (mcmc, nchains=9, pdisc=0, 
+   axes=FALSE, same.limits=FALSE, between=list(x=axes,y=axes), div=1,
+   log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, xlim=c(0.25,9.75), 
+   boxfill=paste0(rep(c("cyan","green","coral"),each=3), rep(1:3,3)),
+   cex.main=1.2, cex.lab=1.2, cex.strip=0.9, cex.axis=0.9, las=0, 
+   tck=0.4, tick.number=5, xfac=paste0("B",1:nchains), outline=TRUE,
+	lang="e", ...)
+{
+	panel.box <- function(x, y, ...) {
+		dots = list(...)[[1]]
+		unpackList(dots)
+		if (is.null(dots$outline)) outline = TRUE
+		## xlim and ylim determined by 'mochaLatte'
+		#if (is.null(dots$xlim)) xlim = range(x,na.rm=TRUE)
+		#if (is.null(dots$ylim)) ylim = if (outline) range(y,na.rm=TRUE) else quantile(y, tcall(quants5)[c(1,5)])
+		#if (is.null(dots$xfac)) xfac = unique(x)
+		basecol = "slategray"
+		#boxfill = paste0(rep(c("cyan","green","coral"),each=3)
+		boxpars = list(boxwex=0.5, boxfill=boxfill, boxcol=basecol, outpch=3, outcex=0.3, outcol=lucent(basecol,0.25), medlwd=1, whisklty=1, whiskcol=basecol)
+		chainlink = rep(1:nchains,ff)
+		chainbox  = split(y,x)
+		#quantbox(chainbox, add=T, xaxt="n", yaxt="n", pars=boxpars, ...)
+		mess =  sapply(dots,deparse)
+		mess = paste0(paste0(names(mess),"=",mess),collapse=",") 
+		messy = paste0("list(add=TRUE, xaxt=\"n\", yaxt=\"n\", pars=boxpars, ", mess,")")
+		argos = eval(parse(text=messy))
+		#do.call("quantbox", args=list(x=chainbox, add=TRUE, xaxt="n", yaxt="n", pars=boxpars, deparse(mess)) )
+		do.call("quantbox", args=c(x=list(chainbox),argos) )
+		#evalCall(quantbox, args=argos, checkdef=T, checkpar=T )
+#browser(); return()
+	}
+
+	if (pdisc>0 && pdisc<1)
+		mcmc = mcmc[(round(pdisc*nrow(mcmc))+1):nrow(mcmc),]  # get rid of the first 'pdisc' (e.g., 10%)
+	relation <- if (same.limits) "same" else "free"
+	if (is.null(dim(mcmc))) {
+		mcmc.name <- rev(as.character(substitute(mcmc)))[1]
+		mcmc <- matrix(mcmc, dimnames=list(NULL, mcmc.name))
+	}
+	mcmc <- if (log) 
+		log(mcmc/div, base=base)
+	else mcmc/div
+	mcmc <- as.data.frame(mcmc)
+	n <- nrow(mcmc)
+	ff = rep(round(n/nchains),nchains-1)
+	ff = c(ff,n-sum(ff))
+	p <- ncol(mcmc)
+	dat <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
+		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,ff),p), Value=as.vector(as.matrix(mcmc)))
+	dat$Index = paste(dat$Factor,dat$Chain,sep="-")
+
+	fn.ylim =
+		if (outline) function(x){range(x, na.rm=TRUE)} 
+		else         function(x){extendrange(sapply(split(x,names(x)), quantile,tcall(quants5)[c(1,5)], na.rm=TRUE))}
+#browser();return()
+	mochaLatte(dat, xfld="Chain", yfld="Value", ffld="Factor", panel=panel.box, xlim=xlim, mar=c(0,3.5,0,0), oma=c(4,3,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang), xfac=xfac, fn.ylim=fn.ylim , outline=outline)
+	gc(verbose=FALSE)
+	invisible(dat)
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~panelBoxes
+
+
+## panelChains---------------------------2019-05-09
+##  Plots cumulative fequency of 'nchains' by partitioning one trace.
+##  Revised from 'plotTracePOP'
+##  mcmc=data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
+##  Very difficult to manipulate trellis plots (RH)
+## -----------------------------------------------
+panelChains = function (mcmc, nchains=3, pdisc=0.1, 
+   axes=FALSE, same.limits=FALSE, between=list(x=axes,y=axes), div=1, span=1/4,
+   log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
+   cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8, las=0, 
+   tck=0.4, tick.number=5, lty.trace=1, lwd.trace=1, col.trace="grey", 
+   lty.median=1, lwd.median=1, col.median="black", lty.quant=2, lwd.quant=1, 
+   col.quant="black", plot=TRUE, probs=tcall(quants3), lang="e", ...)
+{
+	panel.chain <- function(x, y, ...) {
+		dots = list(...)
+		unpackList(dots)
+		if (is.null(dots$xlim)) xlim = range(x,na.rm=TRUE)
+		if (is.null(dots$ylim)) ylim = range(y,na.rm=TRUE)
+		abline (h=0.5, lty=3, lwd=1, col="grey")
+		chainlink = rep(1:nchains,ff)
+		for (i in 1:nchains) {
+			z = is.element(chainlink,i)
+			lines(x[z], y[z], lty=rep(lty.trace,nchains)[i], lwd=2, col=rep(col.trace,nchains)[i])
+			#lines(x[z], y[z], lty=1, lwd=2, col=c("red","green4","blue"))
+		}
+	}
+
+	if (pdisc>0 && pdisc<1)
+		mcmc = mcmc[(round(pdisc*nrow(mcmc))+1):nrow(mcmc),]  # get rid of the first 'pdisc' (e.g., 10%)
+	relation <- if (same.limits) "same" else "free"
+	if (is.null(dim(mcmc))) {
+		mcmc.name <- rev(as.character(substitute(mcmc)))[1]
+		mcmc <- matrix(mcmc, dimnames=list(NULL, mcmc.name))
+	}
+	mcmc <- if (log) 
+		log(mcmc/div, base=base)
+	else mcmc/div
+	mcmc <- as.data.frame(mcmc)
+	n <- nrow(mcmc)
+	ff = rep(round(n/nchains),nchains-1)
+	ff = c(ff,n-sum(ff))
+	p <- ncol(mcmc)
+	dat <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
+		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,ff),p), Value=as.vector(as.matrix(mcmc)))
+
+	dat$Index = paste(dat$Factor,dat$Chain,sep="-")
+	vList     = split(dat$Value,dat$Index)
+	qList     = sapply(vList,function(x){
+		xsort  = sort(x)
+		xscal  = xsort - min(xsort)
+		ycumu  = cumsum(xscal)/sum(xscal)
+		out    = cbind(x=xsort,y=ycumu)
+		return(out)
+	}, simplify = FALSE )
+	dat$CumFreq = dat$ValueSort = NA
+	for (i in names(qList)) {
+		z = is.element(dat$Index,i)
+		dat$ValueSort[z] = qList[[i]][,"x"]
+		dat$CumFreq[z]   = qList[[i]][,"y"]
+	}
+	#mar=c(0,3,0,0), oma=c(4,3,0.5,1)
+	mochaLatte(dat,xfld="ValueSort",yfld="CumFreq",ffld="Factor", panel=panel.chain, ylim=c(0,1), mar=c(2,2,0,0), oma=c(4,4,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang))
+	#mochaLatte(dat,xfld="ValueSort",yfld="CumFreq",ffld="Factor", panel=panel.chain, ylim=c(0,1), mar=c(2,0,0,0), oma=c(1.5,4.5,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang))
+	invisible(dat)
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~panelChains
+
+
+## panelTraces-------------------------2019-05-09
+##  Plots the sequential  trace of MCMC samples 
+##  with running median and (0.05, 0.95) quantiles.
+## ---------------------------------------------RH
+panelTraces=function (mcmc, mpd=mcmc[1,], nchains=1, pdisc=0, 
+   axes=FALSE, same.limits=FALSE, between=list(x=axes,y=axes), div=1,
+   log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
+   cex.main=1.2, cex.lab=1.2, cex.strip=0.9, cex.axis=0.9, las=0, 
+   tck=0.4, tick.number=5, xfac=NULL, 
+	lang="e", ...)
+{
+	panel.trace <- function(x, y, ...) {
+		dots = list(...)
+		unpackList(dots)
+		if (is.null(dots$xlim)) xlim = range(x,na.rm=TRUE)
+		if (is.null(dots$ylim)) ylim = range(y,na.rm=TRUE)
+		lty.trace  = 1;  lwd.trace  = 1;  col.trace  = "grey"
+		lty.quant  = 2;  lwd.quant  = 1;  col.quant  = "black"
+		lty.median = 1;  lwd.median = 1.5;  col.median = "blue"
+		lines(x, y, lty=lty.trace, lwd=lwd.trace, col=col.trace)
+		if (any(is.finite(y)) && var(y) > 0) {
+			lines(x, cquantile.vec(y, prob=tcall(quants3)[1]), lty=lty.quant,  lwd=lwd.quant,  col=col.quant)
+			lines(x, cquantile.vec(y, prob=tcall(quants3)[2]), lty=lty.median, lwd=lwd.median, col=col.median)
+			lines(x, cquantile.vec(y, prob=tcall(quants3)[3]), lty=lty.quant,  lwd=lwd.quant,  col=col.quant)
+			points(x[1], mpd[getNpan()], pch=21, col="black", bg="red", cex=2)
+		}
+	}
+
+	if (pdisc>0 && pdisc<1)
+		mcmc = mcmc[(round(pdisc*nrow(mcmc))+1):nrow(mcmc),]  # get rid of the first 'pdisc' (e.g., 10%)
+	if (is.null(dim(mcmc))) {
+		mcmc.name <- rev(as.character(substitute(mcmc)))[1]
+		mcmc <- matrix(mcmc, dimnames=list(NULL, mcmc.name))
+	}
+	mcmc <- if (log) 
+		log(mcmc/div, base=base)
+	else mcmc/div
+	mcmc <- as.data.frame(mcmc)
+	ylim = NULL
+	if (same.limits)
+		ylim = range(mcmc,mpd,na.rm=TRUE)
+	n <- nrow(mcmc)
+	ff = rep(round(n/nchains),nchains-1)
+	ff = c(ff,n-sum(ff))
+	p <- ncol(mcmc)
+	dat <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
+		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,ff),p), Value=as.vector(as.matrix(mcmc)))
+	#dat$Index = paste(dat$Factor,dat$Chain,sep="-")
+
+#browser();return()
+	mochaLatte(dat, xfld="Draw", yfld="Value", ffld="Factor", panel=panel.trace, xlim=c(0,nrow(mcmc)), ylim=ylim, mar=c(0,3,0,0), oma=c(4,4,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang) )
+	invisible(dat)
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~panelTraces
 
 
 ## plotACFs-----------------------------2018-07-09
 ##  Plot ACFs for the estimated parameters.
 ##  Control eps and png from PBScape.r in plt.mcmcGraphs
 ##----------------------------------------------RH
-plotACFs =function(mcmcObj, lag.max=60, lang="e") #, ptypes=tcall(PBSawatea)$ptype, pngres=400)
+plotACFs =function(mcmc, lag.max=60, lang="e") #, ptypes=tcall(PBSawatea)$ptype, pngres=400)
 {
 	#if (!is.null(dev.list())) on.exit(expandGraph(mfrow=c(1,1)))
-	acfs  = apply(mcmcObj$P, 2, function(x){acf(x,plot=FALSE)$acf})
+	acfs  = apply(mcmc, 2, function(x){acf(x,plot=FALSE)$acf})
 	ylim  = range(acfs[round(acfs,5)>-1 & round(acfs,5)<1])
-	idx   = apply(mcmcObj$P, 2, allEqual)
-	mcmcP = mcmcObj$P[,!idx,drop=FALSE]
-	rc    = .findSquare(ncol(mcmcObj$P[,!idx]))
+	idx   = apply(mcmc, 2, allEqual)
+	mcmcP = mcmc[,!idx,drop=FALSE]
+	rc    = .findSquare(ncol(mcmc[,!idx]))
 	#for (p in ptypes) {
 		#if (p=="eps") postscript("paramAcf.eps", width=8, height=8, horizontal=FALSE,  paper="special")
 		#else if (p=="png") png("paramAcf.png", width=8, height=8, units="in", res=pngres)
@@ -330,7 +553,7 @@ plotACFs =function(mcmcObj, lag.max=60, lang="e") #, ptypes=tcall(PBSawatea)$pty
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotACFs
 
 
-## plotAges-----------------------------2018-12-18
+## plotAges-----------------------------2019-05-07
 ##  Plot the MPD model fits to age data
 ##  (commercial or survey) using the awkward 
 ##  scape function `plotCA'.
@@ -344,11 +567,13 @@ plotAges = function(obj, what="c", maxcol=5, sexlab=c("Females","Males"),
 	else           seriesName = tcall(PBSawatea)$Snames[tcall(PBSawatea)$SApos]
 	#seriesName.f = gsub("Historical","historique", gsub("Triennial","triennal", gsub("Synoptic","synoptique", seriesName)))
 	#sexlab.f = gsub("Males",eval(parse(text=deparse("m\u{00E2}les"))),gsub("Females","femelles",sexlab)) ## already defined globally in run-master.Snw
-	CA.yrs  = sapply(split(obj[[seriesType]][["Year"]], obj[[seriesType]][["Series"]]), unique, simplify=FALSE)
+	CA.yrs  = lapply(split(obj[[seriesType]][["Year"]], obj[[seriesType]][["Series"]]), unique)
 	CA.nyrs = sapply(CA.yrs,length)
+	CA.fit  = sapply(split(obj[[seriesType]][["Fit"]], obj[[seriesType]][["Series"]]), function(x){!all(x==0)})
 
 	for ( i in 1:length(seriesList) )  {
-		ii  = seriesList[i] ## sometimes a survey age series is missing
+		ii  = seriesList[i]    ## sometimes a survey age series is missing
+		if (!CA.fit[ii]) next  ## don't plot age fits if they are not fitted
 		yrs = CA.yrs[i]; nyrs = CA.nyrs[i]
 		if (!is.null(list(...)$years)) {
 			yrs = intersect(CA.yrs[[i]],list(...)$years)
@@ -357,7 +582,6 @@ plotAges = function(obj, what="c", maxcol=5, sexlab=c("Females","Males"),
 		ncols   = min(maxcol,max(nyrs,1))
 		nrows   = ceiling(nyrs/ncols)
 		age.layout = rev(c(nrows,ncols)) # backwards in stupid lattice
-#browser();return()
 		## page width & page height
 		pwidth  = ifelse(ncols>2,8,ifelse(ncols>1,6,4))
 		#pheight = ifelse(nrows>2,8,ifelse(nrows>1,6,4))
@@ -594,83 +818,6 @@ plotBars = function(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBars
 
 
-#plotBox--------------------------------2011-12-15
-# Modified boxplot with quantile whiskers.
-#-----------------------------------------------RH
-plotBox = function (x, ..., range=1.5, width=NULL, varwidth=FALSE, 
-    notch=FALSE, outline=TRUE, names, plot=TRUE, 
-    border=par("fg"), col=NULL, log="", 
-    pars=list(boxwex=0.8, staplewex=0.5, outwex=0.5, whisklty=1), 
-    horizontal=FALSE, add=FALSE, at=NULL,
-    quants=get("quants5"), outliers=FALSE) 
-{
-	# RH tweaks for non-list inputs (e.g., vectors)
-	if (!is.list(x)) {
-		xnam = gsub(" ","",deparse(substitute(x)))
-		x = list(x); attr(x,"names") <- xnam }
-	#----------------------------------------------
-    args <- list(x, ...)
-    namedargs <- if (!is.null(attributes(args)$names)) 
-        attributes(args)$names != ""
-    else rep(FALSE, length.out = length(args))
-    groups <- if (is.list(x)) 
-        x
-    else args[!namedargs]
-    if (0L == (n <- length(groups))) 
-        stop("invalid first argument")
-    if (length(class(groups))) 
-        groups <- unclass(groups)
-    if (!missing(names)) 
-        attr(groups, "names") <- names
-    else {
-        if (is.null(attr(groups, "names"))) 
-            attr(groups, "names") <- 1L:n
-        names <- attr(groups, "names")
-    }
-    cls <- sapply(groups, function(x) class(x)[1L])
-    cl <- if (all(cls == cls[1L])) 
-        cls[1L]
-    else NULL
-    for (i in 1L:n) groups[i] <- list(boxplot.stats(unclass(groups[[i]]), 
-        range))
-    stats <- matrix(0, nrow = 5L, ncol = n)
-    conf <- matrix(0, nrow = 2L, ncol = n)
-    ng <- out <- group <- numeric(0L)
-    ct <- 1
-    for (i in groups) {
-        stats[, ct] <- i$stats
-        conf[, ct] <- i$conf
-        ng <- c(ng, i$n)
-        if ((lo <- length(i$out))) {
-            out <- c(out, i$out)
-            group <- c(group, rep.int(ct, lo))
-        }
-        ct <- ct + 1
-    }
-    #----RH tweaks for qantile plots----
-    stats = sapply(x,quantile,quants,na.rm=TRUE)
-    if (!outliers) {
-    	out = NULL; group = NULL }
-    #-----------------------------------
-    if (length(cl) && cl != "numeric") 
-        oldClass(stats) <- cl
-    z <- list(stats = stats, n = ng, conf = conf, out = out, 
-        group = group, names = names)
-    if (plot) {
-        if (is.null(pars$boxfill) && is.null(args$boxfill)) 
-            pars$boxfill <- col
-        do.call("bxp", c(list(z, notch = notch, width = width, 
-            varwidth = varwidth, log = log, border = border, 
-            pars = pars, outline = outline, horizontal = horizontal, 
-            add = add, at = at), args[namedargs]))
-        invisible(z)
-    }
-    else z 
-    invisible(x)
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBox
-
-
 ## plotBVBnorm--------------------------2018-07-12
 ## AME doing, tried in separate file, but then changed that to
 ##  lattice and wouldn't be good format for Arni's boxplots.
@@ -679,7 +826,7 @@ plotBox = function (x, ..., range=1.5, width=NULL, varwidth=FALSE,
 ##  xLab - x position for label, etc.
 ## -----------------------------------------AME/RH
 plotBVBnorm=function(mcmcObj,
-   p = get("quants5"),
+   p = tcall(quants5),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -721,73 +868,6 @@ plotBVBnorm=function(mcmcObj,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotBVBnorm
 
 
-##plotChains----------------------------2018-07-30
-## Plots cumulative fequency of 'nchains' by partitioning one trace.
-## Revised from 'plotTracePOP'
-## mcmc=data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
-## Very difficult to manipulate trellis plots (RH)
-##------------------------------------------------
-plotChains=function (mcmc, nchains=3, pdisc=0.1, 
-   axes=FALSE, same.limits=FALSE, between=list(x=axes,y=axes), div=1, span=1/4,
-   log=FALSE, base=10, main=NULL, xlab=NULL, ylab=NULL, 
-   cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8, las=0, 
-   tck=0.4, tick.number=5, lty.trace=1, lwd.trace=1, col.trace="grey", 
-   lty.median=1, lwd.median=1, col.median="black", lty.quant=2, lwd.quant=1, 
-   col.quant="black", plot=TRUE, probs=get("quants3"), lang="e", ...)
-{
-	panel.trace <- function(x, y, ...) {
-		dots = list(...)
-		unpackList(dots)
-		if (is.null(dots$xlim)) xlim = range(x,na.rm=TRUE)
-		if (is.null(dots$ylim)) ylim = range(y,na.rm=TRUE)
-		abline (h=0.5, lty=3, lwd=1, col="grey")
-		chainlink = rep(1:nchains,ff)
-		for (i in 1:nchains) {
-			z = is.element(chainlink,i)
-			lines(x[z], y[z], lty=rep(lty.trace,nchains)[i], lwd=2, col=rep(col.trace,nchains)[i])
-			#lines(x[z], y[z], lty=1, lwd=2, col=c("red","green4","blue"))
-		}
-	}
-
-	if (pdisc>0 && pdisc<1)
-		mcmc = mcmc[(round(pdisc*nrow(mcmc))+1):nrow(mcmc),]  # get rid of the first 'pdisc' (e.g., 10%)
-	relation <- if (same.limits) "same" else "free"
-	if (is.null(dim(mcmc))) {
-		mcmc.name <- rev(as.character(substitute(mcmc)))[1]
-		mcmc <- matrix(mcmc, dimnames=list(NULL, mcmc.name))
-	}
-	mcmc <- if (log) 
-		log(mcmc/div, base=base)
-	else mcmc/div
-	mcmc <- as.data.frame(mcmc)
-	n <- nrow(mcmc)
-	ff = rep(round(n/nchains),nchains-1)
-	ff = c(ff,n-sum(ff))
-	p <- ncol(mcmc)
-	dat <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
-		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,ff),p), Value=as.vector(as.matrix(mcmc)))
-
-	dat$Index = paste(dat$Factor,dat$Chain,sep="-")
-	vList     = split(dat$Value,dat$Index)
-	qList     = sapply(vList,function(x){
-		xsort  = sort(x)
-		xscal  = xsort - min(xsort)
-		ycumu  = cumsum(xscal)/sum(xscal)
-		out    = cbind(x=xsort,y=ycumu)
-		return(out)
-	}, simplify = FALSE )
-	dat$CumFreq = dat$ValueSort = NA
-	for (i in names(qList)) {
-		z = is.element(dat$Index,i)
-		dat$ValueSort[z] = qList[[i]][,"x"]
-		dat$CumFreq[z]   = qList[[i]][,"y"]
-	}
-	mochaLatte(dat,xfld="ValueSort",yfld="CumFreq",ffld="Factor", panel=panel.trace, ylim=c(0,1), mar=c(2,0,0,0), oma=c(1.5,4.5,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang))
-	invisible(dat)
-}
-##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotChains
-
-
 ##.plotChains.lattice-------------------2018-04-10
 ## Candidate for deprecation !!!
 ## Plots cumulative fequency of 'nchains' by partitioning one trace.
@@ -800,7 +880,7 @@ plotChains=function (mcmc, nchains=3, pdisc=0.1,
    cex.main=1.2, cex.lab=1, cex.strip=0.8, cex.axis=0.8, las=0, 
    tck=0.5, tick.number=5, lty.trace=1, lwd.trace=1, col.trace="grey", 
    lty.median=1, lwd.median=1, col.median="black", lty.quant=2, lwd.quant=1, 
-   col.quant="black", plot=TRUE, probs=get("quants3"), ...)  # AME probs
+   col.quant="black", plot=TRUE, probs=tcall(quants3), ...)  # AME probs
 {
 	panel.trace <- function(x, y, ...) {
 		panel.xyplot(x, y, type="n")
@@ -879,7 +959,7 @@ plotChains=function (mcmc, nchains=3, pdisc=0.1,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.plotChains.lattice
 
 
-##plotCPUE------------------------------2018-04-13
+##plotCPUE------------------------------2019-05-07
 ## Plotting CPUE and fit with error bars
 ##  (copying plotIndexNotLattice).
 ## obj=currentRes$CPUE
@@ -887,11 +967,12 @@ plotChains=function (mcmc, nchains=3, pdisc=0.1,
 plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
    ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"), ...)
 {
-	seriesList <- sort( unique( obj$Series ) )   # sort is risky if not always in same order
-	nseries=length(seriesList)
-	surveyHeadName=c("CPUE")
-	cvpro = tcall(PBSawatea)$cvpro
-	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro=0
+	seriesList = sort( unique( obj$Series ) )  ## sort is risky if not always in same order
+	nseries  = length(seriesList)
+	surveyHeadName = c("CPUE")
+	cvpro    = tcall(PBSawatea)$cvpro
+	if (is.null(cvpro))
+		cvpro = rep(0, Nsurv + nseries)
 	unpackList(tcall(PBSawatea)[c("runNo","rwtNo")])
 
 	pwidth=6.0;  pheight=switch(nseries,5,8,9)
@@ -909,7 +990,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 			yrTicks=as.numeric( obj$Year)
 
 			for ( i in 1:nseries ) {
-				ii=Nsurv + i  # to index the CPUE cvpro
+				ii = Nsurv + i  # to index the CPUE cvpro
 				idx <- seriesList[i]==obj$Series
 				seriesVals=obj[idx,]
 				# seriesvals$Obs=seriesvals$Obs   # /q[i] - set to 1 anyway
@@ -1010,7 +1091,7 @@ plotCI = function (x, y=NULL, ui, li, uiw=0.05, liw=uiw, clipNA=TRUE,
 ##  ylim=c(0,0.0005).
 ##  Andrew Edwards. Edited lines indicated by AME. 19 October 2010
 ## -----------------------------------------AME/RH
-plotDensPOP = function (mcmc, probs=get("quants3")[c(1,3)], points = FALSE, axes = TRUE, 
+plotDensPOP = function (mcmc, probs=tcall(quants3)[c(1,3)], points = FALSE, axes = TRUE, 
    same.limits = FALSE, between = list(x = axes, y = axes), 
    div = 1, log = FALSE, base = 10, main = NULL, xlab = NULL, 
    ylab = NULL, cex.main = 1.2, cex.lab = 1, cex.strip = 0.8, 
@@ -1104,7 +1185,7 @@ plotDensPOP = function (mcmc, probs=get("quants3")[c(1,3)], points = FALSE, axes
 #  to put MPDs on. AME. 26th Oct 2010.
 #----------------------------------------------AME
 plotDensPOPpars =
-    function (mcmc, probs=get("quants3")[c(1,3)], points = FALSE, axes = TRUE, 
+    function (mcmc, probs=tcall(quants3)[c(1,3)], points = FALSE, axes = TRUE, 
     same.limits = FALSE, between = list(x = axes, y = axes), 
     div = 1, log = FALSE, base = 10, main = NULL, xlab = NULL, 
     ylab = NULL, cex.main = 1.2, cex.lab = 1, cex.strip = 0.8, 
@@ -1183,7 +1264,7 @@ plotDensPOPpars =
 ## Adding the prior automatically.
 ## -----------------------------------------AME/RH
 plotDensPOPparsPrior <-
-    function (mcmc, probs=get("quants3")[c(1,3)], points=FALSE, axes=TRUE, 
+    function (mcmc, probs=tcall(quants3)[c(1,3)], points=FALSE, axes=TRUE, 
     same.limits=FALSE, between=list(x=axes, y=axes), 
     div=1, log=FALSE, base=10, main=NULL, xlab=NULL, 
     ylab=NULL, cex.main=1.2, cex.lab=1, cex.strip=0.8, 
@@ -1266,7 +1347,7 @@ plotDensPOPparsPrior <-
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotDensPOPparsPrior
 
 
-## plotIndexNotLattice------------------2018-07-10
+## plotIndexNotLattice------------------2019-05-07
 ## Taking some of plt.idx, but doing plot.Index NOT as lattice
 ## obj = currentRes
 ## plotCI is now custom function in PBSawatea (not gplots)
@@ -1276,14 +1357,17 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
    ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"), ...)
 {
 	cvcol="slategrey"
-	objSurv=obj$Survey; objCPUE=obj$CPUE
-	seriesList <- sort( unique( objSurv$Series ) )   # sort is risky if not always in same order
-	nseries=length(seriesList)
+	objSurv        = obj$Survey
+	objCPUE        = obj$CPUE
+	seriesList     = sort( unique( objSurv$Series ) ) ## sort is risky if not always in same order
+	nseries        = length(seriesList)
 	surveyHeadName = if (!exists(".PBSmodEnv")) PBSawatea$Snames else tcall(PBSawatea)$Snames
 	surveyHeadName = gsub("QC Sound", "QCS", surveyHeadName)
 	#surveyHeadName.f = gsub("Historical","historique", gsub("Triennial","triennal", gsub("Synoptic","synoptique", surveyHeadName)))
 	cvpro = tcall(PBSawatea)$cvpro
-	if (is.null(cvpro) || all(cvpro==FALSE)) cvpro=0
+	#if (is.null(cvpro) || all(cvpro==FALSE)) cvpro=0 ## cvpro can no longer be logical
+	if (is.null(cvpro))
+		cvpro = rep(0, nseries)
 	unpackList(tcall(PBSawatea)[c("runNo","rwtNo")])
 
 	# (1) Plot the survey indices 
@@ -1556,7 +1640,7 @@ plotMeanAge =function(obj, useCA=TRUE, useSA=TRUE, CAnames, lang="e")
 ## Adding yLab and then using for exploitation plot also
 ## -----------------------------------------AME/RH
 plotRmcmcPOP=function(obj, 
-   p = get("quants5"),
+   p = tcall(quants5),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -1606,22 +1690,28 @@ plotRmcmcPOP=function(obj,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotRmcmcPOP
 
 
-## plotSnail----------------------------2019-01-09
-## Plot snail-trail plots for MCMC analysis.
+## plotSnail----------------------------2019-05-09
+## Plot snail-trail plots (aka 'Kobe plots') for MCMC analysis.
 ##  AME: replacing "2010" with as.character(currYear - 1)
 ##  RH: added assYrs = years past with estimated Bcurr
 ##      from previous assessment(s), e.g., 5ABC QCS c(2011, 2017)
 ## -----------------------------------------AME/RH
-plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL, 
-	Lwd=1.5, ngear=1, assYrs=NULL, outs=FALSE, lang="e") ## outs = outliers
+plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL, 
+	Lwd=1.5, ngear=1, assYrs=NULL, outs=FALSE, Cnames, lang="e") ## outs = outliers
 {
+	if (missing(Cnames))
+		Cnames  = tcall("PBSawatea")$Cnames        ## names of commercial gear
 	## BU -- B = spawning biomass, U = harvest rate (or exploitation rate)
 	BUlist = as.list(0:ngear); names(BUlist)=c("Spawning Biomass",Cnames[1:ngear])
 	#BUlist[[1]] = BoverBmsy[,-length(BoverBmsy)]
 	BUlist[[1]] = BoverBmsy[,-1]  ## conversation with PJS: we both agree that B2017/Bmsy should be paired with U2016/Umsy
 	for (g in 1:ngear) {
-		gfile = UoverUmsy[,grep(paste0("_",g),names(UoverUmsy))]
-		names(gfile) = substring(names(gfile),1,4)
+		if (any(grepl("_",names(UoverUmsy)))) {
+			gfile = UoverUmsy[,grep(paste0("_",g),names(UoverUmsy))]
+			names(gfile) = substring(names(gfile),1,4)
+		} else {
+			gfile = UoverUmsy
+		}
 		BUlist[[g+1]] = gfile
 	}
 	# Calculate medians to be plotted
@@ -1632,6 +1722,7 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL,
 	colStop  = rep(c("cyan","thistle"),ngear)[1:ngear]  #,"cyan"
 	colLim   = rep(c("blue2","purple"),ngear)[1:ngear]
 	colAss   = rep(c("gold","orange"),ngear)[1:ngear]
+
 	nB = length(BUmed[[1]])
 	if (is.null(xLim))
 		xLim=c(0, max(c(BUmed[[1]], rev(apply(BUlist[[1]],2,quantile,ifelse(outs,1,p[2])))[1], 1)))
@@ -1688,26 +1779,26 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
    cex.axis = 0.8, las = 0, tck = 0.5, tick.number = 5, lty.trace = 1, 
    lwd.trace = 1, col.trace = "grey", lty.median = 1, lwd.median = 1, 
    col.median = "black", lty.quant = 2, lwd.quant = 1, col.quant = "black", 
-   plot = TRUE, probs=get("quants3"), mpd=mcmc[1,], lang="e", ...)  # AME probs
+   plot = TRUE, probs=tcall(quants3), mpd=mcmc[1,], lang="e", ...)  # AME probs
 {
 	panel.trace <- function(x, y, ...) {
 		panel.xyplot(x, y, type = "l", lty = lty.trace, lwd = lwd.trace, col = col.trace)
-			if (any(is.finite(y)) && var(y) > 0) {
-				# print(x)  # gives 1 2 3 ... 1000 for each parameter/yr
-				# panel.xyplot(range(x), rep(median(y), 2), type = "l", 
-				#  lty = lty.median, lwd = lwd.median, col = col.median)
-				panel.xyplot(x, cquantile.vec(y, prob=get("quants3")[1]),
-					type = "l", lty = lty.quant, lwd = lwd.quant, col = col.quant)
-				panel.xyplot(x, cquantile.vec(y, prob=get("quants3")[2]),
-					type = "l", lty = lty.median, lwd = lwd.median, col = col.median)
-				panel.xyplot(x, cquantile.vec(y, prob=get("quants3")[3]),
-					type = "l", lty = lty.quant, lwd = lwd.quant, col = col.quant)
-				panel.xyplot(x[1], mpd[panel.number()], pch=19, col="red") # AME
-				panel.xyplot(x[1], mpd[panel.number()], pch=1, col="black") 
-				# AME, based on plt.trace, assume x[1]=1
-				# suppressWarnings(panel.loess(x, y, span = span,
-				#  lty = lty.loess, lwd = lwd.loess, col =col.loess,...))
-			}
+		if (any(is.finite(y)) && var(y) > 0) {
+			# print(x)  # gives 1 2 3 ... 1000 for each parameter/yr
+			# panel.xyplot(range(x), rep(median(y), 2), type = "l", 
+			#  lty = lty.median, lwd = lwd.median, col = col.median)
+			panel.xyplot(x, cquantile.vec(y, prob=tcall(quants3)[1]),
+				type = "l", lty = lty.quant, lwd = lwd.quant, col = col.quant)
+			panel.xyplot(x, cquantile.vec(y, prob=tcall(quants3)[2]),
+				type = "l", lty = lty.median, lwd = lwd.median, col = col.median)
+			panel.xyplot(x, cquantile.vec(y, prob=tcall(quants3)[3]),
+				type = "l", lty = lty.quant, lwd = lwd.quant, col = col.quant)
+			panel.xyplot(x[1], mpd[panel.number()], pch=19, col="red") # AME
+			panel.xyplot(x[1], mpd[panel.number()], pch=1, col="black") 
+			# AME, based on plt.trace, assume x[1]=1
+			# suppressWarnings(panel.loess(x, y, span = span,
+			#  lty = lty.loess, lwd = lwd.loess, col =col.loess,...))
+		}
 	}
 	relation <- if (same.limits) "same" else "free"
 	if (is.null(dim(mcmc))) {
@@ -1753,50 +1844,60 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotTracePOP
 
 
-## plotTraj-----------------------------2018-08-02
+## plotTraj-----------------------------2019-05-16
 ## Show all median trajectories (base+sens) in one figure.
 ## ---------------------------------------------RH
-plotTraj = function(dat, index, traj="B", y0=FALSE, lab.stock, 
-   col=c("black","green4","blue","red","purple","orange"), 
+plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock, 
+   col = c("black","green4","blue","red","purple","orange"), 
+   lty = c(2:6),
    png=FALSE, pngres=400, PIN=c(8,8), lang=c("e","f"), ...)
 {
 	opar = par(no.readonly=TRUE); on.exit(par(opar))
 	Ntraj     = length(traj)
 	trajYears = startYear:currYear
 	Nyears    = length(trajYears)
-	run.rwts  = names(dat$currentMCMC.sens)[index]
-	do.call("assign", args=list(x="run.rwts", value=run.rwts, envir=.GlobalEnv))
-	Nruns     = length(run.rwts)
-	trajMat   = array(NA, dim=c(Nyears,Nruns,Ntraj), dimnames=list(year=trajYears, run=run.rwts, traj=traj))
-#browser();return()
-	#trajMat   = array(NA, dim=c(Nyears,Nruns,Ntraj+ifelse("BtB0"%in%traj,1,0)), dimnames=list(year=trajYears, run=run.rwts, traj=if("BtB0"%in%traj) c(traj,"BmsyB0") else traj))
+	if (is.null(tcall(run.sens)))
+		run.sens  = names(sdat$currentMCMC.sens)[index]
+	else
+		tget(run.sens)
+	do.call("assign", args=list(x="run.sens", value=run.sens, envir=.GlobalEnv))
+	Nruns     = length(run.sens)
+	trajMat   = array(NA, dim=c(Nyears,Nruns,Ntraj), dimnames=list(year=trajYears, run=run.sens, traj=traj))
+	#trajMat   = array(NA, dim=c(Nyears,Nruns,Ntraj+ifelse("BtB0"%in%traj,1,0)), dimnames=list(year=trajYears, run=run.sens, traj=if("BtB0"%in%traj) c(traj,"BmsyB0") else traj))
 	Bmsy.q5   = list()  ## not always needed
-	tcol      = rep(col,Nruns)[1:Nruns]
-	legtxt    = sen.lab  ## defined in global data object 'stock'
+	if (!is.null(bdat))
+		col = setdiff(col,"black") ## save black for base case
 	## ylabs needs to be a list if mixing character elements with expressions
 	ylabs     = list("Spawning Biomass","Vulnerable Biomass","Recruitment","Exploitation Rate",expression(italic(B[t])/italic(B)[0]),"Unknown")
 	names(ylabs) = c("B","VB","R","U","BtB0","NA")
 	for (i in 1:Nruns) {
-		ii = run.rwts[i]
+		ii = run.sens[i]
 		for (j in 1:Ntraj) {
 			jj = traj[j]
 			if (jj=="BtB0") {
-				jdat = dat[["currentMCMC.sens"]][[ii]][["B"]]
-				dat[["currentMCMC.sens"]][[ii]][[jj]] = sweep(jdat,1,jdat[,1],"/")
+				jdat = sdat[["currentMCMC.sens"]][[ii]][["B"]]
+				sdat[["currentMCMC.sens"]][[ii]][[jj]] = sweep(jdat,1,jdat[,1],"/")
 				## Add Bmsy stuff (thanks PJS for the complication); and then he changed his mind...
-				dat[["currentMCMC.sens"]][[ii]][["BmsyB0"]] = dat[["currentMSY.sens"]][[ii]][["B"]]/jdat[,1]
-				Bmsy.q5[[ii]] = quantile(0.8*dat[["currentMCMC.sens"]][[ii]][["BmsyB0"]],quants5)  ## this won't work if more than one commercial gear
+				sdat[["currentMCMC.sens"]][[ii]][["BmsyB0"]] = sdat[["currentMSY.sens"]][[ii]][["B"]]/jdat[,1]
+				Bmsy.q5[[ii]] = quantile(0.8*sdat[["currentMCMC.sens"]][[ii]][["BmsyB0"]],tcall(quants5))  ## this won't work if more than one commercial gear
 			}
-			jval = apply(dat[["currentMCMC.sens"]][[ii]][[jj]],2,median)  ## this won't work if more than one commercial gear
+			jval = apply(sdat[["currentMCMC.sens"]][[ii]][[jj]],2,median)  ## this won't work if more than one commercial gear
 			#if (jj=="R") jval = log10(jval)
 			trajMat[substring(names(jval),1,4),ii,jj] = jval
 		}
 	}
 	if (missing(lab.stock)) lab.stock = istock
 	
-	fout = fout.e = paste0(lab.stock,".Sens.Traj.",paste0(traj,collapse="+"))
+	createFdir(lang)
+	fout = fout.e = paste0(lab.stock,".sens.traj.",paste0(traj,collapse="+"))
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
+
+		## tcol and legtxt need to be reset inside language loop because they are altered when bdat is supplied
+		tcol    = rep(col,Nruns)[1:Nruns]
+		legtxt  = sen.lab  ## defined in global data object 'stock'
+		tlty    = rep(lty,Nruns)[1:Nruns]
+
 		if (png) png(paste0(fout,".png"), units="in", res=pngres, width=PIN[1], height=PIN[2])
 		par(mfrow=.findSquare(Ntraj), mar=c(3,3.5,0.5,0), oma=c(0,0,0,1), mgp=c(2,0.5,0))
 		x = trajYears; xlim = range(x)
@@ -1806,24 +1907,40 @@ plotTraj = function(dat, index, traj="B", y0=FALSE, lab.stock,
 			ylim = range(jmat,na.rm=TRUE)
 			#if (jj %in% c("BtB0")) ylim[1]=0
 			if (y0) ylim[1] = 0
-			plot(0,0,xlim=xlim,ylim=ylim,type="n",xlab="",ylab="",log=ifelse(jj=="R","y",""))
-			if (jj %in% c("BtB0"))
-				abline(h=seq(0.2,1,0.2),col="gainsboro")
-			sapply(ncol(jmat):1,function(i){
-				ii  = run.rwts[i]
-				lty = list(...)$lty
+			plot(0,0,xlim=xlim,ylim=ylim,type="n",xlab="",ylab="",log=ifelse(jj=="RRR","y",""))
+#browser();return()
+			if (jj %in% c("BtB0")){
+				#abline(h=seq(0.2,1,0.2),col="gainsboro")
+				abline(h=c(0.2,0.4,1), lty=5, col="grey20") #col=c("salmon","darkorchid","navy"))
+			}
+			sapply(1:ncol(jmat),function(i){
+				ii  = run.sens[i]
+				#lty = list(...)$lty
 				## Add median BmsyB0 if available (PJS says it's too cluttered)
 				#if (jj=="BtB0" && length(Bmsy.q5)>0)
 				#	abline(h=Bmsy.q5[[ii]][3], col=tcol[i], lwd=1, lty=lty[i])
 				y = jmat[,ii]
-				if (is.null(lty)) lty=rep(1,Nruns)
-				lines(x,y, col=tcol[i], lwd=ifelse(i==1,1.5,1), lty=lty[i])
+				#if (is.null(lty)) lty=rep(1,Nruns)
+				lines(x,y, col=tcol[i], lwd=ifelse(i==1,2,2), lty=tlty[i]) ## no longer include base case in first position
 			})
-			mtext(linguaFranca("Year",l), side=1, line=1.75, cex=1)
-			#ylab = ifelse(jj=="B","Spawning Biomass",ifelse(jj=="VB","Vulneerable Biomass",ifelse(jj=="R","Recruitment",ifelse(jj=="U","Exploitation Rate","Unknown"))))
 #browser();return()
-			mtext(linguaFranca(ylabs[[jj]],l), side=2, line=1.8, cex=1.2)
-			if (j==1) addLegend(0.02, 0, col=tcol, seg.len=3, legend=linguaFranca(legtxt[1:Nruns],l), bty="n", xjust=0, yjust=0, lwd=1, ...)
+			if (!is.null(bdat)){  ## Assume for now that this is the Base Case (could be other runs)
+				bline = bdat[[jj]]
+				lines(as.numeric(names(bline)), bline, col="black", lty=1, lwd=3)
+			}
+			mtext(linguaFranca("Year",l), side=1, line=1.75, cex=ifelse(Ntraj==1,1.5,1))
+			#ylab = ifelse(jj=="B","Spawning Biomass",ifelse(jj=="VB","Vulnerable Biomass",ifelse(jj=="R","Recruitment",ifelse(jj=="U","Exploitation Rate","Unknown"))))
+			mtext(linguaFranca(ylabs[[jj]],l), side=2, line=1.8, cex=ifelse(Ntraj==1,1.5,1.2))
+			if (j==1){
+				legtxt = gsub("_"," ",legtxt)
+				if (!is.null(bdat)){
+					legtxt = c("Central run", legtxt[1:Nruns])
+					tcol   = c("black",tcol)
+					tlty    = c("solid", tlty)
+				}
+#browser():return()
+				addLegend(ifelse(jj%in%c("R"),0.975,0.05), ifelse(jj%in%c("BtB0"),0.025,0.975), col=tcol, seg.len=5, legend=linguaFranca(legtxt,l), bty="o", box.col="grey", bg="white", xjust=ifelse(jj%in%c("R"),1,0), yjust=ifelse(jj%in%c("BtB0"),0,1), lwd=2, lty=tlty, ...)
+			}
 			if (Ntraj==1) {
 				axis(1,at=intersect(seq(1900,2500,5),x),labels=FALSE,tcl=-0.2)
 				axis(1,at=intersect(seq(1900,2500,10),x),labels=FALSE)
@@ -1843,7 +1960,7 @@ plotTraj = function(dat, index, traj="B", y0=FALSE, lab.stock,
 ##  currentMCMC$B.  currentRes1 is local currentRes.
 ## -----------------------------------------AME/RH
 plotVBcatch=function(obj, currentRes1=currentRes,
-   p = get("quants5"),
+   p = tcall(quants5),
    xyType="quantBox",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -1917,7 +2034,7 @@ plotVBcatch=function(obj, currentRes1=currentRes,
 # RH -- following 3 lines for debugging only
 #g=1; ngear=1
 #test = currentMCMC$VB[,grep(paste0("_",g),names(currentMCMC$VB))]; names(test) = substring(names(test),1,4)
-#plotVBcatch(test, currentRes, gear=g, yLab=ifelse(ngear==1,"Catch and vulnerable biomass (t)",Cnames[g]), yLim=c(0,max(sapply(test,quantile,quants5[5]))),cex.lab=1.25)
+#plotVBcatch(test, currentRes, gear=g, yLab=ifelse(ngear==1,"Catch and vulnerable biomass (t)",Cnames[g]), yLim=c(0,max(sapply(test,quantile,tcall(quants5)[5]))),cex.lab=1.25)
 
 
 #--------------------------------------------------------------------#
@@ -1945,10 +2062,11 @@ plt.ageResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95),  main=NUL
       allAges=min(obj$Age):max(obj$Age)
       nodataAges=allAges[ !(allAges %in% obj$Age)]
       xx=split(c(obj$stdRes, rep(NA, length(nodataAges))), c(obj$Age, nodataAges))
-      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
-    } else
-    {            
-    xpos <- boxplot( split( obj$stdRes, obj$Age ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+      #xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+      xpos <- quantbox(xx, xlab="", ylab="", pars=tcall(boxpars))
+    } else {
+      #xpos <- boxplot( split( obj$stdRes, obj$Age ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+      xpos <- quantbox(split(obj$stdRes,obj$Age), xlab="", ylab="", pars=tcall(boxpars))
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, text=linguaFranca("Age class",lang) )
@@ -2273,10 +2391,11 @@ plt.cohortResids <- function( obj, ages=c(2,59), pct=c(5,25,50,75,95),
       allYears=min(obj$birthyr):max(obj$birthyr)
       nodataYears=allYears[ !(allYears %in% obj$birthyr)]
       xx=split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$birthyr, nodataYears))
-      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
-    } else
-    {            
-    xpos=boxplot( split( obj$stdRes, obj$birthyr ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+      #xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+      xpos <- quantbox(xx, xlab="", ylab="", pars=tcall(boxpars))
+    } else {
+      #xpos=boxplot( split( obj$stdRes, obj$birthyr ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+      xpos <- quantbox(split(obj$stdRes,obj$birthyr), xlab="", ylab="", pars=tcall(boxpars))
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, text=linguaFranca("Year of birth",lang) )
@@ -2485,7 +2604,7 @@ plt.numR <- function( obj, minYr=NULL )
 ##   use as template for decisions tables once we have MSY.
 ## --------------------------------------------AME
 plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
-   p=get("quants5"), xyType="lines", lineType=c(3,2,1,2,3),
+   p=tcall(quants5), xyType="lines", lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
    userPrompt=FALSE, save=TRUE, yaxis.lab="Spawning biomass", lang="e")
 {
@@ -2633,7 +2752,7 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
 ##  Now using for single recruitment projection plot
 ## -----------------------------------------AME/RH
 plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
-   p = get("quants5"),
+   p = tcall(quants5),
    xyType="lines",
    lineType=c(3,2,1,2,3),
    refLines=NULL, xLim=NULL, yLim=NULL,
@@ -2954,17 +3073,123 @@ plt.yearResidsPOP <- function(obj, ages=c(2,60), pct=c(5,25,50,75,95),
       allYears=min(obj$Year):max(obj$Year)
       nodataYears=allYears[ !(allYears %in% obj$Year)]
       xx=split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$Year, nodataYears))
-      xpos <- boxplot( xx, whisklty=1, xlab="", ylab="",
-          outline=FALSE, ... )     #AME outline=FALSE removes outliers
-      # browser()
-    } else
-    {  
-      xpos <- boxplot( split( obj$stdRes, obj$Year ), whisklty=1, xlab="", ylab="", outline=FALSE, ... )     #AME outline=FALSE removes outliers
+      #xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE, ... )     #AME outline=FALSE removes outliers
+      xpos <- quantbox(xx, xlab="", ylab="", pars=tcall(boxpars), ...)
+    } else {
+      #xpos <- boxplot( split( obj$stdRes, obj$Year ), whisklty=1, xlab="", ylab="", outline=FALSE, ... ) #AME outline=FALSE removes outliers
+      xpos <- quantbox( split(obj$stdRes,obj$Year), xlab="", ylab="", pars=tcall(boxpars), ...)
     }
   abline( h=0, lty=2, col="red" )
   mtext( side=1, line=2, cex=0.8, text=linguaFranca("Year",lang) )
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.yearResidsPOP
+
+
+## quantBox-----------------------------2018-04-03
+##  Redefine boxplot to show quantiles (RH 150910)
+##  http://r.789695.n4.nabble.com/Box-plot-with-5th-and-95th-percentiles-instead-of-1-5-IQR-problems-implementing-an-existing-solution-td3456123.html
+##  Use PBStools solution without requiring PBStools.
+##  This needs to be in `zzz.r' for package compilation but will repeat
+##  in `plotFuns.r' for running code locally without loading package.
+## ---------------------------------------------RH
+local(envir=.PBSmodEnv,expr={
+	myboxplot.stats <- function (x, coef=NULL, do.conf=TRUE, do.out=TRUE)
+	{
+		nna <- !is.na(x)
+		n <- sum(nna)
+		if (!exists("quants5"))
+			quants5 = c(0.05,0.25,0.50,0.75,0.95)
+		stats <- quantile(x, quants5, na.rm=TRUE) ## one day figure out how to make this dynamic
+		iqr <- diff(stats[c(2, 4)])
+		out <- x < stats[1] | x > stats[5]
+		conf <- if (do.conf)
+			stats[3] + c(-1.58, 1.58) * diff(stats[c(2, 4)])/sqrt(n)
+		list(stats = stats, n = n, conf = conf, out = x[out & nna])
+	}
+	boxcode = deparse(boxplot.default)
+	boxcode = gsub("boxplot\\.stats","tcall(myboxplot.stats)",boxcode)
+	eval(parse(text=c("qboxplot=",boxcode)))
+})
+
+##quantBox------------------------------2016-03-24
+## Redefine boxplot to show quantiles (RH 150910)
+## http://r.789695.n4.nabble.com/Box-plot-with-5th-and-95th-percentiles-instead-of-1-5-IQR-problems-implementing-an-existing-solution-td3456123.html
+## Use PBStools' 'quantBox' but call it 'quantbox'
+##----------------------------------------------RH
+quantbox = function (x, use.cols = TRUE, ...) ## taken from boxplot.matrix
+{
+	tget(qboxplot)
+	if (rev(class(x))[1]=="matrix") {
+		groups <- if (use.cols) 
+			split(x, rep.int(1L:ncol(x), rep.int(nrow(x), ncol(x))))
+		else split(x, seq(nrow(x)))
+		if (length(nam <- dimnames(x)[[1 + use.cols]])) 
+		names(groups) <- nam
+		qboxplot(groups, ...)
+	}
+	else qboxplot(x, ...)
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotbox
+
+
+## splineCPUE---------------------------2019-01-03
+## Fit spline curves through CPUE data to determine 
+## optimal degrees of freedom (balance between rigorously
+## fitting indices while not removing the majority of the signal)
+## and to calculate CV process error from RSS at optimal DF.
+## ---------------------------------------------RH
+splineCPUE = function(dat, ndf=50,
+   png=FALSE, pngres=400, PIN=c(8,8))
+{
+	## Collect residual sum of squares by degrees of freedom
+	DF  = seq(2,nrow(dat),length.out=ndf)
+	#DF  = seq(0,1,length.out=100)
+	RSS = rep(NA,length(DF))#; names(RSS) = DF
+	for (i in 1:length(DF)){
+		ii = DF[i]
+		RSS[i] = smooth.spline(dat[,"year"], dat[,"cpue"], df=ii, all.knots=TRUE)$pen.crit
+	}
+	dRSS = c(0,diff(RSS))
+	df.opt = DF[findPV(min(dRSS),dRSS)]
+
+	if (png) png("CPUEres-CVpro.png", units="in", res=pngres, width=PIN[1], height=PIN[2])
+	expandGraph(mfrow=c(2,2), mar=c(3,3,0.5,0.5), cex=1)
+
+	plot(DF, RSS, type="n")
+	addLabel(0.5, 0.95, "Residual Sum of Squares", adj=0.5)
+	abline(v=df.opt, col="green4", lty=3)
+	lines(DF, RSS, col="red", lwd=2)
+
+	plot(DF, dRSS, type="n")
+	addLabel(0.5, 0.95, "Change in RSS (~slope)", adj=0.5)
+	abline(v=df.opt, col="green4", lty=3)
+	lines(DF, dRSS, col="blue", lwd=2)
+	if (ndf<=50)
+		points(DF,dRSS, pch=21, cex=.8, col="blue", bg="yellow")
+
+	CVpro = sqrt(RSS[findPV(min(dRSS),dRSS)]/(nrow(dat)-2))/mean(dat$cpue)
+
+	##  Plot the data and the 'optimal' fit
+	plot(cpue ~ year, data = dat, pch=21, col="green4", bg="green", cex=1.1) #, main = "data(cpue) & smoothing splines")
+	cpue.spl <- with(dat, smooth.spline(year, cpue, all.knots=TRUE))
+	lines(cpue.spl, col="blue", lty=2, lwd=2)
+
+	cpue.df <- smooth.spline(dat[,"year"], dat[,"cpue"], df=df.opt, all.knots=TRUE)
+	lines(cpue.df, col="red", lty=1, lwd=2)
+	addLegend(0.025, 0.97, legend=c(paste0("default df = ", round(cpue.spl$df,4)), paste0("with df = ", round(df.opt,4),", CVpro = ", round(CVpro,4))), col = c("blue","red"), lty = 2:1, bty="n", bg="transparent", adj=0)
+
+	## Residual (Tukey Anscombe) plot:
+	plot(residuals(cpue.df) ~ fitted(cpue.df), ylim=c(-0.35,0.45), pch=21, col="red", bg="pink", cex=1.1)
+	abline(h = 0, col = "red")
+	## consistency check:
+	stopifnot(all.equal(dat$cpue, fitted(cpue.df) + residuals(cpue.df)))
+	## The chosen inner knots in original x-scale :
+	with(cpue.df$fit, min + range * knot[-c(1:3, nk+1 +1:3)]) # == unique(cpue$year)
+
+	if (png) dev.off()
+	return(list(DF=df.opt, RSS=RSS[findPV(min(dRSS),dRSS)], CVpro=CVpro))
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~splineCPUE
 
 
 #==============H I D D E N========================
@@ -2994,5 +3219,4 @@ plt.yearResidsPOP <- function(obj, ages=c(2,60), pct=c(5,25,50,75,95),
    plotCI(1:10,runif(10,3,7),3,2)
    plotTrace(data.frame(this=rnorm(1000),that=rnorm(1000)))
 }
-
 

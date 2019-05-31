@@ -66,12 +66,12 @@
 %% Last line of http://www.latex-community.org/forum/viewtopic.php?f=45&t=4336, a German guy says: 
 %%   You may give the parameter [!p] to place them on a special float page without any text. Didn't solve everything though. 
 %%   Apparently shouldn't have just one argument.
-
+%7.25
 \newcommand\onefig[2]{    % filename is #1, text is #2
   \begin{figure}[h!]
   \begin{center}
   \pdftooltip{
-  \includegraphics[width=6.4in,height=7.25in,keepaspectratio=TRUE]{{#1}.\ptype}}{Figure~\ref{fig:#1}}
+  \includegraphics[width=6.4in,height=7.5in,keepaspectratio=TRUE]{{#1}.\ptype}}{Figure~\ref{fig:#1}}
   \end{center}
   \caption{#2}
   \label{fig:#1}
@@ -349,6 +349,7 @@ setwd(fig.dir)
 ##  minor modifications, and summary of outputs is the same.
 currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
 	Dev=TRUE, CPUE=TRUE, Survey=TRUE, CLc=TRUE, CLs=TRUE, CAs=TRUE, CAc=TRUE, extra=TRUE)
+save("currentRes",file="currentRes.rda")  ## useful to have when compiling the final results appendix
 
 ## WHEN TIME, change this in importRes function, see:     
 ##  model$B$R <- c(rec[-1], NA)     and check emails from Arni, seems
@@ -365,6 +366,8 @@ currentRes = importRes(paste(run.dir,"/", model.name, ".res",sep=""),
 ##currentRes$B$R = c( sum(currentRes$N[currentRes$N$Year == "1940" & currentRes$N$Age == "1", ]$N),  currentRes$B$R[-length(currentRes$B$R)] )  
 
 currentPar = importPar(paste(run.dir,"/", model.name, ".par", sep=""))
+save("currentPar",file="currentPar.rda")  ## useful to have (maybe)
+
 ## Assign a generic title for use in some plots.
 mainTitle <- "@sppname"
 
@@ -964,9 +967,8 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 @rmsex @rmCA @rmCA2 \onefig{ageCommMaleSer1B}{Observed and predicted commercial (\Sexpr{tolower(CAnames[1])}) proportions-at-age for males. Note that years are not necessarily consecutive.}
 
 \clearpage 
-
 %=======Next line will be expanded to accommodate multiple gears=======
-@rmCA \onefig{commAgeResSer1}{Residual of fits of model to commercial proportions-at-age data (MPD values) for \Sexpr{CAnames[1]} events.  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give interquartile ranges, with bold lines representing medians and whiskers extending to the most extreme data point that is $<$@one.5 times the interquartile range from the box. Bottom panel is the normal quantile-quantile plot for residuals, with the @one:@one line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for a total of \Sexpr{residsCAcFem[1]*2} residuals).}
+@rmCA \onefig{commAgeResSer1}{Residual of fits of model to commercial proportions-at-age data (MPD values) for \Sexpr{CAnames[1]} events.  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give quantile ranges (0.25-0.75) with horizontal lines at medians, vertical whiskers extend to the the 0.05 and 0.95 quantiles, and outliers appear as plus signs. Bottom panel is the normal quantile-quantile plot for residuals, with the @one:@one line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for a total of \Sexpr{residsCAcFem[1]*2} residuals).}
 
 @rmsex %=======Next line will be expanded to accommodate multiple gears=======
 @rmsex @rmCA \onefig{commAgeResSer1Female}{Residual of fits of model to commercial proportions-at-age data (MPD values) for females (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcFem[1]} residuals.}
@@ -1001,10 +1003,10 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 @rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) with 95\% confidence intervals and model estimates (joined open squares) for the commercial and survey age data.}
 
-\twofig{stockRecruit}{recruits}{Top: Deterministic stock-recruit relationship (black curve) and observed values (labelled by year of spawning) using MPD values. Bottom: Recruitment (MPD values of age-1 individuals in year $t$) over time, in 1,000s of age-1 individuals, with a mean of \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=",")}.}
+\twofig{stockRecruit}{recruits}{Top: deterministic stock-recruit relationship (black curve) and observed values (labelled by year of spawning) using MPD values. Bottom: recruitment (MPD values of age-1 individuals in year $t$) over time, in 1,000s of age-1 individuals, with a mean of \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=",")}.}
 
 %% #1=fig1 filename, #2=fig2 filename, #3=caption text, #4=fig1 width #5=fig1 height, #6=fig2 width, #7=fig2 height
-\twofigWH{recDev}{recDevAcf}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: Auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]}. The start of this range is calculated as the first year of commercial age data (\Sexpr{firstYearOfAgeData}) minus the accumulator age class ($A=$\Sexpr{A}) plus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}); if the result is earlier than the model start year (\Sexpr{years[1]}), then the model start year is used. The end of the range is the final year that recruitments are calculated (\Sexpr{as.numeric(max(names(logRecDev.mpd)))}) minus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}).}{5}{3.33333}{5}{4.16667}
+\twofigWH{recDev}{recDevAcf}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]}. The start of this range is calculated as the first year of commercial age data (\Sexpr{firstYearOfAgeData}) minus the accumulator age class ($A=$\Sexpr{A}) plus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}); if the result is earlier than the model start year (\Sexpr{years[1]}), then the model start year is used. The end of the range is the final year that recruitments are calculated (\Sexpr{as.numeric(max(names(logRecDev.mpd)))}) minus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}).}{5}{3.33333}{5}{4.16667}
 
 \onefig{selectivity}{Selectivities for commercial catch (\Sexpr{paste(paste0("Gear ",1:length(Cnames),": ",Cnames),collapse=", ")}) and surveys (all MPD values), with maturity ogive for females indicated by `m'.}
 
@@ -1017,9 +1019,9 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 % \onefig{Bt}{Spawning biomass (mature females) over time for run \Sexpr{model.name} (MPD values).}
 
 %% #1=fig1 filename, #2=fig2 filename, #3=caption text, #4=fig1 width #5=fig1 height, #6=fig2 width, #7=fig2 height
-\twofigWH{BtB0}{catchSmall}{Spawning biomass (mature females) relative to unfished level, $B_t/B_0$, and commercial catch, for run \Sexpr{model.name}.}{6.4}{5.33333}{6.4}{3.2}
+\twofigWH{BtB0}{catchSmall}{Top: spawning biomass (mature females) relative to unfished level, $B_t/B_0$. Bottom: commercial catch.}{6.4}{5.33333}{6.4}{3.2}
 
-\twofig{exploit}{catch}{TOP: Exploitation rate (MPD) over time; BOTTOM: catch (t) by gear type for run \Sexpr{model.name}.}
+\twofig{exploit}{catch}{Top: exploitation rate (MPD) over time. Bottom: catch (t) by gear type.}
 
 %\onefig{catch}{Catch (t) by gear type for run \Sexpr{model.name}.}
 

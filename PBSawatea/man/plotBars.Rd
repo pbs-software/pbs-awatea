@@ -12,7 +12,7 @@ plotBars(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
     eps=FALSE, png=FALSE, win=TRUE, pngres = 400, lang="e", ...)
 }
 \arguments{
-  \item{res}{Awatea results file from a call to \code{importRes}: \cr
+  \item{res}{\code{list} -- Awatea results file \code{'currentRes'} from a call to \code{importRes}: \cr
     \code{importRes("POPrun05/pop-3CD.05.01.res",Dev=T,CPUE=T,Survey=T,CAc=T,CAs=T)}}
   \item{type}{\code{character} -- type of annual value (e.g., \code{"N"} = numbers, \code{"B"} = biomass).}
   \item{prop}{\code{logical} -- if \code{TRUE}, convert values from \code{type} to proportions.}
@@ -40,11 +40,13 @@ plotBars(res, type="N", prop=TRUE, year=min(res[[type]][["Year"]]),
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-25}
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2019-05-31}
 }
 \seealso{
-  \code{\link[PBSawatea]{plotBox}}, \code{\link[PBSawatea]{compB0}}
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{quantbox}},
+  \code{\link[PBSawatea]{compB0}}
 }
 \keyword{hplot}
 

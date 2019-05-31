@@ -5,6 +5,60 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.5.0 (2019-05-31) [Rcheck=T, Rbuild=T]
+  * PBSscape.r
+    + Assigned `quants3', `quants5', and `boxpars' to the .PBSmodEnv rather than making them global. (RH 190531)
+      - Changed plotting functions relying on these objects to use `tcall' instead of `get'.
+    + Added a global assigns for `outline' and `boxpars' for the calls to `quantbox' in building pdf docs for MCMC runs.
+    + Added a few small tweaks to function `plt.mpdGraphs' (RH 190509)
+      - Skip calling plot functions for ages if all fits are equal to zero.
+      - Changed data passed to `plotACFs' from `currentMCMC' to `mcmcObj$P'.
+      - Changed call to `plotChains' to `panelChains'.
+    + Removed function `findTarget' and moved it to `utilFuns.r'.
+  * plotFuns.r
+    + Repeated `myboxplot.stats' and `qboxplot' in `zzz.r' (for package building) and `plotFuns.r' for running local code only. (RH 190531)
+    + Added new function `panelBoxes' to plot quantile plots using `nchains' to delimit separate boxes. (RH 190521)
+    + Revised function `mochaLatte' to be more flexible with arguments and to accomodate quantile box limits. (RH 190521)
+    + Renamed function `plotChains' to `panelChains' to be consistent with other functions using `mochaLatte'. (RH 190509)
+    + Created new function `panelTraces' for comparing parameter traces in `Model Results' appendix. (RH 190509)
+    + Revised function `plotACFS' to take paramater MCMCs directly rather than extracting them from a general MCMC object. (RH 190509)
+    + Revised function `plotAges' to skip plotting age fits if fits are all zero. (RH 190507)
+    + Recreated PBStools' function `quantBox' as `quantbox' to continue reliance only on PBSmodelling. (RH 180403)
+      - Note that some PBStools functions may have creeped into the PBSawatea because RH is the only person using PBSawatea.
+      - The function `plotBox' has been deprecated in favour of `quantbox' but still exists for a transition period.
+    + Revised function `plotCPUE' to remove condtion `all(cvpro==FALSE)' because sometimes (e.g. WWR) all cvpro are zero. (RH 190507)
+    + Ditto for function `plotIndexNotLattice' re: cvpro check for logicals (cvpro can only be numeric now). (RH 190509)
+    + Revised function `plotSnail' to get UoverUmsy after is has been combined (averaged) across gear types. (RH 190509)
+    + Revised function `plotTraj' to deal with 12 WWR sensitivities -- colours, line types, etc. (RH 190516)
+    + Revised functions `plt.ageResidsPOP', `plt.cohortResids', `plt.yearResidsPOP' to use `quantbox' rather than `boxplot' (RH 190509)
+      - Gag me with a spoon Heather.
+      - Also turned the outliers back on (AME had turned them off).
+    + Added new function `splineCPUE' to fit spline curves through CPUE data to determine CV process error. (RH 190103)
+  * runADMB.r
+    + Changed method of reweighting in function `runADMB' and method `setMethod.reweight'. (RH 190404)
+      - Previously, choices were based on values (mixed logical|numeric) of `cvpro' and `mean.age'.
+      - New method uses vectors of method type for abundance (A.reweight) and composition (C.reweight) with length `N.reweight'.
+      - Allows for independent reweighting of CVs for abundance and AF SS (sample size) for composition.
+      - Also allows the user to choose which reweighting gets which method (mix and|or match).
+      - PJS suggested this for WWR 2019 based on work by Alistair Dunn (NZ ling on Chatham Rise).
+  * runSweaveMCMC.r
+    + Made small tweaks like checking if `log_qCPUE' was estimated when Ncpue=0. (RH 190425)
+  * utilFuns.r
+    + Added new function `combGear' to combine values by year from multiple gear types. (RH 190501)
+      - e.g., add biomass values, calculate geometric mean of exploitation rates.
+    + Moved function `findTarget' from `PBSscape.r' to this `utilFuns.r'.
+    + Added new function `getNpan' to get panel number when inside a multi-panel plot. (RH 190501)
+  * run-master.Snw
+    + Added calls to `save' for `currentRes' and `currentPar'. (RH 190508)
+    + Changed figure caption for residual plots to reflect the use of quantile plots over boxplots. (RH 190508)
+    + Made other small tweaks to figure captions for consistency.
+  * run-masteMCMC.Snw
+    + Added the MPD values to `currentMCMC' for use in Appendix F. (RH 190503)
+      - currentMCMC$mpd = list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R)
+    + Gather Ucurr earlier in the code; create `prevYear' to index Ucurr.
+    + Added `UcurrGM.MCMC' (GM=geometric mean) as a target for `findTarget' when generating reference points.
+    + Rearranged order of decision tables -- Bt>LRP, Bt>USR, Bt>Bmsy, ut<umsy, Bt>Bcurr, ut<ucurr, Bt>0.2B0, Bt>0.4B0
+
 1.4.3 (2019-01-07) [Rcheck=F, Rbuild=F]
   * PBSscape.r
     + Changed renaming of output figure files in language loop. (RH 190107)

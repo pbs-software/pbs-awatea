@@ -4,13 +4,14 @@
   Phase Plot of Exploitation vs. Biomass
 }
 \description{
-  Plot the historical progression of the ratio \eqn{u_t/u_{MSY}}{ut/umsy}
-  against \eqn{B_t/B_{MSY}}{Bt/Bmsy}. Traditionally known as \sQuote{phase plots},
-  some wine connoiseurs call these plots \emph{snail trails}.
+  Plot the historical progression of the ratio \eqn{u_{t-1}/u_\mathrm{MSY}}{u[t-1]/u[MSY]}
+  against \eqn{B_t/B_\mathrm{MSY}}{B[t]/B[MSY]}. These plots are known as 
+  \sQuote{phase plots} by traditionalists, \sQuote{Kobe plots} by 
+  tuna commissions, and \sQuote{snail trails} by NZ wine connoisseurs.
 }
 \usage{
-plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL,
-   Lwd=1.5, ngear=1, assYrs=2011, outs=FALSE, lang="e")
+plotSnail(BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
+   Lwd=1.5, ngear=1, assYrs=NULL, outs=FALSE, Cnames, lang="e")
 }
 \arguments{
   \item{BoverBmsy}{\code{numeric} -- matrix of \eqn{B_t}{Bt} over \eqn{B_{MSY}}{Bmsy}.}
@@ -23,26 +24,39 @@ plotSnail(BoverBmsy, UoverUmsy, p=c(0.1,0.9), xLim=NULL, yLim=NULL,
   \item{assYrs}{\code{numeric} -- \sQuote{current} model years of past assessments.}
   \item{outs}{\code{logical} -- if \code{TRUE}, extend the range of the 
     quantile box whiskers to include the outliers (all data).}
+  \item{Cnames}{\code{character} -- vector of commercial gear or fleet names.}
   \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
 }
 \details{
-  The graph attempts to show the time history of the exploitation rate 
-  compared to the spawning biomass using a precautionary framework recast
-  in Bayesian terms.
+  The plot shows the time history of the exploitation rate compared
+  to the spawning biomass using a precautionary framework recast in
+  Bayesian terms.
 }
 \author{
-  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+First created by:\cr
+  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew M. Edwards}, PBS, DFO, Nanaimo BC
 
+Modified by:\cr
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-26}
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2019-05-29}
 }
 \note{
   The term \emph{snail trail} comes from PJS.
+  The millennials have adopted the term \emph{Kobe plot}, so named by the 
+  first joint meeting of the tuna regional fisheries management
+  organizations (RFMOs), held in Kobe, Japan, in January 2007
+  (Anonymous 2007)
+}
+\references{
+  Anonymous (2007)
+  \href{http://www.tuna-org.org/Documents/other/Kobe\%20Report\%20English-Appendices.pdf}{Report of the Joint Meeting of Tuna RFMOs, January 20-26, 2007, Kobe, Japan},
+  Participants: IATTC, ICCAT, IOTC, WCPFC, CCSBT.
 }
 \seealso{
-  \code{\link{plotBVBnorm}}
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{plotBVBnorm}}
 }
 \keyword{hplot}
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

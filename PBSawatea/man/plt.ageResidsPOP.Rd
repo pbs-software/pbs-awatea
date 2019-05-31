@@ -7,7 +7,7 @@
   Plot Model Residuals
 }
 \description{
-  Plot model residuals as boxplots or qq-plots.
+  Plot model residuals as quantile boxes or qq-plots.
 }
 \usage{
 plt.ageResidsPOP  (obj, ages=c(2,60), pct=c(5,25,50,75,95),
@@ -23,36 +23,44 @@ plt.cohortResids  (obj, ages=c(2,59), pct=c(5,25,50,75,95),
    main=NULL, lang="e")
 }
 \arguments{
-  \item{obj}{output from \code{\link{stdRes.CA}}.}
-  \item{ages}{age classes to plot.}
-  \item{pct}{quantiles to show in boxplot or qq-plot.}
-  \item{main}{title for plot if desired.}
-  \item{fill.in}{logical: if \code{TRUE}, add missing years to boxplot.}
+  \item{obj}{\code{data.frame} -- output from function \code{'stdRes.CA'}.}
+  \item{ages}{\code{numeric} -- age classes to plot.}
+  \item{pct}{\code{numeric} -- quantiles to show in quantile boxes or qq-plot.}
+  \item{main}{\code{character} -- title for plot if desired.}
+  \item{fill.in}{\code{logical} -- if \code{TRUE}, add missing years to quantile boxes.}
   \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
-  \item{...}{additional arguments for \code{boxplot}.}
+  \item{...}{additional arguments for function \code{'quantbox'}.}
 }
 \details{
-  \code{plt.ageResidsPOP.....}{plot age class residuals as boxplots.} \cr
+  \code{plt.ageResidsPOP.....}{plot age class residuals as quantile boxes.} \cr
   \code{plt.ageResidsqqPOP...}{plot age class residuals as qq-plot.} \cr
-  \code{plt.yearResidsPOP....}{plot age residuals by year as boxplots.} \cr
-  \code{plt.cohortResids.....}{plot age residuals by cohort as boxplots.} \cr
+  \code{plt.yearResidsPOP....}{plot age residuals by year as quantile boxes.} \cr
+  \code{plt.cohortResids.....}{plot age residuals by cohort as quantile boxes.} \cr
 }
 \author{
-  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+First created by:\cr
+  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew M. Edwards}, PBS, DFO, Nanaimo BC
 
+Modified by:\cr
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-26}
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2019-05-29}
 }
 \note{
   Some trouble noted adding text and legend.
 }
 \seealso{
-  \code{\link{plt.allTraces}}, \code{\link{plt.expRate}}, 
-  \code{\link{plt.idx}}, \code{\link{plt.mcmcGraphs}}, 
-  \code{\link{plotIndexNotLattice}}, \code{\link{plotChains}}, 
-  \code{\link{plotCPUE}}
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{panelChains}}, 
+  \code{\link[PBSawatea]{panelBoxes}}, 
+  \code{\link[PBSawatea]{plotCPUE}},
+  \code{\link[PBSawatea]{plotIndexNotLattice}},
+  \code{\link[PBSawatea]{plt.allTraces}},
+  \code{\link[PBSawatea]{plt.expRate}}, 
+  \code{\link[PBSawatea]{plt.idx}},
+  \code{\link[PBSawatea]{plt.mcmcGraphs}},
+  \code{\link[PBSawatea]{stdRes.CA}}
 }
 \keyword{hplot}
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
