@@ -59,6 +59,7 @@
 \newcommand{\Bmsy}{B_\mathrm{MSY}}
 \newcommand{\umsy}{u_\mathrm{MSY}}
 \newcommand{\super}[1]{$^\mathrm{#1}$}
+\newcommand{\itbf}[1]{\textit{\textbf{#1}}}
 
 %% For write up
 \def\startP{1}           %% page start (default=1)
@@ -176,16 +177,19 @@
 linguaFranca = try(PBStools::linguaFranca, silent=T)
 createFdir   = try(PBStools::createFdir, silent=T)
 pbstoolsDevDir = "C:/Users/haighr/Files/Projects/R/Develop/PBStools/Authors/Rcode/develop"
-if (class(linguaFranca)=="try-error") {
+#if (class(linguaFranca)=="try-error") {
 	if (file.exists(pbstoolsDevDir)) {
-		extraCode = c("linguaFranca", "createFdir") # ,"formatCatch", "crossTab")
+		extraCode = c("createFdir", "linguaFranca", "changeLangOpts", "formatCatch", "texArray")
 		for (i in extraCode)
 			source(paste0(pbstoolsDevDir,"/",i,".r")) ## to get the latest code
+		eop() ## to set big.mark in options
 	} else {
-		stop("You need the function `linguaFranca' from the PBStools package")
+		if (!exists("linguaFranca"))
+			stop("You need the function `linguaFranca' from the PBStools package")
+		options(big.mark = ",")
 	}
-}
-source(paste0(pbstoolsDevDir,"/","linguaFranca.r")) ## for now just use the latest...
+#}
+#source(paste0(pbstoolsDevDir,"/","linguaFranca.r")) ## for now just use the latest...
 
 ## Get the quantile vectors from the .PBSmodEnv
 tget(quants3)
@@ -197,6 +201,7 @@ Cnames  = tcall("PBSawatea")$Cnames        ## names of commercial gear
 CAnames = Cnames[tcall("PBSawatea")$CApos] ## names of commercial gear with ages
 Snames  = tcall("PBSawatea")$Snames        ## names of surveys
 SAnames = Snames[tcall("PBSawatea")$SApos] ## names of surveys with ages
+Unames  = tcall("PBSawatea")$Unames        ## names of CPUE series
 
 cwd     = "@cwd"    ## Top level directory; all models occur below this one. 
 sigdig  = 4         ## Number of significant digits to output in tables (not used in MCMC Snw)
@@ -233,7 +238,11 @@ Ncpue       = @Ncpue    ## just pass it in through runSweaveMCMC{}
 resdoc      = @resdoc
 eval(parse(text=paste("lang=",deparse(@lang))))
 
-if (is.element(spp.name,c("RSR"))){
+if (is.element(spp.name,c("BOR"))){
+	assYrs = c(2008, 2012)
+} else if (is.element(spp.name,c("WWR"))){
+	assYrs = c(2019)
+} else if (is.element(spp.name,c("RSR"))){
 	assYrs = c(2010, 2018)
 } else if (is.element(spp.name,c("POP"))){
 	if (is.element(area.name,c("5ABC"))){
@@ -292,7 +301,7 @@ if (file.exists(locsdnr)) {
 
 @rmresdoc Graphs ARE \Sexpr{if(!redo.Graphs) paste("NOT")} re-generated during this document build.
 
-Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCMC results and for the write-up.
+%%Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCMC results and for the write-up.
 
 \section{History of Runs}
 
@@ -466,7 +475,7 @@ assign( "currentMCMC", currentMCMC, pos=1 ) ## you do need the assign (maybe bec
 save("currentMCMC",file="currentMCMC.rda")  ## useful to have when compiling the final results appendix
 @
 
-\newcommand{\numMCMC}{\Sexpr{prettyNum(num.MCMC, big.mark=",")}}
+\newcommand{\numMCMC}{\Sexpr{prettyNum(num.MCMC, big.mark=options()$big.mark)}}
 
 <<priors, results=hide, echo=FALSE>>=
 
@@ -602,14 +611,28 @@ names(priorDistList)[is.element(names(priorDistList),pqnames)] = substring(pqnam
 ##  recruitments won't be because the spawning biomassess will be
 ##  changing (first year should be the same though).
 
-currentProj <- importProjRec( dir=prj.dir, ngear=Ngear, quiet=FALSE )
-   ## RH added `ngear' to deal with multiple Virgin VBs
-   ## importProjRec includes epsilons for recruitments
-   ## Then below we calcualte the actual recruitments.
-   ## RH: Note that only one VB series is projected because input file specifies:
-   ## Gear used in projections (0=read in; 1=use same gear proportions as last year of data)
+## Assume constant catch (CC) policy:
+if (file.exists(paste0(sub("/$","",prj.dir),"/CC"))) {
+	currentProj <- importProjRec( dir=paste0(sub("/$","",prj.dir),"/CC"), ngear=Ngear, quiet=FALSE )
+} else {
+	currentProj <- importProjRec( dir=prj.dir, ngear=Ngear, quiet=FALSE )
+}
+## Check for Harvest Rate (HR) policy:
+if (file.exists(paste0(sub("/$","",prj.dir),"/HR"))) {
+	currentProj2 <- importProjRec( dir=paste0(sub("/$","",prj.dir),"/HR"), ngear=Ngear, quiet=FALSE )
+} else {
+	currentProj2 <- NULL
+}
+
+## RH added `ngear' to deal with multiple Virgin VBs
+## importProjRec includes epsilons for recruitments
+## Then below we calcualte the actual recruitments.
+## RH: Note that only one VB series is projected because input file specifies:
+## Gear used in projections (0=read in; 1=use same gear proportions as last year of data)
 
 currentProj <- sapply(currentProj,function(X){sapply(X,function(x,s){x[s,]},s=mcsub,simplify=FALSE)},simplify=FALSE)
+if (!is.null(currentProj2))
+	currentProj2 <- sapply(currentProj2,function(X){sapply(X,function(x,s){x[s,]},s=mcsub,simplify=FALSE)},simplify=FALSE)
 
 ## **** COMMENTING THIS OUT TO GET POP 5ABC WORKING
 ## Rowan, can we put an 'if' statement in to ignore this only for POP 5ABC.
@@ -632,12 +655,24 @@ if (@skip.last.year) {
 
 ## Calculate projected exploitation rates.
 currentProj$U = currentProj$VB    ## Want the same size
+if (!is.null(currentProj2)) {
+	currentProj2$U = currentProj2$VB    ## Want the same size
+}
 
 catchProj = names(currentProj$VB)
 for(i in catchProj)
-  {
-  currentProj$U[[i]] = currentProj$Y[[i]] / currentProj$VB[[i]]
+{
+	currentProj$U[[i]] = currentProj$Y[[i]] / currentProj$VB[[i]]
 }
+if (!is.null(currentProj2)) {
+	catchProj2 = names(currentProj2$VB)
+	for(i in catchProj2)
+	{
+		currentProj2$U[[i]] = currentProj2$Y[[i]] / currentProj2$VB[[i]]
+	}
+}
+
+
 ## So currentProj$U is now exploitation rate for MCMC projections.
 
 ## boxplot(currentProj$U[[5]])   to plot
@@ -673,7 +708,7 @@ currYearChar  = rev(dimnames(currentMCMC$B)[[2]])[1]
                 # character current year (start for projections)
 ## AME changing RH's Year0 to currYear
 currYear      = as.numeric(currYearChar)          ## numeric current year
-prevYear      = currYear - 1                      ## previous year for final exploitation
+prevYear      = currYear - 1   ## previous year for final exploitation
 prevYearChar  = as.character(prevYear)
 startYearChar = dimnames(currentMCMC$B)[[2]][1]   ## start year
 startYear     = as.numeric(startYearChar)
@@ -720,6 +755,10 @@ trevorMCMC = data.frame(trevorMCMC, B0=B0.MCMC[,1], MSY=msy.MCMC, Bmsy=Bmsy.MCMC
 
 ## To calculate the actual projected recruitments (from the eps)
 currentProj$R = list()
+if (!is.null(currentProj2)) {
+	currentProj2$R = list()
+}
+
 NN = matrix(1:num.MCMC, nrow=1)      # to use to populate each data.frame
 projYearsNames = names(currentProj$B[[1]])
 projYearsNum   = length(projYearsNames)
@@ -743,37 +782,41 @@ if (!is.element("h",use.Pnames))
   
 RfirstProj = srFun(Bpen.MCMC, R0 = currentMCMC$P$R_0, h=hForProj, B0=B0.MCMC)
 
-## Stochastic multiplier, will be same for all strategies as random
-##  numbers currentProj$eps[[j]] are the same for each strategy j
-stochMult = exp(currentProj$eps$'0' - sigmaR^2/2)
+currPros = sapply(paste0("currentProj",c("","2")), function(x){eval(parse(text=paste0("!is.null(",x,")")))})
 
-for(j in 1:length(currentProj$eps) )    ## loop over policies
-  {
-  junk = apply(NN, 2, function(i, B, R0, h, B0) {
-   srFun(as.numeric(B[i,]), h = h[i], R0=R0[i], B0=B0[1] ) },
-   B = currentProj$B[[j]],
-   R0 = currentMCMC$P$R_0, h = hForProj, B0=B0.MCMC[,1])  ## RH: I changed B0.MCMC to be a one-column matrix above to be comparable with VB0.MCMC
-       ## Rowan's trick for using apply on each row.
-  junk = t(junk)
-  junk = as.data.frame(junk)
-       ## This gives data frame,
-       ##  rows are MCMC samples, columns are recruits for the
-       ##  next year. Need to insert RfirstProj as first column,
-       ##  and remove final column (which corresponds to recruits
-       ##  for the year after final projection year).
-  detR = cbind(RfirstProj, junk)
-  detR = detR[, -dim(detR)[2] ]         ## take off final column
-  names(detR) = projYearsNames          ## detR is deterministic values
-  stochR = detR * stochMult
-  currentProj$R[[j]] = stochR
-  }
-names(currentProj$R) = names(currentProj$eps)
+for(i in names(currPros)[currPros]) {
+	cP = get(i)
+	## Stochastic multiplier, will be same for all strategies as random
+	##  numbers currentProj$eps[[j]] are the same for each strategy j
+	stochMult = exp(cP$eps$'0' - sigmaR^2/2)
 
-assign( "currentProj", currentProj, pos=1 )
-save("currentProj",file="currentProj.rda")  ## useful to have when compiling the final results appendix
+	for(j in 1:length(cP$eps) )    ## loop over policies
+	{
+		junk = apply(NN, 2, function(i, B, R0, h, B0) {
+			srFun(as.numeric(B[i,]), h = h[i], R0=R0[i], B0=B0[1] )
+		},
+		B  = cP$B[[j]],
+		R0 = currentMCMC$P$R_0, h = hForProj, B0=B0.MCMC[,1] )  ## RH: I changed B0.MCMC to be a one-column matrix above to be comparable with VB0.MCMC
+		## Rowan's trick for using apply on each row.
+		junk = t(junk)
+		junk = as.data.frame(junk)
+		## This gives data frame,
+		## rows are MCMC samples, columns are recruits for the next year.
+		## Need to insert RfirstProj as first column, and remove final column
+		## (which corresponds to recruits for the year after final projection year).
+		detR = cbind(RfirstProj, junk)
+		detR = detR[, -dim(detR)[2] ]         ## take off final column
+		names(detR) = projYearsNames          ## detR is deterministic values
+		stochR = detR * stochMult
+		cP$R[[j]] = stochR
+	}
+	names(cP$R) = names(cP$eps)
+	assign( i, cP, pos=1 )
+	eval(parse(text=paste0("save(\"", i, "\", file=\"", i, ".rda\")")))  ## useful to have when compiling the final results appendix
+}
 @ %end <<MSY>> chunk
 
-<<refpoints, results=hide, echo=FALSE>>=
+<<BRPprobs, results=hide, echo=FALSE>>=
 
 ##===============================================================
 ## Bmsy Reference points (could move this to scape at some point):
@@ -787,156 +830,175 @@ save("currentProj",file="currentProj.rda")  ## useful to have when compiling the
 ##  for now as these are what are used in Sweave for POP 3CD and 5DE.
 ##===============================================================
 
-refPointsList = refPoints(currentMCMC, currentProj, currentMSY, refLevels=c(0.4, 0.8, 1))  # default DFO settings (located in `PBSscape.r')
-## See refPointsB0 for B0
-refProbsList = calc.refProbs(currentProj$B, refPlist=refPointsList, op=">")  ## default settings (located in `PBSscape.r')
-
-## That's a list, each element is the full table for P > LRP, USR or Bmsy,
-##  rows are const catch scenarios and columns are years.
-
-## Adding in tenYear projections for POP 3CD and 5DE 2012.
+#refPointsList = refPoints(currentMCMC, currentProj, currentMSY, refLevels=c(0.4, 0.8, 1))  # default DFO settings (located in `PBSscape.r')
+### See refPointsB0 for B0
+#refProbsList = calc.refProbs(currentProj$B, refPlist=refPointsList, op=">")  ## default settings (located in `PBSscape.r')
+#
+### That's a list, each element is the full table for P > LRP, USR or Bmsy,
+###  rows are const catch scenarios and columns are years.
+#
+### Adding in tenYear projections for POP 3CD and 5DE 2012.
+### scenarioSubset = c("0", "500", "1000", "1500", "2000" "2250"....
+#fiveYears   = as.character(currYear+seq(0,5,1))
+#tenYears    = as.character(currYear+seq(0,10,1))
+#twentyYears = as.character(currYear+seq(0,20,5))
+#ninetyYears = as.character(currYear+seq(0,90,15))
+#pyYears     = as.character(currYear+seq(0,(projYearsNum-1),1))
+#
+#refProbs5 = list()    # Probs for 5 years
+#refProbs10 = list()   # Probs for 10 years
+#refProbs20 = list()   # Probs for 20 years
+#refProbs90 = list()   # Probs for 90 years
+#refProbsPY = list()   # Probs for projYearsNum
+#for(i in 1:length(refProbsList))
+#	{
+#	refProbsPY[[i]] = refProbsList[[i]][,pyYears] # just in case the projections span some weird number of years
+#	names(refProbsPY)[i] = names(refProbsList)[i]
+#	if (projYearsNum>=5) {
+#		refProbs5[[i]] = refProbsList[[i]][,fiveYears]
+#		names(refProbs5)[i] = names(refProbsList)[i] }
+#	if (projYearsNum>=10) {
+#		refProbs10[[i]] = refProbsList[[i]][,tenYears]
+#		names(refProbs10)[i] = names(refProbsList)[i] }
+#	if (projYearsNum>=20) {
+#		refProbs20[[i]] = refProbsList[[i]][,twentyYears]
+#		names(refProbs20)[i] = names(refProbsList)[i] }
+#	if (projYearsNum>=90) {
+#		refProbs90[[i]] = refProbsList[[i]][,ninetyYears]
+#		colnames(refProbs90[[i]]) =  as.numeric(colnames(refProbs90[[i]])) - currYear
+#		names(refProbs90)[i] = names(refProbsList)[i] }
+#	}
+#
+### To check some random values:
+### sum( currentProj$B[["1800"]][,"2019"] > 0.4 * Bmsy.MCMC)
+#
+### B0 Reference points, not doing moving window here yet 
+###  (could move this to scape at some point):
+#
+### B0 reference points (NZ and US)
+#B0refLevels=c(0.2, 0.4, 0.5, 0.7)
+#B0refNames = paste("B0", B0refLevels, sep="")
+### Above two lines are defaults (function in `PBSscape.r')
+#refPointsB0List = refPointsB0(currentMCMC, currentProj, B0.MCMC, B0refLevels, B0refNames)
+#
+#refProbsB0List = calc.refProbs(currentProj$B, refPlist=refPointsB0List, op=">") ## function in `PBSscape.r'
+### That's a list, each element is the full table for P> each ref point,
+###  rows are const catch scenarios and columns are years.
+#
 ## scenarioSubset = c("0", "500", "1000", "1500", "2000" "2250"....
-fiveYears   = as.character(currYear+seq(0,5,1))
-tenYears    = as.character(currYear+seq(0,10,1))
-twentyYears = as.character(currYear+seq(0,20,5))
-ninetyYears = as.character(currYear+seq(0,90,15))
-pyYears     = as.character(currYear+seq(0,(projYearsNum-1),1))
-
-refProbs5 = list()    # Probs for 5 years
-refProbs10 = list()   # Probs for 10 years
-refProbs20 = list()   # Probs for 20 years
-refProbs90 = list()   # Probs for 90 years
-refProbsPY = list()   # Probs for projYearsNum
-for(i in 1:length(refProbsList))
-	{
-	refProbsPY[[i]] = refProbsList[[i]][,pyYears] # just in case the projections span some weird number of years
-	names(refProbsPY)[i] = names(refProbsList)[i]
-	if (projYearsNum>=5) {
-		refProbs5[[i]] = refProbsList[[i]][,fiveYears]
-		names(refProbs5)[i] = names(refProbsList)[i] }
-	if (projYearsNum>=10) {
-		refProbs10[[i]] = refProbsList[[i]][,tenYears]
-		names(refProbs10)[i] = names(refProbsList)[i] }
-	if (projYearsNum>=20) {
-		refProbs20[[i]] = refProbsList[[i]][,twentyYears]
-		names(refProbs20)[i] = names(refProbsList)[i] }
-	if (projYearsNum>=90) {
-		refProbs90[[i]] = refProbsList[[i]][,ninetyYears]
-		colnames(refProbs90[[i]]) =  as.numeric(colnames(refProbs90[[i]])) - currYear
-		names(refProbs90)[i] = names(refProbsList)[i] }
-	}
-
-## To check some random values:
-## sum( currentProj$B[["1800"]][,"2019"] > 0.4 * Bmsy.MCMC)
-
-## B0 Reference points, not doing moving window here yet 
-##  (could move this to scape at some point):
-
-## B0 reference points (NZ and US)
-B0refLevels=c(0.2, 0.4, 0.5, 0.7)
-B0refNames = paste("B0", B0refLevels, sep="")
-## Above two lines are defaults (function in `PBSscape.r')
-refPointsB0List = refPointsB0(currentMCMC, currentProj, B0.MCMC, B0refLevels, B0refNames)
-
-refProbsB0List = calc.refProbs(currentProj$B, refPlist=refPointsB0List, op=">") ## function in `PBSscape.r'
-## That's a list, each element is the full table for P> each ref point,
-##  rows are const catch scenarios and columns are years.
-
-# scenarioSubset = c("0", "500", "1000", "1500", "2000" "2250"....
-
-refProbsB05 = list()    # Probs for 5 years
-refProbsB010 = list()   # Probs for 10 years
-refProbsB020 = list()   # Probs for 20 years
-refProbsB090 = list()   # Probs for 90 years
-#refProbsB0PY = list()   # Probs for projYearsNum
-for(i in 1:length(refProbsB0List))
-	{
-	if (projYearsNum>=5) {
-		refProbsB05[[i]] = refProbsB0List[[i]][,fiveYears]
-		names(refProbsB05)[i] = names(refProbsB0List)[i] }
-	if (projYearsNum>=10) {
-		refProbsB010[[i]] = refProbsB0List[[i]][,tenYears]
-		names(refProbsB010)[i] = names(refProbsB0List)[i] }
-	if (projYearsNum>=20) {
-		refProbsB020[[i]] = refProbsB0List[[i]][,twentyYears]
-		names(refProbsB020)[i] = names(refProbsB0List)[i] }
-	if (projYearsNum>=90) {
-		refProbsB090[[i]] = refProbsB0List[[i]][,ninetyYears]
-		colnames(refProbsB090[[i]]) =  as.numeric(colnames(refProbsB090[[i]])) - currYear
-		names(refProbsB090)[i] = names(refProbsB0List)[i] }
-	}
+#
+#refProbsB05 = list()    # Probs for 5 years
+#refProbsB010 = list()   # Probs for 10 years
+#refProbsB020 = list()   # Probs for 20 years
+#refProbsB090 = list()   # Probs for 90 years
+##refProbsB0PY = list()   # Probs for projYearsNum
+#for(i in 1:length(refProbsB0List))
+#	{
+#	if (projYearsNum>=5) {
+#		refProbsB05[[i]] = refProbsB0List[[i]][,fiveYears]
+#		names(refProbsB05)[i] = names(refProbsB0List)[i] }
+#	if (projYearsNum>=10) {
+#		refProbsB010[[i]] = refProbsB0List[[i]][,tenYears]
+#		names(refProbsB010)[i] = names(refProbsB0List)[i] }
+#	if (projYearsNum>=20) {
+#		refProbsB020[[i]] = refProbsB0List[[i]][,twentyYears]
+#		names(refProbsB020)[i] = names(refProbsB0List)[i] }
+#	if (projYearsNum>=90) {
+#		refProbsB090[[i]] = refProbsB0List[[i]][,ninetyYears]
+#		colnames(refProbsB090[[i]]) =  as.numeric(colnames(refProbsB090[[i]])) - currYear
+#		names(refProbsB090)[i] = names(refProbsB0List)[i] }
+#	}
 ## To give 0, 15 ... as colnames for decision tables
 
 ## Moving window reference points from Rowan's findTarget.r code (`PBSscape.r'),
 ##  which also calculates 0.4 Bmsy and others.
 
-## -----------------------------------------------
-## 'refProbs3GenList' contains probabilities for the main
+## --------------------------------------------------------------
+## 'BRPprobsList' contains probabilities for the main
 ##   decision tables (usually only use MSY-based RefPts).
 ## Will include Bmsy and B0 RefPts already calculated above,
-##   e.g., refProbs3GenList$'0.4Bmsy' - refProbs$LRP = matrix of 0's
-## -----------------------------------------------
-refProbs3GenList = list()
+##   e.g., BRPprobsList$'0.4Bmsy' - refProbs$LRP = matrix of 0's
+## --------------------------------------------------------------
+BRPprobsList = BRPprobsList2 = URPprobsList = URPprobsList2 = list()
 
 ## List of targets:
 Tlst = list(
   list(ratio=0.4,target=Bmsy.MCMC),
   list(ratio=0.8,target=Bmsy.MCMC),
+  list(ratio=1.0,target=Bmsy.MCMC),
+  list(ratio=1.0,target=Bcurr.MCMC[,1]),
   list(ratio=0.2,target=B0.MCMC[,1]),
   list(ratio=0.4,target=B0.MCMC[,1]),
+  ##---COSEWIC---
   list(ratio=0.5,target=currentMCMC$B),
   list(ratio=0.7,target=currentMCMC$B),
-  list(ratio=1.0,target=Bcurr.MCMC[,1])
+  list(ratio=0.5,target=B0.MCMC[,1]),
+  list(ratio=0.7,target=B0.MCMC[,1])
 )
-names(Tlst)=c("0.4Bmsy","0.8Bmsy","0.2B0","0.4B0","0.5Gen3","0.7Gen3", "Bcurr")
-
-refProbs3GenList = sapply(Tlst,function(x){sapply(currentProj$B, findTarget, ratio=x$ratio, target=x$target, retVal="p.hi", op=">")}, simplify=FALSE)
-refProbs3GenList = sapply(refProbs3GenList,t,simplify=FALSE)  ## transpose matrices
+names(Tlst)=c("0.4Bmsy","0.8Bmsy","Bmsy","Bcurr","0.2B0","0.4B0","0.5Gen3","0.7Gen3","0.5B0","0.7B0")
 
 ## And have to do separately for u_t < u_MSY:
-Tlst.u = list(
+Ulst = list(
   list(ratio=1, target=umsy.MCMC),
   list(ratio=1, target=UcurrGM.MCMC)
 )
-names(Tlst.u) = c("umsy","ucurr")
+names(Ulst) = c("umsy","ucurr")
 
-## create table for u < umsy
-## Project u must combine both commercial gears???
-#for (i in 1:Ngear) {
-refProbs3GenList.u = sapply(Tlst.u, function(x){sapply(currentProj$U, findTarget, ratio=x$ratio, target=x$target, retVal="p.hi", op="<")}, simplify=FALSE)
-refProbs3GenList.u = sapply(refProbs3GenList.u,t,simplify=FALSE)  ## transpose matrices
+## Generation times (y): YMR=30, BOR=20
+## ------------------------------------
+gen1 = ifelse(spp.name %in% c("BOR"), 20, ifelse(spp.name %in% c("YMR"), 30, 20))
+Ngen = 3
 
-## If need 5/90 years then have to add in below:
+for(i in names(currPros)[currPros]) {
+	cP = get(i)
+	ii = sub("^currentProj","",i)
+	#print(ii)
 
-## To just get probabilities for 5 or 90 years (if available)
-refProbs3Gen5 = list()    # Probs for 5 years
-refProbs3Gen90 = list()   # Probs for 90 years
+	BRPpList = sapply(Tlst,function(x){sapply(cP$B, findTarget, ratio=x$ratio, target=x$target, retVal="p.hi", op=">", yrG=Ngen*gen1)}, simplify=FALSE)
+	BRPpList = sapply(BRPpList,t,simplify=FALSE)  ## transpose matrices
+	assign( paste0("BRPprobsList",ii), BRPpList, pos=1 )
 
-for(i in 1:length(refProbs3GenList))
-{
-	if (projYearsNum>=5) {
-		refProbs3Gen5[[i]] = refProbs3GenList[[i]][,fiveYears]
-		names(refProbs3Gen5)[i] = names(refProbs3GenList)[i]
+	## create table for u < umsy
+	## Project u must combine both commercial gears using 'tcall(Usplit)'
+	## ------------------------------------------------------------------
+	URPpList = sapply(Ulst, function(x){sapply(cP$U, findTarget, ratio=x$ratio, target=x$target, retVal="p.hi", op="<", yrG=Ngen*gen1)}, simplify=FALSE)
+	URPpList = sapply(URPpList,t,simplify=FALSE)  ## transpose matrices
+	assign( paste0("URPprobsList",ii), URPpList, pos=1 )
+
+	## Also calculate number of years to reach reference target points with a specified confidence
+	Ttab.temp = Utab.temp = list()
+	for (j in c(0.50,0.65,0.80,0.95)) {
+		jj = formatC(j,digits=2,format="f")
+		Ttab.temp[[jj]]  = pmin(sapply(Tlst, function(x){sapply(cP$B, findTarget, ratio=x$ratio, target=x$target, conf=j,  retVal="N", op=">", yrG=Ngen*gen1)}), Ngen*gen1)
+		Utab.temp[[jj]]  = pmin(sapply(Ulst, function(x){sapply(cP$U, findTarget, ratio=x$ratio, target=x$target, conf=j,  retVal="N", op="<", yrG=Ngen*gen1)}), Ngen*gen1)
 	}
-	if (projYearsNum>=90) {
-		refProbs3Gen90[[i]] = refProbs3GenList[[i]][,ninetyYears]
-		colnames(refProbs3Gen90[[i]]) =  as.numeric(colnames(refProbs3Gen90[[i]])) - currYear
-		names(refProbs3Gen90)[i] = names(refProbs3GenList)[i]
-	}
+	assign( paste0("Ttab.conf",ii), Ttab.temp, pos=1 )
+	assign( paste0("Utab.conf",ii), Utab.temp, pos=1 )
 }
-## To give 0, 15 ... as colnames for decision tables
 
-## Also calculate number of years to reach reference target points
-##  with a specified confidence, 0.5, 0.8 and 0.95
-Ttab0.5  = sapply(Tlst, function(x){sapply(currentProj$B, findTarget, ratio=x$ratio, target=x$target, conf=0.5,  retVal="N", op=">")})
-Ttab0.8  = sapply(Tlst, function(x){sapply(currentProj$B, findTarget, ratio=x$ratio, target=x$target, conf=0.8,  retVal="N", op=">")})
-Ttab0.95 = sapply(Tlst, function(x){sapply(currentProj$B, findTarget, ratio=x$ratio, target=x$target, conf=0.95, retVal="N", op=">")})
-
-
-## From Rowan - quantiles for every year, then manually find the maximum median. 
-## Not quite what I did above.
-# Uquant  = apply(currentMCMC$U,2,quantile,quants3)
-# Umean16 = apply(Uquant[,as.character(1997:2012)],1,mean)
+## To get probabilities for 5y, 10y, or 3 generations (if available)
+## [deprecated] -- not really used any more
+#BRPprobs05 = BRPprobs10 = BRPprobs3G = list()   ## Initialise list objects
+#
+#for(i in 1:length(BRPprobsList))
+#{
+#	if (projYearsNum>=5) {
+#		projyrs = as.character(currYear+seq(0,5,1))
+#		BRPprobs05[[i]] = BRPprobsList[[i]][,projyrs]
+#		names(BRPprobs05)[i] = names(BRPprobsList)[i]
+#	}
+#	if (projYearsNum>=10) {
+#		projyrs = as.character(currYear+seq(0,10,1))
+#		BRPprobs10[[i]] = BRPprobsList[[i]][,projyrs]
+#		names(BRPprobs10)[i] = names(BRPprobsList)[i]
+#	}
+#	if (projYearsNum>=(Ngen*gen1)) {
+#		projyrs = as.character(currYear+seq(0,Ngen*gen1,1))
+#		BRPprobs3G[[i]] = BRPprobsList[[i]][,projyrs]
+#		#colnames(BRPprobs3G[[i]]) =  as.numeric(colnames(BRPprobs3G[[i]])) - currYear
+#		names(BRPprobs3G)[i] = names(BRPprobsList)[i]
+#	}
+#}
 
 ## Catch for last num.recentCatchYears years of data:
 num.recentCatchYears = 5
@@ -955,7 +1017,7 @@ if( diff(range(rev(CATCH)[1:2])) < 0.7 )  # for 5DE the 2012, was set to 2011 ro
 
 recentCatchMean = mean(recentCatch)
 lab.recentCatchYears = paste(names(recentCatch)[c(1,num.recentCatchYears)],collapse="-")
-refCatSentence = paste0("For reference, the average ", catch.type, " catch over the last ", num.recentCatchYears, " years (", lab.recentCatchYears, ") is ", round(recentCatchMean, dig=0), "~t. ")
+refCatSentence = paste0("For reference, the average ", catch.type, " catch over the last ", num.recentCatchYears, " years (", lab.recentCatchYears, ") was ", round(recentCatchMean, dig=0), "~t. ")
 
 maxCatch = max(CATCH)
 maxCatchYear = as.numeric(names(CATCH)[grep(maxCatch,CATCH)[1]])
@@ -963,8 +1025,9 @@ if (any(spp.name=="ROL")){
 	maxCatSentence = paste("The maximum historical female catch estimate in Area ", area.name, "  was ", round(maxCatch), "~t in ", maxCatchYear,". ",sep="")
 } else { maxCatSentence = "" }
 
-# u.MCMC.med = apply(currentMCMC$U, 2, median)  # median for each year
+## u.MCMC.med = apply(currentMCMC$U, 2, median)  # median for each year
 ## For snail plots:
+
 currentMCMC$UoverUmsy = as.data.frame(apply(currentMCMC$U, 2, function(x,y){ x/y },  y=umsy.MCMC))    # No transpose
 UoverUmsy.med = apply(currentMCMC$UoverUmsy, 2, median)
 ## qtab(currentMCMC$UoverUmsy[,"2010"], dig=decdig.ptab )    agrees with values below in the table
@@ -1001,13 +1064,13 @@ save("currentMCMC",file="currentMCMC.rda")  ## useful to have when compiling the
 
 A = max(currentRes$Sel[,"Age"])
 #T = diff(range(currentRes$B[,"Year"]))+1       # =72
-Ct = currentRes$B$Y[-length(currentRes$B$Y)]    # Takes off 2011 value
+Ct = currentRes$B$Y[-length(currentRes$B$Y)]    # Takes off catch in final year
 # years = currentRes$B[,"Year"]    # moving earlier
 ages = sort(unique(currentRes$CAc$Age))
 
 selgeqComm = currentRes$Sel[currentRes$Sel$"Series" == "Gear 1",] 
-  ## comm sel, selgeq4 for POP, presumably woudl be 6 for YMR as 5 survey yrs, so just write Comm
-#mat = currentRes$Sel[currentRes$Sel$"Series" == "Maturity" & currentRes$Sel$"Sex" == "Female",]      # Female maturity
+## comm sel, selgeq4 for POP, presumably woudl be 6 for YMR as 5 survey yrs, so just write Comm
+## mat = currentRes$Sel[currentRes$Sel$"Series" == "Maturity" & currentRes$Sel$"Sex" == "Female",]      # Female maturity
 mat = currentRes$Sel[is.element(currentRes$Sel$"Series","Maturity") & is.element(currentRes$Sel$"Sex",c("Female","Unisex")),]  # Female maturity
 # M1 = currentMCMC$P[1,"M_1"]                 # MPD is first line of MCMC
 # M2 = currentMCMC$P[1,"M_2"]                 # MPD is first line of MCMC
@@ -1026,7 +1089,10 @@ logRecDev.mpd = currentRes$Dev$Annual
 ## Also equals currentRes$extra$parameters$log_RecDev from Rowan's 'extra' sublist  in currentRes.
 
 ## AME deleted lots of commented out code. 20th August 2012.
+@  %% end of <<BRPprobs>> chunk
 
+
+<<HRPprobs, results=hide, echo=FALSE>>=
 ##-----------------------------------------------------
 ## RH adding historical refrerence points for Rock Sole
 ##-----------------------------------------------------
@@ -1036,17 +1102,17 @@ if (is.element(spp.name,c("ROL","rol","621"))) {
 } else {
 	HRP.YRS = list(blimYrs=1966:2005, btarYrs=1977:1985, ulimYrs=NULL, utarYrs=1966:2005)
 }
-refPointsHistList = refPointsHist(HRP.YRS=HRP.YRS)  # pass in list of obscure years for calculating Rock Sole historical ref points (B & u MCMCs)
+HRPlist = refPointsHist(HRP.YRS=HRP.YRS)  # pass in list of obscure years for calculating Rock Sole historical ref points (B & u MCMCs)
 
 if (is.element(spp.name,c("ROL","rol","621"))) {
 	trevorMCMC = data.frame(trevorMCMC, 
-		Blim = refPointsHistList$blimHRP,
-		Btar = refPointsHistList$btarHRP,
-		utar = refPointsHistList$utarHRP ) }
+		Blim = HRPlist$blimHRP,
+		Btar = HRPlist$btarHRP,
+		utar = HRPlist$utarHRP ) }
 
-hrp.B = calc.refProbsHist(currentProj$B,refPointsHistList[c("blimHRP","btarHRP")], op=">") ## default values (function in `PBSscape.r')
-hrp.U = calc.refProbsHist(currentProj$U,refPointsHistList[c("ulimHRP","utarHRP")], op="<") ## function in `PBSscape.r'
-refProbsHistList = c(hrp.B,hrp.U)
+hrp.B = calc.refProbsHist(currentProj$B,HRPlist[c("blimHRP","btarHRP")], op=">") ## default values (function in `PBSscape.r')
+hrp.U = calc.refProbsHist(currentProj$U,HRPlist[c("ulimHRP","utarHRP")], op="<") ## function in `PBSscape.r'
+HRPprobsList = c(hrp.B,hrp.U)
 
 ## That's a list, each element is the full table for P> LRP, USR or Bmsy, rows are const catch scenarios and columns are years.
 
@@ -1057,31 +1123,31 @@ tenYears    = as.character(currYear+seq(0,10,1))
 twentyYears = as.character(currYear+seq(0,20,5))
 ninetyYears = as.character(currYear+seq(0,90,15))
 
-refProbsHist5 = list()    # Probs for 5 years
-refProbsHist10 = list()   # Probs for 10 years
-refProbsHist20 = list()   # Probs for 20 years
-refProbsHist90 = list()   # Probs for 90 years
-for(i in 1:length(refProbsHistList)) {
-	if (is.null(refProbsHistList[[i]])) next
+HRPprobs5 = list()    # Probs for 5 years
+HRPprobs10 = list()   # Probs for 10 years
+HRPprobs20 = list()   # Probs for 20 years
+HRPprobs90 = list()   # Probs for 90 years
+for(i in 1:length(HRPprobsList)) {
+	if (is.null(HRPprobsList[[i]])) next
 	if (projYearsNum>=5) {
-		refProbsHist5[[i]] = refProbsHistList[[i]][,fiveYears]
-		names(refProbsHist5)[i] = names(refProbsHistList)[i]
+		HRPprobs5[[i]] = HRPprobsList[[i]][,fiveYears]
+		names(HRPprobs5)[i] = names(HRPprobsList)[i]
 	}
 	if (projYearsNum>=10) {
-		refProbsHist10[[i]] = refProbsHistList[[i]][,tenYears]
-		names(refProbsHist10)[i] = names(refProbsHistList)[i]
+		HRPprobs10[[i]] = HRPprobsList[[i]][,tenYears]
+		names(HRPprobs10)[i] = names(HRPprobsList)[i]
 	}
 	if (projYearsNum>=20) {
-		refProbsHist20[[i]] = refProbsHistList[[i]][,twentyYears]
-		names(refProbsHist20)[i] = names(refProbsHistList)[i]
+		HRPprobs20[[i]] = HRPprobsList[[i]][,twentyYears]
+		names(HRPprobs20)[i] = names(HRPprobsList)[i]
 	}
 	if (projYearsNum>=90) {
-		refProbsHist90[[i]] = refProbsHistList[[i]][,ninetyYears]
-		colnames(refProbsHist90[[i]]) =  as.numeric(colnames(refProbsHist90[[i]])) - currYear
-		names(refProbsHist90)[i] = names(refProbsHistList)[i]
+		HRPprobs90[[i]] = HRPprobsList[[i]][,ninetyYears]
+		colnames(HRPprobs90[[i]]) =  as.numeric(colnames(HRPprobs90[[i]])) - currYear
+		names(HRPprobs90)[i] = names(HRPprobsList)[i]
 	}
 }
-@  %% end of <<refpoints>> chunk
+@  %% end of <<HRPprobs>> chunk
 
 
 \newcommand{\currYear}{\Sexpr{currYear}} %% so can include in captions. 
@@ -1143,21 +1209,21 @@ ptab = function(xx) {
 }
 ## Quantile tabulation summary using decimal places
 qtab = function(xx.MCMC, dig=0) {  ## dig is number of dec places
-	print(paste0( c( prettyNum(round(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=","),
-		" & ", prettyNum(round(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=","),
-		" & ", prettyNum(round(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=",")), collapse=""))
+	print(paste0( c( prettyNum(round(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=options()$big.mark),
+		" & ", prettyNum(round(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=options()$big.mark),
+		" & ", prettyNum(round(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=options()$big.mark)), collapse=""))
 }
 ## Quantile tabulation summary using significant digits
 stab = function(xx.MCMC, dig=3) {  ## dig is number sig digits
-	print(paste0( c( prettyNum(signif(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=","), 
-		" & ", prettyNum(signif(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=","),
-		" & ", prettyNum(signif(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=",")), collapse=""))
+	print(paste0( c( prettyNum(signif(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=options()$big.mark), 
+		" & ", prettyNum(signif(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=options()$big.mark),
+		" & ", prettyNum(signif(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=options()$big.mark)), collapse=""))
 }
 ## to give median (5%-95%) to put in text.
 med5.95 = function(xx.MCMC, dig=0){  ## dig is number of dec places
-	print(paste0( c( prettyNum(round(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=","),
-		"~(", prettyNum(round(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=","), 
-		"-", prettyNum(round(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=","), ")"), collapse=""))
+	print(paste0( c( prettyNum(round(quantile(xx.MCMC, quants3[2]), digits=dig), big.mark=options()$big.mark),
+		"~(", prettyNum(round(quantile(xx.MCMC, quants3[1]), digits=dig), big.mark=options()$big.mark), 
+		"-", prettyNum(round(quantile(xx.MCMC, quants3[3]), digits=dig), big.mark=options()$big.mark), ")"), collapse=""))
 }
 
 ## For q_i in table, values can vary between runs, so set to number
@@ -1358,6 +1424,7 @@ if (is.null(assYrs)) {
 
 \clearpage
 \section{Tables -- MCMC Results}
+\subsection{Parameters and Derived Quantities}
 
 %=====TABLE: MCMC QUANTILES=====
 \begin{table}[h!]
@@ -1400,7 +1467,7 @@ $u_\mathrm{max}$       & \Sexpr{qtab(Umax.MCMC, dig=decdig.ptab)} \\
 \hline
 % & & & \\ %CSAS in Ottawa wants blank rows removed (AME 170427)
 & \multicolumn{3}{c}{MSY-based quantities}\\
-$\mathrm{MSY}$                    & \Sexpr{qtab(msy.MCMC)} \\
+$\mathrm{MSY}$ & \Sexpr{qtab(msy.MCMC)} \\
 $B_\mathrm{MSY}$       &  \Sexpr{qtab(Bmsy.MCMC)} \\
 $0.4 B_\mathrm{MSY}$   &  \Sexpr{qtab(0.4*Bmsy.MCMC)} \\
 $0.8 B_\mathrm{MSY}$   &  \Sexpr{qtab(0.8*Bmsy.MCMC)} \\
@@ -1417,18 +1484,17 @@ $u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(Ucurr
 \hline
 @rmhrp  & & & \\
 @rmhrp & \multicolumn{3}{c}{History-based quantities}\\
-@rmhrp $B_\mathrm{Lim}$  & \Sexpr{qtab(refPointsHistList$blimHRP)} \\
-@rmhrp $B_\mathrm{Tar}$  & \Sexpr{qtab(refPointsHistList$btarHRP)} \\
-@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Lim}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$blimHRP, dig=decdig.ptab)} \\
-@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Tar}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/refPointsHistList$btarHRP, dig=decdig.ptab)} \\
-@rmhrp $u_\mathrm{Tar}$       & \Sexpr{qtab(refPointsHistList$utarHRP, dig=decdig.ptab)} \\  % note to future: should this have Ngear dimensions?
+@rmhrp $B_\mathrm{Lim}$  & \Sexpr{qtab(HRPlist$blimHRP)} \\
+@rmhrp $B_\mathrm{Tar}$  & \Sexpr{qtab(HRPlist$btarHRP)} \\
+@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Lim}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/HRPlist$blimHRP, dig=decdig.ptab)} \\
+@rmhrp $B_{\Sexpr{currYear}} / B_\mathrm{Tar}$  & \Sexpr{qtab(Bcurr.MCMC[,1]/HRPlist$btarHRP, dig=decdig.ptab)} \\
+@rmhrp $u_\mathrm{Tar}$       & \Sexpr{qtab(HRPlist$utarHRP, dig=decdig.ptab)} \\  % note to future: should this have Ngear dimensions?
 @rmhrp %=======Next line will be expanded to accommodate multiple gears=======
-@rmhrp $u_{\Sexpr{currYear-@one}} / u_\mathrm{Tar}$ & \Sexpr{qtab(Ucurr.MCMC[,1]/refPointsHistList$utarHRP, dig=decdig.ptab)} \\
+@rmhrp $u_{\Sexpr{currYear-@one}} / u_\mathrm{Tar}$ & \Sexpr{qtab(Ucurr.MCMC[,1]/HRPlist$utarHRP, dig=decdig.ptab)} \\
 @rmhrp \hline
 \end{tabular}
 \end{table}
 
-\clearpage
 
 %% For Decision table write up **** add something like this to the header:
 %% \multicolumn{7}{l}{P$(B_t > 0.4 \Bmsy)$} \\
@@ -1437,117 +1503,420 @@ $u_{\Sexpr{currYear-@one},g=\Sexpr{GI[1]}} / u_\mathrm{MSY}$ & \Sexpr{qtab(Ucurr
 %% \cline{2-7}
 %% strategy & 2011 & 2012 & 2013 & 2014 & 2015 & 2016 \\
 
+
+\clearpage
+\subsection{Decision Tables}
+\subsubsection{GMU -- Guidance for Setting TAC}
 <<tables, results=tex, echo=FALSE>>=
 tabdigits = decdig.dtab
 
 #=====TABLE: DEFAULT DFO MSY REFERENCE POINTS=====
-if (exists("refProbs10") || exists("refProbs5")) {
-	if (projYearsNum >= 10) {
-			refProbs = refProbs10
-	} else {
-		refProbs = refProbs5
-	}
+
+refYears = as.character(currYear+seq(0,min(10,projYearsNum),1))
+
 ##=====TABLE: P(Bt>Bmsy) & P(Ut>Umsy)=====
-	# it didn't like \Sexpr in caption="" - need eval(paste
-	xtabLRP = xtable(refProbs$LRP, label="tab:LRP", digits=tabdigits,
-		caption=eval(paste("Decision table",for.area," concerning the limit reference point $0.4 \\Bmsy$ for 1-",projYearsNum-1," year projections for a range of constant catch strategies (in tonnes). Values are P$(B_t > 0.4 \\Bmsy)$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > 0.4 \\Bmsy$. ", refCatSentence, maxCatSentence, sep="")) )
-	print(xtabLRP, table.placement="!ht", caption.placement="top",
-		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+## it didn't like \Sexpr in caption="" - need eval(paste
 
-	xtabUSR = xtable(refProbs$USR, label="tab:USR", digits=tabdigits,
-		caption=eval(paste("Decision table",for.area," concerning the upper stock reference point $0.8 \\Bmsy$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.8 \\Bmsy)$. ", refCatSentence, maxCatSentence, sep="")) )
-	print(xtabUSR, table.placement="!ht", caption.placement="top",
-		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
-
-	xtabBmsy = xtable(refProbs$Bmsy, label="tab:Bmsy", digits=tabdigits,
-		caption=eval(paste("Decision table",for.area," concerning the reference point $\\Bmsy$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > \\Bmsy)$. ", refCatSentence, maxCatSentence, sep="")) )
-	print(xtabBmsy, table.placement="!ht", caption.placement="top",
-		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+##--- LRP P(Bt>0.4Bmsy) ----------------
+if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.4Bmsy')) {
+	xtabLRP = xtable(BRPprobsList$'0.4Bmsy'[,refYears], label="tab:gmu.LRP.s", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the limit reference point $0.4 \\Bmsy$ for 1-",projYearsNum-1,"-year projections for a range of \\itbf{constant catch} strategies (in tonnes). Values are P$(B_t > 0.4 \\Bmsy)$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > 0.4 \\Bmsy$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtabLRP, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 }
-if (exists("refProbs3GenList.u") && !is.null(refProbs3GenList.u$umsy)) {
-	xtabUmsy = xtable(refProbs3GenList.u$umsy, label="tab:umsy", digits=tabdigits,
-		caption=eval(paste("Decision table", for.area, " for comparing the projected exploitation rate to that at MSY, such that values are P$(u_t < u_\\mathrm{MSY})$, i.e.~the probability of the exploitation rate in the middle of year $t$ being less than that at MSY. ", refCatSentence, maxCatSentence, sep="")))
-	print(xtabUmsy, table.placement="!ht", caption.placement="top",
-		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.4Bmsy')) {
+	xtabLRP2 = xtable(BRPprobsList2$'0.4Bmsy'[,refYears], label="tab:gmu.LRP2.s", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the limit reference point $0.4 \\Bmsy$ for 1-",projYearsNum-1,"-year projections for a range of \\itbf{harvest rate} strategies. Values are P$(B_t > 0.4 \\Bmsy)$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > 0.4 \\Bmsy$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtabLRP2, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 	cat(" \\clearpage \\pagebreak ")
 }
-##=====TABLE: P(Bt>Bcurr)=====
-if (exists("refProbs3GenList") && !is.null(refProbs3GenList$Bcurr)) {
-	xtabBcurr = xtable(refProbs3GenList$Bcurr, label="tab:Bcurr", digits=tabdigits, 
-		caption=eval(paste("Decision table",for.area," for comparing the projected biomass to the current biomass, given by probabilities P$(B_t > B_{\\currYear})$. ", refCatSentence, maxCatSentence, sep="")) )
-	print(xtabBcurr, table.placement="!ht", caption.placement="top",
-		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+##--- USR P(Bt>0.8Bmsy) ----------------
+if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.8Bmsy')) {
+	xtabUSR = xtable(BRPprobsList$'0.8Bmsy'[,refYears], label="tab:gmu.USR.s", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the upper stock reference point $0.8 \\Bmsy$ for 1-",projYearsNum-1,"-year projections for a range of \\itbf{constant catch} strategies (in tonnes), such that values are P$(B_t > 0.8 \\Bmsy)$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtabUSR, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 }
-if (exists("refProbs3GenList.u") && !is.null(refProbs3GenList.u$ucurr)) {
-	xtabUcurr = xtable(refProbs3GenList.u$ucurr, label="tab:ucurr", digits=tabdigits,
-		caption=eval(paste("Decision table", for.area, " for comparing the projected exploitation rate to that in ", prevYearChar, ", such that values are P$(u_t < u_{\\prevYear})$. ", refCatSentence, maxCatSentence, sep="")))
-	print(xtabUcurr, table.placement="!ht", caption.placement="top",
-		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.8Bmsy')) {
+	xtabUSR2 = xtable(BRPprobsList2$'0.8Bmsy'[,refYears], label="tab:gmu.USR2.s", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the upper stock reference point $0.8 \\Bmsy$ for 1-",projYearsNum-1,"-year projections for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.8 \\Bmsy)$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtabUSR2, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
+}
+##--- Bmsy P(Bt>Bmsy) ------------------
+if (exists("BRPprobsList") && !is.null(BRPprobsList$Bmsy)) {
+	xtabBmsy = xtable(BRPprobsList$'Bmsy'[,refYears], label="tab:gmu.Bmsy.s", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the reference point $\\Bmsy$ for 1-",projYearsNum-1,"-year projections-year projections for a range of \\itbf{constant catch} strategies (in tonnes), such that values are P$(B_t > \\Bmsy)$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtabBmsy, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+}
+if (exists("BRPprobsList2") && !is.null(BRPprobsList2$Bmsy)) {
+	xtabBmsy2 = xtable(BRPprobsList2$'Bmsy'[,refYears], label="tab:gmu.Bmsy2.s", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the reference point $\\Bmsy$ for 1-",projYearsNum-1,"-year projections-year projections for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > \\Bmsy)$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtabBmsy2, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
+}
+##--- Umsy P(ut>umsy) ------------------
+if (exists("URPprobsList") && !is.null(URPprobsList$umsy)) {
+	xtabUmsy = xtable(URPprobsList$umsy[,refYears], label="tab:gmu.umsy.s", digits=tabdigits,
+		caption=eval(paste("Decision table", for.area, " comparing the projected exploitation rate to that at MSY for a range of \\itbf{constant catch} strategies, such that values are P$(u_t < u_\\mathrm{MSY})$, i.e.~the probability of the exploitation rate in the middle of year $t$ being less than that at MSY. ", refCatSentence, maxCatSentence, sep="")))
+	print(xtabUmsy, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	#cat(" \\clearpage \\pagebreak ")
+}
+if (exists("URPprobsList2") && !is.null(URPprobsList2$umsy)) {
+	xtabUmsy2 = xtable(URPprobsList2$umsy[,refYears], label="tab:gmu.umsy2.s", digits=tabdigits,
+		caption=eval(paste("Decision table", for.area, " comparing the projected exploitation rate to that at MSY for a range of \\itbf{harvest rate} strategies, such that values are P$(u_t < u_\\mathrm{MSY})$, i.e.~the probability of the exploitation rate in the middle of year $t$ being less than that at MSY. ", refCatSentence, maxCatSentence, sep="")))
+	print(xtabUmsy2, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
+}
+##--- Bcurr P(Bt>Bcurr) ----------------
+if (exists("BRPprobsList") && !is.null(BRPprobsList$Bcurr)) {
+	xtabBcurr = xtable(BRPprobsList$Bcurr[,refYears], label="tab:gmu.Bcurr.s", digits=tabdigits, 
+		caption=eval(paste("Decision table",for.area," comparing the projected biomass to current biomass for a range of \\itbf{constant catch} strategies, given by probabilities P$(B_t > B_{\\currYear})$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtabBcurr, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+}
+if (exists("BRPprobsList2") && !is.null(BRPprobsList2$Bcurr)) {
+	xtabBcurr2 = xtable(BRPprobsList2$Bcurr[,refYears], label="tab:gmu.Bcurr2.s", digits=tabdigits, 
+		caption=eval(paste("Decision table",for.area," comparing the projected biomass to current biomass for a range of \\itbf{harvest rate} strategies, given by probabilities P$(B_t > B_{\\currYear})$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtabBcurr2, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
+}
+##--- ucurr P(ut>ucurr) ----------------
+if (exists("URPprobsList") && !is.null(URPprobsList$ucurr)) {
+	xtabUcurr = xtable(URPprobsList$ucurr[,refYears], label="tab:gmu.ucurr.s", digits=tabdigits,
+		caption=eval(paste("Decision table", for.area, " comparing the projected exploitation rate to that in ", prevYearChar, " for a range of \\itbf{constant catch} strategies, such that values are P$(u_t < u_{\\prevYear})$. ", refCatSentence, maxCatSentence, sep="")))
+	print(xtabUcurr, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	#cat(" \\clearpage \\pagebreak ")
+}
+if (exists("URPprobsList2") && !is.null(URPprobsList2$ucurr)) {
+	xtabUcurr2 = xtable(URPprobsList2$ucurr[,refYears], label="tab:gmu.ucurr2.s", digits=tabdigits,
+		caption=eval(paste("Decision table", for.area, " comparing the projected exploitation rate to that in ", prevYearChar, " for a range of \\itbf{harvest rate} strategies, such that values are P$(u_t < u_{\\prevYear})$. ", refCatSentence, maxCatSentence, sep="")))
+	print(xtabUcurr2, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 	cat(" \\clearpage \\pagebreak ")
 }
 
-#=====TABLE: ALTERNATIVE B0 REFERENCE POINTS=====
-if (exists("refProbsB010") || exists("refProbsB010")) {
-	if (projYearsNum >= 10) {
-			refProbsB0 = refProbsB010
-	} else {
-		refProbsB0 = refProbsB05
-	}
-}
-if (!is.element(spp.name,c("ROL","rol","621"))) {
-	if (exists("refProbsB0")) {
-		xtabB020 = xtable(refProbsB0$B00.2, label="tab:B0_0.2", digits=tabdigits, 
-			caption=eval(paste("Decision table for the alternative limit reference point $0.2 B_0$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.2 B_0)$. ", refCatSentence, maxCatSentence, sep="")) )
-		print(xtabB020, table.placement="!ht", caption.placement="top",
-			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+#if (!is.element(spp.name,c("ROL","rol","621"))) {
 
-		xtabB040 = xtable(refProbsB0$B00.4, label="tab:B0_0.4", digits=tabdigits,
-			caption=eval(paste("Decision table for the alternative upper stock reference point $0.4 B_0$ for 1-",projYearsNum-1," year projections, such that values are P$(B_t > 0.4 B_0)$. ", refCatSentence, maxCatSentence, sep="")) )
-		print(xtabB040, table.placement="!ht", caption.placement="top",
-			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
-		cat(" \\clearpage \\pagebreak ")
-	}
+##--- Alt.LRP P(Bt>0.2B0) --------------
+if(exists("BRPprobsList") && !is.null(BRPprobsList$'0.2B0')) {
+	xtab20B0 = xtable(BRPprobsList$'0.2B0'[,refYears], label="tab:gmu.0.2B0.s", digits=tabdigits, 
+		caption=eval(paste("Decision table for the alternative limit reference point $0.2 B_0$ for 1-",projYearsNum-1," year projections for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.2 B_0)$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtab20B0, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 }
+if(exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.2B0')) {
+	xtab20B02 = xtable(BRPprobsList2$'0.2B0'[,refYears], label="tab:gmu.0.2B02.s", digits=tabdigits, 
+		caption=eval(paste("Decision table for the alternative limit reference point $0.2 B_0$ for 1-",projYearsNum-1," year projections for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.2 B_0)$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtab20B02, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
+}
+##--- Alt.USR P(Bt>0.4B0) --------------
+if(exists("BRPprobsList") && !is.null(BRPprobsList$'0.4B0')) {
+	xtab40B0 = xtable(BRPprobsList$'0.4B0'[,refYears], label="tab:gmu.0.4B0.s", digits=tabdigits,
+		caption=eval(paste("Decision table for the alternative upper stock reference point $0.4 B_0$ for 1-",projYearsNum-1," year projections for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.4 B_0)$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtab40B0, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	#cat(" \\clearpage \\pagebreak ")
+}
+if(exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.4B0')) {
+	xtab40B02 = xtable(BRPprobsList2$'0.4B0'[,refYears], label="tab:gmu.0.4B02.s", digits=tabdigits,
+		caption=eval(paste("Decision table for the alternative upper stock reference point $0.4 B_0$ for 1-",projYearsNum-1," year projections for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.4 B_0)$. ", refCatSentence, maxCatSentence, sep="")) )
+	print(xtab40B02, table.placement="!ht", caption.placement="top", add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
+	cat(" \\clearpage \\pagebreak ")
+}
+
+#}
+
 #=====TABLE: ROCK SOLE HISTORICAL REFERENCE POINTS=====
+## !!! HRP section needs to be revised but not now
+
 if (is.element(spp.name,c("ROL","rol","621"))) {
 	if (projYearsNum >= 10) {
-			refProbsHist = refProbsHist10
+			HRPprobs = HRPprobs10
 	} else {
-		refProbsHist = refProbsHist5
+		HRPprobs = HRPprobs5
 	}
 	# it didn't like \Sexpr in caption="" - need eval(paste
-	xtabBlim = xtable(refProbsHist$blimHRP, label="tab:blimHRP", digits=tabdigits,
-		caption=eval(paste("Decision table",for.area," concerning the historical limit reference point min($B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections for a range of constant catch strategies (in tonnes). Values are P$(B_t > min(B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"}))$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the historical limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > min(B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"})$. ", refCatSentence, maxCatSentence, sep="")) )
+	xtabBlim = xtable(HRPprobs$blimHRP, label="tab:blimHRP", digits=tabdigits,
+		caption=eval(paste("Decision table",for.area," concerning the historical limit reference point min($B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections for a range of \\itbf{constant catch} strategies (in tonnes). Values are P$(B_t > min(B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"}))$, i.e.~the probability of the spawning biomass (mature females) at the start of year $t$ being greater than the historical limit reference point. The probabilities are the proportion (to two decimal places) of the ", num.MCMC, " MCMC samples for which $B_t > min(B_{",paste(range(HRP.YRS$blimYrs),collapse="-"),"})$. ", refCatSentence, maxCatSentence, sep="")) )
 	print(xtabBlim, table.placement="!ht", caption.placement="top",
 		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 
-	xtabBtar = xtable(refProbsHist$btarHRP, label="tab:btarHRP", digits=tabdigits,
+	xtabBtar = xtable(HRPprobs$btarHRP, label="tab:btarHRP", digits=tabdigits,
 		caption=eval(paste("Decision table",for.area," concerning the historical target reference point mean($B_{",paste(range(HRP.YRS$btarYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(B_t > mean(B_{",paste(range(HRP.YRS$btarYrs),collapse="-"),"}))$. ", refCatSentence, maxCatSentence, sep="")) )
 	print(xtabBtar, table.placement="!ht", caption.placement="top",
 		add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 	cat(" \\clearpage \\pagebreak ")
 
-	if(!is.null(refProbsHistList$ulimHRP)) {
-		xtabUlim = xtable(refProbsHistList$ulimHRP, label="tab:ulimHRP", digits=tabdigits,
+	if(!is.null(HRPprobsList$ulimHRP)) {
+		xtabUlim = xtable(HRPprobsList$ulimHRP, label="tab:ulimHRP", digits=tabdigits,
 			caption=eval(paste("Decision table",for.area," concerning the historical limit reference point min($u_{",paste(range(HRP.YRS$ulimYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(u_t > min(u_{",paste(range(HRP.YRS$ulimYrs),collapse="-"),"}))$. ", refCatSentence, maxCatSentence, sep="")))
 		print(xtabUlim, table.placement="!ht", caption.placement="top",
 			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 	}
 
-	if(!is.null(refProbsHistList$utarHRP)) {
-		xtabUtar = xtable(refProbsHistList$utarHRP, label="tab:utarHRP", digits=tabdigits,
+	if(!is.null(HRPprobsList$utarHRP)) {
+		xtabUtar = xtable(HRPprobsList$utarHRP, label="tab:utarHRP", digits=tabdigits,
 			caption=eval(paste("Decision table",for.area," concerning the historical target reference point mean($u_{",paste(range(HRP.YRS$utarYrs),collapse="-"),"}$) for 1-",projYearsNum-1," year projections, such that values are P$(u_t > mean(u_{",paste(range(HRP.YRS$utarYrs),collapse="-"),"}))$. ", refCatSentence, maxCatSentence, sep="")))
 		print(xtabUtar, table.placement="!ht", caption.placement="top",
 			add.to.row =list(pos = list(-1), command = c("\\\\[-1.0ex]")) )
 	}
 } else { 
-	refProbsHist = NULL
+	HRPprobs = NULL
 }
 @
 
+
+## -----------------------------------------------------------
+## COSEWIC-type Tables. Not needed for most stock assessments.
+## Also use for GMU's rebuilding plans.
+## -----------------------------------------------------------
+\clearpage
+\subsubsection{GMU -- Guidance for Rebuilding}
+
+<<gmu_rebuild, results=tex, echo=FALSE>>=
+if (projYearsNum > 11) {
+	allYrs = as.character(currYear + seq(0, projYearsNum-1, 1))
+	Npyrs  = 10
+
+	shortYrs = as.character(currYear + seq(0,Npyrs,1))
+	shortYrs  = intersect(shortYrs,allYrs)
+
+	longYrs  = as.character(currYear + c(seq(0,round(2*gen1),round(gen1/4)),seq(2*gen1,3*gen1,gen1/2)[-1]))
+	longYrs  = intersect(longYrs,allYrs)
+
+	##--- LRP Rebuild P(Bt>0.4Bmsy) ----------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.4Bmsy')) {
+		mess = paste0("Decision table for the limit reference point $0.4 \\Bmsy$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.4 \\Bmsy)$.")
+		print(xtable(BRPprobsList$'0.4Bmsy'[,longYrs], caption=eval(mess), label="tab:gmu.LRP.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.4Bmsy')) {
+		mess = paste0("Decision table for the limit reference point $0.4 \\Bmsy$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.4 \\Bmsy)$.")
+		print(xtable(BRPprobsList2$'0.4Bmsy'[,longYrs], caption=eval(mess), label="tab:gmu.LRP2.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- USR Rebuild P(Bt>0.8Bmsy) ----------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.8Bmsy')) {
+		mess = paste0("Decision table for the upper stock reference $0.8 \\Bmsy$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.8 \\Bmsy)$.")
+		print(xtable(BRPprobsList$'0.8Bmsy'[,longYrs], caption=eval(mess), label="tab:gmu.USR.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.8Bmsy')) {
+		mess = paste0("Decision table for the upper stock reference $0.8 \\Bmsy$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.8 \\Bmsy)$.")
+		print(xtable(BRPprobsList2$'0.8Bmsy'[,longYrs], caption=eval(mess), label="tab:gmu.USR2.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- Bmsy Rebuild P(Bt>Bmsy) ----------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'Bmsy')) {
+		mess = paste0("Decision table for biomass at maximum sustainable yield $\\Bmsy$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > \\Bmsy)$.")
+		print(xtable(BRPprobsList$'Bmsy'[,longYrs], caption=eval(mess), label="tab:gmu.Bmsy.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'Bmsy')) {
+		mess = paste0("Decision table for biomass at maximum sustainable yield $\\Bmsy$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > \\Bmsy)$.")
+		print(xtable(BRPprobsList2$'Bmsy'[,longYrs], caption=eval(mess), label="tab:gmu.Bmsy2.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- umsy Rebuild P(ut>umsy) ----------
+	if (exists("URPprobsList") && !is.null(URPprobsList$'umsy')) {
+		mess = paste0("Decision table for harvest rate at maximum sustainable yield $\\umsy$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(u_t < \\umsy)$.")
+		print(xtable(URPprobsList$'umsy'[,longYrs], caption=eval(mess), label="tab:gmu.umsy.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("URPprobsList2") && !is.null(URPprobsList2$'umsy')) {
+		mess = paste0("Decision table for harvest rate at maximum sustainable yield $\\umsy$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(u_t < \\umsy)$.")
+		print(xtable(URPprobsList2$'umsy'[,longYrs], caption=eval(mess), label="tab:gmu.umsy2.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- Bcurr Rebuild P(Bt>Bcurr) ----------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'Bcurr')) {
+		mess = paste0("Decision table for comparing projected biomass to current biomass $B_{", currYear, "}$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > B_{", currYear, "})$.")
+		print(xtable(BRPprobsList$'Bcurr'[,longYrs], caption=eval(mess), label="tab:gmu.Bcurr.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'Bcurr')) {
+		mess = paste0("Decision table for comparing projected biomass to current biomass $B_{", currYear, "}$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > B_{", currYear, "})$.")
+		print(xtable(BRPprobsList2$'Bcurr'[,longYrs], caption=eval(mess), label="tab:gmu.Bcurr2.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- ucurr Rebuild P(ut>ucurr) ----------
+	if (exists("URPprobsList") && !is.null(URPprobsList$'ucurr')) {
+		mess = paste0("Decision table for comparing projected harvest rate to current harvest rate $u_{", currYear-1, "}$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(u_t > u_{", currYear-1, "})$.")
+		print(xtable(URPprobsList$'ucurr'[,longYrs], caption=eval(mess), label="tab:gmu.ucurr.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("URPprobsList2") && !is.null(URPprobsList2$'ucurr')) {
+		mess = paste0("Decision table for comparing projected harvest rate to current harvest rate $u_{", currYear-1, "}$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(u_t > u_{", currYear-1, "})$.")
+		print(xtable(URPprobsList2$'ucurr'[,longYrs], caption=eval(mess), label="tab:gmu.ucurr2.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- 0.2B0 Rebuild P(Bt>0.2B0) ----------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.2B0')) {
+		mess = paste0("Decision table for alternative limit reference point $0.2B_0$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.2B_0)$.")
+		print(xtable(BRPprobsList$'0.2B0'[,longYrs], caption=eval(mess), label="tab:cosewic.0.2B0.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.2B0')) {
+		mess = paste0("Decision table for alternative limit reference point $0.2B_0$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.2B_0)$.")
+		print(xtable(BRPprobsList2$'0.2B0'[,longYrs], caption=eval(mess), label="tab:cosewic.0.2B02.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- 0.4B0 Rebuild P(Bt>0.4B0) ----------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.4B0')) {
+		mess = paste0("Decision table for alternative upper stock reference $0.4B_0$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.4B_0)$.")
+		print(xtable(BRPprobsList$'0.4B0'[,longYrs], caption=eval(mess), label="tab:cosewic.0.4B0.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.4B0')) {
+		mess = paste0("Decision table for alternative upper stock reference $0.4B_0$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.4B_0)$.")
+		print(xtable(BRPprobsList2$'0.4B0'[,longYrs], caption=eval(mess), label="tab:cosewic.0.4B02.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+}
+@
+\clearpage
+\subsubsection{COSEWIC -- Reference Criteria}
+
+<<cosewic, results=tex, echo=FALSE>>=
+if (projYearsNum > 11) {
+	##--- A2 decline <=50pct COSEWIC short --------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.5Gen3')) {
+		mess = paste0("Decision table for probabilities of satisfying the A2  criterion of $\\leq 50 \\%$ decline over ", Ngen, " generations (", Ngen*gen1, " years) for ", Npyrs, "-year projections and for a range of \\itbf{constant catch} strategies. ", refCatSentence, maxCatSentence)
+		print(xtable(BRPprobsList$'0.5Gen3'[,shortYrs], caption=eval(mess), label="tab:cosewic.0.5Gen3.s", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.5Gen3')) {
+		mess = paste0("Decision table for probabilities of satisfying the A2 criterion of $\\leq 50 \\%$ decline over ", Ngen, " generations (", Ngen*gen1, " years) for ", Npyrs, "-year projections and for a range of \\itbf{harvest rate} strategies. ", refCatSentence, maxCatSentence)
+		print(xtable(BRPprobsList2$'0.5Gen3'[,shortYrs], caption=eval(mess), label="tab:cosewic.0.5Gen32.s", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- A2 decline <=30pct COSEWIC short --------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.7Gen3')) {
+		mess = paste0("Decision table for probabilities of satisfying the A2 criterion of $\\leq 30 \\%$ decline over ", Ngen, " generations (", Ngen*gen1, " years) for ", Npyrs, "-year projections and for a range of \\itbf{constant catch} strategies. ", refCatSentence, maxCatSentence)
+		print(xtable(BRPprobsList$'0.7Gen3'[,shortYrs], caption=eval(mess), label="tab:cosewic.0.7Gen3.s", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.7Gen3')) {
+		mess = paste0("Decision table for probabilities of satisfying the A2 criterion of $\\leq 30 \\%$ decline over ", Ngen, " generations (", Ngen*gen1, " years) for ", Npyrs, "-year projections and for a range of \\itbf{harvest rate} strategies. ", refCatSentence, maxCatSentence)
+		print(xtable(BRPprobsList2$'0.7Gen3'[,shortYrs], caption=eval(mess), label="tab:cosewic.0.7Gen32.s", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- A2 criterion 0.5B0 COSEWIC short --------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.5B0')) {
+		mess = paste0("Decision table for reference criterion $0.5 B_0$ for ", Npyrs, "-year projections and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.5 B_0)$.")
+		print(xtable(BRPprobsList$'0.5B0'[,shortYrs], caption=eval(mess), label="tab:cosewic.0.5B0.s", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.5B0')) {
+		mess = paste0("Decision table for reference criterion $0.5 B_0$ for ", Npyrs, "-year projections and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.5 B_0)$.")
+		print(xtable(BRPprobsList2$'0.5B0'[,shortYrs], caption=eval(mess), label="tab:cosewic.0.5B02.s", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- A2 criterion 0.7B0 COSEWIC short --------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.7B0')) {
+		mess = paste0("Decision table for reference criterion $0.7 B_0$ for ", Npyrs, "-year projections and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.7 B_0)$.")
+		print(xtable(BRPprobsList$'0.7B0'[,shortYrs], caption=eval(mess), label="tab:cosewic.0.7B0.s", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.7B0')) {
+		mess = paste0("Decision table for reference criterion $0.7 B_0$ for ", Npyrs, "-year projections and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.7 B_0)$.")
+		print(xtable(BRPprobsList2$'0.7B0'[,shortYrs], caption=eval(mess), label="tab:cosewic.0.7B02.s", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- A2 decline <=50pct COSEWIC long ---------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.5Gen3')) {
+		mess = paste0("Decision table for probabilities of satisfying the A2  criterion of $\\leq 50 \\%$ decline over ", Ngen, " generations (", Ngen*gen1, " years) for selected projection years and for a range of \\itbf{constant catch} strategies. ", refCatSentence, maxCatSentence)
+		print(xtable(BRPprobsList$'0.5Gen3'[,longYrs], caption=eval(mess), label="tab:cosewic.0.5Gen3.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.5Gen3')) {
+		mess = paste0("Decision table for probabilities of satisfying the A2 criterion of $\\leq 50 \\%$ decline over", Ngen, " generations (", Ngen*gen1, " years) for selected projection years and for a range of \\itbf{harvest rate} strategies. ", refCatSentence, maxCatSentence)
+		print(xtable(BRPprobsList2$'0.5Gen3'[,longYrs], caption=eval(mess), label="tab:cosewic.0.5Gen32.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- A2 decline <=30pct COSEWIC long ---------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.7Gen3')) {
+		mess = paste0("Decision table for probabilities of satisfying the A2 criterion of $\\leq 30 \\%$ decline over ", Ngen, " generations (", Ngen*gen1, " years) for selected projection years and for a range of \\itbf{constant catch} strategies. ", refCatSentence, maxCatSentence)
+		print(xtable(BRPprobsList$'0.7Gen3'[,longYrs], caption=eval(mess), label="tab:cosewic.0.7Gen3.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.7Gen3')) {
+		mess = paste0("Decision table for probabilities of satisfying the A2 criterion of $\\leq 30 \\%$ decline over ", Ngen, " generations (", Ngen*gen1, " years) for selected projection years and for a range of \\itbf{harvest rate} strategies. ", refCatSentence, maxCatSentence)
+		print(xtable(BRPprobsList2$'0.7Gen3'[,longYrs], caption=eval(mess), label="tab:cosewic.0.7Gen32.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- A2 criterion 0.5B0 COSEWIC long ---------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.5B0')) {
+		mess = paste0("Decision table for reference criterion $0.5 B_0$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that valuTabes are P$(B_t > 0.5 B_0)$.")
+		print(xtable(BRPprobsList$'0.5B0'[,longYrs], caption=eval(mess), label="tab:cosewic.0.5B0.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.5B0')) {
+		mess = paste0("Decision table for reference criterion $0.5 B_0$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.5 B_0)$.")
+		print(xtable(BRPprobsList2$'0.5B0'[,longYrs], caption=eval(mess), label="tab:cosewic.0.5B02.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- A2 criterion 0.7B0 COSEWIC long ---------
+	if (exists("BRPprobsList") && !is.null(BRPprobsList$'0.7B0')) {
+		mess = paste0("Decision table for reference criterion $0.7 B_0$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{constant catch} strategies, such that values are P$(B_t > 0.7 B_0)$.")
+		print(xtable(BRPprobsList$'0.7B0'[,longYrs], caption=eval(mess), label="tab:cosewic.0.7B0.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+	}
+	if (exists("BRPprobsList2") && !is.null(BRPprobsList2$'0.7B0')) {
+		mess = paste0("Decision table for reference criterion $0.7 B_0$ for selected projection years over ", Ngen, " generations (", Ngen*gen1, " years) and for a range of \\itbf{harvest rate} strategies, such that values are P$(B_t > 0.7 B_0)$.")
+		print(xtable(BRPprobsList2$'0.7B0'[,longYrs], caption=eval(mess), label="tab:cosewic.0.7B02.l", digits=tabdigits), caption.placement="top", table.placement="!ht")
+		cat(" \\clearpage \\pagebreak ")
+	}
+}
+@
+\clearpage
+\subsubsection{Time to Targets}
+
+<<time_to_target, results=tex, echo=FALSE>>=
+if (projYearsNum > 11) {
+	sanicol = function(x){
+		sani = 
+			gsub("Gen3", "$B_{t\\\\text{-}3\\\\mathrm{G}}$",
+			gsub("Bcurr",paste0("$B_{", currYear, "}$"),
+			gsub("B0","$B_0$",
+			gsub("Bmsy","$B_\\\\mathrm{MSY}$",
+			gsub("0.8Bmsy","USR",
+			gsub("0.4Bmsy","LRP",
+		x))))))
+		return(sani)
+	}
+	#print(sanicol(colnames(Ttab.conf$'0.50')))
+
+	##--- Time to achieve target with 50% confidence
+	if (exists("Ttab.conf") && !is.null(Ttab.conf$'0.50')) {
+		mess = paste0("Estimated time (years) for projected biomass $B_t$ to exceed reference points and criteria with a probability of 50\\%, for for a range of \\itbf{constant catch} strategies. An estimated time of 0 means that the condition is satisfied and remains so over the ", Ngen*gen1, "-year projection; an estimated time of ", Ngen*gen1, " means that the condition never becomes satisfied over the ", Ngen, "-generation projection. A further condition is that the probability of satisfying the condition must increase for two consecutive years. Columns respectively correspond to the provisional DFO reference points: LRP~= $0.4\\Bmsy$, USR~= $0.8\\Bmsy$; alternative reference points: $\\Bmsy$, $B_{", currYear, "}$, $0.2B_0$, $0.4B_0$; and COSEWIC reference criteria: 0.5$B_{t\\text{-}3\\mathrm{G}}$~= $\\leq 50\\%$ decline over ", Ngen, " generations (G), 0.7$B_{t\\text{-}3\\mathrm{G}}$~= $\\leq 30\\%$ decline over ", Ngen, "G, $0.5B_0$, $0.7B_0$.")
+		print(xtable(Ttab.conf$'0.50', caption=eval(mess), label="tab:Ttime50", digits=0), caption.placement="top", table.placement="!ht", sanitize.colnames.function=sanicol)
+	}
+	if (exists("Ttab.conf2") && !is.null(Ttab.conf2$'0.50')) {
+		mess = paste0("Estimated time (years) for projected biomass $B_t$ to exceed reference points and criteria with a probability of 50\\%, for for a range of \\itbf{harvest rate} strategies. See caption in Table~\\ref{tab:Ttime50} for further details")
+		print(xtable(Ttab.conf2$'0.50', caption=eval(mess), label="tab:Ttime502", digits=0), caption.placement="top", table.placement="!ht", sanitize.colnames.function=sanicol)
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- Time to achieve target with 65% confidence
+	if (exists("Ttab.conf") && !is.null(Ttab.conf$'0.65')) {
+		mess = paste0("Estimated time (years) for projected biomass $B_t$ to exceed reference points and criteria with a probability of 65\\%, for for a range of \\itbf{constant catch} strategies. See caption in Table~\\ref{tab:Ttime50} for further details.")
+		print(xtable(Ttab.conf$'0.65', caption=eval(mess), label="tab:Ttime65", digits=0), caption.placement="top", table.placement="!ht", sanitize.colnames.function=sanicol)
+	}
+	if (exists("Ttab.conf2") && !is.null(Ttab.conf2$'0.65')) {
+		mess = paste0("Estimated time (years) for projected biomass $B_t$ to exceed reference points and criteria with a probability of 65\\%, for for a range of \\itbf{harvest rate} strategies. See caption in Table~\\ref{tab:Ttime50} for further details.")
+		print(xtable(Ttab.conf2$'0.65', caption=eval(mess), label="tab:Ttime652", digits=0), caption.placement="top", table.placement="!ht", sanitize.colnames.function=sanicol)
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- Time to achieve target with 80% confidence
+	if (exists("Ttab.conf") && !is.null(Ttab.conf$'0.80')) {
+		mess = paste0("Estimated time (years) for projected biomass $B_t$ to exceed reference points and criteria with a probability of 80\\%, for for a range of \\itbf{constant catch} strategies. See caption in Table~\\ref{tab:Ttime50} for further details.")
+		print(xtable(Ttab.conf$'0.80', caption=eval(mess), label="tab:Ttime80", digits=0), caption.placement="top", table.placement="!ht", sanitize.colnames.function=sanicol)
+	}
+	if (exists("Ttab.conf2") && !is.null(Ttab.conf2$'0.80')) {
+		mess = paste0("Estimated time (years) for projected biomass $B_t$ to exceed reference points and criteria with a probability of 80\\%, for for a range of \\itbf{harvest rate} strategies. See caption in Table~\\ref{tab:Ttime50} for further details.")
+		print(xtable(Ttab.conf2$'0.80', caption=eval(mess), label="tab:Ttime802", digits=0), caption.placement="top", table.placement="!ht", sanitize.colnames.function=sanicol)
+		cat(" \\clearpage \\pagebreak ")
+	}
+	##--- Time to achieve target with 95% confidence
+	if (exists("Ttab.conf") && !is.null(Ttab.conf$'0.95')) {
+		mess = paste0("Estimated time (years) for projected biomass $B_t$ to exceed reference points and criteria with a probability of 95\\%, for for a range of \\itbf{constant catch} strategies. See caption in Table~\\ref{tab:Ttime50} for further details.")
+		print(xtable(Ttab.conf$'0.95', caption=eval(mess), label="tab:Ttime95", digits=0), caption.placement="top", table.placement="!ht", sanitize.colnames.function=sanicol)
+	}
+	if (exists("Ttab.conf2") && !is.null(Ttab.conf2$'0.95')) {
+		mess = paste0("Estimated time (years) for projected biomass $B_t$ to exceed reference points and criteria with a probability of 95\\%, for for a range of \\itbf{harvest rate} strategies. See caption in Table~\\ref{tab:Ttime50} for further details.")
+		print(xtable(Ttab.conf2$'0.95', caption=eval(mess), label="tab:Ttime952", digits=0), caption.placement="top", table.placement="!ht", sanitize.colnames.function=sanicol)
+		cat(" \\clearpage \\pagebreak ")
+	}
+}
+@
+
+
+
+
+
 <<savingTables, results=hide, echo=FALSE>>=
 ## see saving.r in YMR11 for details of tables. Or just look at each one, as they're not that long.
-save(refProbs, refProbsB0, refProbsHist, refProbs3GenList, refProbs3GenList.u, Ttab0.5, Ttab0.8, Ttab0.95, currentProj, file=paste(model.name, "Tables.RData", sep=""))
+save(BRPprobsList, BRPprobsList2, URPprobsList, URPprobsList2, HRPprobs, Ttab.conf, Utab.conf, file=paste(model.name, "Tables.RData", sep=""))
 @ 
 
 <<savingObjects, results=hide, echo=FALSE>>=
@@ -1564,9 +1933,9 @@ Bmcmc[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
 	B0.MCMC        = processObj(B0.MCMC),
 	Bt.MCMC        = processObj(Bcurr.MCMC),
 	Bmsy.MCMC      = processObj(Bmsy.MCMC),
-	Blim.MCMC      = processObj(refPointsHistList$blimHRP),
-	Btar.MCMC      = processObj(refPointsHistList$btarHRP),
-	Utar.MCMC      = processObj(refPointsHistList$utarHRP),
+	Blim.MCMC      = processObj(HRPlist$blimHRP),
+	Btar.MCMC      = processObj(HRPlist$btarHRP),
+	Utar.MCMC      = processObj(HRPlist$utarHRP),
 	P.MCMC         = processObj(currentMCMC$P),
 	B.MCMC         = processObj(currentMCMC$B),
 	R.MCMC         = processObj(currentMCMC$R),
@@ -1583,33 +1952,24 @@ while(dev.cur() > 1)  dev.off()
 
 \clearpage
 %\section{Bayesian MCMC Results}
-@resultsMCMC % RH: Results discussion will be inserted here from the working directory (e.g., from `resultsMCMC-run08.tex`)
+%@resultsMCMC % RH: Results discussion will be inserted here from the working directory (e.g., from `resultsMCMC-run08.tex`)
 
 %\input{\Sexpr{paste(run.dir, "/../resultsMCMC", sep="")}} # Sexpr don't seem to function when brought in from a separate document. 
 
+
 \end{document}
 %%==============================================================================
+
 % CUT HERE 
 
-# COSEWIC-type Tables. Not needed for most stock assessment (will need revision when used again).
-# print(xtable(refProbs3Gen5$'0.5Gen3', caption=eval(paste("NOT CHECKED FROM HERE ONWARDS** Decision table for probabilities of satisfying the criterion of $\\leq 50 \\%$ decline over three generations, for 1-5 year projections for run MODEL.NAME. Three generations is 90 years, and since $B_0$ is the estimated spawning biomass in 1940 and projections here are only up to 5 years, the probabilites here are simply equal to P$(B_t > 0.5 B_0)$. ", refCatSentence, maxCatSentence, sep="")), label="tab:0.5Gen3.5yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbs3Gen5$'0.7Gen3', caption=eval(paste("Decision table for probabilities of satisfying the criterion of $\\leq 30 \\%$ decline over three generations, for 1-5 year projections for run MODEL.NAME. Three generations is 90 years, and since $B_0$ is the estimated spawning biomass in 1940 and projections here are only up to 5 years, the probabilites here are simply equal to P$(B_t > 0.7 B_0)$. ", refCatSentence, maxCatSentence, sep="")), label="tab:0.7Gen3.5yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbsB05$B00.5, caption="Decision table for reference point $0.5 B_0$ for 1-5 year projections for run MODEL.NAME, such that values are P$(B_t > 0.5 B_0)$.", label="tab:B00.5.5yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbsB05$B00.7, caption="Decision table for reference point $0.7 B_0$ for 1-5 year projections for run MODEL.NAME, such that values are P$(B_t > 0.7 B_0)$.", label="tab:B00.7.5yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbs90$LRP, caption="Decision table for the limit reference point $0.4 \\Bmsy$ for every 15th year (starting from 2011) of 90-year projections for run MODEL.NAME, such that values are P$(B_t > 0.4 \\Bmsy)$.", label="tab:LRP90", digits=tabdigits), caption.placement="top") 
-# print(xtable(refProbs90$USR, caption="Decision table for the upper reference point $0.8 \\Bmsy$ for every 15th year of 90-year projections for run MODEL.NAME, such that values are P$(B_t > 0.8 \\Bmsy)$.", label="tab:USR90", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbsB090$B00.2, caption="Decision table for the alternative limit reference point $0.2 B_0$ for 90-year projections for run MODEL.NAME, such that values are P$(B_t > 0.2 B_0)$.", label="tab:B00.2.90yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbsB090$B00.4, caption="Decision table for the alternative upper reference point $0.4 B_0$ for 90-year projections for run MODEL.NAME, such that values are P$(B_t > 0.4 B_0)$.", label="tab:B00.4.90yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbs3Gen90$'0.5Gen3', caption="Decision table for probabilities of satisfying the criterion of $\\leq 50 \\%$ decline over three generations for 90-year projections for run MODEL.NAME. The probabilites are P$(B_t > 0.5 B_{t-90})$.", label="tab:0.5Gen3.90yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbs3Gen90$'0.7Gen3', caption="Decision table for probabilities of satisfying the criterion of $\\leq 30 \\%$ decline over three generations for 90-year projections for run MODEL.NAME. The probabilites are P$(B_t > 0.7 B_{t-90})$.", label="tab:0.7Gen3.90yr", digits=tabdigits), caption.placement="top")
+# print(xtable(BRPprobs05$'0.7Gen3', caption=eval(paste("Decision table for probabilities of satisfying the criterion of $\\leq 30 \\%$ decline over three generations, for ", Npyrs, "-year projections for run MODEL.NAME. Three generations is 90 years, and since $B_0$ is the estimated spawning biomass in 1940 and projections here are only up to 5 years, the probabilites here are simply equal to P$(B_t > 0.7 B_0)$. ", refCatSentence, maxCatSentence, sep="")), label="tab:0.7Gen3.5yr", digits=tabdigits), caption.placement="top")
+
 # print(xtable(Ttab0.5, caption="Estimated time (years) to be above each reference point or achieve each target with a probability of 50\\%, for each constant catch strategy and for run MODEL.NAME. An estimated time of 0 means that the condition is currently satisfied and remains so over the 90-year projection; an estimated time of 90 means that the condition never becomes satisfied over the 90-year projection. A further condition is that the probability of satisfying the condition must increase for two consecutive years. Columns respectively correspond to reference points $0.4 \\Bmsy, 0.8 \\Bmsy, 0.2 B_0, 0.4 B_0$ and to the criteria of $\\leq 50 \\%$ decline and $\\leq 30 \\%$ decline over three generations.", label="tab:Ttab0.5", digits=0), caption.placement="top")
+
 # print(xtable(Ttab0.8, caption="Estimated time to be above each reference point or achieve each target with a probability of 80\\%, for each constant catch strategy and for run MODEL.NAME. See Table \\ref{tab:Ttab0.5} for column definitions.", label="tab:Ttab0.8", digits=0), caption.placement="top")
+
 # print(xtable(Ttab0.95, caption="Estimated time to be above each reference point or achieve each target with a probability of 95\\%, for each constant catch strategy and for run MODEL.NAME. See Table \\ref{tab:Ttab0.5} for column definitions.", label="tab:Ttab0.95", digits=0), caption.placement="top")
-# print(xtable(refProbsB090$B00.5, caption="Decision table for reference point $0.5 B_0$ for 90-year projections for run MODEL.NAME, such that values are P$(B_t > 0.5 B_0)$.", label="tab:B00.5.90yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbsB090$B00.7, caption="Decision table for reference point $0.7 B_0$ for 90-year projections for run MODEL.NAME, such that values are P$(B_t > 0.7 B_0)$.", label="tab:B00.7.90yr", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbs20$LRP, caption="Decision table for the lower reference point $0.4 \\Bmsy$ for every 5th year of 20-year projections for run MODEL.NAME, such that values are P$(B_t > 0.4 \\Bmsy)$.", label="tab:LRP20", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbs20$USR, caption="Decision table for the upper reference point $0.8 \\Bmsy$ for every 5th year of 20-year projections for run MODEL.NAME, such that values are P$(B_t > 0.8 \\Bmsy)$.", label="tab:USR20", digits=tabdigits), caption.placement="top")
-# print(xtable(refProbs20$Bmsy, caption="Decision table for $\\Bmsy$ for every 5th year of 20-year projections for run MODEL.NAME, such that values are P$(B_t > \\Bmsy)$.", label="tab:Bmsy20", digits=tabdigits), caption.placement="top")
+
 @ 
 
 \clearpage

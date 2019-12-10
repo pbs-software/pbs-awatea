@@ -1,6 +1,8 @@
 ##==============================================================================
 ## PBSawatea utility functions:
 ##  combGear         : Combine catches by year from multiple gear types.
+##  cquantile        : cumulative quantile, from cumuplot
+##  cquantile.vec    : get one probability at a time
 ##  findTarget       : Derive decision tables for MSY-based ref.pts. and for moving windows
 ##  getNpan          : Get panel number when inside a multi-panel plot.
 ##  importCor        : import Awatea parameter correlations.
@@ -13,6 +15,7 @@
 ##  makeCmat         : make a 1-column matrix
 ##  makeRmat         : make a -row matrix
 ##  makeErrMat       : mMake simple ageing error matrix for Awatea.
+##  splitGear        : Split catches, U, and VB by year from multiple gear types.
 ##  tabSAR           : generate comma-del., 2-D tables from reference point objects.
 ##  tex.that vec     : convert a vector to a phrase 'x, y, and z' (see texThatVec in PBStools for more advanced version)
 ##==============================================================================
@@ -43,7 +46,45 @@ combGear = function(dat, fn=function(x){sum(x,na.rm=TRUE)})
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~combGear
 
 
-## findTarget --------------------------2018-10-15
+#cquantile------------------------------2010-10-20
+# cumulative quantile, from cumuplot
+#----------------------------------------------AME
+cquantile <- function(z, probs)  
+  {
+  cquant <- matrix(0, nrow = length(z), length(probs))
+  for (i in seq(along = z)) if (is.R())
+    {
+    cquant[i, ] <- quantile(z[1:i], probs = probs, names = FALSE)
+    }
+  else {
+        cquant[i, ] <- quantile(z[1:i], probs = probs)
+       }
+  cquant <- as.data.frame(cquant)
+  names(cquant) <- paste(formatC(100 * probs, format = "fg", 
+      width = 1, digits = 7), "%", sep = "")
+  return(cquant)
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cquantile
+
+
+#cquantile.vec--------------------------2010-10-20
+# AME doing this, just do one prob at a time 
+# (so it returns a vector not a matrix)
+#----------------------------------------------AME
+cquantile.vec <- function(z, prob)  # cumulative quantile of vector
+  {                                 #  prob is a single number
+  cquant <- rep(NA, length(z))
+  if(length(prob) != 1) stop("length prob should be 1")
+  for (i in 1:length(z))
+    {
+    cquant[i] <- quantile(z[1:i], probs = prob, names = FALSE)
+    }
+  return(cquant)
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cquantile.vec
+
+
+## findTarget --------------------------2019-12-04
 ##  To derive decision tables for moving windows and find
 ##  the times to achieve recovery with given confidence.
 ##  Note: only seems to be used in RPA situations (RH 181015)
@@ -72,10 +113,12 @@ findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90,
 	yr0   =yrP[1]; yrN=rev(yrP)[1]
 
 	vmat=Vmat[,is.element(dimnames(Vmat)[[2]],as.character(yrP))]             ## include only yrP years
-	if (is.data.frame(target) || is.matrix(target)) {
 #browser();return()
-		yrM  = yrP - yrG                                                        ## moving target years
-		yrM1 = intersect(as.numeric(dimnames(target)[[2]]),yrM)                 ## available target years from MCMC
+
+	## Check if COSEWIC reference criterion
+	if (is.data.frame(target) || is.matrix(target)) {
+		yrM  = yrP - yrG                                                       ## moving target years
+		yrM1 = intersect(as.numeric(dimnames(target)[[2]]),yrM)                ## available target years from MCMC
 		if (length(yrM1)==0) {                                                 ## projection not long enough for any overlap with 3 generations
 			if (retVal=="N") return(NA)
 			else {p.hi=rep(NA,length(yrP)); names(p.hi)=yrP }; return(p.hi) }
@@ -113,18 +156,24 @@ findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90,
 	##  the numbers for 0.4 Bmsy match my existing
 	##  independent calculations). Need to save this for moving window.
 
-	z.hi=p.hi >= conf                                                         ## logical: is p.hi >= confidence limit specified
+	z.hi = p.hi >= conf                               ## logical: is p.hi >= confidence limit specified
 
-	if (all(z.hi))       yrT=yr0                      ## all p.hi exceed the confidence level
+#browser();return()
+	if (all(z.hi) ||                                  ## all p.hi exceed the confidence level, also check:
+		(all(rats[,1]==1) && all(z.hi[-1]))) yrT=yr0   ## if values in first year of projection = values in target (e.g., Bcurr) before proceeding
 	else if (!any(z.hi)) yrT=yrN                      ## no  p.hi exceed the confidence level
 	else {
-		pdif=diff(p.hi)                                ## one-year change in trend
-		z1=diff(p.hi)>0                                ## logical: trend increasing?
-		z2=c(pdif[-1],FALSE)>0                         ## logical: trend one period later increasing?
-		z3=z.hi[-1]                                    ## does the probability of equalling or exceeding the target ratio exceed the confidence level?
-		z =z1 & z2 & z3                                ## logical: potential years when target reached
+		pdif = round(diff(p.hi),5)                     ## one-year change in trend
+		z1 = pdif >= 0                                 ## logical: trend increasing? -- sometimes it just remains flat
+		## z2 = c(pdif[-1],rev(pdif)[1]) >= 0          ## logical: trend one period later increasing? (or flat) -- PJS does not like this requirement
+		z3 = z.hi[-1]                                  ## does the probability of equalling or exceeding the target ratio exceed the confidence level?
+		## z  = z1 & z2 & z3                           ## logical: potential years when target reached
+		z  = z1 & z3                                   ## logical: potential years when target reached
 		if (!any(z)) yrT=yrN                           ## target not reached within the projection period
-		else         yrT=as.numeric(names(z)[z][1])    ## first year when target reached
+		else {
+			yrT=as.numeric(names(z)[z][1])              ## first year when target reached
+			
+		}
 	}
 	N=yrT - yr0                                       ## number of years to reach target
 	if (plotit) {
@@ -137,6 +186,7 @@ findTarget=function(Vmat, yrU=as.numeric(dimnames(Vmat)[[2]]), yrG=90,
 		mtext(text=expression(p~~frac(B[t],B[Target]) ), side=2, line=1.5, cex=1.5)
 		abline(h=conf,v=yrT,col="dodgerblue")
 	}
+#browser();return()
 	eval(parse(text=paste("return(",retVal,")",sep=""))) 
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~findTarget
@@ -764,6 +814,35 @@ makeErrMat = function(N=60, ondiag=0.8, offdiag=0.1, corner=0.9)
 	return(errMat)
 }
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^makeErrMat
+
+
+## splitGear ---------------------------2019-12-02
+## Split catches by year from multiple gear types.
+## Specifically to separate VB output from Awatea.
+## ---------------------------------------------RH
+splitGear = function(dat, fn=function(x){sum(x,na.rm=TRUE)})
+{
+	out  = list()
+	ayrs = as.numeric(substring(colnames(dat),1,4))
+	#aval = cut(ayrs,breaks=(min(ayrs)-1):max(ayrs),labels=FALSE)
+	yrs  = unique(ayrs); #names(yrs) = unique(aval)
+	if (length(ayrs)==length(yrs)) {
+		adat = dat
+		dimnames(adat) = list(rownames(dat), yrs)
+		out[[1]] = adat
+	} else {
+		gear = as.numeric(substring(colnames(dat),6))
+		for (i in gear){
+			idat = dat[,is.element(gear,i)]
+			colnames(idat) = yrs
+			out[[i]] = idat
+		}
+	}
+#browser();return()
+	return(out)
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~splitGear
+
 
 #tabSAR---------------------------------2011-07-18
 # Generate comma-delimited, two-dimensional output tables from reference point objects.

@@ -5,6 +5,40 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.6.0 (2019-12-09) [Rcheck=F, Rbuild=F]
+  * PBSscape.r
+    + Transferred selectivity code from 'PBSscape.r' to `plotFuns.r' as function `plt.selectivity'. (RH 190718)
+    + Added calls to `changeLangOpts' and `eop' to all plotting routines.
+  * plotFuns.r
+    + Added new arguments `startYear', `currYear, `sen.lab', and `logR' to function `plotTraj'. (RH 191206)
+    + Added new argument `currYear' to function `plotSnail' and ability to use UoverUmsy from mulltiple gear types. (RH 191122)
+    + Modified function `plt.stdResids' to plot years insted of points in residual plots (RH 190926)
+    + Modified function `plt.ageResidsPOP' (RH 190718)
+    + New function `plt.selectivity' -- transferred selectivity code from `PBSscape.r' into plt function. (RH 190718)
+    + Transferred function `stdRes.index' from `PBSscape.r' to `plotFuns.r'. (RH 190718)
+    + Changed drawing of quantile boxes from rectangles to polygons in functions `plotRmcmcPOP', `plotVBcatch'. (RH 190620)
+    + Added calls to `changeLangOpts' and `eop' to all plotting routines.
+    + Moved functions `cquantile' and `cquantile.vec' from `plotFuns.r' to `utilFuns.r'.
+  * runSweave.r
+    + Reorganised order of arguments in function `runSweave', added new arguments `Unames' and `dome'.(RH 190719)
+    + Added more species to choices for `sppname'.
+  * runSweaveMCMC.r
+    + Added new arguments `Unames' and `dome' to function `runSweaveMCMC'. (RH 190719)
+    + Revised wrapper function `runMCMC' to properly accept multiple runs and reweights. (RH 190719)
+  * utilFuns.r
+    + Modified function `findTarget' to detect first year when exceeding target without checking if next year increases. (RH 191204)
+    + Added new function `splitGear' to split catches, U, and VB by year from multiple gear types (RH 191202)
+    + Moved functions `cquantile' and `cquantile.vec' from `plotFuns.r' to `utilFuns.r'.
+  * run-master.Snw
+    + Added support for new arguments `Unames' and `dome' in function `runSweave'. (RH 190917)
+    + Began collecting prior info for female M2 (natural mortality at maturity); needs finessing.
+  * run-masterMCMC.Snw
+    + Added support for new arguments `Unames' and `dome' in function `runSweave'. (RH 190917)
+    + Reorganised (big time) the structure of this Sweave file
+    + Introduced capacity for outputting decsision tables:
+      - two types of catch policy: CC=constant catch, HR=harvest rate
+      - detects if rebuilding and COSEWIC (3 generation) projections have been evaluated.
+
 1.5.0 (2019-05-31) [Rcheck=T, Rbuild=T]
   * PBSscape.r
     + Assigned `quants3', `quants5', and `boxpars' to the .PBSmodEnv rather than making them global. (RH 190531)

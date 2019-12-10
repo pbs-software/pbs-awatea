@@ -86,6 +86,7 @@ runADMB = function(
 			stop("Specified input file does not exist")
 		.flash.cat(paste0("\nRunning MPD on ", filename.ext, "...\n"))
 		file.controls = readAD(filename.ext)@controls
+#browser();return()
 		Ncpue    = file.controls$Ncpue
 		Nsurv    = file.controls$Nsurv
 		cvpro    = file.controls$cvpro # expanded cvpro determined by number of surveys and number of cpue series
@@ -119,6 +120,8 @@ runADMB = function(
 				rvar2 = names(findPat("CPUE \\(Index",desc))
 				rvar3 = names(findPat("Commercial catch at age data",desc))
 				rvar4 = names(findPat("Survey C@A data",desc))
+				if (length(c(rvar1,rvar2,rvar3,rvar4))!=4)
+					stop ("INPUT -- Someone has changed at least one header name for abundance/composition data !!!!")
 
 				survey = dat[[rvar1]]; #dimnames(index) = list(1:nrow(index),c("series","year","obs","CV"))
 				survey[,4] = newdat$survey$CVnew
@@ -128,6 +131,7 @@ runADMB = function(
 				CAc = dat[[rvar3]]
 				if (is.vector(CAc)) CAc = makeRmat(CAc,rowname=names(newdat$wNcpa))
 				CAc[,3] = newdat$wNcpa  ## No. of commercial age samples
+#browser();return()
 				CAs = dat[[rvar4]]
 				if (is.vector(CAs)) CAs = makeRmat(CAs,rowname=names(newdat$wNspa))
 				CAs[,3] = newdat$wNspa  ## No. of survey age samples
@@ -136,7 +140,6 @@ runADMB = function(
 				#hh=pad0(i-1,3); fileN = gsub(hh,ii,fileN)
 				fileN = paste(prefix,runNoStr,ii,"txt",sep=".")
 				write(Robjnew,fileN)
-#browser();return()
 			}
 
 			## Run the MPD
@@ -144,7 +147,9 @@ runADMB = function(
 				.flash.cat("\nProcessing initial MPD fit without reweighting...\n")
 			else 
 				.flash.cat(paste0("\n","Processing MPD fit for Rwt ", i, "...\n"))
-			expr=paste("mess = shell(cmd=\"awatea -ind ",fileN,argsMPD,"\", wait=TRUE, intern=TRUE)",sep=""); eval(parse(text=expr))
+			expr=paste("mess = shell(cmd=\"awatea -ind ",fileN,argsMPD,"\", wait=TRUE, intern=TRUE)",sep="")
+#browser();return()
+			eval(parse(text=expr))
 			if (verbose)  .flash.cat(mess, sep="\n")
 			if (length(mess)<10) stop("Abnormal program termination")
 
@@ -171,8 +176,8 @@ runADMB = function(
 			## Reweight the input files until N.reweight-1
 			if (i <= N.reweight) {
 				inext = i + 1
-#browser();return()
 				eval(parse(text=paste("Robj = readAD(\"",fileN,"\")",sep="")))
+#browser();return()
 				if (i < N.reweight) {
 					.flash.cat("\nReweighting abundance (surveys) and composition (proportions-at-age)...\n")
 					Robj@reweight = list(nrwt=inext)
@@ -318,7 +323,8 @@ readAD = function(txt)
 	NyrCAs="Number of years with survey C@A data", NyrCAc="Number of years with commercial C@A data", 
 	Nmethod="Number of commercial fishing gears", gear="Initial gear",
 	ageMax="Max age in model", ageFullMat = "Age at full maturity",
-	YrStart="Start year of model",YrEnd="End year of model",strategy="Strategy Type",YrProj="End year of projections")
+	YrStart="Start year of model",YrEnd="End year of model",YrProj="End year of projections",
+	strategy="Strategy Type", Usplit="Strategy U")
 
 	controls=sapply(ctllabs,function(x){
 		strval = gsub("#","",otxt[grep(x,otxt)[1]+1])
@@ -627,6 +633,7 @@ setMethod("reweight", signature="AWATEAdata",
 		if (obj@controls$NyrCAc==0)  wtemp[names(wtemp)] = 1
 		names(wtemp) = paste0("cpa-",names(wtemp))
 		wj = c(wj,wtemp)
+#browser();return()
 
 	} else if (C.rwt==2) { ## use SDNR method
 		.flash.cat(paste0("   AF SS reweight ", nrwt, " using SDNRs -- commercial"), "\n")
@@ -661,7 +668,6 @@ setMethod("reweight", signature="AWATEAdata",
 		if (obj@controls$NyrCAs==0) wtemp[names(wtemp)] = 1 
 		names(wtemp)=paste("spa-",names(wtemp),sep="")
 		wj = c(wj,wtemp)
-
 	} else if (C.rwt==2) { ## use SDNR method
 		.flash.cat(paste0("   AF SS reweight ", nrwt, " using SDNRs -- survey"), "\n")
 		wNspa = eNfun(spa$Series,spa$Year,spa$Obs,spa$Fit)

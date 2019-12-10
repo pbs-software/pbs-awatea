@@ -1,4 +1,4 @@
-## runSweaveMCMC------------------------2019-04-25
+## runSweaveMCMC------------------------2019-07-19
 ## Create and run customised Sweave files for Awatea MCMC runs.
 ## Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
 ## Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
@@ -16,6 +16,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
    SApos   = rep(TRUE,Nsurvey),       ## surveys with age composition data
    Cnames  = paste0("Gear",1:Ngear),  ## survey names (w/out spaces)
    CApos   = rep(TRUE,Ngear),         ## commercial gears with age composition
+   Unames  = paste0("CPUE",1:Ncpue),  ## CPUE names
    mcsub   = 1:1000,
    delim   = "-",
    locode  = FALSE,                   ## source this function as local code (for development)
@@ -23,15 +24,15 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
    histRP  = FALSE,                   ## historical reference points
    wpaper  = FALSE,                   ## working paper
    resdoc  = FALSE,                   ## research document
-   redo.Graphs = TRUE,                ## recreate all the figures (.eps, .wmf, .png)
+   redo.Graphs    = TRUE,             ## recreate all the figures (.eps, .wmf, .png)
    skip.last.year = TRUE,             ## remove last year of projections (set to FALSE for POP 5ABC in 2010)
    ptype   = "png",                   ## plot type --  either "eps" or "png"
-   domeS   = FALSE,                   ## logical -- using dome-shaped selectivity?
+   dome    = FALSE,                   ## logical -- using dome-shaped selectivity?
    lang    = c("e","f")               ## language -- 'e'= English, 'f'= French (subdirectory)
 ) {
 	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
 	on.exit(ciao(wd))
-	remove(list=setdiff(ls(1,all.names=TRUE),c("runMCMC","runSweaveMCMC","Rcode","Scode","qu","so",".First")),pos=1)
+	remove(list=setdiff(ls(1,all.names=TRUE),c("runADMB","runMCMC","runSweaveMCMC","Rcode","Scode","qu","so",".First")),pos=1)
 	if (locode) {
 		ici = sys.frame(sys.nframe())
 		load(paste0(system.file("data",package="PBSawatea"),"/gfcode.rda"), envir=ici)
@@ -56,6 +57,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	cpue     = Ncpue > 0
 	runNoStr = pad0(runNo,2)
 	rwtNoStr = pad0(rwtNo,2)
+#browser();return()
 	run.name = paste(strSpp,"run",runNoStr,sep="")
 	run.dir  = paste(wd,run.name,sep="/")
 	ext      = sapply(strsplit(filename,"\\."),tail,1)
@@ -82,8 +84,11 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		if (!file.exists(mc.dir.f))
 			dir.create(mc.dir.f)
 	}
-	input.name = paste0(model.name,".txt") # Just in case I need this in future;
-	infile   = readAD(input.name)          # assumes user has included this input file with MCMC results
+	input.name = paste0(model.name,".txt")  ## Just in case I need this in future;
+	infile     = readAD(input.name)         ## Assumes user has included this input file with MCMC results
+	Usplit     = infile@controls$Usplit     ## Need this later
+	tput(Usplit)
+#browser();return()
 
 	#if (!file.exists("run-masterMCMC.Snw")) ## it will almost never exist in the MCMC run directory
 	## This way, someone only using the package has a fighting chance of modifying the Snw:
@@ -91,7 +96,6 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		file.copy(paste(system.file(package="PBSawatea"),"/snw/run-masterMCMC.Snw",sep=""),wd)
 	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-masterMCMC.Snw",sep="/"))
 	tfile = masterSweave
-#browser();return()
 
 	# First, get rid excess lines, annoying comments, and disabled code
 	if (length(grep("CUT HERE",tfile))>0)
@@ -148,7 +152,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	#yrsub = intersect(seq(1900,3000,5),years)
 	#Nyrsub = length(yrsub)
 
-	packList(stuff=c("runNo","rwtNo","Snames","SApos","Cnames","CApos","ptype"), target="PBSawatea")
+	packList(stuff=c("runNo","rwtNo","Snames","SApos","Cnames","CApos","Unames","ptype"), target="PBSawatea")
 
 	if (Nsex==1) {
 		z0    = grep("@rmsex",tfile)
@@ -172,8 +176,13 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-MasterMCMC.Snw`
 	}
+
+	if (Ncpue>0)
+		Unames = rep(Unames,Ncpue)[1:Ncpue] # enforce same number of names as surveys
+	unames = gsub(" ","",Unames)
+	tfile  = gsub("@cpues",paste(unames,collapse="\",\""),tfile)
 	tfile  = gsub("@Ncpue",Ncpue,tfile)
-	
+
 	## Remove catch-at-age lines if no catch-at-age data
 	if (sum(CApos)==0) {
 		z0    = grep("@rmCA",tfile)
@@ -195,7 +204,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmhrp ","",tfile) ## assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
 	}
-	if (!domeS) { ## right hand variance of selectivity is used (dome-shaped selectivty)
+	if (!dome) { ## right hand variance of selectivity is used (dome-shaped selectivty)
 		z0    = grep("@rmdome",tfile)
 		if (length(z0) > 0)
 			tfile = tfile[setdiff(1:length(tfile),z0)]
@@ -313,21 +322,24 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 		shell(cmd=paste0("texify --pdf --synctex=1 --clean ",mcname,".tex"),wait=TRUE)
 	}
 	invisible(tfile) }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweaveMCMC
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweaveMCMC
 
-#runMCMC------------------------------ -2013-11-12
-# Wrapper to function 'runSweaveMCMC' for MCMCs. (not tested recently)
-#-----------------------------------------------RH
+## runMCMC------------------------------2019-07-19
+## Wrapper to function 'runSweaveMCMC' for MCMCs.
+## ---------------------------------------------RH
 runMCMC = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
 	# (...) pass in arguments specific to runSweaveMCMC if different from the defaults:
 	# If prefix=NULL, filename will be taken from (...) or set to the default.
 	dots = list(...)
-	if (is.null(dots$delim)) delim="-" else delim=dots$delim
+	if (is.null(dots$delim)) {delim = "-"; dots$delim=delim}  else delim=dots$delim
+	if (is.null(dots$strSpp)){ strSpp = prefix[1]; dots$strSpp=strSpp }
+#browser();return()
 	for (i in runs) {
 		if (!is.null(prefix)) filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep="")
 		for (j in rwts) {
-			runSweaveMCMC(filename=filename, runNo=i, rwtNo=j, ...)
+			do.call("runSweaveMCMC", args = c(list(filename=filename, runNo=i, rwtNo=j), dots))
 }	}	}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runMCMC
 
 #runMCMC = function(strSpp="XYZ", prefix=c("spp","area"), runs=7, rewts=0:6, Nsex=2, Ncpue=0, Nsurvey=3, SApos=rep(TRUE,Nsurvey), delim="-", mcsub=1:1000) {
 #	for (i in runs) {

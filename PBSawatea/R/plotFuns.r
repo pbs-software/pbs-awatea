@@ -1,8 +1,6 @@
 ##==============================================================================
 ## PBSawatea plot functions:
 ##  compB0               : compare reference points relative to B0
-##  cquantile            : cumulative quantile, from cumuplot
-##  cquantile.vec        : get one probability at a time
 ##  mochaLatte           : alternative to lattice plots (mockLattice)
 ##  panelBoxes           : Plot quantile plots using 'nchains' to delimit separate boxes.
 ##  panelChains..........: Plot cumulative fequency of 'nchains' by partitioning one trace
@@ -119,6 +117,7 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 	fout = fout.e = paste("CompB0-",spp,"-(",paste(names(xBox),collapse=","),")",sep="")
 
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (f in figout) {
 			if (f=="png") {
@@ -193,48 +192,10 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 			box()
 			if (f!="win") dev.off()
 		} ## end f (figout) loop
-	} ## end l (lang) loop
+	}; eop()
 	invisible(list(BarBox=BarBox,xBox=xBox)) 
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~compB0
-
-
-#cquantile------------------------------2010-10-20
-# cumulative quantile, from cumuplot
-#----------------------------------------------AME
-cquantile <- function(z, probs)  
-  {
-  cquant <- matrix(0, nrow = length(z), length(probs))
-  for (i in seq(along = z)) if (is.R())
-    {
-    cquant[i, ] <- quantile(z[1:i], probs = probs, names = FALSE)
-    }
-  else {
-        cquant[i, ] <- quantile(z[1:i], probs = probs)
-       }
-  cquant <- as.data.frame(cquant)
-  names(cquant) <- paste(formatC(100 * probs, format = "fg", 
-      width = 1, digits = 7), "%", sep = "")
-  return(cquant)
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cquantile
-
-
-#cquantile.vec--------------------------2010-10-20
-# AME doing this, just do one prob at a time 
-# (so it returns a vector not a matrix)
-#----------------------------------------------AME
-cquantile.vec <- function(z, prob)  # cumulative quantile of vector
-  {                                 #  prob is a single number
-  cquant <- rep(NA, length(z))
-  if(length(prob) != 1) stop("length prob should be 1")
-  for (i in 1:length(z))
-    {
-    cquant[i] <- quantile(z[1:i], probs = prob, names = FALSE)
-    }
-  return(cquant)
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cquantile.vec
 
 
 ## mochaLatte---------------------------2019-05-21
@@ -328,7 +289,7 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~mochaLatte
 
 
-## panelBoxes---------------------------2019-05-21
+## panelBoxes---------------------------2019-11-24
 ##  Plot quantile plots using 'nchains' to delimit separate boxes.
 ##  mcmc=data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
 ##  Very difficult to manipulate trellis plots (RH)
@@ -347,7 +308,7 @@ panelBoxes=function (mcmc, nchains=9, pdisc=0,
 		if (is.null(dots$outline)) outline = TRUE
 		## xlim and ylim determined by 'mochaLatte'
 		#if (is.null(dots$xlim)) xlim = range(x,na.rm=TRUE)
-		#if (is.null(dots$ylim)) ylim = if (outline) range(y,na.rm=TRUE) else quantile(y, tcall(quants5)[c(1,5)])
+		#if (is.null(dots$ylim)) ylim = if (outline) range(y,na.rm=TRUE) else quantile(y, quants5[c(1,5)])
 		#if (is.null(dots$xfac)) xfac = unique(x)
 		basecol = "slategray"
 		#boxfill = paste0(rep(c("cyan","green","coral"),each=3)
@@ -386,9 +347,9 @@ panelBoxes=function (mcmc, nchains=9, pdisc=0,
 
 	fn.ylim =
 		if (outline) function(x){range(x, na.rm=TRUE)} 
-		else         function(x){extendrange(sapply(split(x,names(x)), quantile,tcall(quants5)[c(1,5)], na.rm=TRUE))}
+		else         function(x){extendrange(sapply(split(x,names(x)), quantile, tcall(quants5)[c(1,5)], na.rm=TRUE))}
 #browser();return()
-	mochaLatte(dat, xfld="Chain", yfld="Value", ffld="Factor", panel=panel.box, xlim=xlim, mar=c(0,3.5,0,0), oma=c(4,3,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang), xfac=xfac, fn.ylim=fn.ylim , outline=outline)
+	mochaLatte(dat, xfld="Chain", yfld="Value", ffld="Factor", panel=panel.box, xlim=xlim, mar=c(0,3.8,0,0), oma=c(4,3,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang), xfac=xfac, fn.ylim=fn.ylim , outline=outline)
 	gc(verbose=FALSE)
 	invisible(dat)
 }
@@ -553,7 +514,7 @@ plotACFs =function(mcmc, lag.max=60, lang="e") #, ptypes=tcall(PBSawatea)$ptype,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotACFs
 
 
-## plotAges-----------------------------2019-05-07
+## plotAges-----------------------------2019-08-12
 ##  Plot the MPD model fits to age data
 ##  (commercial or survey) using the awkward 
 ##  scape function `plotCA'.
@@ -584,13 +545,15 @@ plotAges = function(obj, what="c", maxcol=5, sexlab=c("Females","Males"),
 		age.layout = rev(c(nrows,ncols)) # backwards in stupid lattice
 		## page width & page height
 		pwidth  = ifelse(ncols>2,8,ifelse(ncols>1,6,4))
-		#pheight = ifelse(nrows>2,8,ifelse(nrows>1,6,4))
-		pheight = nrows/ncols*pwidth
+		pheight = ifelse(nrows>2,8,ifelse(nrows>1,6,4))
+		#pheight = nrows/ncols*pwidth  ## this does not work consistently
+#browser();return()
 		CA.sex = unique(obj[[seriesType]][["Sex"]])
 		for(plot.sex in CA.sex) {
 			j = grep(plot.sex,CA.sex)
 			fout = fout.e = paste0(ifelse(what=="c","ageComm","ageSurv"), plot.sex,"Ser",ii) ## need the right series for plot
 			for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+				changeLangOpts(L=l)
 				fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 				## legend key:
 				CA.key = list(text = list(lab= c(ifelse(l=="f", "obs", "Obs"), ifelse(l=="f", "pr\u{00E9}d", "Pred"))), lines=list(col=c("black",ifelse(plot.sex=="Male","blue","red")), cex = c(1,NA)), type=c("p","l"), x=ifelse(ncols>2,0.85,ifelse(ncols>1,0.8,0.75)), y=ifelse(nrows>2,-0.04,ifelse(nrows>1,-0.06,-0.12)), pch=c(20,NA), lwd=2, between=0.8)
@@ -600,10 +563,10 @@ plotAges = function(obj, what="c", maxcol=5, sexlab=c("Females","Males"),
 					pnames = paste0(fout,set)
 					if (p=="eps") postscript(paste0(pnames,".eps"), width=pwidth, height=pheight, horizontal=FALSE,  paper="special", onefile=FALSE)
 					else if (p=="png") png(paste0(pnames,".png"), units="in", res=pngres, width=pwidth, height=pheight)
-					plotCA( obj, what=what, ylab=linguaFranca("Proportion",l), xlab=linguaFranca("Age class",l), sex=plot.sex, layout= age.layout, key=CA.key, main=paste0(linguaFranca(seriesName[i],l), " - ", linguaFranca(sexlab[j],l)), pch=16, col.lines=ifelse(plot.sex=="Male","dodgerblue","red"), lwd.lines=2 , series=ii, ...)  ## need to pass the right series ii
+					plotCA( obj, what=what, ylab=linguaFranca("Proportion",l), xlab=linguaFranca("Age class",l), sex=plot.sex, layout=age.layout, key=CA.key, main=paste0(linguaFranca(seriesName[i],l), " - ", linguaFranca(sexlab[j],l)), pch=16, col.lines=ifelse(plot.sex=="Male","dodgerblue","red"), lwd.lines=2 , series=ii, ...)  ## need to pass the right series ii
 					if (p %in% c("eps","png")) dev.off()
 				} ## end of plot type loop
-			} ## end l (lang) joop
+			}; eop()
 		} ## end of plot.sex loop
 	} ## end of seriesList loop
 }
@@ -979,6 +942,7 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 
 	fout = fout.e = "CPUEser"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			#pname = "CPUEser"
@@ -1022,11 +986,11 @@ plotCPUE <- function(obj, main="", save=NULL, bar=1.96, yLim=NULL,
 			}  # cex was 0.8 for POP
 		if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotCPUE
 
-	
+
 #plotCI---------------------------------2018-04-06
 # Lifted and modified from gplots::plotCI
 #-----------------------------------------------RH
@@ -1375,6 +1339,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	rc = .findSquare(nseries)
 	fout = fout.e = "survIndSer"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
@@ -1407,7 +1372,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 			}
 			if (p %in% c("eps","png")) dev.off()
 		}  # cex was 0.8 for POP
-	} ## end l (lang) loop
+	}; eop()
 #browser();return()
 
 	# (2) And again, but with the same year axis for each. Think will be instructive to see
@@ -1416,6 +1381,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 	XLIM=numeric()
 	fout = fout.e = "survIndSer2"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
@@ -1457,7 +1423,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 			} ## cex was 0.8 for POP
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 #browser();return()
 
 	# (3) And again, but all series on same plot, normalised to their means to see trends. Maybe add CPUE also.
@@ -1472,6 +1438,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 
 	fout = fout.e = "survIndSer3"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=6.5, horizontal=FALSE,  paper="special")
@@ -1521,7 +1488,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 			addLegend(0.075, 0.975, bty="n", col=clrs, pch=NSL, legend=linguaFranca(legtxt,l), cex=0.8)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	# (4) And again, but big figures for ease of viewing. 
 	for ( i in 1:length(seriesList) ) {
@@ -1537,6 +1504,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 
 		fout = fout.e = "survIndSer4-"
 		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			changeLangOpts(L=l)
 			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				if (p=="eps") postscript(paste0(fout, i, ".eps"), width=6.5, height=6.5, horizontal=FALSE,  paper="special")
@@ -1551,7 +1519,7 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 					addLabel(0.95, 0.95, paste0(linguaFranca("+ CV process error = ",l), cvpro[i]), adj=c(1,0), cex=0.8, col=cvcol)
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
-		} ## end l (lang) loop
+		}; eop()
 	}
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotIndexNotLattice
@@ -1658,12 +1626,13 @@ plotRmcmcPOP=function(obj,
 		# Quantile boxplots - assumes five quantiles.
 		if ( xyType=="quantBox" )
 		{
-			delta <- 0.25
+			delta <- 0.25 ## width of half-box
 			# Draw the outer whiskers.
 			segments( yrs,obj[1,], yrs,obj[5,], lty=1,col=1 )
 			# Overlay the box.
 			for ( i in 1:length(yrs) )
-				rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i],... )
+				#rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i],... ) ## AME
+				polygon(x=c(rep(yrs[i]-delta,2),rep(yrs[i]+delta,2)), y=obj[c(2,4,4,2),i], border="black", col="gainsboro", ...) ## RH (190620)
 			# Add the median.
 			segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col=1 )
 		}
@@ -1690,14 +1659,14 @@ plotRmcmcPOP=function(obj,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotRmcmcPOP
 
 
-## plotSnail----------------------------2019-05-09
+## plotSnail----------------------------2019-11-22
 ## Plot snail-trail plots (aka 'Kobe plots') for MCMC analysis.
 ##  AME: replacing "2010" with as.character(currYear - 1)
 ##  RH: added assYrs = years past with estimated Bcurr
 ##      from previous assessment(s), e.g., 5ABC QCS c(2011, 2017)
 ## -----------------------------------------AME/RH
 plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL, 
-	Lwd=1.5, ngear=1, assYrs=NULL, outs=FALSE, Cnames, lang="e") ## outs = outliers
+	Lwd=1.5, ngear=1, currYear=2020, assYrs=NULL, outs=FALSE, Cnames, lang="e") ## outs = outliers
 {
 	if (missing(Cnames))
 		Cnames  = tcall("PBSawatea")$Cnames        ## names of commercial gear
@@ -1709,6 +1678,8 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 		if (any(grepl("_",names(UoverUmsy)))) {
 			gfile = UoverUmsy[,grep(paste0("_",g),names(UoverUmsy))]
 			names(gfile) = substring(names(gfile),1,4)
+		} else if (is.list(UoverUmsy)) {
+			gfile = UoverUmsy[[g]]
 		} else {
 			gfile = UoverUmsy
 		}
@@ -1733,8 +1704,8 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 		P = list (o=c(0,1), p=p)
 
 	plot(0,0, xlim=xLim, ylim=yLim, type="n", 
-		xlab = expression(paste(italic(B[t])/italic(B)[MSY])), 
-		ylab = expression(paste(italic(u[t-1])/italic(u)[MSY])),
+		xlab = switch(lang, 'e'=expression(paste(italic(B[t])/italic(B)[MSY])),   'f'=expression(paste(italic(B[t])/italic(B)[RMS])) ),
+		ylab = switch(lang, 'e'=expression(paste(italic(u[t-1])/italic(u)[MSY])), 'f'=expression(paste(italic(u[t-1])/italic(u)[RMS])) ),
 		cex.lab=1.25, cex.axis=1.0, las=1)
 	abline(h=1, col=c("grey20"), lwd=2, lty=3)
 	abline(v=c(0.4,0.8), col=c("red","green4"), lwd=2, lty=2)
@@ -1844,12 +1815,13 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotTracePOP
 
 
-## plotTraj-----------------------------2019-05-16
+## plotTraj-----------------------------2019-12-06
 ## Show all median trajectories (base+sens) in one figure.
 ## ---------------------------------------------RH
 plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock, 
+   startYear=1935, currYear=2020, sen.lab,
    col = c("black","green4","blue","red","purple","orange"), 
-   lty = c(2:6),
+   lty = c(2:6), logR=FALSE, 
    png=FALSE, pngres=400, PIN=c(8,8), lang=c("e","f"), ...)
 {
 	opar = par(no.readonly=TRUE); on.exit(par(opar))
@@ -1859,7 +1831,8 @@ plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 	if (is.null(tcall(run.sens)))
 		run.sens  = names(sdat$currentMCMC.sens)[index]
 	else
-		tget(run.sens)
+		run.sens = tcall(run.sens)[index]
+#browser();return()
 	do.call("assign", args=list(x="run.sens", value=run.sens, envir=.GlobalEnv))
 	Nruns     = length(run.sens)
 	trajMat   = array(NA, dim=c(Nyears,Nruns,Ntraj), dimnames=list(year=trajYears, run=run.sens, traj=traj))
@@ -1879,10 +1852,12 @@ plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 				sdat[["currentMCMC.sens"]][[ii]][[jj]] = sweep(jdat,1,jdat[,1],"/")
 				## Add Bmsy stuff (thanks PJS for the complication); and then he changed his mind...
 				sdat[["currentMCMC.sens"]][[ii]][["BmsyB0"]] = sdat[["currentMSY.sens"]][[ii]][["B"]]/jdat[,1]
-				Bmsy.q5[[ii]] = quantile(0.8*sdat[["currentMCMC.sens"]][[ii]][["BmsyB0"]],tcall(quants5))  ## this won't work if more than one commercial gear
+				Bmsy.q5[[ii]] = quantile(0.8*sdat[["currentMCMC.sens"]][[ii]][["BmsyB0"]],quants5)
 			}
-			jval = apply(sdat[["currentMCMC.sens"]][[ii]][[jj]],2,median)  ## this won't work if more than one commercial gear
-			#if (jj=="R") jval = log10(jval)
+			jtmp = sdat[["currentMCMC.sens"]][[ii]][[jj]]
+			if (jj %in% c("U","VB")) jtmp = splitGear(jtmp)[[1]]
+			jval = apply(jtmp,2,median)
+			if (jj=="R" && logR) jval = log10(jval)
 			trajMat[substring(names(jval),1,4),ii,jj] = jval
 		}
 	}
@@ -1891,11 +1866,13 @@ plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 	createFdir(lang)
 	fout = fout.e = paste0(lab.stock,".sens.traj.",paste0(traj,collapse="+"))
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 
 		## tcol and legtxt need to be reset inside language loop because they are altered when bdat is supplied
 		tcol    = rep(col,Nruns)[1:Nruns]
-		legtxt  = sen.lab  ## defined in global data object 'stock'
+		legtxt  = sen.lab[index]  ## defined in global data object 'stock'
+#browser();return()
 		tlty    = rep(lty,Nruns)[1:Nruns]
 
 		if (png) png(paste0(fout,".png"), units="in", res=pngres, width=PIN[1], height=PIN[2])
@@ -1907,26 +1884,22 @@ plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 			ylim = range(jmat,na.rm=TRUE)
 			#if (jj %in% c("BtB0")) ylim[1]=0
 			if (y0) ylim[1] = 0
+			if (jj=="R" && logR) ylim[1]=1
 			plot(0,0,xlim=xlim,ylim=ylim,type="n",xlab="",ylab="",log=ifelse(jj=="RRR","y",""))
-#browser();return()
 			if (jj %in% c("BtB0")){
 				#abline(h=seq(0.2,1,0.2),col="gainsboro")
 				abline(h=c(0.2,0.4,1), lty=5, col="grey20") #col=c("salmon","darkorchid","navy"))
 			}
-			sapply(1:ncol(jmat),function(i){
-				ii  = run.sens[i]
-				#lty = list(...)$lty
-				## Add median BmsyB0 if available (PJS says it's too cluttered)
-				#if (jj=="BtB0" && length(Bmsy.q5)>0)
-				#	abline(h=Bmsy.q5[[ii]][3], col=tcol[i], lwd=1, lty=lty[i])
-				y = jmat[,ii]
-				#if (is.null(lty)) lty=rep(1,Nruns)
-				lines(x,y, col=tcol[i], lwd=ifelse(i==1,2,2), lty=tlty[i]) ## no longer include base case in first position
-			})
-#browser();return()
+			x  = as.numeric(rownames(jmat))
+			for (k in 1:ncol(jmat)){
+				kk = run.sens[k]
+				y  = jmat[,k]
+				lines(x,y, col=tcol[k], lwd=ifelse(i==1,2,2), lty=tlty[k]) ## no longer include base case in first position
+			}
 			if (!is.null(bdat)){  ## Assume for now that this is the Base Case (could be other runs)
 				bline = bdat[[jj]]
-				lines(as.numeric(names(bline)), bline, col="black", lty=1, lwd=3)
+#browser();return()
+				lines(x=as.numeric(names(bline)), y=if (jj=="R" && logR) log10(bline) else bline, col="black", lty=1, lwd=3)
 			}
 			mtext(linguaFranca("Year",l), side=1, line=1.75, cex=ifelse(Ntraj==1,1.5,1))
 			#ylab = ifelse(jj=="B","Spawning Biomass",ifelse(jj=="VB","Vulnerable Biomass",ifelse(jj=="R","Recruitment",ifelse(jj=="U","Exploitation Rate","Unknown"))))
@@ -1939,7 +1912,7 @@ plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 					tlty    = c("solid", tlty)
 				}
 #browser():return()
-				addLegend(ifelse(jj%in%c("R"),0.975,0.05), ifelse(jj%in%c("BtB0"),0.025,0.975), col=tcol, seg.len=5, legend=linguaFranca(legtxt,l), bty="o", box.col="grey", bg="white", xjust=ifelse(jj%in%c("R"),1,0), yjust=ifelse(jj%in%c("BtB0"),0,1), lwd=2, lty=tlty, ...)
+				addLegend(ifelse(jj%in%c("R"),0.025,0.05), ifelse(jj%in%c("BtB0"),0.025,0.975), col=tcol, seg.len=5, legend=linguaFranca(legtxt,l), bty="o", box.col="grey", bg="white", xjust=ifelse(jj%in%c("R"),0,0), yjust=ifelse(jj%in%c("BtB0"),0,1), lwd=2, lty=tlty, ...)
 			}
 			if (Ntraj==1) {
 				axis(1,at=intersect(seq(1900,2500,5),x),labels=FALSE,tcl=-0.2)
@@ -1948,7 +1921,7 @@ plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 			box()
 		}
 		if (png) dev.off()
-	} ## end l (lang) loop
+	}; eop()
 	do.call("assign", args=list(x="trajSens", value=trajMat, envir=.GlobalEnv))
 	invisible()
 }
@@ -1987,7 +1960,8 @@ plotVBcatch=function(obj, currentRes1=currentRes,
 			segments( yrs,obj[1,], yrs,obj[5,], lty=1,col=1 )
 			## Overlay the box.
 			for ( i in 1:length(yrs) )
-				rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i], ... )
+				#rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i], ... ) ## AME
+				polygon(x=c(rep(yrs[i]-delta,2),rep(yrs[i]+delta,2)), y=obj[c(2,4,4,2),i], border="black", col="gainsboro", ...) ## RH (190620)
 			## Add the median.
 			segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col=1 )
 		}
@@ -2022,13 +1996,12 @@ plotVBcatch=function(obj, currentRes1=currentRes,
 	# text( xLab, yLab, linguaFranca(textLab,lang), pos=4, offset=0)   # Taking out as not really needed if give a decent caption
 	axis(1, at=intersect(seq(1900,3000,5),xLim[1]:xLim[2]), tcl=tcl.val, labels=FALSE)
 	axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
-	axis(2, at=pretty(yLim), labels=format(pretty(yLim),scientific=FALSE,big.mark=","))
+	axis(2, at=pretty(yLim), labels=format(pretty(yLim), scientific=FALSE, big.mark=options()$big.mark))
 
 	# legend(xLegPos, yLegPos, linguaFranca(c("Vulnerable","Spawning","Catch"),lang), bty="n")
 	# points(xLegPos-2, yLegPos, type="p")
 	# mtext( side=1, line=2, cex=1.0, linguaFranca("Year",lang))
 	# mtext( side=2, line=2, cex=1.0, linguaFranca("Biomass",lang))
-	# }
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotVBcatch
 # RH -- following 3 lines for debugging only
@@ -2045,37 +2018,113 @@ plotVBcatch=function(obj, currentRes1=currentRes,
 # plt.bubbles=function( obj,
 # For now just do in Sweave as quicker.
 
+## QUANTILE BOXES of AGE-FIT RESIDUALS by AGE, YEAR, COHORT ==========
 
-#plt.ageResidsPOP-----------------------2018-07-11
-# AME changing for POP, just plotting age class resids
-#  here, not qq-plot. Moving that to new function (so can do 4 on
-#  page). See popScape.r for original.
-#----------------------------------------------AME
-plt.ageResidsPOP <- function( obj, ages=c(2,60), pct=c(5,25,50,75,95),  main=NULL, lang="e")
+## plt.ageResidsPOP---------------------2019-07-18
+## AME changing for POP, just plotting age class resids
+##  here, not qq-plot. Moving that to new function (so can do 4 on
+##  page). See popScape.r for original.
+## -----------------------------------------AME|RH
+plt.ageResidsPOP <- function( obj, ages=NULL, main=NULL, lang="e")
 {
-  # Input is the output from stdRes.CA
-  # par( oma=c(2,1,1,1), mar=c(2,2,2,1), mfrow=c(2,1) )
-  # Subset to required ages.
-  obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
-  if( max(diff(sort(unique(obj$Age)))) > 1)
-    {
-      allAges=min(obj$Age):max(obj$Age)
-      nodataAges=allAges[ !(allAges %in% obj$Age)]
-      xx=split(c(obj$stdRes, rep(NA, length(nodataAges))), c(obj$Age, nodataAges))
-      #xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
-      xpos <- quantbox(xx, xlab="", ylab="", pars=tcall(boxpars))
-    } else {
-      #xpos <- boxplot( split( obj$stdRes, obj$Age ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
-      xpos <- quantbox(split(obj$stdRes,obj$Age), xlab="", ylab="", pars=tcall(boxpars))
-    }
-  abline( h=0, lty=2, col="red" )
-  mtext( side=1, line=2, cex=0.8, text=linguaFranca("Age class",lang) )
-  # These wouldn't show up:
-  # legend(x="topleft", "(a)", bty="n")
-  # text( par("usr")[1] + 0.95*diff(par("usr")[1:2]),
-  #     par("usr")[3] + 0.05*diff(par("usr")[3:4]), "(a)") 
+	## Input is the output from stdRes.CA
+	## par( oma=c(2,1,1,1), mar=c(2,2,2,1), mfrow=c(2,1) )
+	## Subset to required ages.
+	if (!is.null(ages))
+		obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
+	else
+		ages = range(obj$Age)
+	if( max(diff(sort(unique(obj$Age)))) > 1) {
+		allAges=min(obj$Age):max(obj$Age)
+		nodataAges=allAges[ !(allAges %in% obj$Age)]
+		xx=split(c(obj$stdRes, rep(NA, length(nodataAges))), c(obj$Age, nodataAges))
+		#xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+		xpos = quantbox(xx, xaxt="n", xlab="", ylab="", pars=tcall(boxpars))
+		xage = setdiff(allAges, nodataAges)
+		if (length(xage)>20)
+			xage = sort(unique(ceiling(xage/5)*5))
+		axis(1, at=match(xage,as.numeric(xpos$names)), labels=xage, cex=1, mgp=c(2,0.5,0))
+	} else {
+		#xpos <- boxplot( split( obj$stdRes, obj$Age ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+		xpos = quantbox(split(obj$stdRes,obj$Age), xaxt="n", xlab="", ylab="", pars=tcall(boxpars))
+		xage = sort(unique(ceiling(obj$Age/5)*5))
+		axis(1, at=match(xage,as.numeric(xpos$names)), labels=xage, cex=1, mgp=c(2,0.5,0))
+	}
+	abline( h=0, lty=2, col="red" )
+	mtext( side=1, line=2, cex=0.8, text=linguaFranca("Age class",lang) )
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.ageResidsPOP
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.ageResidsPOP
+
+
+## plt.yearResidsPOP--------------------2019-07-18
+## AME adding to plot age residuals by year. Is called for comm and survs.
+##  fill.in=TRUE is to add the missing years for boxplot
+##  ..POP does not do qq plot. See popScape.r for previous.
+## -----------------------------------------AME|RH
+plt.yearResidsPOP <- function(obj, ages=NULL, main=NULL, fill.in=TRUE, lang="e", ...)
+{
+	# Subset to required ages - still do as don't want age 1.
+	if (!is.null(ages))
+		obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
+	if(fill.in) {
+		allYears = min(obj$Year):max(obj$Year)
+		nodataYears = allYears[ !(allYears %in% obj$Year)]
+		xx = split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$Year, nodataYears))
+		#xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE, ... )     #AME outline=FALSE removes outliers
+		xpos = quantbox(xx, xaxt="n", xlab="", ylab="", pars=tcall(boxpars), ...)
+		xyrs = setdiff(allYears, nodataYears)
+		axis(1, at=match(xyrs,as.numeric(xpos$names)), labels=xyrs, cex=1, mgp=c(2,0.5,0))
+	} else {
+		#xpos <- boxplot( split( obj$stdRes, obj$Year ), whisklty=1, xlab="", ylab="", outline=FALSE, ... ) #AME outline=FALSE removes outliers
+		xpos = quantbox( split(obj$stdRes,obj$Year), xlab="", ylab="", pars=tcall(boxpars), ...)
+		xyrs = sort(unique(ceiling(obj$Year/5)*5))
+		axis(1, at=match(xyrs,as.numeric(xpos$names)), labels=xyrs, cex=1, mgp=c(2,0.5,0))
+	}
+	abline( h=0, lty=2, col="red" )
+	mtext( side=1, line=2, cex=0.8, text=linguaFranca("Year",lang) )
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.yearResidsPOP
+
+
+## plt.cohortResids---------------------2019-07-18
+## Plot age residuals by cohort.
+## -----------------------------------------AME|RH
+plt.cohortResids <- function( obj, ages=NULL, main=NULL, lang="e" )
+{
+	## Input is the CAc object from a Awatea res file. Ages to 59 as
+	##  plus-age class will mess up year-of-birth calculation. Not automated.
+	## par( oma=c(2,1,1,1), mar=c(2,2,2,1), mfrow=c(2,1) )
+	## Subset to required ages - still do as don't want age 1 or 60 for cohorts
+	if (!is.null(ages))
+		obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
+	## obj$stdRes has residuals for each age, year and both sexes. Need
+	##  to assign a year of birth for each age as an extra column, then
+	##  presumably just do the boxplot split using that.
+	obj$birthyr = obj$Year - obj$Age
+	if( max(diff(sort(unique(obj$birthyr)))) > 1) {
+		allYears = min(obj$birthyr):max(obj$birthyr)
+		nodataYears = allYears[ !(allYears %in% obj$birthyr)]
+		xx = split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$birthyr, nodataYears))
+		#xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+		xpos = quantbox(xx, xaxt="n", xlab="", ylab="", pars=tcall(boxpars))
+		xyrs = setdiff(allYears, nodataYears)
+		if (length(xyrs)>20)
+			xyrs = sort(unique(ceiling(xyrs/5)*5))
+		axis(1, at=match(xyrs,as.numeric(xpos$names)), labels=xyrs, cex=1, mgp=c(2,0.5,0))
+	} else {
+		#xpos=boxplot( split( obj$stdRes, obj$birthyr ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
+		xpos = quantbox(split(obj$stdRes,obj$birthyr), xaxt="n", xlab="", ylab="", pars=tcall(boxpars))
+		xyrs = sort(unique(ceiling(obj$birthyr/5)*5))
+		axis(1, at=match(xyrs,as.numeric(xpos$names)), labels=xyrs, cex=1, mgp=c(2,0.5,0))
+	}
+	abline( h=0, lty=2, col="red" )
+	mtext( side=1, line=2, cex=0.8, text=linguaFranca("Year of birth",lang) )
+	if ( !is.null(main) )
+		mtext( side=3, line=-0.5, cex=1.0, outer=TRUE, text=linguaFranca(main,lang) )
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.cohortResids
+
+##=================================Quantile boxes of age-fit residuals
 
 
 ## plt.ageResidsqqPOP-------------------2018-07-11
@@ -2217,6 +2266,7 @@ plt.biomass = function(years, Bt, xint=5, yint=2500,
 	colGear = rep(c("black","blue"),ngear)[1:ngear]
 	fout = fout.e = pname
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=5, horizontal=FALSE,  paper="special")
@@ -2230,7 +2280,7 @@ plt.biomass = function(years, Bt, xint=5, yint=2500,
 			axis(2, at=ysmall, tcl=tcl.val, labels=FALSE)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.biomass
 
@@ -2288,6 +2338,7 @@ plt.bubbles = function(mpdObj, nsex=2,
 				if (redo.Graphs) {
 					fout = fout.e = ijk
 					for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+						changeLangOpts(L=l)
 						fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 						for (p in ptypes) {
 							if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=ifelse(nr==1,6,8), horizontal=FALSE,  paper="special")
@@ -2299,7 +2350,7 @@ plt.bubbles = function(mpdObj, nsex=2,
 							}, x=ijk.list, n=inames)
 							if (p %in% c("eps","png")) dev.off()
 						} ## end p (ptypes) loop
-					} ## end l (lang) loop
+					}; eop()
 				}
 			}
 		}
@@ -2338,6 +2389,7 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 	colGear=rep(c("black","blue"),ngear)[1:ngear]
 	fout = fout.e = "catch"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4.5, horizontal=FALSE,  paper="special")
@@ -2352,9 +2404,10 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 #browser();return()
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 	fout = fout.e = "catchSmall"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=3, horizontal=FALSE,  paper="special")
@@ -2363,53 +2416,9 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 			plot(x, apply(y,1,sum), type="h", xlab=linguaFranca("Year",l), ylab=linguaFranca("Catch (t)",l))
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.catch
-
-
-## plt.cohortResids---------------------2018-07-11
-## Plot age residuals by cohort.
-## -----------------------------------------AME/RH
-plt.cohortResids <- function( obj, ages=c(2,59), pct=c(5,25,50,75,95),
-   main=NULL, lang="e" )
-{
-  # Input is the CAc object from a Awatea res file. Ages to 59 as
-  #  plus-age class will mess up year-of-birth calculation. Not automated.
-
-  # par( oma=c(2,1,1,1), mar=c(2,2,2,1), mfrow=c(2,1) )
-
-  # Subset to required ages - still do as don't want age 1 or 60
-  #  for cohorts
-  obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
-  # obj$stdRes has residuals for each age, year and both sexes. Need
-  #  to assign a year of birth for each age as an extra column, then
-  #  presumably just do the boxplot split using that.
-  obj$birthyr=obj$Year - obj$Age
-  if( max(diff(sort(unique(obj$birthyr)))) > 1)
-    {
-      allYears=min(obj$birthyr):max(obj$birthyr)
-      nodataYears=allYears[ !(allYears %in% obj$birthyr)]
-      xx=split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$birthyr, nodataYears))
-      #xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
-      xpos <- quantbox(xx, xlab="", ylab="", pars=tcall(boxpars))
-    } else {
-      #xpos=boxplot( split( obj$stdRes, obj$birthyr ), whisklty=1, xlab="", ylab="", outline=FALSE )     #AME outline=FALSE removes outliers
-      xpos <- quantbox(split(obj$stdRes,obj$birthyr), xlab="", ylab="", pars=tcall(boxpars))
-    }
-  abline( h=0, lty=2, col="red" )
-  mtext( side=1, line=2, cex=0.8, text=linguaFranca("Year of birth",lang) )
-
-  # Plot the q-normal plot of the standardised residuals.
-  # qqnorm( obj$stdRes,xlab="",ylab="",main="" )
-  # abline( a=0,b=1 )
-  # abline( h=quantile(obj$stdRes,p=pct/100,na.rm=TRUE),lty=2 )
-  # mtext( side=1, line=2, cex=0.8, "Theoretical quantiles" )
-
-  if ( !is.null(main) )
-    mtext( side=3, line=-0.5, cex=1.0, outer=TRUE, text=linguaFranca(main,lang) )
-}
-##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.cohortResids
 
 
 ## plt.cpue-----------------------------2018-07-11
@@ -2425,6 +2434,7 @@ plt.cpue = function(cpueObj, #xint=5, yint=2.5,
 	ylim = range(c(cpueObj$Obs[zobs],cpueObj$Fit[zobs]))
 	fout = fout.e = "CPUEfit"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6, height=6, horizontal=FALSE,  paper="special")
@@ -2441,7 +2451,7 @@ plt.cpue = function(cpueObj, #xint=5, yint=2.5,
 			legend("topright", bty="n", col=(1:nseries)+1, lwd=2, legend=linguaFranca(gsub("Series","CPUE",series),l), cex=0.8)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.cpue
 
@@ -2487,9 +2497,10 @@ plt.expRate <- function( obj, yLim=c(0,0.5), xLim=c(1954,2005) )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.expRate
 
 
-#plt.idx--------------------------------2017-12-01
-# AME doing postscript for POP. Adapting to five surveys for YMR
-#-------------------------------------------AME/RH
+## plt.idx------------------------------2019-09-26
+## AME doing postscript for POP.
+## RH adapting to five surveys for YMR.
+## -----------------------------------------AME|RH
 plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,sep=""),
    ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"), ...)
 {
@@ -2498,8 +2509,7 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 	nseries    = length(seriesList)
 	surveyFigName = paste0(ifelse(sType=="S","surv",ifelse(sType=="C","cpue","unkn")),"Res",ssnames)
 	surveyFigName = gsub(" ","",surveyFigName)
-#browser();return()
-	surveyHeadName=if (!exists("tcall")) ssnames else tcall(PBSawatea)[[paste0(sType,"names")]]
+	surveyHeadName=if (!exists("tcall") || is.null(tcall(PBSawatea)[[paste0(sType,"names")]])) ssnames else tcall(PBSawatea)[[paste0(sType,"names")]]
 
 	for ( i in 1:nseries )
 	{
@@ -2508,6 +2518,7 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 		#pname = surveyFigName[i]
 		fout = fout.e = surveyFigName[i]
 		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			changeLangOpts(L=l)
 			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				if (p=="eps") postscript(paste0(fout,".eps"), height=6, width=5, horizontal=FALSE,  paper="special")
@@ -2517,10 +2528,10 @@ plt.idx <- function(obj, main="Residuals", save=NULL, ssnames=paste("Ser",1:9,se
 				mtext( side=3, line=0, cex=1.0, outer=TRUE, text=linguaFranca(surveyHeadName[i],l))
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
-		} ## end l (lang) loop
+		}; eop()
 	}
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.idx
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.idx
 
 
 ## plt.initagedev-----------------------2018-07-11
@@ -2533,6 +2544,7 @@ plt.initagedev = function(logInitAgeDev,
 {
 	fout = fout.e = "initAgeDev"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
@@ -2542,7 +2554,7 @@ plt.initagedev = function(logInitAgeDev,
 			abline(h=0, col="grey")
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 }
 ##----------------------------------plt.initagedev
 
@@ -2909,6 +2921,7 @@ plt.recdev = function(logRecDev, xint=5, #yint=0.1,
 	x = as.numeric(names(logRecDev)); xlim = range(x); xsmall = intersect(seq(1900,2100,xint),x)
 	fout = fout.e = "recDev"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
@@ -2924,7 +2937,7 @@ plt.recdev = function(logRecDev, xint=5, #yint=0.1,
 			axis(1, at=xsmall, tcl=tcl.val, labels=FALSE)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.recdev
 
@@ -2949,6 +2962,7 @@ plt.recdevacf = function(logRecDev, muC, logvC, A, years, yr1,
 	if (redo.Graphs) {
 		fout = fout.e = "recDevAcf"
 		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			changeLangOpts(L=l)
 			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
@@ -2962,10 +2976,67 @@ plt.recdevacf = function(logRecDev, muC, logvC, A, years, yr1,
 				}
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
-		} ## end l (lang) loop
+		}; eop()
 	}
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.recdevacf
+
+
+## plt.selectivity----------------------2019-07-18
+## Transferred selectivity code from PBSscape.r
+## into plt function (RH 190718)
+## -----------------------------------------AME|RH
+plt.selectivity <- function( obj, mainTitle="Rockfish", 
+   ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"))
+{
+	## Plot the selectivity.
+	ageP = obj$Sel$P; names(ageP)=obj$Sel$Age
+	selP = split(ageP,paste(obj$Sel$Series,obj$Sel$Sex,sep="."))
+	xmax = max(as.numeric(sapply(selP,function(x){names(x[is.element(x,1)])[1]})),na.rm=TRUE) #maximum minimum age when P first hits 1
+	if (is.na(xmax)) xmax = obj$extra$general$Nages
+	#if (any(round(unlist(obj$extra$parameters[c("log_varRest","log_surveyvarR")]),5)<100)) ## temporary fix for dome-selectivity
+	## Check for dome-selectivity estimation
+	if ( any(unlist(sapply(currentRes$extra$priors[c("log_varRest_prior","log_surveyvarR_prior")],function(x){x[,1]}))>0) )
+		xmax = obj$extra$general$Nages
+	obj$Sel = obj$Sel[obj$Sel$Age <= xmax,]
+	sel.f = obj$Sel
+
+	## linguafranca takes too long on big vectors so shorten to unique
+	user.f  = unique(sel.f$Series)
+	## scape::plotSel looks for records labelled "Maturity" so cannot convert to french
+	not.mat = !is.element(user.f,"Maturity")
+	user.f  = linguaFranca(user.f[not.mat],"f")
+	not.maturity = !is.element(sel.f$Series,"Maturity")
+	sel.f$Series[not.maturity] = user.f[sel.f$Series[not.maturity]]
+
+	usex.f  = unique(sel.f$Sex)
+	usex.f  = linguaFranca(usex.f,"f")
+	sel.f$Sex = usex.f[sel.f$Sex]
+
+	obj.f = obj
+	obj.f$Sel = sel.f
+	fout = fout.e = "selectivity"
+	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
+		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
+		if (is.null(ptypes)) ptypes="win"
+		for (p in ptypes) {
+			if (p=="eps")      postscript(paste0(fout,".eps"), width=6.5, height=4.5, horizontal=FALSE,  paper="special")
+			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=4.5)
+			## regular par settings are ignored in lattice::xyplot -- need to fiddle with lattice settings
+			#par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
+			par.sel = list(layout.widths = list(left.padding=-0.5, right.padding=-0.5),
+				layout.heights=list(top.padding=0.5, main.key.padding=-0.75, bottom.padding=-2))
+			if (l=="f")
+				plotSel(obj.f, main=paste0("s\u{00E9}lectivit\u{00E9} du ", linguaFranca(mainTitle,l)), xlim=c(0,xmax), par.settings=par.sel)
+			else
+				plotSel(obj, main=paste0(mainTitle, " Selectivity"), xlim=c(0,xmax), par.settings=par.sel)
+			if (p %in% c("eps","png")) dev.off()
+		} ## end p (ptypes) loop
+	}; eop()
+
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.selectivity
 
 
 #plt.ssbVbCatch-------------------------2011-08-31
@@ -3017,15 +3088,37 @@ plt.ssbVbCatch <- function( obj, x1=1966, xLim=c(1954,2005), yLim=c(0,25000) )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.ssbVbCatch
 
 
-## plt.stdResids------------------------2018-07-10
+## stdRes.index-------------------------2011-08-31
+## Compute the standardised residuals.
+## --------------------------------------------AME
+stdRes.index <- function( obj, label=NULL, prt=TRUE )
+{
+  res <- log(obj$Obs) - log(obj$Fit)
+  stdRes <- res / obj$CV
+  result <- cbind( obj,stdRes )
+
+  if ( prt )
+  {
+    sdRes <- sqrt( var( stdRes,na.rm=TRUE ) )
+    cat( "\n",label,"\n" )
+    cat( "\n     Std. Dev. of standardised Residuals=",sdRes,"\n" )
+  }
+  result
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~stdRes.index
+
+
+
+## plt.stdResids------------------------2019-09-26
 ## Plot standardised residuals (AME adding xlim's for POP).
-## -----------------------------------------AME/RH
+## Panels 2 & 3 show points labelled as years (RH 190926)
+## -----------------------------------------AME|RH
 plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
    main=NULL, yLim=NULL, xLim=xLim, lang="e")
 {
-  # Input is a data.frame with columns "Year", "stdRes", "Fit".
-  # cex.val=1.2       # size of text, if want to shrink down
-  par( oma=c(1,1,2,1), mar=c(3,3,1,1), mfrow=c(3,1) )
+  ## Input is a data.frame with columns "Year", "stdRes", "Fit".
+  ## cex.val=1.2       # size of text, if want to shrink down
+  par( oma=c(0.5,1,2,0.5), mar=c(3,2,1,0.5), mfrow=c(3,1), mgp=c(1.5, 0.5, 0) )
 
   if ( is.null(yLim) )
     yLim <- range( obj$stdRes, na.rm=TRUE )
@@ -3037,18 +3130,24 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
   points( obj$Year, obj$stdRes, cex=ptcex, pch=ptpch) #, bg="orange" )
   mtext( side=1, line=2, cex=0.8, text=linguaFranca("Year",lang) )
 
-  # Plot the standardised residuals against predicted values.
+  ## Plot the standardised residuals against predicted values.
   zin = !is.na(obj$Fit) & !is.na(obj$stdRes)
-  plot( log(obj$Fit[zin]), obj$stdRes[zin], type="n", xlab="", ylab="", ylim=yLim )
+  plot(log(obj$Fit[zin]), obj$stdRes[zin], type="n", xlab="", ylab="", ylim=yLim )
   abline( h=0, lty=2 )
-  points( log(obj$Fit[zin]), obj$stdRes[zin], cex=ptcex, pch=ptpch) #, bg="orange" )
+  #points( log(obj$Fit[zin]), obj$stdRes[zin], cex=ptcex, pch=ptpch) #, bg="orange" )
+  #points( log(obj$Fit[zin]), obj$stdRes[zin], cex=3, pch=21, col="blue", bg="gainsboro") #, bg="orange" )
+  text( log(obj$Fit[zin]), obj$stdRes[zin], labels=substring(obj$Year[zin],3,4), col="blue", font=2) #, bg="orange" )
   mtext( side=1, line=2, cex=0.8, text=linguaFranca("Predicted",lang) )
 
-  # Plot the q-normal plot of the standardised residuals.
-  wiggle=qqnorm( obj$stdRes,xlab="",ylab="",main="" , pch=ptpch, cex=ptcex)
-  abline( a=0,b=1 )
-  abline( h=quantile(obj$stdRes,p=pct/100,na.rm=TRUE), lty=c(3,2,1,2,3), lwd=0.75 )
-  points(wiggle, pch=ptpch, cex=ptcex) #, bg="orange")
+  ## Plot the q-normal plot of the standardised residuals.
+  #wiggle = qqnorm(obj$stdRes, xlab="", ylab="", main="", pch=ptpch, cex=ptcex)
+  stdres = obj$stdRes[zin]; names(stdres) = obj$Year[zin]
+  wiggle = qqnorm(stdres, xlab="", ylab="", main="", pch=ptpch, cex=ptcex, type="n")
+  abline(a=0, b=1)
+  abline(h=quantile(stdres, p=pct/100, na.rm=TRUE), lty=c(3,2,1,2,3), lwd=0.75 )
+#browser();return()
+  #points(wiggle, pch=ptpch, cex=ptcex) #, bg="orange")
+  text(wiggle, labels=substring(names(wiggle$y),3,4), col="blue", font=2) #, bg="orange" )
   mtext( side=1, line=2, cex=0.8, text=linguaFranca("Theoretical quantiles",lang) )
 
   mtext( side=2, line=-0.5, cex=0.8, outer=TRUE, text=linguaFranca("Standardised residuals",lang) )
@@ -3056,33 +3155,6 @@ plt.stdResids <- function( obj, pct=c(5,25,50,75,95),
     mtext( side=3, line=0, cex=1.0, outer=TRUE, text=linguaFranca(main,lang) )
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.stdResids
-
-
-## plt.yearResidsPOP--------------------2018-07-11
-## AME adding to plot age residuals by year. Is called for comm and survs.
-##  fill.in=TRUE is to add the missing years for boxplot
-##  ..POP does not do qq plot. See popScape.r for previous.
-## -----------------------------------------AME/RH
-plt.yearResidsPOP <- function(obj, ages=c(2,60), pct=c(5,25,50,75,95),
-   main=NULL, fill.in=TRUE, lang="e", ...)
-{
-  # Subset to required ages - still do as don't want age 1.
-  obj <- obj[ (obj$Age >= ages[1]) & (obj$Age <=ages[2]), ]
-  if(fill.in)
-    {
-      allYears=min(obj$Year):max(obj$Year)
-      nodataYears=allYears[ !(allYears %in% obj$Year)]
-      xx=split(c(obj$stdRes, rep(NA, length(nodataYears))), c(obj$Year, nodataYears))
-      #xpos <- boxplot( xx, whisklty=1, xlab="", ylab="", outline=FALSE, ... )     #AME outline=FALSE removes outliers
-      xpos <- quantbox(xx, xlab="", ylab="", pars=tcall(boxpars), ...)
-    } else {
-      #xpos <- boxplot( split( obj$stdRes, obj$Year ), whisklty=1, xlab="", ylab="", outline=FALSE, ... ) #AME outline=FALSE removes outliers
-      xpos <- quantbox( split(obj$stdRes,obj$Year), xlab="", ylab="", pars=tcall(boxpars), ...)
-    }
-  abline( h=0, lty=2, col="red" )
-  mtext( side=1, line=2, cex=0.8, text=linguaFranca("Year",lang) )
-}
-##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.yearResidsPOP
 
 
 ## quantBox-----------------------------2018-04-03

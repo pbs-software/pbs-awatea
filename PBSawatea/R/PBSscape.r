@@ -213,6 +213,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 {
 	#AME some actually MCMC. # Doing as postscript now. # Taking some out for ymr.
 	closeAllWin()
+	createFdir(lang)
 
 	# AME adding, plot exploitation rate, not writing new function:
 	# RH modified to deal with multiple commercial gears
@@ -223,6 +224,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	ylim = range(U,na.rm=TRUE)
 	fout = fout.e = "exploit"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4.5, horizontal=FALSE,  paper="special")
@@ -245,13 +247,14 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 				#legend("topleft",bty="n",lty=ltyGear,pch=pchGear,legend=paste0("gear ",1:ngear),inset=0.05,seg.len=4,pt.bg="white",col=colGear)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	## AME had added recruits.eps for POP, but that's MCMC, so moving
 	##  to plt.mcmcGraphs, changing that filename to recruitsMCMC.eps
 	##  and just adding here to do MPD for recruits.
 	fout = fout.e = "recruits"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
@@ -261,49 +264,12 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 				ylab=paste0(linguaFranca("Recruitment",l),", Rt (1000s)"), ylim=c(0, max(obj$B$R, na.rm=TRUE)))
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
-	## Plot the selectivity.
-	objRed = obj         ## Reduced object, just plotting Selectivity to age 20
-	ageP = objRed$Sel$P; names(ageP)=objRed$Sel$Age
-	selP = split(ageP,paste(objRed$Sel$Series,objRed$Sel$Sex,sep="."))
-	xmax = max(as.numeric(sapply(selP,function(x){names(x[is.element(x,1)])[1]})),na.rm=TRUE) #maximum minimum age when P first hits 1
-	if (is.na(xmax)) xmax = 20
-	if (any(round(unlist(currentRes$extra$parameters[c("log_varRest","log_surveyvarR")]),5)!=100)) xmax=40 ## temporary fix
-	objRed$Sel = objRed$Sel[objRed$Sel$Age <= xmax,]
-	sel.f = objRed$Sel
-
-	## linguafranca takes too long on big vectors so shorten to unique
-	user.f  = unique(sel.f$Series)
-	## scape::plotSel looks for records labelled "Maturity" so cannot convert to french
-	not.mat = !is.element(user.f,"Maturity")
-	user.f  = linguaFranca(user.f[not.mat],"f")
-	not.maturity = !is.element(sel.f$Series,"Maturity")
-	sel.f$Series[not.maturity] = user.f[sel.f$Series[not.maturity]]
-
-	usex.f  = unique(sel.f$Sex)
-	usex.f  = linguaFranca(usex.f,"f")
-	sel.f$Sex = usex.f[sel.f$Sex]
-
-	objRed.f = objRed
-	objRed.f$Sel = sel.f
-	fout = fout.e = "selectivity"
-	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
-		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
-		for (p in ptypes) {
-			if (p=="eps")      postscript(paste0(fout,".eps"), width=6.5, height=4.5, horizontal=FALSE,  paper="special")
-			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.5, height=4.5)
-			## regular par settings are ignored in lattice::xyplot -- need to fiddle with lattice settings
-			#par(mfrow=c(1,1), mar=c(3.2,3.2,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
-			par.sel = list(layout.widths = list(left.padding=-0.5, right.padding=-0.5),
-				layout.heights=list(top.padding=0.5, main.key.padding=-0.75, bottom.padding=-2))
-			if (l=="f")
-				plotSel(objRed.f, main=paste0("s\u{00E9}lectivit\u{00E9} du ", linguaFranca(mainTitle,l)), xlim=c(0,xmax), par.settings=par.sel)
-			else
-				plotSel(objRed, main=paste0(mainTitle, " Selectivity"), xlim=c(0,xmax), par.settings=par.sel)
-			if (p %in% c("eps","png")) dev.off()
-		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	## Plot the selectivity -- Transferred selectivity code from 'PBSscape.r'
+	##   into 'plotFuns.r' as function 'plt.selectivity' (RH 190718)
+	## --------------------------------------------
+	plt.selectivity (obj, mainTitle=mainTitle, ptypes=ptypes, pngres=pngres, lang=lang)
 
 	## Plot the catch at age
 	## NOTE: There is a bug in plotCA that prevents plotting multiple
@@ -352,42 +318,44 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 
 		fout = fout.e = "commAgeResSer"
 		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			changeLangOpts(L=l)
 			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				pname = paste0(fout,g)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
-				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
-				plt.ageResidsPOP(stdRes.CAc.g, main="", lang=l)
+				par(mfrow=c(3,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
+				plt.ageResidsPOP(stdRes.CAc.g, main="", lang=l)   ## by age class
+				plt.yearResidsPOP(stdRes.CAc.g, lang=l)           ## by year
+				plt.cohortResids(stdRes.CAc.g, lang=l)            ## by cohort (year of birth)
+				#plt.ageResidsqqPOP(stdRes.CAc.g, lang=l)         ## no one likes this plot and it's basically not very useful
 				mtext(linguaFranca(CAnames[g],l), side=3, outer=TRUE, line=0.25, cex=1.5)
 				mtext(linguaFranca("Standardised Residuals",l), side=2, outer=TRUE, line=0, cex=1.5)
-				plt.yearResidsPOP(stdRes.CAc.g, lang=l)
-				plt.cohortResids(stdRes.CAc.g, lang=l)   # cohort resid, by year of birth
-				plt.ageResidsqqPOP(stdRes.CAc.g, lang=l)
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
-		} ## end l (lang) loop
+		}; eop()
 
 		for (s in sort(unique(objCAc.g$Sex))) {
 			objCAc.g.s = objCAc.g[is.element(objCAc.g$Sex,s),]
 			stdRes.CAc.g.s = stdRes.CA( objCAc.g.s )
 			fout = fout.e = "commAgeResSer"
 			for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+				changeLangOpts(L=l)
 				fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 				for (p in ptypes) {
 					pname = paste0(fout,g,s)
 					if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 					else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
-					par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
-					plt.ageResidsPOP( stdRes.CAc.g.s, main="", lang=l)
+					par(mfrow=c(3,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
+					plt.ageResidsPOP( stdRes.CAc.g.s, main="", lang=l)  ## by age class
+					plt.yearResidsPOP(stdRes.CAc.g.s, lang=l)           ## by year
+					plt.cohortResids(stdRes.CAc.g.s, lang=l)            ## by cohort (year of birth)
+					#plt.ageResidsqqPOP(stdRes.CAc.g.s, lang=l)         ## no one likes this plot and it's basically not very useful
 					mtext(paste0(linguaFranca(CAnames[g],l), " - ", linguaFranca(s,l)), side=3, outer=TRUE, line=0.25, cex=1.5)
 					mtext(linguaFranca("Standardised Residuals",l), side=2, outer=TRUE, line=0, cex=1.5)
-					plt.yearResidsPOP(stdRes.CAc.g.s, lang=l)
-					plt.cohortResids(stdRes.CAc.g.s, lang=l)   # cohort resid, by year of birth
-					plt.ageResidsqqPOP(stdRes.CAc.g.s, lang=l)
 					if (p %in% c("eps","png")) dev.off()
 				} ## end p (ptypes) loop
-			} ## end l (lang) loop
+			}; eop()
 		}
 	}
 
@@ -401,42 +369,44 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 		stdRes.CAs.g = stdRes.CA( objCAs.g )
 		fout = fout.e = "survAgeResSer"
 		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			changeLangOpts(L=l)
 			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				pname = paste0(fout,g)
 				if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 				else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
-				par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
-				plt.ageResidsPOP( stdRes.CAs.g, main="", lang=l)
+				par(mfrow=c(3,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
+				plt.ageResidsPOP( stdRes.CAs.g, main="", lang=l)  ## by age class
+				plt.yearResidsPOP(stdRes.CAs.g, lang=l)           ## by year
+				plt.cohortResids(stdRes.CAs.g, lang=l)            ## by cohort (year of birth)
+				#plt.ageResidsqqPOP(stdRes.CAs.g, lang=l)         ## no one likes this plot and it's basically not very useful
 				mtext(linguaFranca(Snames[g],l), side=3, outer=TRUE, line=0.25, cex=1.5)  ## g indexes Snames not SAnames
 				mtext(linguaFranca("Standardised Residuals",l), side=2, outer=TRUE, line=0, cex=1.5)
-				plt.yearResidsPOP(stdRes.CAs.g, lang=l)
-				plt.cohortResids(stdRes.CAs.g, lang=l)   # cohort resid, by year of birth
-				plt.ageResidsqqPOP(stdRes.CAs.g, lang=l)
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
-		} ## end l (lang) loop
+		}; eop()
 
 		for (s in sort(unique(objCAs.g$Sex))) {
 			objCAs.g.s = objCAs.g[is.element(objCAs.g$Sex,s),]
 			stdRes.CAs.g.s = stdRes.CA( objCAs.g.s )
 			fout = fout.e = "survAgeResSer"
 			for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+				changeLangOpts(L=l)
 				fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 				for (p in ptypes) {
 					pname = paste0(fout,g,s)
 					if (p=="eps") postscript(paste0(pname,".eps"), width=6.5, height=8.5, horizontal=FALSE,  paper="special")
 					else if (p=="png") png(paste0(pname,".png"), units="in", res=pngres, width=6.5, height=8.5)
-					par(mfrow=c(4,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
-					plt.ageResidsPOP( stdRes.CAs.g.s, main="", lang=l)
+					par(mfrow=c(3,1), mai=c(0.45,0.3,0.1,0.1), omi=c(0,0.25,0.4,0), mgp=c(2,0.75,0))
+					plt.ageResidsPOP( stdRes.CAs.g.s, main="", lang=l)  ## by age class
+					plt.yearResidsPOP(stdRes.CAs.g.s, lang=l)           ## by year
+					plt.cohortResids(stdRes.CAs.g.s, lang=l)            ## by cohort (year of birth)
+					#plt.ageResidsqqPOP(stdRes.CAs.g.s, lang=l)         ## no one likes this plot and it's basically not very useful
 					mtext(paste0(linguaFranca(Snames[g],l), " - ", linguaFranca(s,l)), side=3, outer=TRUE, line=0.25, cex=1.5)  ## g indexes Snames not SAnames
 					mtext(linguaFranca("Standardised Residuals",l), side=2, outer=TRUE, line=0, cex=1.5)
-					plt.yearResidsPOP(stdRes.CAs.g.s, lang=l)
-					plt.cohortResids(stdRes.CAs.g.s, lang=l)   # cohort resid, by year of birth
-					plt.ageResidsqqPOP(stdRes.CAs.g.s, lang=l)
 					if (p %in% c("eps","png")) dev.off()
 				} ## end p (ptypse) loop
-			} ## end l (lang) loop
+			}; eop()
 		}
 	}
 #	seriesList <- sort( unique( obj$CAs$Series) )  
@@ -462,6 +432,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	## Plot observed and expected mean ages from commercial and survey C@A data.
 	fout = fout.e = "meanAge"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=7, height=8.5, horizontal=FALSE,  paper="special")
@@ -469,7 +440,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 			plotMeanAge(obj=currentRes, lang=l)
 			if (is.element(p,c("eps","png"))) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	## Plot stock-recruitment function (based on MPD's)
 	## xLimSR and yLimSR fixed here for YMR to have Run 26 and 27 figs
@@ -486,6 +457,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 
 	fout = fout.e = "stockRecruit"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=4, horizontal=FALSE,  paper="special")
@@ -493,14 +465,14 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 			par(mfrow=c(1,1), mar=c(3.25,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.75,0))
 			ylab = linguaFranca("Recruitment",l)
 			plot(xxx, yyy, lwd=2, xlim=xLimSR, ylim=yLimSR, type="l",
-				xlab=bquote(.(linguaFranca("Spawning biomass",l)) ~ italic(B)[italic(t)-1] ~ "(tonnes)" ~ .(linguaFranca("in year ",l)) ~ italic(t) ~ "-1"),
-				ylab=bquote(.(linguaFranca("Recruitment",l)) ~ " " ~ italic(R)[italic(t)] ~ " (1000s)" ~ .(linguaFranca("in year ",l)) ~ italic(t) ~ "-1") ) 
+				xlab=bquote(.(linguaFranca("Spawning biomass",l)) ~ italic(B)[italic(t)] ~ "(tonnes)" ~ .(linguaFranca("in year ",l)) ~ italic(t)),
+				ylab=bquote(.(linguaFranca("Recruitment",l)) ~ " " ~ italic(R)[italic(t)] ~ " (1000s)" ~ .(linguaFranca("in year ",l)) ~ italic(t) ~ "+1") ) 
 				#xlab=expression( paste("Spawning biomass ", italic(B)[italic(t)-1], " (tonnes) in year ", italic(t), "-1", sep="") ),
 				#ylab=expression( paste("Recruitment ", italic(R)[italic(t)], " (1000s) in year ", italic(t), sep="") ) )
-			text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels=substring(as.character(years), 3), cex=0.6, col="blue")
+			text(obj$B[-length(years), "SB"], obj$B[-1, "R"], labels=substring(as.character(years[-length(years)]), 3), cex=0.6, col="blue")
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	##windows()
 	##plt.lengthResids( stdRes.CL( obj$CLs ),
@@ -551,6 +523,8 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 ##  that will be useful if want to scale two model runs
 ##  to the same ylim. If NULL then fits ylim automatically.
 {
+	createFdir(lang)
+
 	panel.cor <- function(x, y, digits=2, prefix="",...)
 	{
 		usr <- par("usr"); on.exit(par(usr))
@@ -565,6 +539,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	fout = fout.e = "recruitsMCMC"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=4, horizontal=FALSE,  paper="special")
@@ -573,10 +548,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotRmcmcPOP(mcmcObj$R, yLim=ylim.recruitsMCMC, lang=l) # *AME*
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "exploitMCMC"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=4*ngear, horizontal=FALSE,  paper="special")
@@ -585,14 +561,15 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			for (g in 1:ngear) {
 				gfile = mcmcObj$U[,grep(paste0("_",g),names(mcmcObj$U))]
 				names(gfile) = substring(names(gfile),1,4)
-				plotRmcmcPOP(gfile, yLab=paste0("Exploitation rate", ifelse(ngear>1, paste0(" - ", Cnames[g],), "")), yLim=ylim.exploitMCMC, yaxis.by=0.01, lang=l)
+				plotRmcmcPOP(gfile, yLab=paste0("Exploitation rate", ifelse(ngear>1, paste0(" - ", Cnames[g]), "")), yLim=ylim.exploitMCMC, yaxis.by=0.01, lang=l)
 			}
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "pdfParameters"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
@@ -601,7 +578,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotDensPOPparsPrior(mcmcObj$P, lty.outer=2, between=list(x=0.3, y=0.2), mpd=mpd[["mpd.P"]], lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	## regular par settings are ignored in lattice|trellis plots -- need to fiddle with lattice settings
 	#par(mfrow=c(1,1), mar=c(3,3,0.5,1), oma=c(0,0,0,0), mgp=c(1.75,0.5,0))
@@ -610,6 +587,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 
 	fout = fout.e = "pdfBiomass%d"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
@@ -619,10 +597,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			#panel.height=list(x=rep(1,5),unit="inches"), #*****Needs resolving
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "pdfRecruitment%d"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special", onefile=FALSE)
@@ -631,10 +610,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotDensPOP(mcmcObj$R/1000, xlab="Recruitment, Rt (1000s)", between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, same.limits=TRUE, layout=c(4,5), lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]]/1000, lang=l, par.settings=par.BR)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "pdfBiomass"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special")
@@ -645,10 +625,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			#, layout=c(0,length(getYrIdx(names(mcmcObj$B)))) )
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "pdfRecruitment"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.5, height=8, horizontal=FALSE,  paper="special")
@@ -657,10 +638,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotDensPOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, xlab="Recruitment, Rt (1000s)", between=list(x=0.2, y=0.2), ylab="Density", lwd.density=2, same.limits=TRUE, lty.median=2, lty.outer=2, mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000, lang=l, par.settings=par.BR) #, layout=c(4,5))
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "traceBiomass"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
@@ -669,10 +651,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotTracePOP(mcmcObj$B[,getYrIdx(names(mcmcObj$B))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), xlab="Sample", ylab="Female spawning biomass, Bt (1000 t)", mpd=mpd[["mpd.B"]][getYrIdx(names(mcmcObj$B))]/1000, lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "traceRecruits"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
@@ -681,10 +664,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotTracePOP(mcmcObj$R[,getYrIdx(names(mcmcObj$R))]/1000, axes=TRUE, between=list(x=0.2, y=0.2), xlab="Sample", ylab="Recruitment, Rt (1000s)", mpd=mpd[["mpd.R"]][getYrIdx(names(mcmcObj$R))]/1000, lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "traceParams"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
@@ -694,10 +678,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotTracePOP(mcmc=mcmcObj$P[, !idx], axes=TRUE, between=list(x=0.2, y=0.2), xlab="Sample", ylab="Parameter estimate", mpd=mpd[["mpd.P"]][!idx], lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "splitChain"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE,  paper="special")
@@ -706,10 +691,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			panelChains(mcmc=mcmcObj$P, axes=TRUE, pdisc=0, between=list(x=0, y=0), col.trace=c("red","blue","black"), xlab="Parameter Value", ylab="Cumulative Frequency", cex.axis=1.2, cex.lab=1.4, yaxt="n", lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "paramACFs"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=8, height=8, horizontal=FALSE,  paper="special")
@@ -717,10 +703,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotACFs(mcmc=mcmcObj$P, lag.max=60, lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "VBcatch"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=4.5*ngear, horizontal=FALSE,  paper="special")
@@ -734,7 +721,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			}
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 #	win.metafile("SARVBcatch.wmf", width=0.8*SAR.width, height=0.8*SAR.height)
 #	par(mai=c(0.72, 0.82, 0.2, 0.42), mgp=c(2,1,0))  
@@ -744,6 +731,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 #
 	fout = fout.e = "BVBnorm"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE,  paper="special")
@@ -752,7 +740,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotBVBnorm(mcmcObj, xLeg=0.02, yLeg=0.2, yLim=ylim.BVBnorm, ngear=ngear, VB.col=c("blue","red"), lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	# win.metafile("SARBVBnorm.wmf", height=SAR.height*0.7, width=SAR.width/2.3) # half width to do side-by-side
 	# par(mai=c(0.62, 0.65, 0.05, 0.05), mgp=c(2,1,0))
@@ -765,6 +753,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 	options(scipen=10)
 	fout = fout.e = "Bproj"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE, paper="special")
@@ -773,10 +762,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plt.quantBio(mcmcObj$B, projObj$B, xyType="quantBox", policy=plotPolicies, save=FALSE, lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "Rproj"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=7, horizontal=FALSE, paper="special")
@@ -785,10 +775,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plt.quantBio(mcmcObj$R, projObj$R, xyType="quantBox", policy=plotPolicies, save=FALSE, yaxis.lab="Recruitment (1000s)", lang=l)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "RprojOnePolicy"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE, paper="special")
@@ -797,10 +788,11 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plt.quantBioBB0(mcmcObj$R, projObj$R, xyType="quantBox", policy=onePolicy, save=FALSE, xaxis.by=10, yaxis.lab="Recruitment (1000s)", lang=l) ## *AME* (onePolicy)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	fout = fout.e = "snail"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE, paper="special")
@@ -809,7 +801,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=tcall(quants3)[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=assYrs, lang=l) ## RSR in 5RF
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	## Doing 6 pairs on a page:
 	npr = 6
@@ -820,6 +812,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		else       ii = (nuP-npr+1):nuP
 		fout = fout.e = "pairs"
 		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			changeLangOpts(L=l)
 			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				pname = paste0(fout,i)
@@ -829,7 +822,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 				pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
-		} ## end l (lang) loop
+		}; eop()
 	}
 	## Doing 1 pairs plot with all parameters
 	npp = 1
@@ -840,6 +833,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 		else       ii = (nuP-npr+1):nuP
 		fout = fout.e = "pairsPars"
 		for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+			changeLangOpts(L=l)
 			fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 			for (p in ptypes) {
 				pname = fout
@@ -849,13 +843,14 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 				pairs(mcmcObj$P[, ii], col="grey25", pch=20, cex=0.2, gap=0, lower.panel=panel.cor.small, cex.axis=1.25)
 				if (p %in% c("eps","png")) dev.off()
 			} ## end p (ptypes) loop
-		} ## end l (lang) loop
+		}; eop()
 	}
 
 	if (is.null(trevObj)) trevObj = trevorMCMC ## created by Sweave code
 	names(trevObj) = gsub("_","",names(trevObj))
 	fout = fout.e = "pairsMSY"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
 		for (p in ptypes) {
 			if (p=="eps") postscript(paste0(fout,".eps"), width=7, height=7, horizontal=FALSE,  paper="special")
@@ -864,7 +859,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			pairs(trevObj, col="grey25", pch=20, cex=.2, gap=0, lower.panel=panel.cor, cex.axis=1.5)
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
-	} ## end l (lang) loop
+	}; eop()
 
 	while(dev.cur() > 1)  dev.off() ## tidy up any remainingfrom the %d.eps
 }
@@ -1607,16 +1602,16 @@ refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
 
 
-#importProjRec--------------------------2013-02-13
-# Imports the projected recruitments
-#  (actually what's saved is the N(0,1) random numbers,
-#   which for a particular MCMC sample are the same for all the catch strategies),
-#   which 'importProj' does not do. Need this for YMR. 4th July 2011.
-# Also importing vulnerable biomass, for Jaclyn's requested projected
-#  exploitation rate decision tables for POP 3CD and 5DE, 2013.
-# importProjRecAndy.r - extending importProjRec to include VB, to
-#  then calculate projected exploitation rates. 13th Feb 2013
-#----------------------------------------------AME
+## importProjRec------------------------2019-11-06
+##  Imports the projected recruitments
+##   (actually what's saved is the N(0,1) random numbers,
+##    which for a particular MCMC sample are the same for all the catch strategies),
+##    which 'importProj' does not do. Need this for YMR. 4th July 2011.
+##  Also importing vulnerable biomass, for Jaclyn's requested projected
+##   exploitation rate decision tables for POP 3CD and 5DE, 2013.
+##  importProjRecAndy.r - extending importProjRec to include VB, to
+##   then calculate projected exploitation rates. 13th Feb 2013
+## -----------------------------------------AME|RH
 importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE) 
 {
 	get.Policies <- function() {
@@ -1639,7 +1634,7 @@ importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 	}
 	get.B <- function(Policies, Years) {
 		if (!quiet) cat("Biomass   ")
-		B <- read.table(paste(dir, "projspbm.out", sep="/"), header=TRUE)[, -c(1, 2)]
+		B <- read.table(paste(dir, "ProjSpBm.out", sep="/"), header=TRUE)[, -c(1, 2)]
 		if (!quiet) cat("file...")
 		Blist <- list()
 		for (p in 1:length(Policies)) {
@@ -1655,7 +1650,7 @@ importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 	}
 	get.Y <- function(Policies, Years) {
 		if (!quiet) cat("Landings...")
-		Y <- read.table(paste(dir, "procatch.out", sep="/"), header=TRUE)
+		Y <- read.table(paste(dir, "ProCatch.out", sep="/"), header=TRUE)
 		if (!quiet) cat("file...")
 		Ylist <- list()
 		for (p in 1:length(Policies)) {
@@ -1695,7 +1690,8 @@ importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 	# AME adding to load in Vulnerable Biomass, editing get.B
 	get.VB <- function(Policies, Years) {
 		if (!quiet) cat("Vulnerable Biomass   ")
-		VB <- read.table(paste(dir, "Projbiom.out", sep="/"), header=TRUE)[, -c(1:(2*ngear))]  # RH added `ngear' to deal with multiple Virgin VBs
+		## RH added `ngear' to deal with multiple Virgin VBs in leading columns
+		VB <- read.table(paste(dir, "ProjBiom.out", sep="/"), header=TRUE)[, -c(1:(2*ngear))]
 		if (!quiet) cat("file...")
 		VBlist <- list()
 		for (p in 1:length(Policies)) {
@@ -1709,7 +1705,7 @@ importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 		if (!quiet) cat("list...OK\n")
 		return(VB)
 	}
-	files <- paste(dir, c("strategy.out", "projspbm.out", "procatch.out", "recres.out", "projbiom.out"), sep="/")
+	files <- paste(dir, c("strategy.out", "projspbm.out", "procatch.out", "recres.out", "projbiom.out"), sep="/") ## case insensitive in Windows
 	sapply(files, function(f) if (!file.exists(f)) 
 		stop("File ", f, " does not exist. Please check the 'dir' argument.", call.=FALSE))
 	if (!quiet) cat("\nParsing files in directory ", dir, ":\n\n", sep="")
@@ -1718,9 +1714,10 @@ importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 	B <- get.B(Policies, Years)
 	Y <- get.Y(Policies, Years)
 	eps <- get.eps(Policies, Years)
-      	VB <- get.VB(Policies, Years)
+	VB <- get.VB(Policies, Years)
 	if (!quiet) cat("\n")
 	output <- list(B=B, Y=Y, eps=eps, VB=VB)
+#browser();return()
 	## Deprecate the use of coda's mcmc function
 	#if (coda) {
 	#	#eval(parse(text="require(coda, quietly=TRUE, warn.conflicts=FALSE)"))
@@ -1730,7 +1727,7 @@ importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 	attr(output, "info") <- info
 	return(output)
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importProjRec
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importProjRec
 
 
 #srFun----------------------------------2011-08-31

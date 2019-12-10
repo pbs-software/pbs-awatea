@@ -1,33 +1,35 @@
-#runSweave------------------------------2018-04-13
-# Create and run customised Sweave files for Awatea runs.
-# Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
-#-----------------------------------------------RH
-runSweave = function(
-   wd = getwd(), 
-   strSpp="XYZ",
-   filename = "spp-area-00.txt",      ## Name of Awatea .txt file in 'run.dir' to run
-   runNo   = 1,
-   rwtNo   = 0,
-   running.awatea =0,                 ## 0 if just loading previous '.rep'; 1 if rerunning Awatea
-   Nsex    = 2,                       ## if 1 then Unisex, if 2 then Males & Females
-   Ncpue   = 0,
-   Nsurvey = 3,
-   Ngear   = 1,                       ## number of commercial gear types
-   NCAset  = 1,                       ## number of pages to display catch-age-age plot sets (deprecated: 1 when #CA years <= 25, 2 when #CA years <=50, etc.)
-   maxcol  = 5,                       ## maximum # columns per page for CA plots
-   Snames  = paste0("Ser",1:Nsurvey), ## survey names (w/out spaces)
-   SApos   = rep(TRUE,Nsurvey),       ## surveys with age composition data
-   Cnames  = paste0("Gear",1:Ngear),  ## survey names (w/out spaces)
-   CApos   = rep(TRUE,Ngear),         ## commercial gears with age composition
-   delim   = "-",
-   debug   = FALSE,
-   locode  = FALSE,                   ## source this function as local code (for development)
-   codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-   sexlab  = c("Females","Males"),
-   resdoc  = FALSE,                   ## is this build for a research document?
-   redo.Graphs = TRUE,                ## recreate all the figures (.eps, .png)
-   ptype   = "png",                   ## plot type --  either "eps" or "png"
-   lang    = c("e","f")               ## language -- 'e'= English, 'f'= French (subdirectory)
+## runSweave----------------------------2019-07-19
+## Create and run customised Sweave files for Awatea runs.
+## Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
+## ---------------------------------------------RH
+runSweave   = function(
+   wd       = getwd(), 
+   strSpp   = "XYZ",
+   filename = "spp-area-00.txt",       ## Name of Awatea .txt file in 'run.dir' to run (names could also be spp-fishery)
+   running.awatea = 0,                 ## 0 if just loading previous '.rep'; 1 if rerunning Awatea
+   runNo    = 1,                       ## number of run in current series
+   rwtNo    = 0,                       ## number of reweights
+   Nsex     = 2,                       ## if 1 then Unisex, if 2 then Males & Females
+   Ncpue    = 0,                       ## number of CPUE time series
+   Nsurvey  = 3,                       ## number of surveys
+   Ngear    = 1,                       ## number of commercial gear types
+   NCAset   = 1,                       ## number of pages to display catch-age-age plot sets (deprecated: 1 when #CA years <= 25, 2 when #CA years <=50, etc.)
+   maxcol   = 5,                       ## maximum # columns per page for CA plots
+   sexlab   = c("Females","Males"),    ## labels for sex, should macth Nsex in length
+   Snames   = paste0("Ser",1:Nsurvey), ## survey names (w/out spaces)
+   SApos    = rep(TRUE,Nsurvey),       ## surveys with age composition data
+   Cnames   = paste0("Gear",1:Ngear),  ## commercial fishery names (w/out spaces)
+   CApos    = rep(TRUE,Ngear),         ## commercial gears with age composition
+   Unames   = paste0("CPUE",1:Ncpue),  ## CPUE names
+   delim    = "-",                     ## delimiter for processing files
+   debug    = FALSE,                   ## if TRUE, break the code just after writing modified Sweave lines 'tfile' to local Sweave file
+   dome     = FALSE,                   ## is the variance of the right side of selectivity curve used?
+   locode   = FALSE,                   ## source this function as local code (for development)
+   codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",  ## directory where developmental code files for PBSawatea reside
+   resdoc   = FALSE,                   ## is this build for a research document?
+   redo.Graphs = TRUE,                 ## recreate all the figures (.eps, .png)
+   ptype    = "png",                   ## plot type --  either "eps" or "png"
+   lang     = c("e","f")               ## language -- 'e'= english, 'f'= french (subdirectory)
 ) {
 	on.exit(setwd(wd))
 	remove(list=setdiff(ls(1,all.names=TRUE),c("runMPD","runSweave","Rcode","Scode","qu","so",".First")),pos=1)
@@ -59,10 +61,10 @@ runSweave = function(
 	run.dir  = paste(wd,run.name,sep="/")
 	ext      = sapply(strsplit(filename,"\\."),tail,1)
 	prefix   = substring(filename,1,nchar(filename)-nchar(ext)-1)
-	prefix   = gsub(paste(delim,runNoStr,sep=""),"",prefix)        # get rid of superfluous run number in name
+	prefix   = gsub(paste(delim,runNoStr,sep=""),"",prefix)       ## get rid of superfluous run number in name
 	model.name = paste(prefix,runNoStr,rwtNoStr,sep=".")
 	mpdname  = paste("MPD",runNoStr,rwtNoStr,sep=".")
-	mpd.dir  = paste(run.dir,mpdname,sep="/")  # directory where all the postscript crap happens
+	mpd.dir  = paste(run.dir,mpdname,sep="/")                     ## directory where all the postscript crap happens
 	if (file.exists(mpd.dir)) 
 		setwd(mpd.dir)
 	else {
@@ -74,7 +76,6 @@ runSweave = function(
 		if (!file.exists(mpd.dir.f))
 			dir.create(mpd.dir.f)
 	}
-#browser();return()
 	#if (!file.exists("run-master.Snw")) ## it will almost never exist in the MPD run directory
 	## This way, someone only using the package has a fighting chance of modifying the Snw:
 	if (!file.exists(paste(wd,"run-master.Snw",sep="/")))
@@ -82,10 +83,9 @@ runSweave = function(
 	masterSweave = readLines(paste(ifelse(locode,codePath,wd),"run-master.Snw",sep="/"))
 	tfile = masterSweave
 
-	# First, get rid excess lines, annoying comments, and disabled code
+	## First, get rid excess lines, annoying comments, and disabled code
 	if (length(grep("CUT HERE",tfile))>0)
 		tfile = tfile[1:grep("CUT HERE",tfile)[1]]
-#browser();return()
 	notcode = union(grep("^%",tfile),grep("^#",tfile))
 	tfile = tfile[setdiff(1:length(tfile),notcode)]
 
@@ -101,7 +101,7 @@ runSweave = function(
 	tfile = gsub("@lang",deparse(lang),tfile)
 	tfile = gsub("@NCAset",NCAset,tfile)
 	tfile = gsub("@maxcol",maxcol,tfile)
-#browser();return()
+
 	if (locode) {
 		if (any(strSpp==c("POP","pop","396"))) sppname = "Pacific Ocean Perch"
 		else if (any(strSpp==c("YMR","ymr","440"))) sppname = "Yellowmouth Rockfish"
@@ -112,7 +112,11 @@ runSweave = function(
 		else if (any(strSpp==c("ARF","arf","602"))) sppname = "Arrowtooth Flounder"
 		else if (any(strSpp==c("WAP","wap","228"))) sppname = "Walleye Pollock"
 		else if (any(strSpp==c("RSR","rsr","439"))) sppname = "Redstripe Rockfish"
-		else sppname="Unspecified species"
+		else if (any(strSpp==c("WWR","wwr","417"))) sppname = "Widow Rockfish"
+		else if (any(strSpp==c("BOR","bor","435"))) sppname = "Bocaccio"
+		else if (any(strSpp==c("BSR","bsr","425"))) sppname = "Blackspotted Rockfish"
+		else if (any(strSpp==c("RER","rer","394"))) sppname = "Rougheye Rockfish"
+		else sppname="Rockfish"
 	} else {
 		ici = sys.frame(sys.nframe())
 		data(gfcode,package="PBSawatea", envir=ici)
@@ -121,18 +125,18 @@ runSweave = function(
 	tfile = gsub("@sppname", sppname, tfile)
 	tfile = gsub("@strSpp", strSpp, tfile)
 
-	packList(stuff=c("runNo","rwtNo","Snames","SApos","Cnames","CApos","ptype"), target="PBSawatea")
+	packList(stuff=c("runNo","rwtNo","Snames","SApos","Cnames","CApos","Unames","ptype"), target="PBSawatea")
 	#if (exists("tput")) tput(Snames)
 	snames = rep(Snames,Nsurvey)[1:Nsurvey] # enforce same number of names as surveys
 	snames = gsub(" ","",snames)
 	tfile  = gsub("@surveys",paste(snames,collapse="\",\""),tfile)
+
 	if (Ncpue>0)
-		Cnames = rep(Cnames,Ncpue)[1:Ncpue] # enforce same number of names as surveys
-	cnames = gsub(" ","",Cnames)
-	tfile  = gsub("@cpues",paste(cnames,collapse="\",\""),tfile)
+		Unames = rep(Unames,Ncpue)[1:Ncpue] # enforce same number of names as surveys
+	unames = gsub(" ","",Unames)
+	tfile  = gsub("@cpues",paste(unames,collapse="\",\""),tfile)
 	tfile  = gsub("@Ncpue",Ncpue,tfile)
 
-#browser();return()
 	if (Nsex==1) {
 		z0    = grep("@rmsex",tfile)
 		tfile = tfile[setdiff(1:length(tfile),z0)]
@@ -145,13 +149,15 @@ runSweave = function(
 		tfile = gsub("@rmsex ","",tfile) # assumes space after @rmsex for readability in `run-Master.Snw`
 	}
 
+	## Remove lines that are not relevant to the assessment
+	## ----------------------------------------------------
+	## Remove cpue lines if CPUE not ued
 	if (!cpue) {
 		z0    = grep("@rmcpue",tfile)
 		tfile = tfile[setdiff(1:length(tfile),z0)]
 	} else {
 		tfile = gsub("@rmcpue ","",tfile) # assumes space after @rmcpue for readability in `run-Master.Snw`
 	}
-	
 	# Remove catch-at-age lines if no catch-at-age data
 	if (sum(CApos)==0) {
 		z0    = grep("@rmCA",tfile)
@@ -171,6 +177,7 @@ runSweave = function(
 	} else {
 		tfile = gsub("@rmCSA ","",tfile) # assumes space after @rmCA for readability in `run-master.Snw`
 	}
+	## Remove lines that are not used for final Res Doc (not really relevant any more)
 	if (resdoc) {
 		#tfile = gsub("@resdoc",TRUE,tfile)
 		if (any(grepl("@rmresdoc",tfile))) {
@@ -185,26 +192,38 @@ runSweave = function(
 		tfile = gsub("@rmresdoc ","",tfile) # assumes space after @rmresdoc for readability in `run-Master.Snw`
 		tfile = gsub("@rmROL ","",tfile)    # assumes space after @rmROL for readability in `run-Master.Snw`
 	}
+	## Remove lines that report right-hand variance of selectivity curve
+	if (!dome) {
+		z0    = grep("@rmdome",tfile)
+		tfile = tfile[setdiff(1:length(tfile),z0)]
+	} else {
+		tfile = gsub("@rmdome ","",tfile) # assumes space after @rmdome for readability in `run-Master.Snw`
+	}
 
 #browser();return()
 	## Deal with CA figures that have been split by selecting @rmCA1, @rmCA2, etc. that is appropriate based on NCAset argument
 	tfile = tfile[-grep(paste0("@rmCA[",paste0(setdiff(0:9,NCAset),collapse=""),"]"),tfile)] ## get rid of @rmCA's without the NCAset suffix
 	tfile = gsub(paste0("@rmCA",NCAset," "),"",tfile) ## assumes space after @rmCAN for readability in `run-master.Snw`
 
-	# Start expanding lines using bites
-	# IMPORTANT: each element string below must be a unique match to a place in `run-Master.Smw'
-	SpriorBites = c("logqvec\\.prior\\[1,]","muvec\\.prior\\[1,]","logvvec\\.prior\\[1,]","deltavec\\.prior\\[1,]")
-	CpriorBites = c("Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]")
-	figBites   = c("survIndSer4-1","onefig\\{survRes","twofig\\{ageSurv","onefig\\{survAgeResSer1}",
-		"onefig\\{survAgeResSer1Female}", "onefig\\{survAgeResSer1Male}")
-	cpueBites  = c("logqCPUE\\.prior\\[1,]","CPUE 1")
-	survBites  = c("Survey 1") 
-	#gearBits   = c("onefig\\{commAgeResSer1}") #change only first `1'
-	gearBites  = c(#"Vy.mpd\\[1]","muC.prior\\[1,]","logvC.prior\\[1,]","deltaC.prior\\[1,]",
-		"onefig\\{cpueRes",
+	## Start expanding lines using bites
+	## IMPORTANT: each element string below must be a unique match to a place in `run-Master.Smw'
+	SpriorBites = c(
+		"logqvec\\.prior\\[1,]","muS\\.prior\\[1,]","logvLS\\.prior\\[1,]","logvRS\\.prior\\[1,]","deltaS\\.prior\\[1,]"
+	)
+	CpriorBites = c(
+		"Vy\\.mpd\\[1]","muC\\.prior\\[1,]","logvLC\\.prior\\[1,]","logvRC\\.prior\\[1,]","deltaC\\.prior\\[1,]"
+	)
+	figBites    = c(
+		"survIndSer4-1","onefig\\{survRes","twofig\\{ageSurv","onefig\\{survAgeResSer1}",
+		"onefig\\{survAgeResSer1Female}", "onefig\\{survAgeResSer1Male}"
+	)
+	cpueBites   = c("logqCPUE\\.prior\\[1,]", "CPUE 1", "onefig\\{cpueRes")
+	survBites   = c("Survey 1") 
+	gearBites   = c(
 		"onefig\\{ageCommFemaleSer1}","onefig\\{ageCommFemaleSer1A}","onefig\\{ageCommFemaleSer1B}",
 		"onefig\\{ageCommMaleSer1}","onefig\\{ageCommMaleSer1A}","onefig\\{ageCommMaleSer1B}",
-		"onefig\\{commAgeResSer1}","onefig\\{commAgeResSer1Female}","onefig\\{commAgeResSer1Male}")
+		"onefig\\{commAgeResSer1}","onefig\\{commAgeResSer1Female}","onefig\\{commAgeResSer1Male}"
+	)
 
 	biteMe = function(infile, bites, N, CSpos=SApos, allsub=TRUE) { # bug fix: need to supply SApos or CApos
 		if (N==0) return(infile)
@@ -251,7 +270,7 @@ runSweave = function(
 		tfile = gsub(paste("@survey",i,sep=""),snames[i],tfile)
 	if (Ncpue>0) {
 		for (i in 1:Ncpue)
-			tfile = gsub(paste("@cpue",i,sep=""),cnames[i],tfile)
+			tfile = gsub(paste("@cpue",i,sep=""),unames[i],tfile)
 	}
 
 	localHistory = paste(mpd.dir,"/runHistory.tex",sep="")
@@ -260,14 +279,13 @@ runSweave = function(
 	} else
 		tfile = gsub("\\\\input","%\\\\input",tfile)
 
-
 	localName   = paste(run.name,"-",rwtNo,sep="")
 	localSweave = paste(mpd.dir,"/",localName,".Snw",sep="")
 #browser();return()
 
-	writeLines(tfile,con=localSweave)
+	writeLines(tfile, con=localSweave)
 	if (debug) { browser();return() }
-	
+
 #browser();return()
 	Sweave(localSweave)
 	#mkpath="C:\\Miktex\\miktex\\bin\\"
@@ -279,27 +297,29 @@ runSweave = function(
 	} else {
 		shell(cmd=paste0("texify --pdf --synctex=1 --clean ",localName,".tex"),wait=TRUE)
 	}
-	# if `pstopdf` not working, try:
-	#system(cmd=paste("mgs -sDEVICE=pdfwrite -o ",localName,".pdf ",localName,".ps",sep=""),wait=TRUE)
-	#http://tex.stackexchange.com/questions/49682/how-to-configure-ps2pdf-in-miktex-portable
+	## if `pstopdf` not working, try:
+	## system(cmd=paste("mgs -sDEVICE=pdfwrite -o ",localName,".pdf ",localName,".ps",sep=""),wait=TRUE)
+	## http://tex.stackexchange.com/questions/49682/how-to-configure-ps2pdf-in-miktex-portable
 	invisible(tfile) }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweave
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~runSweave
 
-#runMPD---------------------------------2012-07-25
-# Wrapper to function 'runSweave' for MPDs.
-#-----------------------------------------------RH
+## runMPD-------------------------------2012-07-25
+## Wrapper to function 'runSweave' for MPDs.
+## ---------------------------------------------RH
 #runMPD = function(strSpp="XYZ",prefix=c("spp","area"), runs=1, rewts=0:6, cpue=FALSE, delim="-") {
 runMPD = function(prefix=c("spp","area"), runs=1, rwts=0, ...) {
-	# (...) pass in arguments specific to runSweave if different from the defaults:
-	# Args: c(wd, cpue, strSpp, filename, runNo, rwtNo, running.awatea, Nsurvey, Snames, delim)
-	# If prefix=NULL, filename will be taken from (...) or set to the default.
+	## (...) pass in arguments specific to runSweave if different from the defaults:
+	## Args: c(wd, cpue, strSpp, filename, runNo, rwtNo, running.awatea, Nsurvey, Snames, delim)
+	## If prefix=NULL, filename will be taken from (...) or set to the default.
 	dots = list(...)
 	if (is.null(dots$delim)) delim="-" else delim=dots$delim
 	for (i in runs) {
 		if (!is.null(prefix)) filename=paste(paste(c(prefix,pad0(i,2)),collapse=delim),".txt",sep="")
 		for (j in rwts) {
 			runSweave(filename=filename, runNo=i, rwtNo=j, ...)
-}	}	}
+		}
+	}
+}
 
 #runMPD(strSpp="POP",prefix=c("pop","3CD"),runs=3,rwts=1,cpue=TRUE,Nsurvey=2,Snames=c("NMFS Triennial","WCVI Synoptic"),SApos=c(F,T),delim="-",debug=T)
 #runMPD(strSpp="POP",prefix=c("ymr","cst"),runs=29, rwts=0:1, cpue=FALSE, Nsurvey=5, Snames=c("GIG","QCSsyn","QCSshr","WCHGsyn","WCVIsyn"))

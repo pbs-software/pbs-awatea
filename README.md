@@ -1,5 +1,5 @@
 ## PBSawatea: Tools for running Awatea and visualizing the results ##
-&copy; Fisheries and Oceans Canada (2011-2018)
+&copy; Fisheries and Oceans Canada (2011-2020)
 
 <b>PBSawatea</b> provides an R interface for running ADMB Awatea software, which is a variant of the Coleraine fish population software. The added functionality here includes automation of:
 
@@ -39,6 +39,12 @@ importFrom("utils", "Sweave", "data", "flush.console", "help", "installed.packag
 In the end, the target audience is very small, comprising only those people who actually use Awatea.
 
 <b>PBSawatea</b> is not available on <a href="https://cran.r-project.org/">CRAN</a> (Comprehensive R Archive Network); however, the source code is available on <a href="https://github.com/pbs-software/pbs-awatea">GitHub</a>. Additionally, both source tarball and Windows binary &#8212; built using R-devel and checked via `R CMD check --as-cran` routine on a <b>Windows 7</b> 64-bit system &#8212; are available on <a href="https://drive.google.com/drive/folders/0B2Bkic2Qu5LGOGx1WkRySVYxNFU?usp=sharing">Google Drive</a>. The best way to use this code is to source it directly when performing stock assessments, so think of the repo as a depot.
+
+As with any freely available product, there is no warranty or promise that **PBSawatea** will perform adequately for all circumstances. Additionally, coding errors are possible, and users should contact the package maintainer if bugs are detected.
+
+Maintainer: <a href="mailto:rowan.haigh@dfo-mpo.gc.ca">Rowan Haigh</a>
+
+<p align="right"><img src="DFOlogo_small.jpg" alt="DFO logo" style="height:30px;"></p> 
 
 
 ### PBSawatea dependencies ###

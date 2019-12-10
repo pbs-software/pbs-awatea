@@ -168,16 +168,19 @@
 linguaFranca = try(PBStools::linguaFranca, silent=T)
 createFdir   = try(PBStools::createFdir, silent=T)
 pbstoolsDevDir = "C:/Users/haighr/Files/Projects/R/Develop/PBStools/Authors/Rcode/develop"
-if (class(linguaFranca)=="try-error") {
+#if (class(linguaFranca)=="try-error") {
 	if (file.exists(pbstoolsDevDir)) {
-		extraCode = c("linguaFranca", "createFdir") # ,"formatCatch", "crossTab")
+		extraCode = c("createFdir", "linguaFranca", "changeLangOpts", "formatCatch", "texArray")
 		for (i in extraCode)
 			source(paste0(pbstoolsDevDir,"/",i,".r")) ## to get the latest code
+		eop() ## to set big.mark in options
 	} else {
-		stop("You need the function `linguaFranca' from the PBStools package")
+		if (!exists("linguaFranca"))
+			stop("You need the function `linguaFranca' from the PBStools package")
+		options(big.mark = ",")
 	}
-}
-source(paste0(pbstoolsDevDir,"/","linguaFranca.r")) ## for now just use the latest...
+#}
+#source(paste0(pbstoolsDevDir,"/","linguaFranca.r")) ## for now just use the latest...
 
 ## Note: '@variables' replaced by function 'runSweave'.
 cwd             = "@cwd"       ## Top level directory; all models occur below this one. 
@@ -255,17 +258,17 @@ if(running.awatea) {
 
 @rmresdoc Using model specified by {\tt \Sexpr{model.name}.txt}. Loading in {\tt \Sexpr{model.name}.res} file. 
 
-% {\tt results.dat} file, have changed {\tt importCol2} from loading in a {\tt .res}. **Check with Paul that that's okay - they look to be similar formats (for POP assess8, {\tt results.dat} and {\tt ...estmh02.res} are identical except for a few extra quotation marks and the latter rounds some numbers up (Paul's notes mention this loss of precision). So, need new directory for each re-running, or copy results.dat over.
+%% {\tt results.dat} file, have changed {\tt importCol2} from loading in a {\tt .res}. **Check with Paul that that's okay - they look to be similar formats (for POP assess8, {\tt results.dat} and {\tt ...estmh02.res} are identical except for a few extra quotation marks and the latter rounds some numbers up (Paul's notes mention this loss of precision). So, need new directory for each re-running, or copy results.dat over.
 
-% We {\bf are}~{\bf \Sexpr{if(!running.awatea) paste("NOT")}} re-running Awatea here\Sexpr{if(!running.awatea) paste(" so just loading in output")}.
+%% We {\bf are}~{\bf \Sexpr{if(!running.awatea) paste("NOT")}} re-running Awatea here\Sexpr{if(!running.awatea) paste(" so just loading in output")}.
 
-@rmresdoc If editing {\tt .txt} file, may have to rerun just in DOS/R first to check the output from ADMB (otherwise errors get hidden): 
+%% @rmresdoc If editing {\tt .txt} file, may have to rerun just in DOS/R first to check the output from ADMB (otherwise errors get hidden): 
 
-@rmresdoc {\tt > shell( paste("awatea -ind ../", model.name,".txt -nohess", sep=""))}
+%% @rmresdoc {\tt > shell( paste("awatea -ind ../", model.name,".txt -nohess", sep=""))}
 
-Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCMC results and for the write-up.
+%% Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCMC results and for the write-up.
 
-\Sexpr{paste(area.name, strSpp, 2018)} --~~ \texttt{AppE\_Results\_\Sexpr{strSpp}\_\Sexpr{area.name}\_2018\_RD.Rnw}
+\Sexpr{paste(area.name, strSpp, substring(Sys.time(),1,4))}:~~~~ \texttt{AppE\_Results\_\Sexpr{strSpp}\_\Sexpr{area.name}\_\Sexpr{substring(Sys.time(),1,4)}\_RD.Rnw}
 
 \section{History of Runs}
 
@@ -282,6 +285,7 @@ Use separate \texttt{Rnw} files for the final chapter integration of MPD and MCM
 	Snames  = tcall("PBSawatea")$Snames        # names of surveys
 	SAnames = Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
 	if (length(SAnames)>0) useSA = TRUE else useSA = FALSE
+	Unames  = tcall("PBSawatea")$Unames        # names of CPUE series
 	ptype = tcall(PBSawatea)$ptype
 @
 
@@ -473,35 +477,40 @@ logRecDev.mpd = currentRes$Dev$Annual        ## epsilon_t
 logInitAgeDev.mpd = currentRes$Dev$Initial   ## deviations for initial age structure, ages 2+ mean is 0
 
 ## From Rowan's extra function, to give the mpd's:
-R0.mpd = currentRes$extra$parameters$R0
-M1.mpd = currentRes$extra$parameters$M1[1]
-M2.mpd = currentRes$extra$parameters$M1[2]
-h.mpd = currentRes$extra$parameters$h
+R0.mpd   = currentRes$extra$parameters$R0
+M1.mpd   = currentRes$extra$parameters$M1[1]
+M2.mpd   = currentRes$extra$parameters$M1[2]
+M3.mpd   = currentRes$extra$parameters$M2[1]  ## extra M parameter at age of full maturity (only female for now)
+h.mpd    = currentRes$extra$parameters$h
 qvec.mpd = exp(currentRes$extra$parameters$log_qsurvey) ## surveys
 
 ## CPUE: exists but not calculated if no CPUE series
-qCPUE.mpd = exp(currentRes$extra$parameters$log_qCPUE)  ## q for CPUE
+qCPUE.mpd    = exp(currentRes$extra$parameters$log_qCPUE)  ## q for CPUE
 betaCPUE.mpd = exp(currentRes$extra$parameters$log_BetaCPUE)
 
 ## survey selectivities (on for each survey):
-muvec.mpd = currentRes$extra$parameters$surveySfull
-deltavec.mpd = currentRes$extra$parameters$survey_SfullDelta
-logvvec.mpd = currentRes$extra$parameters$log_surveyvarL
+muS.mpd    = currentRes$extra$parameters$surveySfull
+deltaS.mpd = currentRes$extra$parameters$survey_SfullDelta
+logvLS.mpd = currentRes$extra$parameters$log_surveyvarL
+logvRS.mpd = currentRes$extra$parameters$log_surveyvarR
 
 ## commercial selectivities (one for each gear):
-muC.mpd = currentRes$extra$parameters$Sfullest
+muC.mpd    = currentRes$extra$parameters$Sfullest
 deltaC.mpd = currentRes$extra$parameters$SfullDelta
-logvC.mpd = currentRes$extra$parameters$log_varLest
+logvLC.mpd = currentRes$extra$parameters$log_varLest
+logvRC.mpd = currentRes$extra$parameters$log_varRest
 
 ## From Rowan's extra function, to give the priors, not all are _prior
 R0.prior = currentRes$extra$priors$R0_prior
 M.prior  = currentRes$extra$priors$M1_prior
+MM.prior  = currentRes$extra$priors$M2_prior
 if (nsex==1) {
 	M1.prior = M.prior  # Unisex
 	M2.prior = NULL
 } else {
 	M1.prior = M.prior[1,] 
 	M2.prior = M.prior[2,]
+	M3.prior = MM.prior[1,]
 }
 h.prior = currentRes$extra$priors$h_prior
 logqvec.prior = currentRes$extra$priors$log_qsurvey_prior # surveys, matrix
@@ -549,14 +558,16 @@ logbetaCPUE.prior = currentRes$extra$priors$log_BetaCPUE
 logqCPUEerr.prior = currentRes$extra$priors$qCPUEerr_prior  ## error on the q ????
 
 ## survey selectivities (all matrices):
-muvec.prior = currentRes$extra$priors$surveySfull_prior
-deltavec.prior = currentRes$extra$priors$p_surveySfulldelta 
-logvvec.prior = currentRes$extra$priors$log_surveyvarL_prior
+muS.prior = currentRes$extra$priors$surveySfull_prior
+deltaS.prior = currentRes$extra$priors$p_surveySfulldelta 
+logvLS.prior = currentRes$extra$priors$log_surveyvarL_prior
+logvRS.prior = currentRes$extra$priors$log_surveyvarR_prior
 
 ## commercial selectivities (one for each gear type, not always position 6, RH):
 muC.prior = currentRes$extra$priors$p_Sfullest              ## comm mu
 deltaC.prior = currentRes$extra$priors$p_Sfulldelta
-logvC.prior = currentRes$extra$priors$log_varLest_prior
+logvLC.prior = currentRes$extra$priors$log_varLest_prior
+logvRC.prior = currentRes$extra$priors$log_varRest_prior
 
 ## Function to use for priors in table. Must read in a vector of 
 ##  length, and outputs it in the format for the table.
@@ -647,10 +658,10 @@ if(redo.Graphs){
 \hline \\ [-1.5ex]
 {\bf Biomass} & {\bf $B_{t=\Sexpr{years[length(years)]}}$} & {\bf $B_0$} & {\bf $B_t$~/~$B_0$} \\ [1ex]
 \hline \\ [-1.5ex]
-Spawning & \Sexpr{format(round(By.mpd),big.mark=",")} & \Sexpr{format(round(B0.mpd),big.mark=",")} & \Sexpr{signif(ByB0.mpd,sigdig)} \\
+Spawning & \Sexpr{format(round(By.mpd),big.mark=options()$big.mark)} & \Sexpr{format(round(B0.mpd),big.mark=options()$big.mark)} & \Sexpr{signif(ByB0.mpd,sigdig)} \\
 \\ [-1.5ex]
 %=======Next line will be expanded to accommodate multiple gears=======
-Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round(V0.mpd[1]),big.mark=",")} & \Sexpr{signif(VyV0.mpd[1],sigdig)} \\
+Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=options()$big.mark)} & \Sexpr{format(round(V0.mpd[1]),big.mark=options()$big.mark)} & \Sexpr{signif(VyV0.mpd[1],sigdig)} \\
 \\ [-1.5ex]
 \hline
 \end{tabular}	
@@ -681,6 +692,7 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 \Sexpr{ptab(M1.prior)} & \Sexpr{M1.mpd} \\
 %@rmsex \multicolumn{5}{l}{{\bf $M_2$, M (natural mortality row 2), M1 row 2}} & \\
 @rmsex \Sexpr{ptab(M2.prior)} & \Sexpr{M2.mpd} \\
+\Sexpr{ptab(M3.prior)} & \Sexpr{M3.mpd} \\
 \\ [-1.5ex]
 
 %\multicolumn{5}{l}{{\bf $h$,  h (steepness of spawner-recruit curve), h}} & \\
@@ -767,17 +779,17 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 %\multicolumn{6}{l}{\bf Selectivities ($g=1,...\Sexpr{Nsurv}$ for surveys and $g=\Sexpr{Nsurv+1}$ for commercial fishery):} \\
 %\multicolumn{6}{l}{\bf $\mu_g$, Survey L full (row g), surveySfull (row g) / S fullest (commercial), Sfullest} \\
 %=======Next line will be expanded to accommodate multiple surveys=======
-%\Sexpr{ptab(muvec.prior[1,])} & \Sexpr{muvec.mpd[1]} \\
+%\Sexpr{ptab(muS.prior[1,])} & \Sexpr{muS.mpd[1]} \\
 %\Sexpr{ptab(muC.prior)} & \Sexpr{muC.mpd} \\
 %\multicolumn{6}{l}{\bf $\log v_{gL}$, Survey variance L (row g), log\_surveyvarL (row g) / Log variance of left side}\\
 % & \multicolumn{5}{l}{\bf  of selectivity curve (for both sexes) (commercial), log\_varLest} \\ 
 %=======Next line will be expanded to accommodate multiple surveys=======
-%\Sexpr{ptab(logvvec.prior[1,])} & \Sexpr{logvvec.mpd[1]} \\
-%\Sexpr{ptab(logvC.prior)} & \Sexpr{logvC.mpd} \\
+%\Sexpr{ptab(logvLS.prior[1,])} & \Sexpr{logvLS.mpd[1]} \\
+%\Sexpr{ptab(logvLC.prior)} & \Sexpr{logvLC.mpd} \\
 %\multicolumn{6}{l}{\bf $\Delta_g$, Survey L full delta (row g) surveySfulldeltaest (row g) / } \\
 % & \multicolumn{5}{l}{\bf S full delta ... (commercial), SfullDelta} \\
 %=======Next line will be expanded to accommodate multiple surveys=======
-%\Sexpr{ptab(deltavec.prior[1,])} & \Sexpr{deltavec.mpd[1]} \\
+%\Sexpr{ptab(deltaS.prior[1,])} & \Sexpr{deltaS.mpd[1]} \\
 %\Sexpr{ptab(deltaC.prior)} & \Sexpr{deltaC.mpd} \\
 
 %\multicolumn{8}{l}{\bf Commercial selectivity~~($\mu_g$, where $g=\Sexpr{Nsurv+1},...,\Sexpr{Nsurv+Ngears}$)} \\
@@ -788,18 +800,28 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 
 \multicolumn{8}{l}{\bf Survey selectivity ($\mu_g$, where $g=1,...,\Sexpr{Nsurv}$)} \\
 %=======Next line will be expanded to accommodate multiple surveys=======
-1 & \Sexpr{ptab(muvec.prior[1,])} & \Sexpr{signif(muvec.mpd[1],sigdig)} & \\
+1 & \Sexpr{ptab(muS.prior[1,])} & \Sexpr{signif(muS.mpd[1],sigdig)} & \\
 \\ [-1.5ex]
 
 \multicolumn{8}{l}{\bf Variance (left) of commercial selectivity curve~~($\log v_{gL}$, where $g=\Sexpr{paste0((Nsurv+1):(Nsurv+Ngears),collapse=",")}$)} \\ 
 %=======Next line will be expanded to accommodate multiple gears=======
-\Sexpr{Nsurv+1} & \Sexpr{ptab(logvC.prior[1,])} & \Sexpr{signif(logvC.mpd[1],sigdig)} & \\ 
+\Sexpr{Nsurv+1} & \Sexpr{ptab(logvLC.prior[1,])} & \Sexpr{signif(logvLC.mpd[1],sigdig)} & \\ 
 \\ [-1.5ex]
 
 \multicolumn{8}{l}{\bf Variance (left) of survey selectivity curve~~($\log v_{gL}$, where $g=1,...,\Sexpr{Nsurv}$)} \\ 
 %=======Next line will be expanded to accommodate multiple surveys=======
-1 & \Sexpr{ptab(logvvec.prior[1,])} & \Sexpr{signif(logvvec.mpd[1],sigdig)} & \\ %\Sexpr{signif(exp(logvvec.mpd[1]),sigdig)} \\
+1 & \Sexpr{ptab(logvLS.prior[1,])} & \Sexpr{signif(logvLS.mpd[1],sigdig)} & \\ %\Sexpr{signif(exp(logvLS.mpd[1]),sigdig)} \\
 \\ [-1.5ex]
+
+@rmdome \multicolumn{8}{l}{\bf Variance (right) of commercial selectivity curve~~($\log v_{gR}$, where $g=\Sexpr{paste0((Nsurv+1):(Nsurv+Ngears),collapse=",")}$)} \\ 
+%=======Next line will be expanded to accommodate multiple gears=======
+@rmdome \Sexpr{Nsurv+1} & \Sexpr{ptab(logvRC.prior[1,])} & \Sexpr{signif(logvRC.mpd[1],sigdig)} & \\ 
+@rmdome \\ [-1.5ex]
+
+@rmdome \multicolumn{8}{l}{\bf Variance (right) of survey selectivity curve~~($\log v_{gR}$, where $g=1,...,\Sexpr{Nsurv}$)} \\ 
+%=======Next line will be expanded to accommodate multiple surveys=======
+@rmdome 1 & \Sexpr{ptab(logvRS.prior[1,])} & \Sexpr{signif(logvRS.mpd[1],sigdig)} & \\ %\Sexpr{signif(exp(logvLS.mpd[1]),sigdig)} \\
+@rmdome \\ [-1.5ex]
 
 @rmsex \multicolumn{8}{l}{\bf Shift in commercial selectivity for males~~($\Delta_g$, where $g=\Sexpr{paste0((Nsurv+1):(Nsurv+Ngears),collapse=",")}$)} \\ 
 %=======Next line will be expanded to accommodate multiple gears=======
@@ -808,7 +830,7 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=",")} & \Sexpr{format(round
 
 @rmsex \multicolumn{8}{l}{\bf Shift in survey selectivity for males~~($\Delta_g$, where $g=1,...,\Sexpr{Nsurv}$)} \\ 
 %=======Next line will be expanded to accommodate multiple surveys=======
-@rmsex 1 & \Sexpr{ptab(deltavec.prior[1,])} & \Sexpr{signif(deltavec.mpd[1],sigdig)} & \\
+@rmsex 1 & \Sexpr{ptab(deltaS.prior[1,])} & \Sexpr{signif(deltaS.mpd[1],sigdig)} & \\
 @rmsex \\ [-1.5ex]
 
 %\hline
@@ -907,7 +929,7 @@ for (l in lang) {  ## could switch to other languages if available in 'linguaFra
 } ## end redo.Graphs
 
 ## `plt.recdevacf' needs to be run to assign `yearsForACF' to the global environment
-plt.recdevacf(logRecDev.mpd, muC.mpd, logvC.mpd, A, years, yr1=firstYearOfAgeData, redo.Graphs=redo.Graphs, lang=lang) # ACF of log recruitment deviations
+plt.recdevacf(logRecDev.mpd, muC.mpd, logvLC.mpd, A, years, yr1=firstYearOfAgeData, redo.Graphs=redo.Graphs, lang=lang) # ACF of log recruitment deviations
 
 ## `plt.bubbles' needs to be run to assign `residsCAcFem', `residsCAcMale', `residsCAsFem', and `residsCAsMale' to the global environment
 plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble plots of observed and fitted ages
@@ -934,14 +956,14 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 %\onefig{survIndSer4}{Time series of CPUE (blue open circles connected by dashed line) and the GIG historical survey index (black solid circles connected by solid line), each normalised to their means. The CPUE series gives a conflicting signal to the survey index. Rowan putting into catch Appendix.}
 
 %=======Next line will be expanded to accommodate multiple surveys=======
-\onefig{survRes@survey1}{Residuals of fits of model to \Sexpr{Snames[1]} survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+\onefig{survRes@survey1}{Residuals of model fits to \Sexpr{Snames[1]} survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
 
 @rmcpue \onefig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 90\% error bars are based on lognormal assumption (double check error bars).}
 
 @rmcpue \onefig{CPUEfit}{CPUE index series (without error bars) and biomass trajectories using different q's (if more than one CPUE series).}
 
 %=======Next line will be expanded to accommodate multiple CPUE series=======
-@rmcpue \onefig{cpueRes@cpue1}{Residuals of fits of model to \Sexpr{Cnames[1]} CPUE series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
+@rmcpue \onefig{cpueRes@cpue1}{Residuals of model fits to \Sexpr{Unames[1]} CPUE series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
 
 @rmresdoc @rmCA \onefig{CAcObsFem}{Commercial catch-at-age data for females. Bubbles are, for each year, the proportions assigned to each age class, based on the weighted age calculations described in Appendix E. Bubble areas are proportional to the respective proportions.}
 
@@ -968,13 +990,15 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 \clearpage 
 %=======Next line will be expanded to accommodate multiple gears=======
-@rmCA \onefig{commAgeResSer1}{Residual of fits of model to commercial proportions-at-age data (MPD values) for \Sexpr{CAnames[1]} events.  Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give quantile ranges (0.25-0.75) with horizontal lines at medians, vertical whiskers extend to the the 0.05 and 0.95 quantiles, and outliers appear as plus signs. Bottom panel is the normal quantile-quantile plot for residuals, with the @one:@one line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles (for a total of \Sexpr{residsCAcFem[1]*2} residuals).}
+@rmCA \onefig{commAgeResSer1}{Residuals (\Sexpr{residsCAcFem[1]*2} in total) of model fits to commercial proportion-at-age data (MPD values) for \Sexpr{CAnames[1]} events. Vertical axes are standardised residuals. Boxplots show, respectively, residuals by age class, by year of data, and by year of birth (following a cohort through time). Boxes give quantile ranges (0.25-0.75) with horizontal lines at medians, vertical whiskers extend to the the 0.05 and 0.95 quantiles, and outliers appear as plus signs.}
+
+%%Bottom panel is the normal quantile-quantile plot for residuals, with the @one:@one line, though residuals are not expected to be normally distributed because of the likelihood function used; horizontal lines give the 5, 25, 50, 75, and 95 percentiles
 
 @rmsex %=======Next line will be expanded to accommodate multiple gears=======
-@rmsex @rmCA \onefig{commAgeResSer1Female}{Residual of fits of model to commercial proportions-at-age data (MPD values) for females (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcFem[1]} residuals.}
+@rmsex @rmCA \onefig{commAgeResSer1Female}{Residuals of model fits to commercial proportion-at-age data (MPD values) for females (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcFem[1]} residuals.}
 
 @rmsex %=======Next line will be expanded to accommodate multiple gears=======
-@rmsex @rmCA \onefig{commAgeResSer1Male}{Residual of fits of model to commercial proportions-at-age data (MPD values) for males (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcMale[1]} residuals.}
+@rmsex @rmCA \onefig{commAgeResSer1Male}{Residuals of model fits to commercial proportion-at-age data (MPD values) for males (\Sexpr{CAnames[1]}). Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAcMale[1]} residuals.}
 
 \clearpage 
 
@@ -987,15 +1011,15 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 %   That calculations is (number of age classes - 1) * number of years of age data * 2 sexes.
 
 %=======Next line will be expanded to accommodate multiple surveys=======
-@rmSA \onefig{survAgeResSer1}{Residuals of fits of model to proportions-at-age data (MPD values) from the \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[Snames[1]]*2} residuals.}
+@rmSA \onefig{survAgeResSer1}{Residuals of model fits to proportion-at-age data (MPD values) from the \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[Snames[1]]*2} residuals.}
 
 \clearpage 
 
 %=======Next line will be expanded to accommodate multiple surveys=======
-@rmsex @rmSA \onefig{survAgeResSer1Female}{Residuals of fits of model to proportions-at-age data (MPD values) for females from \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[Snames[1]]} residuals.}
+@rmsex @rmSA \onefig{survAgeResSer1Female}{Residuals of model fits to proportion-at-age data (MPD values) for females from \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsFem[Snames[1]]} residuals.}
 
 %=======Next line will be expanded to accommodate multiple surveys=======
-@rmsex @rmSA \onefig{survAgeResSer1Male}{Residuals of fits of model to proportions-at-age data (MPD values) for males from \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsMale[Snames[1]]} residuals.}
+@rmsex @rmSA \onefig{survAgeResSer1Male}{Residuals of model fits to proportion-at-age data (MPD values) for males from \Sexpr{Snames[1]} survey series. Details as for Figure \ref{fig:commAgeResSer@one}, for a total of \Sexpr{residsCAsMale[Snames[1]]} residuals.}
 
 \clearpage 
 
@@ -1003,7 +1027,7 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 @rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) with 95\% confidence intervals and model estimates (joined open squares) for the commercial and survey age data.}
 
-\twofig{stockRecruit}{recruits}{Top: deterministic stock-recruit relationship (black curve) and observed values (labelled by year of spawning) using MPD values. Bottom: recruitment (MPD values of age-1 individuals in year $t$) over time, in 1,000s of age-1 individuals, with a mean of \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=",")}.}
+\twofig{stockRecruit}{recruits}{Top: deterministic stock-recruit relationship (black curve) and observed values (labelled by year of spawning) using MPD values. Bottom: recruitment (MPD values of age-1 individuals in year $t$) over time, in 1,000s of age-1 individuals, with a mean of \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=options()$big.mark)}.}
 
 %% #1=fig1 filename, #2=fig2 filename, #3=caption text, #4=fig1 width #5=fig1 height, #6=fig2 width, #7=fig2 height
 \twofigWH{recDev}{recDevAcf}{Top: log of the annual recruitment deviations, $\epsilon_t$, where bias-corrected multiplicative deviation is  $\mbox{e}^{\epsilon_t - \sigma_R^2/2}$ where $\epsilon_t \sim \mbox{Normal}(0, \sigma_R^2)$. Bottom: auto-correlation function of the logged recruitment deviations ($\epsilon_t$), for years \Sexpr{yearsForACF[1]}-\Sexpr{yearsForACF[length(yearsForACF)]}. The start of this range is calculated as the first year of commercial age data (\Sexpr{firstYearOfAgeData}) minus the accumulator age class ($A=$\Sexpr{A}) plus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}); if the result is earlier than the model start year (\Sexpr{years[1]}), then the model start year is used. The end of the range is the final year that recruitments are calculated (\Sexpr{as.numeric(max(names(logRecDev.mpd)))}) minus the age for which commercial selectivity for females is 0.5 (namely \Sexpr{ageHalfFemSelComm}).}{5}{3.33333}{5}{4.16667}
@@ -1037,15 +1061,18 @@ Bmpd[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
 	ut.mpd = ut.mpd,
 	M1.mpd=M1.mpd,
 @rmsex 	M2.mpd=M2.mpd, # remember: need at least one space (not tab) after @rmsex, @rmcpue, etc.
+	M3.mpd=M3.mpd,
 	h.mpd=h.mpd,
 @rmcpue 	qCPUE.mpd=qCPUE.mpd,
 	qvec.mpd=qvec.mpd,
 	muC.mpd=muC.mpd,
-	muvec.mpd=muvec.mpd,
-	logvC.mpd=logvC.mpd,
-	logvvec.mpd=logvvec.mpd,
+	muS.mpd=muS.mpd,
+	logvLC.mpd=logvLC.mpd,
+	logvLS.mpd=logvLS.mpd,
+@rmdome 	logvRC.mpd=logvRC.mpd,
+@rmdome 	logvRS.mpd=logvRS.mpd,
 @rmsex 	deltaC.mpd=deltaC.mpd,
-@rmsex 	deltavec.mpd=deltavec.mpd,
+@rmsex 	deltaS.mpd=deltaS.mpd,
 	logRecDev.mpd=logRecDev.mpd
 	)
 save("Bmpd",file=paste("Bmpd-",model.name,".rda",sep=""))
