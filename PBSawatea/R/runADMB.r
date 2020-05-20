@@ -92,7 +92,8 @@ runADMB = function(
 		cvpro    = file.controls$cvpro # expanded cvpro determined by number of surveys and number of cpue series
 		sdnrfile = paste(prefix,runNoStr,"sdnr",sep=".")
 		#cat("#SDNR (Surveys, CPUE, CAs, CAc)\n",file=sdnrfile)
-		header   = paste0("#SDNR -- ", ifelse(Nsurv>0,paste0("Surveys(",Nsurv,"), "),""), ifelse(Ncpue>0,paste0("CPUE(",Ncpue,"), "),""), "CAsurv, CAcomm, devSDNR\n")
+		header   = paste0("## SDNR -- ", ifelse(Nsurv>0,paste0("Surveys(",Nsurv,"), "),""), ifelse(Ncpue>0,paste0("CPUE(",Ncpue,"), "),""), "CAsurv, CAcomm, devSDNR\n## wj   -- AF(comm), AF(surv)\n")  ## RH 200417
+#browser();return()
 		cat(header,file=sdnrfile)
 		cat("CVpro:",cvpro,"\n",file=sdnrfile,append=TRUE,sep=" ")
 		#file0 = gsub(paste("\\.",ext,sep=""),paste(".000.",ext,sep=""),filename.ext)
@@ -219,7 +220,8 @@ runADMB = function(
 		msydir   = paste(wd,runname,mcname,msyname,sep="/")
 		if (!file.exists(msydir)) dir.create(msydir)
 		fileN = paste(prefix,runNoStr,rwtNoStr,ext,sep=".")
-		fileA = c(paste(wd,runname,fileN,sep="/"),paste(wd,runname,mcname,"Awatea.psv",sep="/"))
+		fileA = c(paste(wd,runname,mcname,fileN,sep="/"),paste(wd,runname,mcname,"Awatea.psv",sep="/")) ## RH 200416
+#browser();return()
 		file.copy(fileA,msydir,overwrite=TRUE); setwd(msydir)
 		ctlfile  = paste(c("#MSY control file",
 			"#Maximum number of iterations",format(msyMaxIter,scientific=FALSE),

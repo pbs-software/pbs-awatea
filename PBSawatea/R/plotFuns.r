@@ -503,7 +503,7 @@ plotACFs =function(mcmc, lag.max=60, lang="e") #, ptypes=tcall(PBSawatea)$ptype,
 			acf(mcP, lag.max=lag.max, ylim=ylim, xaxt="n", yaxt="n", xlab="", ylab="")
 			axis(1,labels=ifelse(i > (ncol(mcmcP)-rc[2]),TRUE,FALSE),cex.axis=1.2,las=1)
 			axis(2,labels=ifelse(par()$mfg[2]==1,TRUE,FALSE),cex.axis=1.2,las=1)
-			addLabel(0.95,0.95,ii,cex=1.5,adj=c(1,1), col="blue")
+			addLabel(0.95,0.95,ii,cex=1.25,adj=c(1,1), col="blue")
 			box(lwd=1.5)
 		})
 		mtext(linguaFranca("Lag",lang),side=1,outer=TRUE,line=1.5,cex=1.5)
@@ -1907,7 +1907,7 @@ plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 			if (j==1){
 				legtxt = gsub("_"," ",legtxt)
 				if (!is.null(bdat)){
-					legtxt = c("Central run", legtxt[1:Nruns])
+					legtxt = c(bdat$label, legtxt[1:Nruns])
 					tcol   = c("black",tcol)
 					tlty    = c("solid", tlty)
 				}
@@ -2386,7 +2386,7 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 	ysmall = seq(yint,ylim[2],yint)
 	ngear=ncol(y)
 	pchGear=seq(21,20+ngear,1)
-	colGear=rep(c("black","blue"),ngear)[1:ngear]
+	colGear=rep(c("black","green"),ngear)[1:ngear]  ## RH 200423  (PJS cannot distinguish balck from blue)
 	fout = fout.e = "catch"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
 		changeLangOpts(L=l)
@@ -2764,18 +2764,16 @@ plt.quantBio <- function( obj, projObj=NULL, policy=NULL,
 ##  Now using for single recruitment projection plot
 ## -----------------------------------------AME/RH
 plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
-   p = tcall(quants5),
-   xyType="lines",
-   lineType=c(3,2,1,2,3),
-   refLines=NULL, xLim=NULL, yLim=NULL,
+   p = tcall(quants5), xyType="quantBox", lineType=c(3,2,1,2,3),
+   delta=0.25, lwd=0.75, refLines=NULL, xLim=NULL, yLim=NULL,
    userPrompt=FALSE, save=TRUE, main="", cex.main="",
-   tcl.val=-0.2, xaxis.by=1, yaxis.by=10000,
-   xaxis.lab="Year", yaxis.lab= "Spawning biomass", lang="e" )
+   tcl.val=-0.1, xaxis.by=1, yaxis.by=10000,
+   xaxis.lab="Year", yaxis.lab= "Spawning biomass", lang="e")
 {
-	plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", med.col="black", ... )   #AME line.col="black", col is for filling rect med.col is for median
+	plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", med.col="black", lwd, ... )   #AME line.col="black", col is for filling rect med.col is for median
 	{
 		if ( new )
-			plot( xLim,yLim, type="n", xlab=linguaFranca(xaxis.lab,lang), ylab=linguaFranca(yaxis.lab,lang) )
+			plot( xLim, yLim, type="n", xlab=linguaFranca(xaxis.lab,lang), ylab=linguaFranca(yaxis.lab,lang), xaxt="n", yaxt="n" )
 		yrs <- as.numeric(dimnames(obj)[[2]])
 		## Connect the quantiles with lines.
 		if ( xyType=="lines" )
@@ -2796,18 +2794,17 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
 			segments( yrs,obj[1,], yrs,obj[5,], lty=1,... )
 		}
 		## Quantile boxplots - assumes five quantiles.
-		if ( xyType=="quantBox" )
-		{
-			delta <- 0.25
-			# Draw the outer whiskers.
+		if ( xyType=="quantBox" ) {
+			#delta <- 0.25  ## now an argument
+			## Draw the outer whiskers.
 			segments( yrs,obj[1,], yrs,obj[5,], lty=1, col=line.col) #, ... )
 			## AME col=1 removed, col=line.col ... so can have red for projs
 			## Overlay the box.
 			for ( i in 1:length(yrs) )
-				rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i], border=line.col, col="white") ## AME border,col=NA (empty)
+				#rect( yrs[i]-delta,obj[2,i], yrs[i]+delta, obj[4,i], border=line.col, col="white")#AME border,col=NA (empty)
+				polygon(x=c(rep(yrs[i]-delta,2),rep(yrs[i]+delta,2)), y=obj[c(2,4,4,2),i], border=line.col, col="gainsboro", lwd=lwd) ## RH (190620)
 			## Add the median.
-			# segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col=line.col )   #AME black
-			segments( yrs-delta, obj[3,], yrs+delta, obj[3,], lty=1, col=med.col )   #AME black
+			segments( yrs-delta,obj[3,],yrs+delta,obj[3,],lty=1,col=med.col) #line.col )	 #AME black
 		}
 	}
 	## Plot quantiles of biomass using the posterior densities.
@@ -2825,7 +2822,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
 	## Reconstructed biomass.
 	if ( is.null(projObj) )
 	{
-		plt.qB( result1, xLim=range(yrs1), yLim=yLim, xyType=xyType )
+		plt.qB( result1, xLim=range(yrs1), yLim=yLim, xyType=xyType, lwd=lwd )
 		# mtext( side=1, line=2, cex=1.0, "Year" )
 		# mtext( side=2, line=2, cex=1.0, "Biomass" )
 	}
@@ -2847,6 +2844,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
 		{
 			## Calculate quantiles of the projected biomass for policy.
 			pol <- policyList[j]
+#browser();return()
 			result2[[j]] <- apply( projObj[[pol]],2,quantile,probs=p )
 			# cat( "\n\nQuantiles of projection for policy=",
 			# policyList[j],"\n" )
@@ -2859,48 +2857,32 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
 
 			## Plot the quantiles of the biomass.
 			if ( xyType=="quantBox" )
-				plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col="black", line.col="black", med.col="red" )
+				plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col="black", line.col="black", med.col="blue", lwd=lwd)
 			else
-				plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col="red") # line.col="red")
+				plt.qB( result1, xyType=xyType, new=TRUE, xLim,yLim, col="red", lwd=lwd) # line.col="red")
 			if ( !is.null(refLines) )
-				abline( v=refLines,lty=4 )
+				abline( v=refLines, lty=4, lwd=lwd )
 
 			## Plot the quantiles of the projected biomass.
 			if ( xyType=="quantBox" )
-				plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, line.col="red", med.col="black")  # AME: col fills in box, I want to change line cols 
+				plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, line.col="red", med.col="purple", lwd=lwd)  # AME: col fills in box, I want to change line cols 
 			else
-				plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, col="red" )
+				plt.qB( result2[[j]], xyType=xyType, new=FALSE, xLim,yLim, col="red", lwd=lwd)
 			#for ( i in 1:nrow(result2[[j]]) )
 			#  lines( yrs2,result2[[j]][i,],lty=lineType[i],lwd=2,col=2 )
 
-			abline( v=yrs2[1]-0.5, lty=2 )
-			axis(1, at=seq(xLim[1], xLim[2], by=xaxis.by), tcl=tcl.val, labels=FALSE)
-			axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
-
-			# mfg <- par( "mfg" )
-			# if ( mfg[1]==1 & mfg[2]==1 )
-			# {
-			#  mtext( side=1, line=0.8, cex=1.0, outer=TRUE, "Year" )   #AME line=0 changed
-			#  mtext( side=2, line=0.8, cex=1.0, outer=TRUE,
-			#			  "Spawning biomass" ) # "   and Spawning
-			#}
-			#mtext( side=3, line=0.25, cex=0.8,
-			#  paste( "Policy:",policyList[j]) )
-
-			# Last panel on page or last policy.
-			#if ( mfg[1]==mfg[3] & mfg[2]==mfg[4] | j==nPolicies )
-			#{
-			#  if ( save )
-			#		savePlot( paste( "policyProj",iPage,sep=""),type="png" )
-			#  iPage <- iPage + 1
-			#
-			#  if ( j < nPolicies )
-			#  {
-			#		windows()
-			#		par( oma=c(2,2,1,1), mar=c(2,2,1.5,1),
-			#			   mfcol=c(nRow,nCol), userPrompt )
-			#  }
-			# }
+			abline( v=yrs2[1]-0.5, lty=2, lwd=lwd)
+			t1sm = seq(1900,3000,5)[seq(1900,2100,5) %in% floor(xLim[1]):ceiling(xLim[2])]
+			t1bg = seq(1900,3000,10)[seq(1900,2100,10) %in% floor(xLim[1]):ceiling(xLim[2])]
+			axis(1, at=t1sm, tcl=tcl.val, labels=FALSE)
+			axis(1, at=t1bg, tcl=tcl.val*2, labels=TRUE)
+			#axis(1, at=seq(xLim[1], xLim[2], by=xaxis.by), tcl=tcl.val, labels=FALSE)
+#browser();return()
+			t2sm = pretty(yLim, n=10)
+			t2bg = pretty(yLim, n=5)
+			axis(2, at=t2sm, tcl=tcl.val, labels=FALSE)
+			axis(2, at=t2bg, tcl=tcl.val*2, labels=TRUE)
+			#axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
 		}
 	}
 	# par( mfrow=c(1,1) )
@@ -3266,7 +3248,7 @@ splineCPUE = function(dat, ndf=50,
 
 #==============H I D D E N========================
 
-#.compB0.get----------------------------2011-07-13
+#.compB0.get----------------------------2020-04-27
 # This function (now in PBSawatea) loads the MCMCs from specified models.
 # The MCMCs are typically available in the Sweave routine.
 #-----------------------------------------------RH
@@ -3280,7 +3262,7 @@ splineCPUE = function(dat, ndf=50,
 		currentMCMC <- importMCMC( dir=mcmc.dir, quiet=FALSE )
 		B[[i]][["B0.MCMC"]]     <- currentMCMC$B[,1]
 		B[[i]][["Bt.MCMC"]]     <- currentMCMC$B[,dim(currentMCMC$B)[[2]]]
-		currentMSY  <- msyCalc( dir=msy.dir, error.rep = 0 )
+		currentMSY  <- msyCalc( dir=msy.dir, error.rep=0, despike=TRUE)  ## RH 200427: added argument 'despike'
 		B[[i]][["Bmsy.MCMC"]]   <- currentMSY$B
 	}
 	return(B) }

@@ -1486,123 +1486,7 @@ importProj.ddiff <- function( yrVal="2006" )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importProj.ddiff
 
 
-#msyCalc--------------------------------2012-10-16
-# To load in MSY.out and calculated the MSY.
-# Call this function with msy=msyCalc().
-#----------------------------------------------AME
-msyCalc=
-function (dir=getwd(), error.rep=1) 
-{
-# rewriting msyCalc here to report the convergence numbers:
-	control=readLines(paste(dir, "/Yields.ctl", sep=""))
-	maxProj=as.numeric(control[3])
-	tolerance=as.numeric(control[5])
-	test=read.table(paste(dir, "/MSY.out", sep=""), header=TRUE, sep="\t")
-	num.draws=dim(test)[1]
-	nProjIndex=grep("nProj", names(test))
-	nProjMat=test[, nProjIndex]   # matrix of number of projections
-	nProjMatTF=rowSums(nProjMat > maxProj - 1)   # sum by row
-	if (error.rep == 1 & (sum(nProjMatTF) > 0)) {
-		stop(paste("Simulations reach maximum year for", sum(nProjMatTF), 
-			"of the", num.draws * dim(nProjMat)[2], "simulations, so need to run for longer or reduce tolerance to reach equilibrium"))
-	}
-	yieldIndex=grep("Yield", names(test))
-	yieldMat=test[, yieldIndex]
-	uIndex=grep("U", names(test))
-	uMat=test[, uIndex]
-	VBIndex=grep("VB_", names(test))
-	VBMat=test[, VBIndex]
-	SBIndex=grep("SB_", names(test))
-	SBMat=test[, SBIndex]
-	imsy=apply(yieldMat, 1, which.max)
-	if (error.rep == 1 & max(imsy) == dim(yieldMat)[2]) {
-		stop("Need to use a higher max U to reach the MSY, for at least one draw")
-	}
-	msy=vector()
-	umsy=vector()
-	VBmsy=vector()
-	Bmsy=vector()
-	nProj=vector()
-	for (i in 1:num.draws) {
-		ind=imsy[i]
-		msy[i]=yieldMat[i, ind]
-		umsy[i]=uMat[i, ind]
-		VBmsy[i]=VBMat[i, ind]
-		Bmsy[i]=SBMat[i, ind]
-		nProj[i]=nProjMat[i, ind]
-	}
-	return(list(yield=msy, u=umsy, VB=VBmsy, B=Bmsy, 
-		nProj=nProj, uMin=uMat[,1], uMax=uMat[,dim(uMat)[2]], imsy=imsy, maxUind=rep(dim(yieldMat)[2], num.draws),  maxProj=rep(maxProj, num.draws), tolerance=rep(tolerance, num.draws), nProjMatTF=nProjMatTF))
-	# imsy is index of tested u's for which you get umsy, so
-	#  so if it's 1 or maxUind for an MCMC then that one 
-	#  reached the bounds of u. Report that below in Sweave.
-	# uMin, uMax are vectors of the min/max tested u's
-	#  same for all MCMC samples, but need a vector to use
-	#  sapply below (and same for the following variables).
-	# maxProj is maximum number of projection years tried
-	#  (from Yields.ctl file), so need to report if that's
-	#  reached for any of the nProj. Again, need a vector.
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~msyCalc
-
-
-## refPoints----------------------------2011-08-31
-## Call from Sweave as  refPoints() or, in full:
-## refPoints(currentMCMC, currentProj, currentMSY, refLevels=c(0.4, 0.8, 1))
-## --------------------------------------------AME
-refPoints <- function( mcmcObj=currentMCMC, projObj=currentProj,
-                     msyObj=currentMSY, refLevels=c(0.4, 0.8, 1))
-                     # refLevels are %age of msyObj
-{
-  refPlist=as.list(c("LRP", "USR", "Bmsy"))  # Can't have 0.4Bmsy
-  names(refPlist)=c("LRP", "USR", "Bmsy")   # as numeric at start. '0.4Bmsy'
-  for(i in 1:length(refLevels))
-    {
-    refPlist[[i]] = refLevels[i] * msyObj$B
-    }
-  return(refPlist)
-}
-
-refPointsB0 <- function( mcmcObj=currentMCMC, projObj=currentProj,
-                     B0Obj=B0.MCMC, refLevels=B0refLevels,
-                     refNames=B0refNames)
-  {
-  refPlist=as.list(refNames)
-  names(refPlist)=c(refNames)
-  for(i in 1:length(refLevels))
-    {
-    refPlist[[i]]=refLevels[i] * B0Obj
-    }
-  return(refPlist)
-}
-
-#refPointsHist--------------------------2013-09-27
-# Call from Sweave as  refPointsHist(HRP.YRS=ROL.HRP.YRS)
-# Originally implemented for Rock Sole 2013
-#-----------------------------------------------RH
-refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
-   #blimYrs=1966:2005, btarYrs=1977:1985, ulimYrs=NULL, utarYrs=1966:2005
-{
-	unpackList(HRP.YRS)
-	refPlist=list(blimHRP=NULL, btarHRP=NULL, ulimHRP=NULL, utarHRP=NULL)
-	# Find the minimum B during the limit years
-	if (!is.null(blimYrs))
-		refPlist[["blimHRP"]]=apply(mcmcObj$B[,as.character(blimYrs),drop=FALSE],1,min)
-	# Find the mean B during the target years
-	if (!is.null(btarYrs))
-		refPlist[["btarHRP"]]=apply(mcmcObj$B[,as.character(btarYrs),drop=FALSE],1,mean)
-	# Find the minimum U during the limit years
-	if (!is.null(ulimYrs))
-		refPlist[["ulimHRP"]]=apply(mcmcObj$U[,findPat(ulimYrs,names(mcmcObj$U)),drop=FALSE],1,min) # RH: in case Ngear > 1
-	# Find the mean U during the target years
-	if (!is.null(utarYrs))
-		refPlist[["utarHRP"]]=apply(mcmcObj$U[,findPat(utarYrs,names(mcmcObj$U)),drop=FALSE],1,mean) # RH: in case Ngear > 1
-	return(refPlist)
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
-
-
-## importProjRec------------------------2019-11-06
+## importProjRec------------------------2020-04-27
 ##  Imports the projected recruitments
 ##   (actually what's saved is the N(0,1) random numbers,
 ##    which for a particular MCMC sample are the same for all the catch strategies),
@@ -1612,7 +1496,7 @@ refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
 ##  importProjRecAndy.r - extending importProjRec to include VB, to
 ##   then calculate projected exploitation rates. 13th Feb 2013
 ## -----------------------------------------AME|RH
-importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE) 
+importProjRec=function (dir, info="", coda=FALSE, ngear=1, sigmaR, quiet=TRUE) ## RH 200427: Added sigmaR as argument
 {
 	get.Policies <- function() {
 		if (!quiet) cat("Policies  ")
@@ -1729,6 +1613,331 @@ importProjRec=function (dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~importProjRec
 
+
+## msyCalc------------------------------2020-04-28
+##  To load in MSY.out and calculated the MSY.
+##  Call this function with msy=msyCalc().
+## -----------------------------------------AME|RH
+msyCalc= function (dir=getwd(), error.rep=0, despike=FALSE) 
+{
+	# RH 200425 -- Function to get rid of spikes from yield curve (probably needs work)
+	deglitch = function(xval, glit, before.peak=TRUE) {
+		## xval = yield curve (or segment) vector
+		## glit = logical vector: indices where spike occurs;
+		## before.peak = logical scalar: spike occurs before peak
+		ibad  = grep(TRUE,glit)
+		igrp  = split(ibad, cumsum(c(1, diff(ibad) != 1)))
+		ivals = unlist(
+		lapply(igrp, function(x){ 
+			ibnd = setdiff(.su(c(min(x)-1,x,max(x)+1)),x)
+			ival = if ( (diff(xval[ibnd])<0 && !before.peak) || before.peak) mean(xval[ibnd]) else xval[ibnd[1]]
+			rep(ival,length(x))
+		}))
+		xval[ibad] = ivals
+		return(xval)
+	}
+	## AME: rewriting msyCalc here to report the convergence numbers:
+	control    = readLines(paste(dir, "/Yields.ctl", sep=""))
+	maxProj    = as.numeric(control[3])
+	tolerance  = as.numeric(control[5])
+	msydat     = read.table(paste(dir, "/MSY.out", sep=""), header=TRUE, sep="\t")
+	num.draws  = dim(msydat)[1]
+	nProjIndex = grep("nProj", colnames(msydat))
+	nProjMat   = msydat[, nProjIndex]   ## matrix of number of projections
+	nProjMatTF = rowSums(nProjMat > maxProj - 1)  ## sum by row
+	if (error.rep == 1 && (sum(nProjMatTF) > 0)) {
+		cat(paste0("Simulations reach maximum year for ", sum(nProjMatTF), " of the ", num.draws * dim(nProjMat)[2], " simulations, so need to run for longer or reduce tolerance to reach equilibrium"),"\n"); flush.console()
+	}
+	yieldIndex = grep("Yield", colnames(msydat))
+	yieldMat   = msydat[, yieldIndex]
+	uIndex     = grep("U", colnames(msydat))
+	uMat       = msydat[, uIndex]
+	VBIndex    = grep("VB_", colnames(msydat))
+	VBMat      = msydat[, VBIndex]
+	SBIndex    = grep("SB_", colnames(msydat))
+	SBMat      = msydat[, SBIndex]
+	nsamp      = 0; tput(nsamp)
+	imax       = dim(yieldMat)[2]
+	if (despike) {
+		if (error.rep)
+			plot(0,0,type="n",xlim=c(0,imax),ylim=c(0,1),xlab="Index", ylab="Normalised Yield")
+		imsy       = apply(yieldMat, 1, function(x) { ## RH 200424: get rid of outliers greater than 3 SDs
+			nsamp  = tcall(nsamp) + 1; tput(nsamp)
+			xnorm  = scaleVec(x)                       ## scale yield between 0 and 1
+			xsign  = c(1,sign(diff(xnorm)))
+			if (all(xsign==1)) return(imax)            ## no peak in this yield space (continuously increasing)
+			peak   = findPV(-1,xsign) - 1              ## assuming dome-shaped yield curve, locate where it first turns negative and use previous point
+			seglen = 10
+#if (nsamp==5) {browser();return()}
+			if (length(xnorm)-peak > seglen && !all(xsign[peak+c(1:seglen)]<=0)) {
+				if (error.rep) {
+					cat(paste0("Glitch (spike) appears before true peak in MCMC: ",nsamp),"\n"); flush.console()
+				}
+				## Check to see if this is the true peak
+				##   (might break down if spike occurs within 10 places afer true peak, or if spike is greater than 10 places)
+				xbit   = xnorm[peak+c(-1:seglen)]
+				glitch = c(round(diff(xbit),5) < 0, FALSE)  ## detect departure from yield curve at false peak
+				#glitch = c(FALSE, abs(diff(xbit)) > 0.10)  ## detect departure from yield curve after false peak (fallible)
+#if (any(is.na(glitch))){browser();return()}
+#if (seglen<10){browser();return()} ## S586 in BSR Run33.01
+				iter = 0; max_iter = 1000
+				while(any(glitch) && iter<max_iter) {
+					xbit = deglitch(xbit, glitch, before.peak=TRUE)
+					glitch = c(round(diff(xbit),5) < 0, FALSE)  ## detect departure from yield curve at false peak
+					#glitch = c(FALSE, abs(diff(xbit)) > 0.10)  ## detect departure from yield curve after false peak (fallible)
+					iter = iter + 1
+				}
+				if (error.rep && iter==max_iter){
+					cat(paste0("Detected infinite while loop for MCMC: ", nsamp),"\n"); flush.console()
+				}
+				xnorm[peak+c(-1:seglen)] = xbit
+				xsign = c(1,sign(diff(xnorm)))
+				if (all(xsign==1)) peak = imax    ## no peak in this yield space (continuously increasing)
+				else peak = findPV(-1,xsign) - 1  ## assuming dome-shaped yield curve, locate where it first turns negative and use previous point
+				return(peak)
+			}
+			if (error.rep){  ## activate for debugging
+				lines(xnorm,type="l",lwd=1,col=lucent("black",0.2))
+				abline(v=peak,col=lucent("blue",0.2))
+			}
+			return(peak)
+		})
+	} else {
+		imsy = apply(yieldMat, 1, which.max)  ## AME's method does not detect false peaks caused by spikes
+	}
+	if (error.rep == 1 && max(imsy) == imax) {
+		zbad = is.element(imsy,dim(yieldMat)[2])
+		cat(paste0("Need to use a higher max U to reach the MSY for ", sum(zbad), " of the ", nrow(yieldMat), " MCMC samples"),"\n"); flush.console()
+	}
+	msy   = vector()
+	umsy  = vector()
+	VBmsy = vector()
+	Bmsy  = vector()
+	nProj = vector()
+	for (i in 1:num.draws) {
+		ind      = imsy[i]
+		msy[i]   = yieldMat[i, ind]
+		umsy[i]  = uMat[i, ind]
+		VBmsy[i] = VBMat[i, ind]
+		Bmsy[i]  = SBMat[i, ind]
+		nProj[i] = nProjMat[i, ind]
+	}
+	return(list(yield=msy, u=umsy, VB=VBmsy, B=Bmsy, 
+		nProj=nProj, uMin=uMat[,1], uMax=uMat[,dim(uMat)[2]], imsy=imsy, maxUind=rep(dim(yieldMat)[2], num.draws),  maxProj=rep(maxProj, num.draws), tolerance=rep(tolerance, num.draws), nProjMatTF=nProjMatTF))
+	## AME:
+	## imsy is index of tested u's for which you get umsy, so if it's 1 or maxUind for an MCMC then
+	##   that one reached the bounds of u.  Report that below in Sweave.
+	## uMin, uMax are vectors of the min/max tested u's same for all MCMC samples, 
+	##   but need a vector to use sapply below (and same for the following variables).
+	## maxProj is maximum number of projection years tried (from Yields.ctl file),
+	##   so need to report if that's reached for any of the nProj.  Again, need a vector.
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~msyCalc
+
+
+## redo.currentProj---------------------2020-04-27
+##  Recalculate currentProj to include CC and HR policies
+## ---------------------------------------------RH
+redo.currentProj = function(prj.dir, Ngear, sigmaR=0.9, mcsub=201:1200, compile.only=FALSE, recalc.proj=FALSE)
+{
+	cwd = getwd(); on.exit(setwd(cwd))
+	## Assume MCMC directory is one level up
+	mcmc.dir = paste0(rev(rev(strsplit(prj.dir,"/")[[1]])[-1]),collapse="/")
+
+	## Lift code from Sweave file
+	## Assume constant catch (CC) policy:
+	CC.dir = paste0(sub("/$","",prj.dir),"/CC")
+	if (file.exists(CC.dir)) {
+		if (compile.only || !file.exists(paste0(CC.dir,"/strategy.out"))) {
+			setwd(CC.dir)
+#browser();return()
+			## Assume input file name prefix has one dash and two dots
+			expr=paste("shell(cmd=\"awatea -ind ", findPat(".*-.*\\..*\\..*\\.txt$",list.files(".")), " -mceval\" , wait=TRUE, intern=FALSE)",sep="")
+			.flash.cat(expr, sep="\n")
+			eval(parse(text=expr))
+			setwd("..")
+		}
+		currentProj <- importProjRec( dir=CC.dir, ngear=Ngear, sigmaR=sigmaR, quiet=FALSE )
+	} else {
+		currentProj <- importProjRec( dir=prj.dir, ngear=Ngear, quiet=FALSE )
+	}
+	## Check for Harvest Rate (HR) policy:
+	HR.dir = paste0(sub("/$","",prj.dir),"/HR")
+	if (file.exists(HR.dir)) {
+		if (compile.only || !file.exists(paste0(HR.dir,"/strategy.out"))) {
+			setwd(HR.dir)
+			expr=paste("shell(cmd=\"awatea -ind ", findPat(".*-.*\\..*\\..*\\.txt$",list.files(".")), " -mceval\" , wait=TRUE, intern=FALSE)",sep="")
+			.flash.cat(expr, sep="\n")
+			eval(parse(text=expr))
+			setwd("..")
+		}
+		currentProj2 <- importProjRec( dir=HR.dir, ngear=Ngear, sigmaR=sigmaR, quiet=FALSE )
+	} else {
+		currentProj2 <- NULL
+	}
+	if (compile.only) return()
+#browser();return()
+
+	## Subset the MCMCs (after burn-in)
+	currentProj <- sapply(currentProj,function(X){sapply(X,function(x,s){x[s,]},s=mcsub,simplify=FALSE)},simplify=FALSE)
+	if (!is.null(currentProj2))
+		currentProj2 <- sapply(currentProj2,function(X){sapply(X,function(x,s){x[s,]},s=mcsub,simplify=FALSE)},simplify=FALSE)
+
+	## Take off final year of projection (for some reason Awatea adds a year other than final projection year specified)
+	currentProj$B = lapply(currentProj$B, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
+	currentProj$Y = lapply(currentProj$Y, function(x) { x[ ,1:(dim(x)[[2]]-1)]  })
+	currentProj$eps = lapply(currentProj$eps, function(x) {  x[ ,1:(dim(x)[[2]]-1)] })
+	currentProj$VB = lapply(currentProj$VB, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
+	if (!is.null(currentProj2)) {
+		currentProj2$B = lapply(currentProj2$B, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
+		currentProj2$Y = lapply(currentProj2$Y, function(x) { x[ ,1:(dim(x)[[2]]-1)]  })
+		currentProj2$eps = lapply(currentProj2$eps, function(x) {  x[ ,1:(dim(x)[[2]]-1)] })
+		currentProj2$VB = lapply(currentProj2$VB, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
+	}
+
+	## Calculate projected exploitation rates.
+	currentProj$U = currentProj$VB    ## Want the same size
+	if (!is.null(currentProj2)) {
+		currentProj2$U = currentProj2$VB    ## Want the same size
+	}
+	catchProj = names(currentProj$VB)
+	for(i in catchProj)
+	{
+		currentProj$U[[i]] = currentProj$Y[[i]] / currentProj$VB[[i]]
+	}
+	if (!is.null(currentProj2)) {
+		catchProj2 = names(currentProj2$VB)
+		for(i in catchProj2)
+		{
+			currentProj2$U[[i]] = currentProj2$Y[[i]] / currentProj2$VB[[i]]
+		}
+	}
+	## To calculate the actual projected recruitments (from the eps)
+	currentProj$R = list()
+	if (!is.null(currentProj2)) {
+		currentProj2$R = list()
+	}
+
+	## Calculating projected R gets tricky
+	## Stock-recruitment function
+	srFun=function(spawners, h=h.mpd, R0=R0.mpd, B0=B0.mpd) {
+		# to input a vector of spawners in year t-1 and calculate recruits in year t 
+		4 * h * R0 * spawners / ( ( 1 - h) * B0 + (5 * h - 1) * spawners)
+	}
+	load(paste0(mcmc.dir,"/currentMCMC.rda"))
+	num.MCMC = dim(currentMCMC$B)[1]
+	NN = matrix(1:num.MCMC, nrow=1)      # to use to populate each data.frame
+	projYearsNames = names(currentProj$B[[1]])
+	projYearsNum   = length(projYearsNames)
+	
+	## First calculate recruits for first projection year, which is based on penultimate MCMC year's spawners
+	## Do this here as does not depend on projections (and so is same for all catch strategies).
+	
+	Bpen.MCMC = currentMCMC$B[, rev(names(currentMCMC$B))[2]]
+	## spawning biomass for penultimate year of MCMC
+	
+	## Need a vector of h for projections, so if h not estimated
+	##  make hForProj just replicate the mpd value:
+	
+	if (!is.element("h",colnames(currentMCMC$P))) {
+		load(paste0(mcmc.dir,"/currentRes.rda"))
+		hForProj = rep(currentRes$extra$parameters$h, num.MCMC)
+	} else {
+		hForProj = currentMCMC$P$h
+	}
+	RfirstProj = srFun(Bpen.MCMC, R0=currentMCMC$P$R_0, h=hForProj, B0=currentMCMC$B[,1])
+	currPros = sapply(paste0("currentProj",c("","2")), function(x){eval(parse(text=paste0("!is.null(",x,")")))})
+	
+	for(i in names(currPros)[currPros]) {
+		cP = get(i)
+		## Stochastic multiplier, will be same for all strategies as random
+		##  numbers currentProj$eps[[j]] are the same for each strategy j
+		stochMult = exp(cP$eps$'0' - sigmaR^2/2)
+	
+		for(j in 1:length(cP$eps) )    ## loop over policies
+		{
+			junk = apply(NN, 2, function(i, B, R0, h, B0) {
+				srFun(as.numeric(B[i,]), h = h[i], R0=R0[i], B0=B0[1] )
+			},
+			B  = cP$B[[j]],
+			R0 = currentMCMC$P$R_0, h = hForProj, B0=currentMCMC$B[,1] ) 
+			## Rowan's trick for using apply on each row.
+			junk = t(junk)
+			junk = as.data.frame(junk)
+			## This gives data frame,
+			## rows are MCMC samples, columns are recruits for the next year.
+			## Need to insert RfirstProj as first column, and remove final column
+			## (which corresponds to recruits for the year after final projection year).
+			detR = cbind(RfirstProj, junk)
+			detR = detR[, -dim(detR)[2] ]         ## take off final column
+			names(detR) = projYearsNames          ## detR is deterministic values
+			stochR = detR * stochMult
+			cP$R[[j]] = stochR
+		}
+		names(cP$R) = names(cP$eps)
+		assign( i, cP) #, pos=1 )
+		eval(parse(text=paste0("save(\"", i, "\", file=\"", mcmc.dir,"/", i, ".rda\")")))  ## useful to have when compiling the final results appendix
+	}
+#browser();return()
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~redo.currentProj
+
+
+## refPoints----------------------------2011-08-31
+## Call from Sweave as  refPoints() or, in full:
+## refPoints(currentMCMC, currentProj, currentMSY, refLevels=c(0.4, 0.8, 1))
+## --------------------------------------------AME
+refPoints <- function( mcmcObj=currentMCMC, projObj=currentProj,
+                     msyObj=currentMSY, refLevels=c(0.4, 0.8, 1))
+                     # refLevels are %age of msyObj
+{
+  refPlist=as.list(c("LRP", "USR", "Bmsy"))  # Can't have 0.4Bmsy
+  names(refPlist)=c("LRP", "USR", "Bmsy")   # as numeric at start. '0.4Bmsy'
+  for(i in 1:length(refLevels))
+    {
+    refPlist[[i]] = refLevels[i] * msyObj$B
+    }
+  return(refPlist)
+}
+
+refPointsB0 <- function( mcmcObj=currentMCMC, projObj=currentProj,
+                     B0Obj=B0.MCMC, refLevels=B0refLevels,
+                     refNames=B0refNames)
+  {
+  refPlist=as.list(refNames)
+  names(refPlist)=c(refNames)
+  for(i in 1:length(refLevels))
+    {
+    refPlist[[i]]=refLevels[i] * B0Obj
+    }
+  return(refPlist)
+}
+
+
+#refPointsHist--------------------------2013-09-27
+# Call from Sweave as  refPointsHist(HRP.YRS=ROL.HRP.YRS)
+# Originally implemented for Rock Sole 2013
+#-----------------------------------------------RH
+refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
+   #blimYrs=1966:2005, btarYrs=1977:1985, ulimYrs=NULL, utarYrs=1966:2005
+{
+	unpackList(HRP.YRS)
+	refPlist=list(blimHRP=NULL, btarHRP=NULL, ulimHRP=NULL, utarHRP=NULL)
+	# Find the minimum B during the limit years
+	if (!is.null(blimYrs))
+		refPlist[["blimHRP"]]=apply(mcmcObj$B[,as.character(blimYrs),drop=FALSE],1,min)
+	# Find the mean B during the target years
+	if (!is.null(btarYrs))
+		refPlist[["btarHRP"]]=apply(mcmcObj$B[,as.character(btarYrs),drop=FALSE],1,mean)
+	# Find the minimum U during the limit years
+	if (!is.null(ulimYrs))
+		refPlist[["ulimHRP"]]=apply(mcmcObj$U[,findPat(ulimYrs,names(mcmcObj$U)),drop=FALSE],1,min) # RH: in case Ngear > 1
+	# Find the mean U during the target years
+	if (!is.null(utarYrs))
+		refPlist[["utarHRP"]]=apply(mcmcObj$U[,findPat(utarYrs,names(mcmcObj$U)),drop=FALSE],1,mean) # RH: in case Ngear > 1
+	return(refPlist)
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
 
 #srFun----------------------------------2011-08-31
 # Stock-recruitment function. From ProjRecCalcs.r

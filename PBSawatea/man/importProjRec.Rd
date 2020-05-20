@@ -9,15 +9,16 @@
   are random normals \eqn{N(0,1)}).
 }
 \usage{
-importProjRec(dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
+importProjRec(dir, info="", coda=FALSE, ngear=1, sigmaR, quiet=TRUE)
 }
 \arguments{
-  \item{dir}{directory where MCMC projections reside.}
-  \item{info}{user-supplied information, if desired.}
-  \item{coda}{logical: if \code{TRUE}, use the function \code{mcmc}
+  \item{dir}{\code{character} -- directory where MCMC projections reside.}
+  \item{info}{\code{character} -- user-supplied information, if desired.}
+  \item{coda}{\code{logical} -- if \code{TRUE}, use the function \code{mcmc}
     in the package \pkg{coda} to generate MCMCs.}
-  \item{ngear}{number of commercial gears}
-  \item{quiet}{logical: if \code{TRUE}, print progress messages to the R console.}
+  \item{ngear}{\code{numeric} -- number of commercial gears}
+  \item{sigmaR}{\code{numeric} -- standard deviation of recruitment residuals.}
+  \item{quiet}{\code{logical} -- if \code{TRUE}, print progress messages to the R console.}
 }
 \details{
   The values saved by the Awatea code are random normals \eqn{N(0,1)}, 
@@ -31,7 +32,11 @@ importProjRec(dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
     \item{eps}{data frame of \eqn{\epsilon_t}{\epsilon[t]} (dim = MCMC samples by projected years)}
 }
 \author{
-  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew Edwards}, Research Scientist, PBS, DFO, Nanaimo BC\cr
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
+  Last modified \code{Rd: 2020-05-20}
 }
 \note{
   The function \code{importProj} does not import recruitment residuals.
@@ -49,3 +54,4 @@ importProjRec(dir, info="", coda=FALSE, ngear=1, quiet=TRUE)
 }
 \keyword{ts}
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\concept{Projection}

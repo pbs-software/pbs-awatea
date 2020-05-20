@@ -5,6 +5,28 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.7.0 (2020-05-20) [Rcheck=F, Rbuild=F]
+  * PBSscape.r
+    + Added new argument `sigmaR' to function `importProjRec'. (RH 200427)
+    + Revised function `msyCalc' to detect true maximum in yield curve by filtering out spikes that give false maxima. (RH 200428)
+    + Added new function `redo.currentProj' to recalculate currentProj and currentProj2 given new CC and HR policies. (RH 200427)
+  * plotFuns.r
+    + Changed colour bars in function `plt.catch' from black and blue (PJS cannot distinguish difference on his computer) to black and green. (RH 200423)
+    + Changed default arguments and axis control in function `plt.quantBioBB0':
+      - changed xyType="lines" to xyType="quantBox"
+      - added new arguments `delta' (x-offset for box) and `lwd'
+    + Included new argument `despike' when calling function `msyCalc'. (RH 200427)
+      - functions calling `msyCalc' include `.compB0.get'
+    + Changed label for 'Central run' in function `plotTraj' to a label of supplied by bdat: `bdat$label'. (RH 200428)
+  * runADMB.r
+    + Added small guidance information to SDNR file header to show user which composition sets correspond to w_j. (RH 200417)
+    + Changed source location for MSY input file from base location to MCMC directory. (RH 200416)
+      - Needed because in RER runs, PJS would alter reweighted file to fix selectivity parameters to MPD values.
+  * run-masterMCMC.Snw
+    + Removed last value in `currentProj2' (HR policy) as was done for `currentProj' (CC policy). (RH 200428)
+    + Included new argument `sigmaR' when calling function `importProjRec'. (RH 200428)
+    + Included new argument `despike' when calling function `msyCalc'. (RH 200427)
+
 1.6.0 (2019-12-09) [Rcheck=F, Rbuild=F]
   * PBSscape.r
     + Transferred selectivity code from 'PBSscape.r' to `plotFuns.r' as function `plt.selectivity'. (RH 190718)

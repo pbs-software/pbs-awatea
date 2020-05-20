@@ -613,13 +613,13 @@ names(priorDistList)[is.element(names(priorDistList),pqnames)] = substring(pqnam
 
 ## Assume constant catch (CC) policy:
 if (file.exists(paste0(sub("/$","",prj.dir),"/CC"))) {
-	currentProj <- importProjRec( dir=paste0(sub("/$","",prj.dir),"/CC"), ngear=Ngear, quiet=FALSE )
+	currentProj <- importProjRec( dir=paste0(sub("/$","",prj.dir),"/CC"), ngear=Ngear, sigmaR=sigmaR, quiet=FALSE )
 } else {
-	currentProj <- importProjRec( dir=prj.dir, ngear=Ngear, quiet=FALSE )
+	currentProj <- importProjRec( dir=prj.dir, ngear=Ngear, sigmaR=sigmaR, quiet=FALSE )
 }
 ## Check for Harvest Rate (HR) policy:
 if (file.exists(paste0(sub("/$","",prj.dir),"/HR"))) {
-	currentProj2 <- importProjRec( dir=paste0(sub("/$","",prj.dir),"/HR"), ngear=Ngear, quiet=FALSE )
+	currentProj2 <- importProjRec( dir=paste0(sub("/$","",prj.dir),"/HR"), ngear=Ngear, sigmaR=sigmaR, quiet=FALSE )
 } else {
 	currentProj2 <- NULL
 }
@@ -642,6 +642,12 @@ if (@skip.last.year) {
 	currentProj$Y = lapply(currentProj$Y, function(x) { x[ ,1:(dim(x)[[2]]-1)]  })
 	currentProj$eps = lapply(currentProj$eps, function(x) {  x[ ,1:(dim(x)[[2]]-1)] })
 	currentProj$VB = lapply(currentProj$VB, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
+	if (!is.null(currentProj2)) {
+		currentProj2$B = lapply(currentProj2$B, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
+		currentProj2$Y = lapply(currentProj2$Y, function(x) { x[ ,1:(dim(x)[[2]]-1)]  })
+		currentProj2$eps = lapply(currentProj2$eps, function(x) {  x[ ,1:(dim(x)[[2]]-1)] })
+		currentProj2$VB = lapply(currentProj2$VB, function(x) {  x[ ,1:(dim(x)[[2]]-1)]  })
+	}
 }
 ## **** END ****
 
@@ -685,8 +691,8 @@ if (!is.null(currentProj2)) {
 
 <<MSY, results=hide, echo=FALSE>>=
 
-## Awatea MSY.
-currentMSY = msyCalc( dir=msy.dir, error.rep = 0 )  # reports if MSY not converged
+## Awatea MSY. ## error.rep=1: reports if MSY not converged
+currentMSY = msyCalc(dir=msy.dir, error.rep=0, despike=TRUE)  ## RH 200427: Added argument 'despike'
 
 ## Next line now doesn't work with the scalars in the list, so 
 ##  replacing with an error for now as we're using all mcsub values
@@ -1512,7 +1518,7 @@ tabdigits = decdig.dtab
 
 #=====TABLE: DEFAULT DFO MSY REFERENCE POINTS=====
 
-refYears = as.character(currYear+seq(0,min(10,projYearsNum),1))
+refYears = as.character(currYear+seq(0,min(10,projYearsNum-1),1))
 
 ##=====TABLE: P(Bt>Bmsy) & P(Ut>Umsy)=====
 ## it didn't like \Sexpr in caption="" - need eval(paste

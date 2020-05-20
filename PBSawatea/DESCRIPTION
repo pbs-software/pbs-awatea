@@ -1,6 +1,6 @@
 Package:     PBSawatea
-Version:     1.6.0
-Date:        2019-12-10
+Version:     1.7.0
+Date:        2020-05-20
 Title:       Tools for Running Awatea and Visualizing the Results
 Authors@R: c(
    person("Rowan", "Haigh", role = c("aut", "cre"), email = "rowan.haigh@dfo-mpo.gc.ca"),
@@ -9,7 +9,7 @@ Authors@R: c(
    )
 Author: Rowan Haigh [aut, cre], Andrew M. Edwards [aut], Paul J. Starr [ctb]
 Maintainer:  Rowan Haigh <rowan.haigh@dfo-mpo.gc.ca>
-Copyright:   2011-2019, Fisheries and Oceans Canada
+Copyright:   2011-2020, Fisheries and Oceans Canada
 Depends:     R (>= 3.5.0), PBSmodelling
 Imports:     methods, lattice, scape, plotMCMC, xtable, Hmisc
 Description: Most excellent tools for running fish population models
