@@ -1328,7 +1328,7 @@ out.pmTables <- function( obj, fileName="pm", dec=3 )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~out.pmTables
 
 
-#stdRes.CA------------------------------2011-08-31
+#stdRes.CA------------------------------2020-05-22
 # This implements standardised residuals for the Awatea
 # implementation of the Fournier robustified normal likelihood
 # for proportions at length. Based on PJS summary of CASAL doc and ACH change to length.
@@ -1339,7 +1339,7 @@ stdRes.CA <- function( obj, trunc=3, myLab="Age Residuals", prt=TRUE )
   result <- cbind( obj,stdRes=rep(NA,nrow(obj)) )
 
   # Raw residuals.
-  res <- obj$Obs - obj$Fit
+  res <- obj$Obs - obj$Fit  ## (O-F)
 
   # Number of age bins.
   # QUESTION: Should this be from FIRST age to plus group?
@@ -1352,12 +1352,13 @@ stdRes.CA <- function( obj, trunc=3, myLab="Age Residuals", prt=TRUE )
   for ( i in 1:length( yrList ) )
   {
     idx <- yrList[i]==obj$Year
-    Z <- obj$Obs[idx]*(1.0-obj$Obs[idx]) + 0.1/n
-    N <- min( obj$SS[idx],1000)
-    SD <- sqrt( Z/N )
-    result$stdRes[idx] <- res[idx]/SD
+    ## Pearson residual = (O-F)/std.dev(O)  : see CASAL 6.8 Manual
+    Fprime  <- obj$Fit[idx]*(1.0-obj$Fit[idx]) + 0.1/n   ## F prime (Fournier uses Fitted)
+    Oprime  <- obj$Obs[idx]*(1.0-obj$Obs[idx]) + 0.1/n   ## O prime (Coleraine uses Observed)
+    Nprime  <- min( obj$SS[idx],1000)                    ## N prime
+    SD <- sqrt( Oprime/Nprime )                          ## std.dev(O) = SD of observation for a Fournier|Coleraine likelihood
+    result$stdRes[idx] <- res[idx]/SD                    ## Pearson residuals = Normalised residuals for normal error distributions
   }
-
   if ( prt )
   {
     sdRes <- sqrt( var( result$stdRes,na.rm=TRUE ) )

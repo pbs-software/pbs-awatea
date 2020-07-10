@@ -198,7 +198,7 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~compB0
 
 
-## mochaLatte---------------------------2019-05-21
+## mochaLatte---------------------------2020-05-28
 ##  An alternative to lattice plots (mockLattice)
 ##----------------------------------------------RH
 mochaLatte = function(dat, xfld, yfld, ffld, panel,
@@ -215,7 +215,7 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 		lim = lim + (diff(lim) * p * c(1,-1))
 		pos = tck>=lim[1] & tck<=lim[2]
 		sho = rep("",length(tck))
-		sho[pos] = as.character(tck[pos])
+		sho[pos] = as.character(round(tck[pos],5))  ## RH 200528 -- fornow limit out to 5 decimal places
 		return(list(tck=tck, sho=sho))
 	}
 	facs = as.character(unique(dat[,ffld]))
@@ -249,11 +249,11 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 		exclude = c("xlim","ylim","xlab","ylab","xfac","yfac","outline")
 		evalCall(plot, c(list(x=0, y=0, type="n", xlim=xlim, ylim=ylim, xaxt=ifelse(vzero,"n","n"), yaxt=ifelse(hzero,"n","n"), xlab="", ylab=""), dots[setdiff(names(dots), exclude)]), checkdef=T, checkpar=T)
 		#dots[setdiff(names(dots), c("xlim","ylim","xlab","ylab","xfac","yfac"))]), checkdef=T, checkpar=T)
-#browser(); return()
 		if ((!vzero&&!hzero) || vzero || (hzero && par()$mfg[2]==1)){
 			exclude = c("xlim","ylim","xfac","yfac","outline")
 			#do.call("axis", c(list(side=2, at=yticks[["tck"]], labels=yticks[["sho"]]), dots[setdiff(names(dots),c("xlim","ylim","xfac","yfac"))]))
 			evalCall(axis, c(list(side=2, at=yticks[["tck"]], labels=yticks[["sho"]]), dots[setdiff(names(dots),exclude)]), checkdef=T, checkpar=T)
+#if(i=="q_2") {browser(); return()}
 		}
 		if ((!vzero&&!hzero) || (hzero && !vzero) || i%in%rev(facs)[1:rc[2]] ) {
 			if (!is.null(dots$xfac)) {
@@ -1659,8 +1659,8 @@ plotRmcmcPOP=function(obj,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotRmcmcPOP
 
 
-## plotSnail----------------------------2019-11-22
-## Plot snail-trail plots (aka 'Kobe plots') for MCMC analysis.
+## plotSnail----------------------------2020-06-24
+## Plot snail-trail plots for MCMC analysis.
 ##  AME: replacing "2010" with as.character(currYear - 1)
 ##  RH: added assYrs = years past with estimated Bcurr
 ##      from previous assessment(s), e.g., 5ABC QCS c(2011, 2017)
@@ -1688,7 +1688,7 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 	# Calculate medians to be plotted
 	BUmed    = sapply(BUlist,function(x){apply(x,2,median)},simplify=FALSE)  # median each year
 	colPal   = colorRampPalette(c("grey95", "grey30"))
-	colSlime = rep(c("grey","slategray2"),ngear)[1:ngear]
+	colSlime = rep(c("slategray2","thistle2"),ngear)[1:ngear]  ## RH 200528
 	colStart = rep(c("green","yellowgreen"),ngear)[1:ngear]
 	colStop  = rep(c("cyan","thistle"),ngear)[1:ngear]  #,"cyan"
 	colLim   = rep(c("blue2","purple"),ngear)[1:ngear]
@@ -1697,8 +1697,11 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 	nB = length(BUmed[[1]])
 	if (is.null(xLim))
 		xLim=c(0, max(c(BUmed[[1]], rev(apply(BUlist[[1]],2,quantile,ifelse(outs,1,p[2])))[1], 1)))
-	if (is.null(yLim))
-		yLim=c(0, max(c(sapply(BUmed[(1:ngear)+1],max), rev(sapply(BUlist[(1:ngear)+1],function(x,p){apply(x,2,quantile,p)},p=ifelse(outs,1,p[2])))[1], 1)))
+	if (is.null(yLim)) {
+		yUps = sapply(BUlist[(1:ngear)+1],function(x,p){apply(x,2,quantile,p)},p=ifelse(outs,1,p[2]))  ##(RH 200624)
+		yLim=c(0, max(c(sapply(BUmed[(1:ngear)+1],max), max(yUps[nrow(yUps),]), 1)))                   ##(RH 200624)
+	}
+#browser();return()
 	P = list(p=p)
 	if (outs)
 		P = list (o=c(0,1), p=p)
@@ -1713,10 +1716,12 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 		lines(BUmed[[1]], BUmed[[i+1]], col=colSlime[i], lwd=Lwd)
 		points(BUmed[[1]], BUmed[[i+1]], type="p", pch=19, col=colPal(nB))
 		points(BUmed[[1]][1], BUmed[[i+1]][1], pch=21, col=1, bg=colStart[i], cex=1.2)
+	}
+	## Use three loops to plot the trace, end-year line segments, end-year points (RH 200624)
+	for (i in ngear:1) {
 		xend = rev(BUmed[[1]])[1]
 		yend = rev(BUmed[[i+1]])[1]
-		if (!is.null(assYrs))
-			points(BUmed[[1]][as.character(assYrs)], BUmed[[i+1]][as.character(assYrs)], pch=21, col=1, bg=colAss[i], cex=1.2)
+		xoff = ifelse(as.logical(i%%2),-1,1) * diff(par()$usr[1:2])*0.0015 ## shift final xpos +/- some small amount (RH 200624)
 		for (j in 1:length(P)) {
 			q = P[[j]]
 			lty = ifelse(j==1 && outs, 3, 1)
@@ -1725,14 +1730,22 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 			xqlo = quantile(BUlist[[1]][,as.character(currYear)],q[1])
 			xqhi = quantile(BUlist[[1]][,as.character(currYear)], q[2])
 			segments(xqlo, yend, xqhi, yend, col=lucent(colLim[i],0.5), lty=lty, lwd=lwd)
+#browser();return()
 			## Plot vertical (UtU0) quantile range
 			yqlo = quantile(BUlist[[i+1]][, as.character(currYear-1)], q[1])
 			yqhi = quantile(BUlist[[i+1]][, as.character(currYear-1)], q[2])
-			segments(xend, yqlo, xend, yqhi, col=lucent(colLim[i],0.5), lty=lty, lwd=lwd)
+			segments(xend+xoff, yqlo, xend+xoff, yqhi, col=lucent(colLim[i],0.5), lty=lty, lwd=lwd)
 		}
-		points(xend, yend, pch=21, cex=1.2, col=colLim[i], bg=colStop[i])
 	}
-	if (ngear>1)  addLegend(0.95, 0.80, legend=linguaFranca(Cnames,lang), lty=1, lwd=Lwd, col=colSlime, seg.len=4, xjust=1, bty="n", cex=0.8)
+	for (i in ngear:1) {
+		xend = rev(BUmed[[1]])[1]
+		yend = rev(BUmed[[i+1]])[1]
+		xoff = ifelse(as.logical(i%%2),-1,1) * diff(par()$usr[1:2])*0.0015 ## shift final xpos +/- some small amount (RH 200624)
+		if (!is.null(assYrs))
+			points(BUmed[[1]][as.character(assYrs)], BUmed[[i+1]][as.character(assYrs)], pch=21, col=1, bg=colAss[i], cex=1.2)
+		points(xend+xoff, yend, pch=21, cex=1.2, col=colLim[i], bg=colStop[i])
+	}
+	if (ngear>1)  addLegend(0.95, 0.80, legend=linguaFranca(Cnames,lang), lty=1, lwd=Lwd, col=colSlime, seg.len=4, xjust=1, bty="n", cex=1)
 	box()
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotSnail
@@ -1815,7 +1828,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotTracePOP
 
 
-## plotTraj-----------------------------2019-12-06
+## plotTraj-----------------------------2020-06-04
 ## Show all median trajectories (base+sens) in one figure.
 ## ---------------------------------------------RH
 plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock, 
@@ -1912,7 +1925,7 @@ plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 					tlty    = c("solid", tlty)
 				}
 #browser():return()
-				addLegend(ifelse(jj%in%c("R"),0.025,0.05), ifelse(jj%in%c("BtB0"),0.025,0.975), col=tcol, seg.len=5, legend=linguaFranca(legtxt,l), bty="o", box.col="grey", bg="white", xjust=ifelse(jj%in%c("R"),0,0), yjust=ifelse(jj%in%c("BtB0"),0,1), lwd=2, lty=tlty, ...)
+				addLegend(ifelse(jj%in%c("R","U"),0.025,0.05), ifelse(jj%in%c("BtB0"),0.025,0.975), col=tcol, seg.len=5, legend=linguaFranca(legtxt,l), bty="o", box.col="grey", bg=ifelse(jj%in%c("BtB0"),"white","transparent"), xjust=ifelse(jj%in%c("R","U"),0,0), yjust=ifelse(jj%in%c("BtB0"),0,1), lwd=2, lty=tlty, ...)
 			}
 			if (Ntraj==1) {
 				axis(1,at=intersect(seq(1900,2500,5),x),labels=FALSE,tcl=-0.2)
@@ -2386,7 +2399,7 @@ plt.catch = function(years, Ct, xint=5, yint=250,
 	ysmall = seq(yint,ylim[2],yint)
 	ngear=ncol(y)
 	pchGear=seq(21,20+ngear,1)
-	colGear=rep(c("black","green"),ngear)[1:ngear]  ## RH 200423  (PJS cannot distinguish balck from blue)
+	colGear=rep(c("black","green2"),ngear)[1:ngear]  ## RH 200423  (PJS cannot distinguish balck from blue)
 	fout = fout.e = "catch"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
 		changeLangOpts(L=l)

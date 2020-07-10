@@ -5,6 +5,25 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.7.1 (2020-07-10) [Rcheck=F, Rbuild=F]
+  * PBSscape.r
+    + Modified function `stdRes.CA' (RH 200522)
+      - Changed names of R variables to match those in CASAL 6.8 manual:
+      - ## Pearson residual = (O-F)/std.dev(O)   : see CASAL 6.8 Manual
+      - Fprime <- obj$Fit[idx]*(1.0-obj$Fit[idx]) + 0.1/n   ## F prime (Fournier uses Fitted); not defined previously in function but only added to test calculation of SD
+      - Oprime <- obj$Obs[idx]*(1.0-obj$Obs[idx]) + 0.1/n   ## O prime (Coleraine uses Observed); formerly called 'Z' by AME
+      - Nprime <- min( obj$SS[idx],1000)                    ## N prime; formerly called 'N' by AME
+      - SD     <- sqrt(Oprime/Nprime )                      ## std.dev(O) = SD of observation for a Fournier|Coleraine likelihood
+      - result$stdRes[idx] <- res[idx]/SD                   ## Pearson residuals = Normalised residuals for normal error distributions
+  * plotFuns.r
+    + Modified function `plotSnail' (RH 200624)
+      - loop through fisheries (gears) three times for (i) traces, (ii) final cross lines (95% qauntile ranges), and (iii) final median points;
+      - offset final crosslines and medians plus/minus a small fraction of Bt/Bmsy (x-axis) so they do not overlap.
+    + Modified function `plotTraj' (RH 200604)
+      - changed fill of legend box to be transparent or white depending on trajectories being plotted.
+    + Modified function `mochaLatte' (RH 200528)
+      - limited y-axis values to 5 decimal places.
+
 1.7.0 (2020-05-20) [Rcheck=F, Rbuild=F]
   * PBSscape.r
     + Added new argument `sigmaR' to function `importProjRec'. (RH 200427)
