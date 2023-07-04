@@ -47,6 +47,11 @@
 \def\startF{0}           %% figure start counter (default=0)
 \def\startT{0}           %% table start counter (default=0)
 \def\bfTh{{\bf \Theta}}  %% bold Theta
+\newcommand{\elof}[1]{\in\left\{#1\right\}}   %% is an element of
+
+\newcommand{\Bmsy}{B_\text{MSY}}
+\newcommand{\umsy}{u_\text{MSY}}
+\newcommand{\pc}{\%}
 
 % \newcommand{\eb}{\begin{eqnarray}}
 % \newcommand{\ee}{\end{eqnarray}}
@@ -148,9 +153,9 @@
 \setcounter{table}{\startT}
 \setcounter{secnumdepth}{3}    %% to number subsubheadings-ish
 
-\setcounter{chapter}{5}    % for stand-alone chapters (5=E, 6=F)
-\renewcommand{\thechapter}{\Alph{chapter}} % ditto
-\renewcommand{\thesection}{\thechapter.\arabic{section}}   
+\setcounter{chapter}{5}%% for stand-alone chapters (5=E, 6=F)
+\renewcommand{\thechapter}{\Alph{chapter}}%% ditto
+\renewcommand{\thesection}{\thechapter.\arabic{section}.}
 \renewcommand{\thesubsection}{\thechapter.\arabic{section}.\arabic{subsection}.}
 \renewcommand{\thetable}{\thechapter.\arabic{table}}    
 \renewcommand{\thefigure}{\thechapter.\arabic{figure}}  
@@ -480,7 +485,8 @@ logInitAgeDev.mpd = currentRes$Dev$Initial   ## deviations for initial age struc
 R0.mpd   = currentRes$extra$parameters$R0
 M1.mpd   = currentRes$extra$parameters$M1[1]
 M2.mpd   = currentRes$extra$parameters$M1[2]
-M3.mpd   = currentRes$extra$parameters$M2[1]  ## extra M parameter at age of full maturity (only female for now)
+M3.mpd   = currentRes$extra$parameters$M2[1]  ## extra M parameter at age of full maturity for females
+M4.mpd   = currentRes$extra$parameters$M2[2]  ## extra M parameter at age of full maturity for males
 h.mpd    = currentRes$extra$parameters$h
 qvec.mpd = exp(currentRes$extra$parameters$log_qsurvey) ## surveys
 
@@ -511,6 +517,7 @@ if (nsex==1) {
 	M1.prior = M.prior[1,] 
 	M2.prior = M.prior[2,]
 	M3.prior = MM.prior[1,]
+	M4.prior = MM.prior[2,]
 }
 h.prior = currentRes$extra$priors$h_prior
 logqvec.prior = currentRes$extra$priors$log_qsurvey_prior # surveys, matrix
@@ -693,6 +700,7 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=options()$big.mark)} & \Sex
 %@rmsex \multicolumn{5}{l}{{\bf $M_2$, M (natural mortality row 2), M1 row 2}} & \\
 @rmsex \Sexpr{ptab(M2.prior)} & \Sexpr{M2.mpd} \\
 \Sexpr{ptab(M3.prior)} & \Sexpr{M3.mpd} \\
+@rmsex \Sexpr{ptab(M4.prior)} & \Sexpr{M4.mpd} \\
 \\ [-1.5ex]
 
 %\multicolumn{5}{l}{{\bf $h$,  h (steepness of spawner-recruit curve), h}} & \\
@@ -841,7 +849,7 @@ Vulnerable & \Sexpr{format(round(Vy.mpd[1]),big.mark=options()$big.mark)} & \Sex
 \clearpage
 
 <<likelihoods, results=hide, echo=FALSE>>=
-# Can't use dollar sign inside \S expr [actually, seems like you can - see the table below], so doing here:
+# Can't use dollar sign inside \Sexpr [actually, seems like you can - see the table below], so doing here:
 like.Surveys = currentRes$extra$likelihoods$Survey_Index
 like.Surveys.rnd = round(currentRes$extra$likelihoods$Survey_Index, dig=2)
 like.Surveys.rnd = c(like.Surveys.rnd, NA, NA, NA, NA) 
@@ -905,26 +913,27 @@ plt.initagedev(logInitAgeDev.mpd, lang=lang) # Initial age deviations figure
 ## Latest from Rowan, I may want to switch to have females first
 ## year.plotBar = seq(min(currentRes[["N"]][["Year"]]),max(currentRes[["N"]][["Year"]]),8)
 
-year.plotBar = round(quantile(years,seq(0,1,len=6)))
-fout = fout.e = "ageBars"
-for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
-	fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
-	if (nsex==1) {
-		if (ptype=="eps")
-			plotBars(currentRes, type="N", sex=3, fill="green", eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
-		if (ptype=="png")
-			plotBars(currentRes,type="N",sex=3,fill="green",png=TRUE,win=FALSE,year=year.plotBar, lang=l, fout=fout)
-	} else {
-		if (ptype=="eps") {
-			plotBars(currentRes, type="N", sex=2, fill="pink1",   eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
-			plotBars(currentRes, type="N", sex=1, fill="skyblue", eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
-		}
-		if (ptype=="png") {
-			plotBars(currentRes, type="N", sex=2, fill="pink1",   png=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
-			plotBars(currentRes, type="N", sex=1, fill="skyblue", png=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
-		}
-	}
-} ## end l (lang) loop
+## Disable for now becasue we never use it (RH 220215)
+##year.plotBar = round(quantile(years,seq(0,1,len=6)))
+##fout = fout.e = "ageBars"
+##for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
+##	fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
+##	if (nsex==1) {
+##		if (ptype=="eps")
+##			plotBars(currentRes, type="N", sex=3, fill="green", eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+##		if (ptype=="png")
+##			plotBars(currentRes,type="N",sex=3,fill="green",png=TRUE,win=FALSE,year=year.plotBar, lang=l, fout=fout)
+##	} else {
+##		if (ptype=="eps") {
+##			plotBars(currentRes, type="N", sex=2, fill="pink1",   eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+##			plotBars(currentRes, type="N", sex=1, fill="skyblue", eps=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+##		}
+##		if (ptype=="png") {
+##			plotBars(currentRes, type="N", sex=2, fill="pink1",   png=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+##			plotBars(currentRes, type="N", sex=1, fill="skyblue", png=TRUE, win=FALSE, year=year.plotBar, lang=l, fout=fout)
+##		}
+##	}
+##} ## end l (lang) loop
 
 } ## end redo.Graphs
 
@@ -941,7 +950,7 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 % \onefig{catch}{Commercial catch data.}   % No need to repeat for every model run, and it shows up later.
 
-\onefig{survIndSer2}{Survey index values (points) with 95\% confidence intervals (bars) and MPD model fits (curves) for the fishery-independent survey series.}
+\onefig{survIndSer2}{Survey index values (points) with 95\pc{} confidence intervals (bars) and MPD model fits (curves) for the fishery-independent survey series.}
 
 @rmresdoc \onefig{survIndSer}{Fits to the fishery-independent surveys for run \Sexpr{model.name}, on one graph.}    % Not on same year axis.
 
@@ -958,7 +967,7 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 %=======Next line will be expanded to accommodate multiple surveys=======
 \onefig{survRes@survey1}{Residuals of model fits to \Sexpr{Snames[1]} survey series (MPD values). Vertical axes are standardised residuals. The three plots show, respectively, residuals by year of index, residuals relative to predicted index, and normal quantile-quantile plot for residuals (horizontal lines give 5, 25, 50, 75 and 95 percentiles).}
 
-@rmcpue \onefig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 90\% error bars are based on lognormal assumption (double check error bars).}
+@rmcpue \onefig{CPUEser}{\Sexpr{if(NCser == 0) paste("IGNORE this figure, since CPUE series is dummy data required for running Awatea.")} CPUE index series, 90\pc{} error bars are based on lognormal assumption (double check error bars).}
 
 @rmcpue \onefig{CPUEfit}{CPUE index series (without error bars) and biomass trajectories using different q's (if more than one CPUE series).}
 
@@ -1025,7 +1034,7 @@ plt.bubbles(currentRes, nsex=nsex, redo.Graphs=redo.Graphs, lang=lang) # Bubble 
 
 %% number of years of survey age data * (number age classes -1) * 2
 
-@rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) with 95\% confidence intervals and model estimates (joined open squares) for the commercial and survey age data.}
+@rmCSA \onefig{meanAge}{Mean ages each year for the data (solid circles) with 95\pc{} confidence intervals and model estimates (joined open squares) for the commercial and survey age data.}
 
 \twofig{stockRecruit}{recruits}{Top: deterministic stock-recruit relationship (black curve) and observed values (labelled by year of spawning) using MPD values. Bottom: recruitment (MPD values of age-1 individuals in year $t$) over time, in 1,000s of age-1 individuals, with a mean of \Sexpr{prettyNum(signif(mean(currentRes$B$R), sigdig), big.mark=options()$big.mark)}.}
 
@@ -1062,6 +1071,7 @@ Bmpd[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
 	M1.mpd=M1.mpd,
 @rmsex 	M2.mpd=M2.mpd, # remember: need at least one space (not tab) after @rmsex, @rmcpue, etc.
 	M3.mpd=M3.mpd,
+@rmsex 	M4.mpd=M4.mpd, # remember: need at least one space (not tab) after @rmsex, @rmcpue, etc.
 	h.mpd=h.mpd,
 @rmcpue 	qCPUE.mpd=qCPUE.mpd,
 	qvec.mpd=qvec.mpd,
@@ -1078,7 +1088,6 @@ Bmpd[[toupper(SA[[1]][1])]][[SA[[1]][2]]] <- list(
 save("Bmpd",file=paste("Bmpd-",model.name,".rda",sep=""))
 #save(A, T, Ct, selgeqComm, mat, M1, M2, Rt, R0.mpd, h.mpd, Nats.mpd, ut.mpd,  Bt.mpd, B0.mpd, Vt.mpd, logRecDev.mpd, file="run23values.RData")
 @
-
 
 \end{document}
 %%==============================================================================

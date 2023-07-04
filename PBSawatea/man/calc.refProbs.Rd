@@ -15,7 +15,7 @@
 \usage{
 calc.refProbs(projObj=currentProj$B, refPlist=refPointsList, op=">")
 calc.refProbsHist(projObj=currentProj$B, 
-   refPlist=refPointsHistList[c("blimHRP","btarHRP")], op=">")
+   refPlist=refPointsHistList[c("blimHRP","btarHRP")], op=">", verbose=TRUE)
 calc.projExpect (obj, projObj,  refYrs)
 calc.projExpect2(obj, projObj, refList)
 calc.projProbs  (obj, projObj,  refYrs)
@@ -28,6 +28,7 @@ calc.projProbs2 (obj, projObj, refList)
   \item{refList}{\code{numeric list} -- reference years (numeric vectors).}
   \item{refPlist}{\code{numeric list} -- reference points.}
   \item{op}{\code{character} -- binary operator for comparing values in atomic vectors.}
+  \item{verbose}{\code{logical} -- if \code{TRUE}, splatter the command line with vomit.}
 }
 \details{
   \code{calc.refProbs......}{Calculate the reference probabilities for decision tables.}\cr
@@ -49,8 +50,8 @@ calc.projProbs2 (obj, projObj, refList)
 
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2018-10-15}
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-28}
 }
 \note{
   Functions probably deprecated because they are only called in \sQuote{\code{menu.r}}:\cr

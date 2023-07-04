@@ -5,6 +5,31 @@ Authors : RH  = Rowan Haigh
           PJS = Paul Starr
           CG  = Chris Grandin
 
+1.8.0 (2023-06-27) [Rcheck=T, Rbuild=T]
+  * plotFuns.r
+    + Added new function `plotLikes' to plot likelihood profiles. (210510)
+    + Modified functions:
+      - `mochaLatte' to allow plotting by column (mfcol) instead of by row (mfrow). (RH 230321)
+      - `panelBoxes' to better deal with function to calulate ylim. (RH 2022?)
+      - `panelChains' to accommodate byrow=T/F in mocahLatte. (RH 230321)
+      - `panelTraces' to remove NA values. (RH 220222)
+      - `plotACFs' to use output from acf to plot lagged values (RH 220624)
+      - `plotMeanAge' to manipulate output. (RH 220207)
+    + Small tweaks to functions 
+      - `plotSnail' : minor changes (RH 220117) but look for function with same name in PBStools.
+      - `plotTraj', `plotVBcatch', `plt.bubbles', `plt.quantBioBB0'
+  * utilFuns.r
+    + Added new functions:
+      - `redo.currentMCMC' to re-run the R components of 'run-masterMCMC.Snw' to get MCMC binary objects. (RH 230124)
+      - `repeatMPD' to repeat MPDs for likelihood profiles. (RH 230124)
+    + Made modifications (mostly small) to `MAfun' (RH 210225).
+  * PBSscape.r
+    + Made small modifications, not really worth mentioning.
+  * Documentation
+    + Updated vignette `PBSawateaIntro' (RH 230628)
+    + Updated various Rd files (RH 230628)
+      - Merged Rd file for `runSweave' and `runSweaveMCMC' (RH 230629)
+
 1.7.1 (2020-07-10) [Rcheck=F, Rbuild=F]
   * PBSscape.r
     + Modified function `stdRes.CA' (RH 200522)

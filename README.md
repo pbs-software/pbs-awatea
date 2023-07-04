@@ -1,5 +1,5 @@
 ## PBSawatea: Tools for running Awatea and visualizing the results ##
-&copy; Fisheries and Oceans Canada (2011-2020)
+&copy; Fisheries and Oceans Canada (2011-2022)
 
 <b>PBSawatea</b> provides an R interface for running ADMB Awatea software, which is a variant of the Coleraine fish population software. The added functionality here includes automation of:
 

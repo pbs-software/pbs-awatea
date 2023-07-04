@@ -19,7 +19,7 @@ import(methods, PBSmodelling, lattice, scape, plotMCMC, xtable)
 #importFrom("gplots", "plotCI")     ## deprecate
 
 importFrom("graphics", "abline", "arrows", "axis", "barplot", "box", "boxplot",
-           "legend", "lines", "mtext", "pairs", "par", "plot",
+           "contour", "frame", "legend", "lines", "mtext", "pairs", "par", "plot",
            "points", "polygon", "rect", "segments", "text")
 
 importFrom("grDevices", "boxplot.stats", "colorRampPalette", "dev.cur",
@@ -33,4 +33,8 @@ importFrom("stats", "acf", "cor", "fitted", "lowess", "median", "na.pass",
 
 importFrom("utils", "Sweave", "data", "flush.console", "help",
            "installed.packages", "menu", "read.table", "tail", "write.table")
+
+importFrom("akima", "interp")
+
+importFrom("PBStools", "changeLangOpts", "eop", ".flush.cat", "findRC", "inWord", ".su", "scaleVec")
 

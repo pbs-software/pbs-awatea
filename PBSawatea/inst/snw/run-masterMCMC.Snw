@@ -66,6 +66,7 @@
 \def\startF{0}           %% figure start counter (default=0)
 \def\startT{0}           %% table start counter (default=0)
 \def\bfTh{{\bf \Theta}}  %% bold Theta
+\newcommand{\elof}[1]{\in\left\{#1\right\}}   %% is an element of
 
 \newcommand{\ptype}{@ptype} %% png files also available for smaller-sized appendix
 
@@ -239,7 +240,7 @@ resdoc      = @resdoc
 eval(parse(text=paste("lang=",deparse(@lang))))
 
 if (is.element(spp.name,c("BOR"))){
-	assYrs = c(2008, 2012)
+	assYrs = c(2008, 2012, 2019)
 } else if (is.element(spp.name,c("WWR"))){
 	assYrs = c(2019)
 } else if (is.element(spp.name,c("RSR"))){
@@ -273,7 +274,10 @@ if (is.element(spp.name,c("BOR"))){
 locsdnr = paste(run.dir,"/",substring(model.name,1,nchar(model.name)-3),".sdnr",sep="")
 if (file.exists(locsdnr)) {
 	sdnr = readLines(locsdnr)
-	cvpro = strsplit(sdnr[grep("CVpro",sdnr)]," ")[[1]][-1]  # as a string values
+	if (any(grepl("CVpro",sdnr)))
+		cvpro = strsplit(sdnr[grep("CVpro",sdnr)]," ")[[1]][-1]  # as a string values
+	else
+		cvpro = as.character(tcall(PBSawatea)$cvpro)
 } else {
 	## For this to work, cvpro must be created and packed to PBSawatea in the command.rwh file
 	cvpro = as.character(tcall(PBSawatea)$cvpro)
@@ -558,7 +562,8 @@ currentMCMC$mpd = list(mpd.P=mpd.P, mpd.B=mpd.B, mpd.R=mpd.R)
 ## Need to 'exponentiate' the priors and bounds for q
 pqnames = intersect(qnames,use.Priors)  ## redundancy for now
 for(i in pqnames) {
-  if(priorInput[i,4] != 0) stop("need to exponentiate non-uniform priors for log q, in run-masterMCMC.Snw")
+
+  ## if(priorInput[i,4] != 0) stop("need to exponentiate non-uniform priors for log q, in run-masterMCMC.Snw") (RH disabled this line 210521)
   ## otherwise it's uniform.
   ## Need to have the bounds exponentiated because the panel.curve
   ##  plot uses them automatically to define the range. So change

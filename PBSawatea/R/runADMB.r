@@ -533,7 +533,9 @@ setMethod("reweight", signature="AWATEAdata",
 			if (!any(zUse) || sum(zUse)<=1) next
 			## Method TA1.8 Weigting assumption T3.4 in Francis (2011) Table A1
 			w[j] = 1 / var((MAobs[zUse]-MAexp[zUse])/((Vexp[zUse]/N[zUse])^0.5) )
+			#w[j] = ifelse(length(J)==1, 6.321921, 0.25)  ## sabotage Run75 for YMR 2021 to use Harmonic Mean Ratio for fishery AF and downweight surveys
 			wN[zUse] = N[zUse] * w[j]
+#browser();return()
 		}
 		return(list(w=w,wN=wN))
 	}
@@ -699,6 +701,7 @@ setMethod("reweight", signature="AWATEAdata",
 	#sMAR = MRfun(spa$Year,spa$Age,spa$Obs,spa$Fit) # srvey mean age residuals
 	#w = c((1/SDNR)[as.character(c(Sseries,Useries))],(1/SDNR^2)[c("cpa","spa")]) # lognormal and multinomial (Francis)
 	#f = c( cpa=CFfun(cpa$Year,cpa$SS,cpa$Age,cpa$Obs,cpa$Fit), spa=CFfun(spa$Year,spa$SS,spa$Age,spa$Obs,spa$Fit) )
+#browser();return()
 	obj@reweight = list(nrwt=nrwt+1,survey=survey,cpue=cpue,wNcpa=wNcpa,wNspa=wNspa,SDNR=SDNR,wj=wj)
 	return(obj)
 } )

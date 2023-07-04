@@ -5,12 +5,12 @@
 }
 \description{
   An attempt to simulate a \code{lattice} panel plot and gain greater control over
-  the look of the figure without having to tweak endless sub-options.
+  the look of the figure without having to tweak endless sub-options in \code{lattice}.
 }
 \usage{
-mochaLatte(dat, xfld, yfld, ffld, panel,
-   strip=list(col=lucent("black",0.5), bg=lucent("moccasin",0.5), height=0.1, cex=1.4), 
-   fn.ylim=range, ...)
+mochaLatte(dat, xfld, yfld, ffld, panel, byrow=FALSE,
+   strip = list(col=lucent("black",0.5), bg=lucent("moccasin",0.5),
+   height=0.1, cex=1.4), rc, ...)
 }
 \arguments{
   \item{dat}{\code{data.frame} -- object with fields that can be used as factors (without being factors) and fields with data to plot.}
@@ -18,9 +18,10 @@ mochaLatte(dat, xfld, yfld, ffld, panel,
   \item{yfld}{\code{character} -- name of the field with y-values.}
   \item{ffld}{\code{character} -- name of the field with \sQuote{factors} that will be represented in each panel.}
   \item{panel}{\code{function} -- panel function that plots the data in some fashion.}
+  \item{byrow}{\code{logical} -- if \code{TRUE}, plot figures by row; if \code{FALSE}, plot figures by column.}
   \item{strip}{\code{list} -- controls for strip along the top of each panel: 
     outline colour (\code{col}), background colour (\code{bg}), height, and font size (\code{cex}).}
-  \item{fn.ylim}{\code{function} -- to determine the y-limits of the panel plots (default function = \code{'range'}).}
+  \item{rc}{\code{numeric} -- vector specifying number of rows and number of columns.}
   \item{\dots}{\code{list} -- aditional arguments for \code{plot}, \code{axis}, and \code{mtext}.}
 }
 \details{
@@ -32,20 +33,20 @@ mochaLatte(dat, xfld, yfld, ffld, panel,
   Ain't nobody got time for that.
 }
 \value{
-  Currently returns nothing but joy.
+  Currently returns nothing but joy (sarcasm).
 }
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2019-05-31}
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-28}
 }
 \note{
   The \code{lattice} package provides a versatile system that has evolved over many years;
   however, there is only so much time in a day that one can fiddle about with lattice options.
 }
 \seealso{
-In package \pkg{PBSawatea}:\cr
+\pkg{PBSawatea}:
   \code{\link[PBSawatea]{panelChains}},
   \code{\link[PBSawatea]{plotDensPOP}},
   \code{\link[PBSawatea]{plotIndexNotLattice}},
@@ -54,3 +55,4 @@ In package \pkg{PBSawatea}:\cr
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{hplot}% use one of  RShowDoc("KEYWORDS")
+

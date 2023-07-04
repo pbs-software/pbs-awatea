@@ -1,6 +1,16 @@
-\documentclass[letter, 12pt]{article}
+\documentclass[letter, 11pt]{article}
 %\VignetteIndexEntry{Introduction to PBSawatea}
 %\VignettePackage{PBSawatea}
+%\usepackage{Sweave}
+%\SweaveOpts{concordance=TRUE}
+
+%% R package builder uses:
+%% "C:\Apps\MiKTeX\miktex\bin\x64\texify.exe" --quiet --pdf "PBSawateaIntro.tex" --max-iterations=20 -I "C:/Apps/R/Rdev64/share/texmf/tex/latex" -I "C:/Apps/R/Rdev64/share/texmf/bibtex/bst"
+
+%% Keep on one page
+\usepackage[letterpaper, margin=1in]{geometry}
+\setlength\parindent{0pt}               %% To not indent paragraphs.
+\parskip 6pt                            %% To increase white space between
 
 % For colors
 \usepackage{color}
@@ -20,26 +30,60 @@
 \newcommand{\red}[1]{{\textcolor{red} {#1}}}
 
 \usepackage{verbatim}
-\usepackage{hyperref}
-\hypersetup{colorlinks=true, plainpages=true, linkcolor=black, citecolor=black, urlcolor=blue}
 
 \usepackage{natbib}  %Bibliography package
-
+\setcitestyle{round,citesep={;},aysep={},yysep={,}} %% seems to be DFO CSAS majority
+\setlength{\bibhang}{0.25in}                        %% set the DFO overhang
+\setlength{\bibsep}{6pt}                            %% paragraph spacing
+\usepackage[breaklinks=true,bookmarksdepth=4]{hyperref} %% CSAP wants hyperlinks in references %,bookmarksopen=true
+\hypersetup{colorlinks, plainpages=true, linkcolor=black, citecolor=black, urlcolor=blue}
+\usepackage{bookmark}
+\bookmarksetup{numbered,open,}
 \bibliographystyle{apalike3}
 
-% Keep on one page
-\usepackage[letterpaper, margin=1in]{geometry}
+%% http://tex.stackexchange.com/questions/664/why-should-i-use-usepackaget1fontenc
+\usepackage[T1]{fontenc}
+
+%% inconsolata (zi4) -- https://www.ctan.org/pkg/inconsolata (RH 170705)
+%% https://tex.stackexchange.com/questions/167402/how-to-set-font-size-at-exactly-11-pt
+\usepackage[scaled=1.1]{inconsolata} %% trial and error
+
+\renewcommand{\rmdefault}{arial} %% phv (helvetica) or ua1 (uarial) can be alernatives
+\renewcommand{\sfdefault}{arial} %% phv (helvetica) or ua1 (uarial) can be alernatives
+\renewcommand{\ttdefault}{zi4}   %% pcr (courier) can be alernative
+
+\setlength{\bibsep}{6pt}                            %% paragraph spacing
+
+%% Using text function without amsmath
+%% https://tex.stackexchange.com/questions/55741/is-it-possible-to-typeset-text-inside-math-without-amsmath
+
+\makeatletter
+\DeclareRobustCommand{\text}{%
+  \ifmmode\expandafter\text@\else\expandafter\mbox\fi}
+\let\nfss@text\text
+\def\text@#1{{\mathchoice
+  {\textdef@\displaystyle\f@size{#1}}%
+  {\textdef@\textstyle\f@size{#1}}%
+  {\textdef@\textstyle\sf@size{#1}}%
+  {\textdef@\textstyle \ssf@size{#1}}%
+  \check@mathfonts
+  }%
+}
+\def\textdef@#1#2#3{\hbox{{%
+                    \everymath{#1}%
+                    \let\f@size#2\selectfont
+                    #3}}}
+\makeatother
 
 
 \begin{document}
 
 \title{Introduction to PBSawatea}
-\author{Andrew M. Edwards, Rowan Haigh and Paul J. Starr}
+\author{Rowan Haigh, Andrew M. Edwards, and Paul J. Starr}
 \maketitle
 
-
 %----------------------------------------------------------------
-\section{What is \pbsa?}
+\section{What is PBSawatea?}
 
 \pbsa{} provides tools for running population models using Awatea, a variant of Coleraine \citep{Hilborn-etal:2003}, which is maintained by Allan Hicks (Northwest Fisheries Science Center, Seattle WA).
 This package is not intended for public distribution -- lots of code has been taken and modified from other packages and R code, including \code{rScape.r} by Rob Kronlund and Paul Starr (modified by Allan Hicks), and Arni Magnusson and Ian Taylor's \pkg{scape} and \pkg{plotMCMC} (formerly(\pkg{scapeMCMC}) packages.
@@ -59,7 +103,7 @@ The initials \bold{PBS} refer to the \href{http://www.pac.dfo-mpo.gc.ca/science/
 The R directory \code{.../library/PBSawatea/doc} includes a User's Guide \code{PBSawatea-UG.pdf}; however, this is not meant to be thorough and for now just automatically documents the functions.
 
 %----------------------------------------------------------------
-\section{Running the \pbsa{} code}
+\section{Running the PBSawatea code}
 
 \subsection{Load the package}
 
@@ -81,7 +125,7 @@ Basically there are five stages to running the model, illustrated below using Qu
 The input file is called \code{POP-5ABC-04.txt}.
 
 
-\subsubsection{\code{runADMB} -- Mode of Posterior Distribution (MPD)}
+\subsubsection{runADMB -- Mode of Posterior Distribution (MPD)}
 
 The binary exectuable \code{awatea.exe} (built by ADMB) is called from a user-selected base directory (e.g. \code{C:/Awatea/POP/5ABC}); therefore, (i)~the exectuable needs to be on the path or its directory must be specified by the argument \code{awateaPath}, and (ii)~R's working directory must be set to the base directory (check using \code{getwd()}).
 All Awatea calculations occur in the base directory.
@@ -94,7 +138,7 @@ Assuming that the input file is \code{POP-5ABC-04.txt}, the new subdirectory wil
 \end{verbatim}
 
 
-\subsubsection{\code{runSweave} -- Run Sweave on MPD Results}
+\subsubsection{runSweave -- Run Sweave on MPD Results}
 
 To see the MPD results, run Sweave on the results to generate figures and tables and to create postscript and pdf files containing all the results:
 
@@ -145,7 +189,7 @@ Next, calculate maximum sustainable yield for each of your posterior samples.
 \end{verbatim}
 
 
-\subsubsection{\code{runSweaveMCMC} -- Run Sweave on MCMC Results}
+\subsubsection{runSweaveMCMC -- Run Sweave on MCMC Results}
 
 As with the MPD output, run Sweave on the MCMC output to generate figures and tables and to create postscript and pdf files containing all the MCMC results:
 
@@ -173,88 +217,221 @@ Input \code{.txt} files are available for recent assessments, enabling reproduct
 The original saved results are available (from Andrew Edwards or Rowan Haigh at present) as compressed archives (either \code{.zip} or \code{.7z} files), that may also contain \code{.RData} or \code{.rda} files containing the outputs in \code{R} format.
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Pacific Ocean Perch area 5ABC, \cite{esh12}}
+\subsection{2010 Pacific Ocean Perch in 5ABC}
+
+Published document: \citet{Edwards-etal:2012_pop5ABC}
 
 Area 5ABC covers Queen Charlotte Sound (QCS) and lower Hecate Strait.
-Four model runs were presented in the CSAS Research Document. These are in R-installation directory:\\
-\code{.../library/PBSawatea/input/2010/POP/5ABC/} as:\newline
-
-\code{POP-5ABC-04.txt}: fixed steepness $h$ and fixed natural mortalities $M_s$, \newline  
-
-\code{POP-5ABC-11.txt}: fixed steepness $h$ and estimated natural mortalities $M_s$, \newline  
-
-\code{POP-5ABC-16.txt}: estimated steepness $h$ and fixed natural mortalities $M_s$, \newline  
-
-\code{POP-5ABC-23.txt}: estimated steepness $h$ and estimated natural mortalities $M_s$. \newline  
+Four model runs were presented in the CSAS Research Document. These are in the R-installation directory:\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2010.7z")}}
+\begin{itemize}
+  \item \code{POP-5ABC-04.txt} : fixed steepness $h$ and fixed natural mortalities $M_s$,
+  \item \code{POP-5ABC-11.txt} : fixed steepness $h$ and estimated natural mortalities $M_s$,
+  \item \code{POP-5ABC-16.txt} : estimated steepness $h$ and fixed natural mortalities $M_s$,
+  \item \code{POP-5ABC-23.txt} : estimated steepness $h$ and estimated natural mortalities $M_s$.
+\end{itemize}
 
 The latter two (that estimated steepness $h$) were put forward for advice in the resulting Science Advisory Report. We recommend the final one (that also estimated natural mortalities) for use in future work, since the mortalities could be estimated by the model (and this approach was used in the later Pacific Ocean Perch assessments).
 
 Much of the \pkg{PBSawatea} software was written after this assessment. Re-running the MPD results (August 2014) yields exactly the same results as the original runs. Using the \code{runSweaveMCMC} function to generate figures and tables from the original MCMC results yields quantiles of parameter values and variables that agree almost exactly with the original published results. The slight differences most likely arise because the original results were tabulated as quantiles using the software platform \code{Stata}, whereas these are using the \code{R} platform, and there are different options for generating quantiles -- see the \code{R} help for \code{quantile()}.  
 
-Full results (including MCMC) from original model runs are available from AE or RH in \code{POP-5ABC-ResDoc2011-111.zip}, where 2011/111 is the Research Document number.
+Full results (including MCMC) from original model runs are available from AE or RH.
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Yellowmouth Rockfish coastwide, \cite{ehs12}}
+\subsection{2011 Yellowmouth Rockfish coastwide}
 
-This was a coastwide stock assessment and recovery potential assessment (that used criteria from COSEWIC, the Committee on the Status of Endangered Wildlife in Canada). Two model runs were presented in the Research Document (and accepted for the resulting Science Advisory Report). These are in the R-installation directory:\\
-\code{.../library/PBSawatea/input/2011/YMR/CST/} as:\newline
+Published document: \citet{Edwards-etal:2012_ymr}
 
-\code{input29-ymr.txt}: estimates steepness $h$ and natural mortalities $M_s$, \newline  
-
-\code{input30-ymr.txt}: estimates steepness $h$ and fixes natural mortalities $M_s$. \newline  
+This was a coastwide stock assessment and recovery potential assessment (that used criteria from COSEWIC, the Committee on the Status of Endangered Wildlife in Canada). Two model runs were presented in the Research Document (and accepted for the resulting Science Advisory Report).
+These are in the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2011.7z")}}\\
+for the base runs:
+\begin{itemize}
+  \item \code{input-ymr.29.01.txt} : estimates steepness $h$ and natural mortalities $M_s$,
+  \item \code{input-ymr.30.01.txt} : estimates steepness $h$ and fixes natural mortalities $M_s$.
+\end{itemize}
 
 These analyses were done performed prior to the creation of \pkg{PBSawatea}. During the Yellowmouth assessment, we automated the re-weighting scheme between abundance data and age structure data, and developed a system of building and saving model runs into MPD and MCMC folders. Later, we also converted to a standardised input filename convection using a three-letter code for species followed by an area code and a run number (e.g., \code{YMR-CST-01.txt}). The YMR analyses could likely be re-run, but we advise changing the input file names using the convention outlined above. (If necessary, ask AE or RH to look into their \code{ymrrun-master.Snw} and \code{ymrrun-masterMCMC.Snw} (or similar) files that were used at the time.)
 
-Full results (including MCMC) from original model runs are available from AE or RH in \code{YMR-CST-ResDoc2012-095.zip}.
+Full results (including MCMC) from original model runs are available from AE or RH.
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Pacific Ocean Perch area 3CD, \cite{ehs14area3CD}}
+\subsection{2012 Pacific Ocean Perch in 3CD}
+
+Published document: \citet{Edwards-etal:2013_pop3CD}
 
 Area 3CD covers the west coast of Vancouver Island (WCVI).
-One model run was presented in the CSAS Research Document, in the R-installation directory:\\
-\code{.../library/PBSawatea/input/2012/POP/3CD/} as:\newline
-
-\code{POP-3CD-20.txt}\\
+One model run was presented in the CSAS Research Document, in the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2012.7z")}}\\
+for the base run:
+\begin{itemize}
+  \item \code{pop-3CD.20.01.txt}
+\end{itemize}
 
 See \code{runHistory-POP-3CD.tex} for details of sensitivity runs, and \\
 \code{PBSawatea-commands-POP-3CD.rwh} for the commands to re-run the code in \code{R}.
 
-Full results (including MCMC) from original model runs are available from AE or RH in \code{POP-3CD-ResDoc2013-093.zip}.
-
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Pacific Ocean Perch area 5DE, \cite{ehs14area5DE}}
+\subsection{2012 Pacific Ocean Perch in 5DE}
+
+Published document: \citet{Edwards-etal:2013_pop5DE}
 
 Area 5DE covers the north and west coasts of Haida Gwaii (WCHG).
-One model run was presented in the CSAS Research Document, in the R-installation directory:\\
-\code{.../library/PBSawatea/input/2012/POP/5DE/} as:\newline
-
-\code{POP-5DE-20.txt}\\
+One model run was presented in the CSAS Research Document, in the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2012.7z")}}\\
+for the base run:
+\begin{itemize}
+  \item \code{pop-5DE.20.01.txt}
+\end{itemize}
 
 See \code{runHistory-POP-5DE.tex} for details of sensitivity runs, and \\
 \code{PBSawatea-commands-POP-5DE.rwh} for the commands to re-run the code in \code{R}.
 
-Full results (including MCMC) from original model runs are available from AE or RH in \code{POP-5DE-ResDoc2013-092.zip}.
-
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Silvergray Rockfish, coastwide, Starr et al.~(in press)}
+\subsection{2013 Silvergray Rockfish coastwide}
 
-See the R-installation directory: \code{.../library/PBSawatea/input/2013/SGR/CST/}\\
+Published document: \citet{Starr-etal:2016_sgr}
+
+See the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2013.7z")}}\\
+for the base run:
+\begin{itemize}
+  \item \code{SGR-CST.16.03.txt}
+\end{itemize}
+
 and the \code{runHistory.tex} and \code{PBSawatea-commands-SGR-CST.rwh} files within.
 
 In this assessment and the following, \pkg{PBSawatea} first implemented a number of switches in the Sweave code to deal with variations in the number of sexes and surveys, and whether CPUE and historical reference points are used.
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Rock Sole, 5AB and 5CD, \cite{hshk16}}
+\subsection{2013 Rock Sole in 5AB and 5CD}
 
-See the R-installation directories:\\
-\code{.../library/PBSawatea/input/2013/ROL/5AB/} and\\
-\code{.../library/PBSawatea/input/2013/ROL/5CD/} and \\
-the \code{runHistory.tex} and \code{PBSawatea-commands-ROL-**.rwh} files within.
+Published document: \citet{Holt-etal:2016_rol}
 
-%\vspace*{4ex} \noindent {\bf \Large Reference}
+See the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2013.7z")}}\\
+for the base runs:
+\begin{itemize}
+  \item \code{ROL-5AB.22.03.txt}
+  \item \code{ROL-5CD.08.03.txt}
+\end{itemize}
 
-%\vspace*{2ex} \noindent Edwards, A.M., Haigh, R. and Starr, P.J. 2014. \pbsa : User's Guide.
+and the \code{runHistory.tex} and \code{PBSawatea-commands-ROL-<5AB|5CD>.rwh} files within.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{2014 Yellowtail Rockfish coastwide}
+
+Published document: \citet{DFO-SAR:2015_ytr}
+
+See the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2014.7z")}}\\
+for the base run:
+\begin{itemize}
+  \item \code{YTR-CST1F.09.02.txt}
+\end{itemize}
+
+and the \code{runHistory.tex} and \code{PBSawatea-commands-YTR-CST1F.rwh} files within.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{2017 Pacific Ocean Perch in 5ABC}
+
+Published document: \citet{Haigh-etal:2018_pop5ABC}
+
+See the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2017.7z")}}\\
+for the base run:
+\begin{itemize}
+  \item \code{POP-5ABC.09.03.txt}
+\end{itemize}
+
+and the \code{runHistory.tex} and \code{PBSawatea-commands-POP-5ABC.rwh} files within.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{2018 Redstripe Rockfish in 5DE and 3CD5ABC}
+
+Published document: \citet{Starr-Haigh:2021_rsr}
+
+See the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2018.7z")}}\\
+for the base runs:
+\begin{itemize}
+  \item \code{RSR-5DE.16.01.txt}
+  \item \code{RSR-3CD5ABC.16.02.txt}
+\end{itemize}
+
+and the \code{runHistory.tex} and \code{PBSawatea-commands-RSR-<5DE|3CD5ABC>.rwh} files within.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{2019 Widow Rockfish coastwide}
+
+Published document: \citet{Starr-Haigh:2021_wwr}
+
+See the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2019.7z")}}\\
+for the base runs:
+\begin{itemize}
+  \item \code{WWR-BC.01.01.txt} : $M$=0.07, $A$=40
+  \item \code{WWR-BC.02.01.txt} : $M$=0.07, $A$=45
+  \item \code{WWR-BC.03.01.txt} : $M$=0.07, $A$=50
+  \item \code{WWR-BC.04.01.txt} : $M$=0.08, $A$=40
+  \item \code{WWR-BC.05.01.txt} : $M$=0.08, $A$=45 (central run)
+  \item \code{WWR-BC.06.01.txt} : $M$=0.08, $A$=50
+  \item \code{WWR-BC.07.01.txt} : $M$=0.09, $A$=40
+  \item \code{WWR-BC.08.01.txt} : $M$=0.09, $A$=45
+  \item \code{WWR-BC.09.01.txt} : $M$=0.09, $A$=50
+\end{itemize}
+
+and the \code{runHistory.tex} and \code{PBSawatea-commands-WWR-BC.rwh} files within.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{2019 Bocaccio coastwide}
+
+Published document: \citet{Starr-Haigh:2022_bor}
+
+See the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2019.7z")}}\\
+for the base runs:
+\begin{itemize}
+  \item \code{BOR-2F.01.01.txt} : $M$=0.07, $A$=50
+  \item \code{BOR-2F.02.01.txt} : $M$=0.08, $A$=50 (central run)
+  \item \code{BOR-2F.03.01.txt} : $M$=0.09, $A$=50
+\end{itemize}
+
+and the \code{runHistory.tex} and \code{PBSawatea-commands-BOR-2F.rwh} files within.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%\subsection{2020 Rougheye/Blackspotted Rockfish coastwide \citep{Starr-Haigh:2022_rebs}}
+\subsection{2020 Rougheye/Blackspotted Rockfish coastwide}
+
+Published document: \citet{Starr-Haigh:2022_rebs}
+
+See the R-installation directory\\
+\code{\Sexpr{file.path(system.file("input",package="PBSawatea"),"2020.7z")}}\\
+for the REBS North base case:
+\begin{itemize}
+  \item \code{BSR-2F.49.01.txt} : $M$=0.035, $c_\text{p}$=0.10
+  \item \code{BSR-2F.50.01.txt} : $M$=0.035, $c_\text{p}$=0.2759
+  \item \code{BSR-2F.51.01.txt} : $M$=0.035, $c_\text{p}$=0.40
+  \item \code{BSR-2F.47.01.txt} : $M$=0.045, $c_\text{p}$=0.10
+  \item \code{BSR-2F.46.01.txt} : $M$=0.045, $c_\text{p}$=0.2759 (REBS N central run)
+  \item \code{BSR-2F.48.01.txt} : $M$=0.045, $c_\text{p}$=0.40
+  \item \code{BSR-2F.52.01.txt} : $M$=0.055, $c_\text{p}$=0.10
+  \item \code{BSR-2F.53.01.txt} : $M$=0.055, $c_\text{p}$=0.2759
+  \item \code{BSR-2F.54.01.txt} : $M$=0.055, $c_\text{p}$=0.40
+\end{itemize}
+for the REBS South base case:
+\begin{itemize}
+  \item \code{RER-2F.18.02.txt} : $M$=0.035, $c_\text{p}$=0.10
+  \item \code{RER-2F.12.02.txt} : $M$=0.035, $c_\text{p}$=0.2759
+  \item \code{RER-2F.15.02.txt} : $M$=0.035, $c_\text{p}$=0.40
+  \item \code{RER-2F.11.02.txt} : $M$=0.045, $c_\text{p}$=0.2759 (REBS S central run)
+  \item \code{RER-2F.14.02.txt} : $M$=0.045, $c_\text{p}$=0.40
+  \item \code{RER-2F.16.02.txt} : $M$=0.055, $c_\text{p}$=0.40
+\end{itemize}
+
+and the \code{runHistory.tex} and \code{PBSawatea-commands-<BSR|RER>-2F.rwh} files within.
 
 \bibliography{PBSawatea}
 
 \end{document}
+

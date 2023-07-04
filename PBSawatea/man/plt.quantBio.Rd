@@ -8,17 +8,16 @@
   Plots MCMC and projected biomass as quantile boxes, the former in black, the latter in red.
 }
 \usage{
-plt.quantBio(obj, projObj=NULL, policy=NULL, 
-     p=tcall(quants5), xyType="lines", 
-     lineType=c(3,2,1,2,3), refLines=NULL, 
-     xLim=NULL, yLim=NULL, userPrompt=FALSE, 
-     save=TRUE, yaxis.lab="Spawning biomass", lang="e")
+plt.quantBio(obj, projObj=NULL, policy=NULL,
+   p=tcall(quants5), xyType="lines", lineType=c(3,2,1,2,3),
+   refLines=NULL, xLim=NULL, yLim=NULL,
+   userPrompt=FALSE, save=TRUE, yaxis.lab="Spawning biomass", lang="e")
 
 plt.quantBioBB0(obj, projObj=NULL, policy=NULL,
-   p=tcall(quants5), xyType="quantBox", lineType=c(3,2,1,2,3),
+   p = tcall(quants5), xyType="quantBox", lineType=c(3,2,1,2,3),
    delta=0.25, lwd=0.75, refLines=NULL, xLim=NULL, yLim=NULL,
    userPrompt=FALSE, save=TRUE, main="", cex.main="",
-   tcl.val=-0.1, xaxis.by=1, yaxis.by=10000,
+   tcl.val=-0.1, xaxis.by=1, yaxis.by=10000, cex.axis=1, cex.lab=1,
    xaxis.lab="Year", yaxis.lab= "Spawning biomass", lang="e")
 }
 \arguments{
@@ -40,6 +39,8 @@ plt.quantBioBB0(obj, projObj=NULL, policy=NULL,
   \item{tcl.val}{\code{numeric} -- tick length.}
   \item{xaxis.by}{\code{numeric} -- tick mark intervals for x-axis.}
   \item{yaxis.by}{\code{numeric} -- tick mark intervals for y-axis.}
+  \item{cex.axis}{\code{numeric} -- size of labels for the axis ticks}
+  \item{cex.lab}{\code{numeric} -- size of labels along the axes}
   \item{xaxis.lab}{\code{character} -- label for x-axis.}
   \item{yaxis.lab}{\code{character} -- label for y-axis.}
   \item{lang}{\code{character} -- a letter that denotes the language for output: currently only \code{"e"} (english) or \code{"f"} (french).}
@@ -48,11 +49,12 @@ plt.quantBioBB0(obj, projObj=NULL, policy=NULL,
   List of the reconstructed (MCMC) and projected results.
 }
 \author{
-  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew Edwards}, Research Scientist, PBS, DFO, Nanaimo BC\cr
+  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew Edwards}, Research Scientist, PBS, DFO, Nanaimo BC
+
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2020-05-20}
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-28}
 }
 \note{
   \code{plt.quantBioBB0} performs similarly as for \code{plt.quantBio} but uses

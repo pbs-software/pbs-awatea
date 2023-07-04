@@ -116,7 +116,8 @@ runSweave   = function(
 		else if (any(strSpp==c("BOR","bor","435"))) sppname = "Bocaccio"
 		else if (any(strSpp==c("BSR","bsr","425"))) sppname = "Blackspotted Rockfish"
 		else if (any(strSpp==c("RER","rer","394"))) sppname = "Rougheye Rockfish"
-		else sppname="Rockfish"
+		else if (any(strSpp==c("CAR","car","437"))) sppname = "Canary Rockfish"
+		else sppname="Offshore Rockfish"
 	} else {
 		ici = sys.frame(sys.nframe())
 		data(gfcode,package="PBSawatea", envir=ici)

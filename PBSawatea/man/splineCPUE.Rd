@@ -20,7 +20,7 @@ splineCPUE(dat, ndf=50, png=FALSE, pngres=400, PIN=c(8,8))
   \item{PIN}{\code{numeric} -- size (width, height) of the \code{.png} file.}
 }
 \details{
-  The code uses a procedure for estimating process error \eqn{c_\mathrm{p}} to
+  The code uses a procedure for estimating process error \eqn{c_\text{p}} to
   add to commercial CPUE using a spline-smoother analysis. 
   Francis (2011, citing Clark and Hare 2006) recommends using a smoothing
   function to determine the appropriate level of process error to add to CPUE
@@ -28,7 +28,7 @@ splineCPUE(dat, ndf=50, png=FALSE, pngres=400, PIN=c(8,8))
   indices while not removing the majority of the signal in the data.
   An arbitrary sequence of length \code{'ndf'}, comprising degrees of freedom
   (DF, \eqn{\nu_i}), where \eqn{i=2,...,N} and \eqn{N}= number of CPUE values \eqn{U_t} from
-  \eqn{t=\mathrm{yr}_1,...,\mathrm{yr}_N}, is used to fit the CPUE data with a spline smoother.
+  \eqn{t=\text{yr}_1,...,\text{yr}_N}, is used to fit the CPUE data with a spline smoother.
   At \eqn{i=N}, the spline curve fits the data perfectly and the residual sum of 
   squares (RSS, \eqn{\rho_N}) is 0.
   Using spline fits across a range of trial DF \eqn{\nu_i}, values of RSS \eqn{\rho_i}
@@ -37,9 +37,9 @@ splineCPUE(dat, ndf=50, png=FALSE, pngres=400, PIN=c(8,8))
   \eqn{\delta_i}) yields a concave curve with a minimum \eqn{\delta_i}, which 
   occurs close to the inflection point \eqn{k}.
   At the inflection point \eqn{k}, \eqn{\nu_k} corresponds to \eqn{\rho_k}, which is 
-  converted to \eqn{c_\mathrm{p}} using:
+  converted to \eqn{c_\text{p}} using:
 
-  \deqn{c_\mathrm{p} = \sqrt{\frac{\rho_k}{N-2}}~~~{\left[ \frac{1}{N} \sum\limits_{t=\mathrm{yr}_1}^{\mathrm{yr}_N} U_t \right]}^{-1}}{%
+  \deqn{c_\text{p} = \sqrt{\frac{\rho_k}{N-2}}~~~{\left[ \frac{1}{N} \sum\limits_{t=\text{yr}_1}^{\text{yr}_N} U_t \right]}^{-1}}{%
     c[p] = \sqrt{\rho[k]/(N-2)} / ( (1/N) \Sigma_{t=yr[1]}^{yr[N]} U[t] }
 }
 \value{
@@ -48,26 +48,27 @@ splineCPUE(dat, ndf=50, png=FALSE, pngres=400, PIN=c(8,8))
   process error at this RSS (see \bold{Details}).
 }
 \references{
-  Clark, W.G. and Hare, S.R. 2006.
-  \href{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.170.6113&rep=rep1&type=pdf}{Assessment and management of Pacific halibut: data, methods, and policy.}
+  Clark, W.G. and Hare, S.R. (2006)
+  \href{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.170.6113&rep=rep1&type=pdf}{Assessment and management of Pacific halibut: data, methods, and policy.}
   Sci. Rep. 83, International Pacific Halibut Commission, Seattle, WA.
 
-  Francis, R.I.C.C. 2011.
-  \href{http://dx.doi.org/10.1139/f2011-025}{Data weighting in statistical fisheries stock assessment models}.
+  Francis, R.I.C.C. (2011)
+  \href{https://doi.org/10.1139/f2011-025}{Data weighting in statistical fisheries stock assessment models}.
   Can. J. Fish. Aquat. Sci. 68(6): 1124-1138.
 
-  Starr, P.J. and Haigh, R. 2019, in review.
-  Widow Rockfish (\emph{Sebastes entomelas}) stock assessment for British Columbia in 2019. 
-  DFO Can. Sci. Advis. Sec. Res. Doc. 2019/nnn. vi + 219 p.
+  Starr, P.J. and Haigh, R. (2021)
+  \href{https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2021/2021_039-eng.html}{%
+  Widow Rockfish (\emph{Sebastes entomelas}) stock assessment for British Columbia in 2019}. 
+  DFO Can. Sci. Advis. Sec. Res. Doc. 2021/039: vi + 238 p.
 }
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2019-05-28}
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-28}
 }
 \note{
-  This procedure was first used in the 2019 BC Widow Rockfish stock assessment (Starr and Haigh, in review).
+  This procedure was first used in the 2019 BC Widow Rockfish stock assessment (Starr and Haigh 2021).
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

@@ -1,15 +1,17 @@
 \name{plotTraj}
 \alias{plotTraj}
 \title{
-  Plot Median Trajectories
+  Plot Trajectory Medians
 }
 \description{
-  Plot median trajectories from various MCMC runs in one figure.
+  Plot the trajectory medians from various MCMC sensitivity runs in one figure.
 }
 \usage{
 plotTraj(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock, 
+   startYear=1935, currYear=2021, sen.lab,
    col=c("black","green4","blue","red","purple","orange"), 
-   lty=c(2:6), png=FALSE, pngres=400, PIN=c(8,8), lang=c("e","f"), ...)
+   lty=c(2:6), logR=FALSE, 
+   png=FALSE, pngres=400, PIN=c(8,8), lang=c("e","f"), ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -25,8 +27,12 @@ plotTraj(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
     Information on the central run is found in \code{stock[[istock]]$Base[[run.rwt]]}.}
   \item{y0}{\code{logical} -- if \code{TRUE}, start the y-axis at 0.}
   \item{lab.stock}{\code{character} -- name of stock to appear in the name of the \code{'png'} output file, if \code{png=TRUE}.}
+  \item{startYear}{\code{numeric} -- starting year of the model}
+  \item{currYear}{\code{numeric} -- current year of the model}
+  \item{sen.lab}{\code{character} -- sensitivity names of various trajectories}
   \item{col}{\code{character} -- names of colours for each trajectory.}
   \item{lty}{\code{numeric|character} -- line types for each trajectory.}
+  \item{logR}{\code{logical} -- if \code{TRUE}, then log the trajectories (usually of recruitments)}
   \item{png}{\code{logical} -- if \code{TRUE}, send the figure output to a \code{'png'} device.}
   \item{pngres}{\code{numeric} -- resolution (pixels/inch) for \code{'png'} file.}
   \item{PIN}{\code{numeric} -- vector of width and height (inches) for \code{'png'} file.}
@@ -44,8 +50,8 @@ plotTraj(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2019-05-29}
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-28}
 }
 \note{
   This function is geared for use after a number of Awatea model runs have been completed.
@@ -55,7 +61,7 @@ plotTraj(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock,
   gathered and compared.
 }
 \seealso{
-In package \pkg{PBSawatea}:\cr
+\pkg{PBSawatea}:
   \code{\link[PBSawatea]{runADMB}},
   \code{\link[PBSawatea]{runMPD}},
   \code{\link[PBSawatea]{runMCMC}}

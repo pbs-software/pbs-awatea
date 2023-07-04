@@ -222,7 +222,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 	xlim = range(B$Year,na.rm=TRUE)
 	U    = B[,grep("U",names(B)),drop=FALSE] # need to use `drop' argument for ngear=1
 	ylim = range(U,na.rm=TRUE)
-	fout = fout.e = "exploit"
+	fout.e = "exploit"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
 		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
@@ -430,7 +430,7 @@ plt.mpdGraphs <- function(obj, save=FALSE, ssnames=paste("Ser",1:9,sep=""),
 #	}
 
 	## Plot observed and expected mean ages from commercial and survey C@A data.
-	fout = fout.e = "meanAge"
+	fout.e = "meanAge"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
 		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
@@ -798,7 +798,7 @@ function (mcmcObj, projObj=NULL, mpdObj=NULL, save=FALSE,
 			if (p=="eps") postscript(paste0(fout,".eps"), width=6.25, height=5, horizontal=FALSE, paper="special")
 			else if (p=="png") png(paste0(fout,".png"), units="in", res=pngres, width=6.25, height=5)
 			par(mfrow=c(1,1), mar=c(3,3.75,0.5,1), oma=c(0,0,0,0), mgp=c(2,0.5,0))
-			plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=tcall(quants3)[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, assYrs=assYrs, lang=l) ## RSR in 5RF
+			plotSnail(mcmcObj$BoverBmsy, mcmcObj$UoverUmsy, p=tcall(quants3)[c(1,3)], xLim=xlim.snail, yLim=ylim.snail, ngear=ngear, currYear=currYear, assYrs=assYrs, lang=l) ## RSR in 5RF
 			if (p %in% c("eps","png")) dev.off()
 		} ## end p (ptypes) loop
 	}; eop()
@@ -1216,7 +1216,7 @@ calc.refProbs <- function( projObj=currentProj$B,
 ## (based on calc.projProbs2)
 ## ---------------------------------------------RH
 calc.refProbsHist <- function( projObj=currentProj$B, 
-   refPlist=refPointsHistList[c("blimHRP","btarHRP")], op=">")
+   refPlist=refPointsHistList[c("blimHRP","btarHRP")], op=">", verbose=TRUE)
 {
 	## refPlist will be a list, LRP, USR and Bmsy are defaults with values for each draw
 	policyList=names(projObj)
@@ -1253,8 +1253,10 @@ calc.refProbsHist <- function( projObj=currentProj$B,
 		}
 		result[[i]] <- val
 	}
-	cat( "\n\nProbability of projection biomass ", op, " reference point:\n\n" )
-	print(result)
+	if (verbose) {
+		cat( "\n\nProbability of projection biomass ", op, " reference point:\n\n" )
+		print(result)
+	}
 	return(result)
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calc.refProbsHist
@@ -1352,7 +1354,7 @@ stdRes.CA <- function( obj, trunc=3, myLab="Age Residuals", prt=TRUE )
   for ( i in 1:length( yrList ) )
   {
     idx <- yrList[i]==obj$Year
-    ## Pearson residual = (O-F)/std.dev(O)  : see CASAL 6.8 Manual
+    ## Pearson residual = (O-F)/std.dev(O)  : see CASAL Manual, Section 6.8 Residuals
     Fprime  <- obj$Fit[idx]*(1.0-obj$Fit[idx]) + 0.1/n   ## F prime (Fournier uses Fitted)
     Oprime  <- obj$Obs[idx]*(1.0-obj$Obs[idx]) + 0.1/n   ## O prime (Coleraine uses Observed)
     Nprime  <- min( obj$SS[idx],1000)                    ## N prime
@@ -1915,10 +1917,10 @@ refPointsB0 <- function( mcmcObj=currentMCMC, projObj=currentProj,
 }
 
 
-#refPointsHist--------------------------2013-09-27
-# Call from Sweave as  refPointsHist(HRP.YRS=ROL.HRP.YRS)
-# Originally implemented for Rock Sole 2013
-#-----------------------------------------------RH
+## refPointsHist------------------------2013-09-27
+##  Call from Sweave as  refPointsHist(HRP.YRS=ROL.HRP.YRS)
+##  Originally implemented for Rock Sole 2013
+## ---------------------------------------------RH
 refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
    #blimYrs=1966:2005, btarYrs=1977:1985, ulimYrs=NULL, utarYrs=1966:2005
 {
@@ -1938,7 +1940,7 @@ refPointsHist <- function( mcmcObj=currentMCMC, HRP.YRS)
 		refPlist[["utarHRP"]]=apply(mcmcObj$U[,findPat(utarYrs,names(mcmcObj$U)),drop=FALSE],1,mean) # RH: in case Ngear > 1
 	return(refPlist)
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~refPointsHist
 
 #srFun----------------------------------2011-08-31
 # Stock-recruitment function. From ProjRecCalcs.r

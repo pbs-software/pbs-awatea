@@ -54,14 +54,14 @@ reweight(obj, A.rwt=1, C.rwt=1, cvpro=0, ...)
 }
 \references{
   Francis, R.I.C.C. (2011)
-  \href{http://dx.doi.org/10.1139/f2011-025}{Data weighting in statistical fisheries stock assessment models}.
+  \href{https://doi.org/10.1139/f2011-025}{Data weighting in statistical fisheries stock assessment models}.
   Can. J. Fish. Aquat. Sci. 68(6): 1124-1138.
 }
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2019-05-29}
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-28}
 }
 \seealso{
 In package \pkg{PBSawatea}:\cr

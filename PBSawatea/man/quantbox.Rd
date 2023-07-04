@@ -33,25 +33,25 @@ quantbox(x, use.cols = TRUE, ...)
   }
 }
 \references{
-  \href{http://r.789695.n4.nabble.com/Box-plot-with-5th-and-95th-percentiles-instead-of-1-5-IQR-problems-implementing-an-existing-solution-td3456123.html}{R Help on Nabble}
+  \href{https://stat.ethz.ch/pipermail/r-help/2011-April/275384.html}{R Help originally on Nabble [now defunct]}
 }
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2019-05-28}
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-28}
 }
 \note{
   This function is a clone of the \pkg{PBStools} function \code{'quantBox'}.
   Why would anyone choose a boxplot over a quantile plot?
 }
 \seealso{
-In package \pkg{graphics}:\cr
+\pkg{graphics}:
   \code{\link[graphics]{boxplot}},
   \code{\link[graphics]{boxplot.matrix}}\cr
-In package \pkg{PBSmodelling}:\cr
+\pkg{PBSmodelling}:
   \code{\link[PBSmodelling]{tget}}\cr
-In package \pkg{PBSawatea}:\cr
+\pkg{PBSawatea}:
   \code{\link[PBSawatea]{compB0}},
   \code{\link[PBSawatea]{panelBoxes}},
   \code{\link[PBSawatea]{plt.ageResidsPOP}},

@@ -1,15 +1,18 @@
 \name{redo.currentProj}
 \alias{redo.currentProj}
+\alias{redo.currentMCMC}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-  Recalculate the currentProj Object(s)
+  Recalculate Projection or MCMC Object(s)
 }
 \description{
-  Recalculate objects \code{'currentProj'} (CC policy) and \code{'currentProj2'} (HR policy).
+  Recalculate objects \code{'currentProj'} (CC policy),  \code{'currentProj2'} (HR policy), or \code{'currentMCMC'}.
 }
 \usage{
 redo.currentProj(prj.dir, Ngear, sigmaR=0.9, mcsub=201:1200,
    compile.only=FALSE, recalc.proj=FALSE)
+
+redo.currentMCMC(strSpp, assYr, stock, mpdir, mcdir, mcsub=201:1200)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -21,24 +24,36 @@ redo.currentProj(prj.dir, Ngear, sigmaR=0.9, mcsub=201:1200,
   \item{compile.only}{\code{logical} -- if \code{TRUE}, only evaluate the ADMB expression in the relevant projection directory:
     (e.g., \code{'awatea -ind BSR-2F.28.01.txt -mceval'}. }
   \item{recalc.proj}{\code{logical} -- if \code{TRUE}, recalculate the object(s)
-    \code{'currentProj'} (for a CC policy) and/or \code{'currentProj2'} (for an HR policy).}
+    \code{'currentProj'} (for a CC policy) and/or \code{'currentProj2'} (for an HR policy).\cr\cr------ \code{redo.currentMCMC} ------}
+
+  \item{strSpp}{\code{character} -- species code as Hart or 3-letter}
+  \item{assYr}{\code{numeric} -- assessment year}
+  \item{stock}{\code{character} -- usually area designator (e.g., \code{"CST"}) 
+    but should match whatever descriptor was used at the time (e.g., \code{"2F"})}
+  \item{mpdir}{\code{character} -- path to the assessment's MPD run}
+  \item{mcdir}{\code{character} -- path to the assessment's MCMC run}
 }
 \details{
   Essentially repeats code that was use in \code{'run-SweaveMCMC.Snw'} so that user can
-  recalculate projected catch policies if they were changed from the original.
+  recalculate projected catch policies, if they were changed from the original, or 
+  reconstruct the MCMC results.
 }
 \value{
-	Objects \code{'currentProj'} (for a CC policy) and/or \code{'currentProj2'} (for an HR policy) in the MCMC directory.
+  Objects:
+  \itemize{
+    \item \code{'currentProj'} (for a CC policy) and/or \code{'currentProj2'} (for an HR policy) in the MCMC directory;
+    \item \code{'currentMCMC'} in the MCMC directory.
+  }
 }
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2020-05-20}
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-29}
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
-In package \pkg{PBSawatea}:\cr
+\pkg{PBSawatea}:
   \code{\link[PBSawatea]{runSweaveMCMC}},
   \code{\link[PBSawatea]{importProjRec}},
   \code{\link[PBSawatea]{srFun}}
@@ -49,6 +64,6 @@ In package \pkg{PBSawatea}:\cr
 % \keyword{ ~kwd2 }
 % Use only one keyword per line.
 % For non-standard keywords, use \concept instead of \keyword:
-\concept{Projection}
+\concept{reconstruction}
 % \concept{ ~cpt2 }
 % Use only one concept per line.

@@ -1,34 +1,34 @@
-## runSweaveMCMC------------------------2019-07-19
+## runSweaveMCMC------------------------2023-06-29
 ## Create and run customised Sweave files for Awatea MCMC runs.
-## Updated 'runSweave.r' to parallel 'runADMB.r'  5/10/11
-## Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'  5/10/11
+## Updated 'runSweave.r' to parallel 'runADMB.r'       (RH 110510)
+## Updated 'runSweaveMCMC.r' to parallel 'runADMB.r'   (RH 110510)
+## Updated 'runSweaveMCMC.r' to parallel 'runSweave.r' (RH 230629)
 ## ---------------------------------------------RH
 runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
-   filename="spp-area-00.txt",        ## name of Awatea .txt file in 'run.dir' to run
-   runNo   = 1,
-   rwtNo   = 0,
-   running.awatea=0,                  ## =0 : load previous '.rep'; =1 : rerun Awatea
-   Nsex    = 2,                       ## if 1 then Unisex, if 2 Males & Females
-   Ncpue   = 0,
-   Nsurvey = 3,
-   Ngear   = 1,                       ## number of commercial gear types
-   Snames  = paste0("Ser",1:Nsurvey), ## survey names (w/out spaces)
-   SApos   = rep(TRUE,Nsurvey),       ## surveys with age composition data
-   Cnames  = paste0("Gear",1:Ngear),  ## survey names (w/out spaces)
-   CApos   = rep(TRUE,Ngear),         ## commercial gears with age composition
-   Unames  = paste0("CPUE",1:Ncpue),  ## CPUE names
-   mcsub   = 1:1000,
-   delim   = "-",
-   locode  = FALSE,                   ## source this function as local code (for development)
-   codePath   = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
-   histRP  = FALSE,                   ## historical reference points
-   wpaper  = FALSE,                   ## working paper
-   resdoc  = FALSE,                   ## research document
-   redo.Graphs    = TRUE,             ## recreate all the figures (.eps, .wmf, .png)
-   skip.last.year = TRUE,             ## remove last year of projections (set to FALSE for POP 5ABC in 2010)
-   ptype   = "png",                   ## plot type --  either "eps" or "png"
-   dome    = FALSE,                   ## logical -- using dome-shaped selectivity?
-   lang    = c("e","f")               ## language -- 'e'= English, 'f'= French (subdirectory)
+   filename="spp-area-00.txt",         ## name of Awatea .txt file in 'run.dir' to run
+   running.awatea=0,                   ## =0 : load previous '.rep'; =1 : rerun Awatea
+   runNo    = 1,
+   rwtNo    = 0,
+   Nsex     = 2,                       ## if 1 then Unisex, if 2 Males & Females
+   Ncpue    = 0,
+   Nsurvey  = 3,
+   Ngear    = 1,                       ## number of commercial gear types
+   Snames   = paste0("Ser",1:Nsurvey), ## survey names (w/out spaces)
+   SApos    = rep(TRUE,Nsurvey),       ## surveys with age composition data
+   Cnames   = paste0("Gear",1:Ngear),  ## survey names (w/out spaces)
+   CApos    = rep(TRUE,Ngear),         ## commercial gears with age composition
+   Unames   = paste0("CPUE",1:Ncpue),  ## CPUE names
+   delim    = "-",
+   dome     = FALSE,                   ## logical -- using dome-shaped selectivity?
+   locode   = FALSE,                   ## source this function as local code (for development)
+   codePath = "C:/Users/haighr/Files/Projects/R/Develop/PBSawatea/Authors/Rcode/develop",
+   resdoc   = FALSE,                   ## research document
+   redo.Graphs = TRUE,                 ## recreate all the figures (.eps, .wmf, .png)
+   ptype    = "png",                   ## plot type --  either "eps" or "png"
+   lang     = c("e","f"),              ## language -- 'e'= English, 'f'= French (subdirectory)
+   mcsub    = 1:1000,
+   histRP   = FALSE,                   ## historical reference points
+   skip.last.year = TRUE               ## remove last year of projections (set to FALSE for POP 5ABC in 2010)
 ) {
 	ciao = function(wd){setwd(wd);gc(verbose=FALSE)}
 	on.exit(ciao(wd))
@@ -211,7 +211,7 @@ runSweaveMCMC = function(wd=getwd(), strSpp="XYZ",
 	} else {
 		tfile = gsub("@rmdome ","",tfile) ## assumes space after @rmhrp for readability in `run-MasterMCMC.Snw`
 	}
-	if (wpaper||resdoc) {
+	if (resdoc) {
 		resdoc = TRUE
 		tfile = gsub("@resdoc",TRUE,tfile)
 		if (any(grepl("@rmresdoc",tfile))) {

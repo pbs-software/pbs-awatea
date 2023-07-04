@@ -49,9 +49,21 @@ importRes(res.file, info="", Dev=FALSE, CPUE=FALSE, Survey=FALSE,
 }
 \references{
   Hilborn, R., Maunder, M., Parma, A., Ernst, B., Payne, J., and Starr, P. (2003) 
-  Coleraine: A generalized age-structured stock assessment model. User's manual version 2.0. 
-  \emph{University of Washington Report} \bold{SAFS-UW-0116}. Available at: \cr
-  \url{https://tinyurl.com/y83fwgeb}.
+  \href{https://www.researchgate.net/publication/33515338_COLERAINE_A_Generalized_Age-Structured_Stock_Assessment_Model-User\%27s_Manual_Version_20}{%
+  Coleraine: A generalized age-structured stock assessment model. User's manual version 2.0}. 
+  \emph{University of Washington Report} \bold{SAFS-UW-0116}.
+}
+\author{
+Original author of \code{scape::importCol} :\cr
+  \href{mailto:arnim@spc.int}{Arni Magnusson}, Senior Fisheries Scientist at SPC\cr
+  Intergovernmental organisation for sustainable development of the Pacific islands, Noum\ifelse{latex}{\out{\'{e}}}{\ifelse{html}{\out{&eacute;}}{e}}a , New Caledonia
+%%https://stackoverflow.com/questions/71021330/how-to-insert-accented-characters-in-ascii-encoded-rd-files
+
+Modified version \code{PBSawatea::importRes} :\cr
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
+  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
+  Last modified \code{Rd: 2023-06-28}
 }
 \note{
   This import function is implemented for the Coleraine statistical

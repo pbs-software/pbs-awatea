@@ -16,6 +16,7 @@
 ##  plotDensPOPpars      : edited plotMCMC::plotDens for parameters
 ##  plotDensPOPparsPrior : adding the prior automatically
 ##  plotIndexNotLattice  : taking some of plt.idx, but doing plot.Index NOT as lattice
+##  plotLikes            : plot likelihood profiles
 ##  plotMeanAge          : plot obs. & exp. mean ages from comm. & survey C@A data
 ##  plotRmcmcPOP         : plot recruitment posteriors quantiles as one graph over time
 ##  plotSnail            : plot snail-trails for MCMC stock status
@@ -198,12 +199,12 @@ compB0=function(B, Mnams=NULL, ratios=c(0.4,0.8),
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~compB0
 
 
-## mochaLatte---------------------------2020-05-28
+## mochaLatte---------------------------2023-03-21
 ##  An alternative to lattice plots (mockLattice)
-##----------------------------------------------RH
-mochaLatte = function(dat, xfld, yfld, ffld, panel,
-   strip=list(col=lucent("black",0.5), bg=lucent("moccasin",0.5), height=0.1, cex=1.4), 
-   fn.ylim=range, ...)
+## ---------------------------------------------RH
+mochaLatte = function(dat, xfld, yfld, ffld, panel, byrow=FALSE, 
+   strip=list(col=lucent("black",0.5), bg=lucent("moccasin",0.5), 
+   height=0.1, cex=1.4), rc, ...)
 {
 	opar = par(no.readonly=TRUE)
 	on.exit(par(opar))
@@ -220,19 +221,44 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 	}
 	facs = as.character(unique(dat[,ffld]))
 	nfac = length(facs)
-	rc   = .findSquare(nfac)
+	if (missing(rc))
+		rc = .findSquare(nfac)
 	#if (rc[1]>rc[2]) rc = rev(rc)  ## more visually pleasing when more columns than rows
 	if (rc[1]<rc[2]) rc = rev(rc)  ## more visually pleasing when more columns than rows
-	strip$cex = strip$cex * (rc[1]^(-0.2))
+	#strip$cex = strip$cex * (rc[1]^(-0.2))
 	dots = list(...)
-	if (is.null(dots$mar)) mar=c(3,3,0.5,0.5) else mar = dots$mar
-	if (is.null(dots$oma)) oma=c(4,4,0.5,1)   else oma = dots$oma
-	if (is.null(dots$mgp)) mgp=c(2,0.5,0)     else mgp = dots$mgp
-#browser();return()
-	par(mfrow=rc, mar=mar, oma=oma, mgp=mgp)
+	if (is.null(dots$mar)) mar=c(0,3.8,0,0)  else mar = dots$mar
+	if (is.null(dots$oma)) oma=c(4,2,0.5,1)  else oma = dots$oma
+	if (is.null(dots$mgp)) mgp=c(2,0.5,0)    else mgp = dots$mgp
+	if (is.null(dots$fn.ylim)) fn.ylim=function(x){range(x,na.rm=T)}  else fn.ylim   = dots$fn.ylim    ## RH 220222
+	if (is.null(dots$cex.strip)) strip$cex=strip$cex * (rc[1]^(-0.2)) else strip$cex = dots$cex.strip
+
+	hzero = mar[2]==0  ## plots joined horizontally
+	vzero = mar[1]==0  ## plots joined vertically
+	if (byrow) {
+		par(mfrow=rc, mar=mar, oma=oma, mgp=mgp)
+	} else {
+		par(mfcol=rc, mar=mar, oma=oma, mgp=mgp)
+		## If plotting by column and facs include Males, need jiggery pokery
+		if (any(grep("Male$",facs))) {
+			tmat = cbind(matrix(seq(1,prod(rc),2), ncol=2), matrix(seq(2,prod(rc),2), ncol=2)) ## temporary matrix
+			tmat = cbind(matrix(seq(1,prod(rc),2), ncol=rc[2]/2), matrix(seq(2,prod(rc),2), ncol=rc[2]/2)) ## temporary matrix
+			omat = tmat[,c(seq(1,ncol(tmat),2),seq(2,ncol(tmat),2))] ## ordered matrix
+			ovec = as.numeric(omat)
+			facs = facs[ovec]
+		}
+	}
 	for (i in facs) {
+		if (is.na(i)) {
+			frame(); next } ## needed for mfcol when factors have separate female and male components
+		#inum = grep(i,facs)  ## grep doesn't work if fac names contain control characters like '()'
+		inum = (1:length(facs))[is.element(facs,i)]  ## RH 230321
+
 		idat = dat[is.element(dat[,ffld],i),]
-		if (is.null(dots$xlim)) xlim = range(idat[,xfld], na.rm=TRUE) else xlim = dots$xlim
+		if (is.null(dots$xlim)) 
+			xlim = range(idat[,xfld], na.rm=TRUE) 
+		else
+			xlim = dots$xlim
 		if (is.null(dots$ylim)){
 			yval = idat[,yfld]
 			names(yval) = idat[,xfld]
@@ -240,35 +266,41 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 		} else {
 			ylim = dots$ylim
 		}
-#browser(); return()
 		yticks    = getlab(ylim, p=0.05)
 		ylim[2]   = ylim[2] + diff(ylim)*strip$height ## add space for latte foam
-		hzero     = mar[2]==0  ## plots joined horizontally
-		vzero     = mar[1]==0  ## plots joined vertically
 		#do.call("plot", c(list(x=0, y=0, type="n", xlim=xlim, ylim=ylim, xaxt=ifelse(vzero,"n","n"), yaxt=ifelse(hzero,"n","n"), xlab="", ylab=""), dots[setdiff(names(dots), c("xlim","ylim","xlab","ylab","xfac","yfac"))]))
 		exclude = c("xlim","ylim","xlab","ylab","xfac","yfac","outline")
 		evalCall(plot, c(list(x=0, y=0, type="n", xlim=xlim, ylim=ylim, xaxt=ifelse(vzero,"n","n"), yaxt=ifelse(hzero,"n","n"), xlab="", ylab=""), dots[setdiff(names(dots), exclude)]), checkdef=T, checkpar=T)
 		#dots[setdiff(names(dots), c("xlim","ylim","xlab","ylab","xfac","yfac"))]), checkdef=T, checkpar=T)
-		if ((!vzero&&!hzero) || vzero || (hzero && par()$mfg[2]==1)){
-			exclude = c("xlim","ylim","xfac","yfac","outline")
-			#do.call("axis", c(list(side=2, at=yticks[["tck"]], labels=yticks[["sho"]]), dots[setdiff(names(dots),c("xlim","ylim","xfac","yfac"))]))
-			evalCall(axis, c(list(side=2, at=yticks[["tck"]], labels=yticks[["sho"]]), dots[setdiff(names(dots),exclude)]), checkdef=T, checkpar=T)
-#if(i=="q_2") {browser(); return()}
+		#if ((!vzero&&!hzero) || vzero || (hzero && par()$mfg[2]==1)){
+		if (byrow) {
+			do.xlab = (!vzero&&!hzero) || (hzero && !vzero) || i%in%rev(facs)[1:rc[2]] 
+			do.ylab = (!vzero&&!hzero) || (vzero&&!hzero) || (hzero && par()$mfg[2]==1)
+		} else {
+			do.xlab = (!vzero&&!hzero) || (hzero && !vzero) || inum%%par()$mfg[3]==0 || is.na(facs[inum+1])
+			do.ylab = (!vzero&&!hzero) || (vzero&&!hzero) || (hzero && par()$mfg[2]==1)
 		}
-		if ((!vzero&&!hzero) || (hzero && !vzero) || i%in%rev(facs)[1:rc[2]] ) {
+#browser();return()
+		if ( do.xlab ) {
 			if (!is.null(dots$xfac)) {
 				xticks = unique(dat[,xfld])
-				exclude = c("xlim","ylim","xfac","yfac", "outline")
+				exclude = c("xlim","ylim","xfac","yfac", "outline","xaxt")
 				#do.call("axis", c(list(side=1, at=xticks, labels=dots$xfac), dots[setdiff(names(dots),c("xlim","ylim","xfac","yfac"))]))
 				evalCall(axis, c(list(side=1, at=xticks, labels=dots$xfac), dots[setdiff(names(dots),exclude)]), checkdef=T, checkpar=T)
 			} else {
 				xticks = getlab(xlim, p=0.025)
-#browser();return()
-				exclude = c("xlim","ylim","xfac","yfac","exclude")
+				exclude = c("xlim","ylim","xfac","yfac","exclude","xaxt")
 				#do.call("axis", c(list(side=1, at=xticks[["tck"]], labels=xticks[["sho"]]), dots[setdiff(names(dots),c("xlim","ylim","xfac","yfac"))]))
 				evalCall(axis, c(list(side=1, at=xticks[["tck"]], labels=xticks[["sho"]]), dots[setdiff(names(dots),exclude)]), checkdef=T, checkpar=T)
 			}
 		}
+		if ( do.ylab ){
+			exclude = c("xlim","ylim","xfac","yfac","outline","yaxt")
+			#do.call("axis", c(list(side=2, at=yticks[["tck"]], labels=yticks[["sho"]]), dots[setdiff(names(dots),c("xlim","ylim","xfac","yfac"))]))
+			evalCall(axis, c(list(side=2, at=yticks[["tck"]], labels=yticks[["sho"]]), dots[setdiff(names(dots),exclude)]), checkdef=T, checkpar=T)
+#if(i=="q_2") {browser(); return()}
+		}
+#if (inum==19) {browser();return()}
 		panel(x=idat[,xfld], y=idat[,yfld], dots[setdiff(names(dots),c("xfac","yfac"))])
 		#legend("topleft", legend=i, x.intersp=0, box.col=strip$col, bg=strip$bg)
 		strip$xbox = par()$usr[c(1,1,2,2)]
@@ -281,9 +313,12 @@ mochaLatte = function(dat, xfld, yfld, ffld, panel,
 		box()
 	}
 	if (!is.null(dots$xlab))
-		mtext(text=dots$xlab, side=1, line=par()$oma[1]*0.6, outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
+		mtext(text=dots$xlab, side=1, line=par()$oma[1]*0.5, outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
 	if (!is.null(dots$ylab))
-		mtext(text=dots$ylab, side=2, line=par()$oma[2]*0.4, outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
+		#mtext(text=dots$ylab, side=2, line=(par()$oma[2] + par()$mar[2])*0.6, outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
+		mtext(text=dots$ylab, side=2, line=par()$oma[2]*ifelse(par()$mar[2]>=1.5,0.1,0.6), outer=TRUE, cex=ifelse(is.null(dots$cex.lab),1.5,dots$cex.lab))
+	if (!is.null(dots$mainTitle))
+		mtext(text=dots$mainTitle, side=3, line=par()$oma[3]*0.2, outer=TRUE, cex=ifelse(is.null(dots$cex.main),1.75,dots$cex.main))
 #browser();return()
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~mochaLatte
@@ -345,18 +380,20 @@ panelBoxes=function (mcmc, nchains=9, pdisc=0,
 		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,ff),p), Value=as.vector(as.matrix(mcmc)))
 	dat$Index = paste(dat$Factor,dat$Chain,sep="-")
 
-	fn.ylim =
-		if (outline) function(x){range(x, na.rm=TRUE)} 
-		else         function(x){extendrange(sapply(split(x,names(x)), quantile, tcall(quants5)[c(1,5)], na.rm=TRUE))}
+	dots=list(...); fn.ylim=dots$fn.ylim
+	if (is.null(fn.ylim)){
+		if (outline) fn.ylim = function(x){range(x, na.rm=TRUE)} 
+		else         fn.ylim = function(x){extendrange(sapply(split(x,names(x)), quantile,quants5[c(1,5)], na.rm=TRUE))}
+	}
 #browser();return()
-	mochaLatte(dat, xfld="Chain", yfld="Value", ffld="Factor", panel=panel.box, xlim=xlim, mar=c(0,3.8,0,0), oma=c(4,3,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang), xfac=xfac, fn.ylim=fn.ylim , outline=outline)
+	mochaLatte(dat, xfld="Chain", yfld="Value", ffld="Factor", panel=panel.box, xlim=xlim, tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang), xfac=xfac, fn.ylim=fn.ylim , outline=outline, byrow=T, ...) #, mar=c(0,3.8,0,0), oma=c(4,3,0.5,1)
 	gc(verbose=FALSE)
 	invisible(dat)
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~panelBoxes
 
 
-## panelChains---------------------------2019-05-09
+## panelChains---------------------------2021-09-16
 ##  Plots cumulative fequency of 'nchains' by partitioning one trace.
 ##  Revised from 'plotTracePOP'
 ##  mcmc=data.frame e.g, 'currentMCMC$P' from object created by 'importMCMC'.
@@ -418,14 +455,15 @@ panelChains = function (mcmc, nchains=3, pdisc=0.1,
 		dat$CumFreq[z]   = qList[[i]][,"y"]
 	}
 	#mar=c(0,3,0,0), oma=c(4,3,0.5,1)
-	mochaLatte(dat,xfld="ValueSort",yfld="CumFreq",ffld="Factor", panel=panel.chain, ylim=c(0,1), mar=c(2,2,0,0), oma=c(4,4,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang))
 	#mochaLatte(dat,xfld="ValueSort",yfld="CumFreq",ffld="Factor", panel=panel.chain, ylim=c(0,1), mar=c(2,0,0,0), oma=c(1.5,4.5,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang))
+	#mochaLatte(dat,xfld="ValueSort",yfld="CumFreq",ffld="Factor", panel=panel.chain, ylim=c(0,1), mar=c(2,2,0,0), oma=c(4,4,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang))
+	mochaLatte(dat, xfld="ValueSort", yfld="CumFreq", ffld="Factor", panel=panel.chain, ylim=c(0,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang), byrow=T, ...)
 	invisible(dat)
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~panelChains
 
 
-## panelTraces-------------------------2019-05-09
+## panelTraces-------------------------2022-02-22
 ##  Plots the sequential  trace of MCMC samples 
 ##  with running median and (0.05, 0.95) quantiles.
 ## ---------------------------------------------RH
@@ -442,14 +480,17 @@ panelTraces=function (mcmc, mpd=mcmc[1,], nchains=1, pdisc=0,
 		if (is.null(dots$xlim)) xlim = range(x,na.rm=TRUE)
 		if (is.null(dots$ylim)) ylim = range(y,na.rm=TRUE)
 		lty.trace  = 1;  lwd.trace  = 1;  col.trace  = "grey"
-		lty.quant  = 2;  lwd.quant  = 1;  col.quant  = "black"
+		lty.quant  = 2;  lwd.quant  = 1;
+		col.quant  = "black"
 		lty.median = 1;  lwd.median = 1.5;  col.median = "blue"
 		lines(x, y, lty=lty.trace, lwd=lwd.trace, col=col.trace)
-		if (any(is.finite(y)) && var(y) > 0) {
-			lines(x, cquantile.vec(y, prob=tcall(quants3)[1]), lty=lty.quant,  lwd=lwd.quant,  col=col.quant)
-			lines(x, cquantile.vec(y, prob=tcall(quants3)[2]), lty=lty.median, lwd=lwd.median, col=col.median)
-			lines(x, cquantile.vec(y, prob=tcall(quants3)[3]), lty=lty.quant,  lwd=lwd.quant,  col=col.quant)
-			points(x[1], mpd[getNpan()], pch=21, col="black", bg="red", cex=2)
+#browser();return()
+		z = !is.na(y); xx=x[z]; yy=y[z]  ## RH 220222
+		if (any(is.finite(yy)) && var(yy) > 0) {
+			lines(xx, cquantile.vec(yy, prob=tcall(quants3)[1]), lty=lty.quant,  lwd=lwd.quant,  col=col.quant)
+			lines(xx, cquantile.vec(yy, prob=tcall(quants3)[2]), lty=lty.median, lwd=lwd.median, col=col.median)
+			lines(xx, cquantile.vec(yy, prob=tcall(quants3)[3]), lty=lty.quant,  lwd=lwd.quant,  col=col.quant)
+			points(xx[1], mpd[getNpan()], pch=21, col="black", bg="red", cex=2)
 		}
 	}
 
@@ -473,15 +514,16 @@ panelTraces=function (mcmc, mpd=mcmc[1,], nchains=1, pdisc=0,
 	dat <- data.frame(Factor=ordered(rep(names(mcmc), each=n), 
 		names(mcmc)), Draw=rep(1:n, p), Chain=rep(rep(1:nchains,ff),p), Value=as.vector(as.matrix(mcmc)))
 	#dat$Index = paste(dat$Factor,dat$Chain,sep="-")
-
 #browser();return()
-	mochaLatte(dat, xfld="Draw", yfld="Value", ffld="Factor", panel=panel.trace, xlim=c(0,nrow(mcmc)), ylim=ylim, mar=c(0,3,0,0), oma=c(4,4,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang) )
+	#mochaLatte(dat, xfld="Draw", yfld="Value", ffld="Factor", panel=panel.trace, xlim=c(0,nrow(mcmc)), ylim=ylim, mar=c(0,3,0,0), oma=c(4,4,0.5,1), tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang) )
+	mochaLatte(dat, xfld="Draw", yfld="Value", ffld="Factor", panel=panel.trace, xlim=c(0,nrow(mcmc)), ylim=ylim, tcl=-0.3, las=1, cex.axis=cex.axis, cex.lab=cex.lab, cex.strip=cex.strip, xlab=linguaFranca(xlab,lang), ylab=linguaFranca(ylab,lang), byrow=T, ... )
+#browser();return()
 	invisible(dat)
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~panelTraces
 
 
-## plotACFs-----------------------------2018-07-09
+## plotACFs-----------------------------2022-06-24
 ##  Plot ACFs for the estimated parameters.
 ##  Control eps and png from PBScape.r in plt.mcmcGraphs
 ##----------------------------------------------RH
@@ -492,22 +534,33 @@ plotACFs =function(mcmc, lag.max=60, lang="e") #, ptypes=tcall(PBSawatea)$ptype,
 	ylim  = range(acfs[round(acfs,5)>-1 & round(acfs,5)<1])
 	idx   = apply(mcmc, 2, allEqual)
 	mcmcP = mcmc[,!idx,drop=FALSE]
-	rc    = .findSquare(ncol(mcmc[,!idx]))
+#browser();return()
+	rc    = .findSquare(ncol(mcmcP))
 	#for (p in ptypes) {
 		#if (p=="eps") postscript("paramAcf.eps", width=8, height=8, horizontal=FALSE,  paper="special")
 		#else if (p=="png") png("paramAcf.png", width=8, height=8, units="in", res=pngres)
-		expandGraph(mfrow=rc, mar=c(1,1,0,0), oma=c(3,3,0.5,0.5))
+		#expandGraph(mfrow=rc, mar=c(0.5,3.5,0,0), oma=c(4,0.5,0.5,0.5))
+		expandGraph(mfrow=rc, mar=c(0.5,0.5,0,0), oma=c(3.7,4,0.5,0.5))
 		sapply(1:ncol(mcmcP), function(i){
 			ii  = colnames(mcmcP)[i]
 			mcP = mcmcP[,i]
-			acf(mcP, lag.max=lag.max, ylim=ylim, xaxt="n", yaxt="n", xlab="", ylab="")
-			axis(1,labels=ifelse(i > (ncol(mcmcP)-rc[2]),TRUE,FALSE),cex.axis=1.2,las=1)
-			axis(2,labels=ifelse(par()$mfg[2]==1,TRUE,FALSE),cex.axis=1.2,las=1)
-			addLabel(0.95,0.95,ii,cex=1.25,adj=c(1,1), col="blue")
+			xy = acf(mcP, lag.max=lag.max, ylim=ylim, xaxt="n", yaxt="n", xlab="", ylab="", plot=F)
+			xy$lag = xy$lag[2:(lag.max+1),1,1,drop=FALSE]
+			xy$acf = xy$acf[2:(lag.max+1),1,1,drop=FALSE]
+			#ylim = extendrange(xy$acf)
+			plot(xy, xlim=c(1,60), ylim=ylim, xlab="", ylab="", xaxt="n", yaxt="n", type="n")
+			abline(h=setdiff(seq(-0.2,0.8,0.2),0), col="slategray3", lty=3)
+			lines(1:lag.max, xy$acf, type="h")
+#browser();return()
+			xgloss = ifelse(i > (ncol(mcmcP)-rc[2]),TRUE,FALSE)
+			axis(1, labels=xgloss, tick=xgloss, cex.axis=1.2,)
+			ygloss = ifelse(par()$mfg[2]==1,TRUE,FALSE)
+			axis(2, labels=ygloss, tick=ygloss, cex.axis=1.2, las=1)
+			addLabel(0.95, 0.975, ii, cex=ifelse(rc[2]<4,1.25,1.0), adj=c(1,1), col="navy")
 			box(lwd=1.5)
 		})
-		mtext(linguaFranca("Lag",lang),side=1,outer=TRUE,line=1.5,cex=1.5)
-		mtext(ifelse(lang=="f","FAC","ACF"),side=2,outer=TRUE,line=1.25,cex=1.5)
+		mtext(linguaFranca("Lag",lang),side=1,outer=TRUE,line=2.25,cex=1.5)
+		mtext(ifelse(lang=="f","FAC","ACF"),side=2,outer=TRUE,line=2.25,cex=1.5)
 		#dev.off()
 	#}
 }
@@ -598,9 +651,9 @@ plotB2 <- function (model, what="d", series=NULL, years=NULL, axes=TRUE,
         panel.barchart(x, y, horizontal=FALSE, box.ratio=ratio.bars,
             col=col.bars)
     }
-    if (class(model) != "scape")
-        stop("The 'model' argument should be a scape object, not ",
-            chartr(".", " ", class(model)), ".")
+    #if (class(model) != "scape")
+    if (!inherits(model,"scape"))
+        stop("The 'model' argument should be a scape object, not ", chartr(".", " ", class(model)), ".")
     what <- match.arg(what, c("d", "s", "l"))
     las <- as.numeric(las)
     x <- model$B
@@ -1525,25 +1578,183 @@ plotIndexNotLattice <- function(obj, main="", save=NULL,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotIndexNotLattice
 
 
-## plotMeanAge--------------------------2018-04-16
+## plotLikes----------------------------2021-05-10
+##  Plot likelihood profiles.
+## ---------------------------------------------RH
+plotLikes = function(M=seq(0.02,0.15,0.01), A=c(40,45,50), R0=NULL,
+   prefix="WWR-MMM-", znam="C@A_Commercial", zpos=1, xlim=NULL, ylim=NULL,
+   pnam=c("R0"), ppos=1:3, pxax="M", ## if want more parameters wanted use awatea::importRes
+   outnam="LLcontours", type="contour", 
+   png=FALSE, pngres=400, PIN=c(8,8))
+{
+	## Start subfunctions
+	## Determine number of decimal places with non-trailing zeroes
+	## See user 'darocsig' @ https://stackoverflow.com/questions/5173692/how-to-return-number-of-decimal-places-in-r
+	decimalplaces <- function(x) {
+		dc = as.character(); dp = as.numeric()
+		for (xx in x) {
+			if (abs(xx - round(xx)) > .Machine$double.eps^0.5) {
+				dc = c(dc, strsplit(sub('0+$', '', as.character(xx)), ".", fixed = TRUE)[[1]][2] )
+				dp = c(dp, nchar(strsplit(sub('0+$', '', as.character(xx)), ".", fixed = TRUE)[[1]][2]) )
+			} else {
+				dc = c(dc, NA)
+				dp = c(dp, 0)
+			}
+		}
+		## Automatically determine minimum number of secimal places to yield unique values
+		udp = max(dp) + 1
+		for (i in max(dp):1){
+			#print(length(unique(round(x,i)))==length(x))
+			if (length(unique(round(x,i))) == length(x))
+				udp = udp - 1
+		}
+		return(list(dc=dc, dp=dp, mindp=udp))
+	}
+	## End subfunctions
+
+	ncA  = max(nchar(A))
+	if (!is.null(M)) {
+		Y = Ydec = Yval = M; Ypref="MM-"; Yvar="MMM"
+	} else if (!is.null(R0)) {  ## R0 expressed as log(R0)
+		Y = R0; Ydec=Y/100; Yval=exp(Y); Ypref="RR-"; Yvar="RRR"
+	}
+	dcY = decimalplaces(Y)
+	#if (missing(dpY))
+	dpY = dcY$mindp
+	dcF = decimalplaces(Ydec)
+	#if (missing(dpY))
+	dpF = dcF$mindp
+#browser();return()
+
+	xlen = length(Y)
+	ylen = length(A)
+	zlen = length(znam)
+	plen = length(pnam)
+	zpos = rep(zpos,zlen)[1:zlen]
+	ppos = rep(ppos,plen)[1:plen]
+	if (any(duplicated(znam)))
+		znam = paste0(znam,"_",zpos)
+	if (any(duplicated(pnam)))
+		pnam = paste0(pnam,"_",ppos)
+	zmat = array(NA, dim=c(xlen,ylen,zlen), dimnames=list(x=show0(Y,dpY,add2int=T), y=pad0(A,ncA), z=znam))
+	pmat = array(NA, dim=c(xlen,ylen,plen), dimnames=list(x=show0(Y,dpY,add2int=T), y=pad0(A,ncA), p=pnam))
+	zint = list()
+
+	for (a in A){
+		aa = pad0(a,ncA)
+		for (i in 1:length(Y)){
+			yval  = Yval[i]
+			ychr = round(Ydec[i], dpF)
+			ii    = show0(Y[i], dpY, add2int=TRUE)
+			ipref = paste0(sub(Ypref,paste0(sub("0\\.","",show0(ychr,dpF)),"-"),prefix),"A",pad0(a,ncA))
+			#.flush.cat(paste0("Processing run '", mpref, "' ..."), "\n")
+			ifile = paste0(ipref,".","lik")
+			iline = readLines(ifile)
+			pfile = paste0(ipref,".","res")
+			pline = readLines(pfile)
+			for (z in 1:zlen) {
+				zz   = znam[z]
+				zzz  = zpos[z]
+				zlin = iline[grep(sub("_[[:digit:]]$","",zz), iline)]
+				zval = as.numeric(strsplit(zlin,split="\\s+")[[1]][zzz+1])
+				zmat[ii,aa,zz] = zval
+			}
+			for (p in 1:plen) {
+				pp   = pnam[p]
+				ppp  = ppos[p]
+				plin = pline[grep(paste0("^",sub("_[[:digit:]]$","",pp)," "), pline)]
+				pval = as.numeric(strsplit(plin,split="\\s+")[[1]][ppp+1])
+				if (pp=="R0") pval = log(pval)
+				pmat[ii,aa,pp] = pval
+			}
+		} ## end m loop (natural mortality)
+	} ## end a loop (maximum age for plus class)
+#browser();return()
+
+	if (xlen==1 || ylen==1) {
+		type = "lines"
+	} else {
+		for (z in 1:zlen) {
+			zz   = znam[z]
+			zint[[zz]] = akima::interp(x=rep(M,ylen),y=rep(A,each=xlen),z=as.vector(zmat[,,zz]), nx=50, ny=50)
+		}
+	}
+
+	if (png) png(file=paste0(outnam,".png"), units="in", res=pngres, width=PIN[1], height=PIN[2])
+	expandGraph(mfrow=findRC(zlen,orient="landscape"), mar=c(3,3,1.75,0.5))
+	if (grepl("contour[s]?",type)) {
+		sapply(1:zlen, function(x){
+			z  = zint[[x]]
+			zz = names(zint)[x]
+			contour(z, nlevels=10, xlab="Natural Mortality (M)", ylab="Age (y) of plus group", cex.axis=1, cex.lab=1.2 )
+			mtext(zz, side=3, line=0.25, cex=1.2)
+		})
+	} else if (grepl("line[s]?",type)) {
+		lcol = c("blue","green4","red")
+		llty = c(1,2,3)
+		sapply(1:zlen, function(x){
+			z  = znam[x]
+			zz = zmat[,,z,drop=FALSE]
+			if (pxax=="R0") {
+				xval = pmat[,,"R0"]; xlab="log R0"
+			} else {
+				xval = M; xlab="Natural Mortality (M)"
+			}
+			if (is.null(xlim)) xlim = range(xval)
+			zx = xval >= xlim[1] & xval <= xlim[2]
+			xval = xval[zx]; zz = zz[zx,,,drop=F]
+			if (is.null(ylim)) ylim = range(zz)
+#browser();return()
+			plot(0,0, type="n", xlim=xlim, ylim=ylim, xlab=xlab, ylab="Likelihood Value", cex.axis=1, cex.lab=1.2 )
+			abline(v=log(6135.22), col="slategray") ## R0 at M=0.055 (M used for testing SS)
+			sapply(1:ncol(zz), function(i){
+				lines(xval, zz[,i,], col=lcol[i], lty=llty[i], lwd=2)
+			})
+			if (par()$mfg[1]==1 && par()$mfg[2]==par()$mfg[4])
+				addLegend(0.95, 0.95, lty=llty, lwd=2, col=lcol, legend=paste0("Max age = ",colnames(zz),"+"), bty="n", xjust=1)
+			mtext(z, side=3, line=0.25, cex=1.2)
+			box()
+		})
+	}
+	if (png) dev.off()
+}
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotLikes
+
+
+## plotMeanAge--------------------------2022-02-07
 ##  Plot observed and expected mean ages from 
 ##  commercial and survey C@A data.
 ##----------------------------------------------RH
 plotMeanAge =function(obj, useCA=TRUE, useSA=TRUE, CAnames, lang="e")
 {
+	if (missing(CAnames)) CAnames = get("CAnames",envir=.GlobalEnv) ## assumes the Snw made this object
 	## Here plot the mean age for catch and surveys (`MAfun` in `utilsFun.r`)
-#browser();return()
 	MAc = MAfun(obj$CAc)       ## catch mean age
+	MAc.pos = match(CAnames,Cnames)
+	MAc.use = grep(paste0("^",MAc.pos,"-",collapse="|"),names(MAc$MAobs))
+	MAc.old = MAc
+	MAc = lapply(MAc[setdiff(names(MAc),"J")],function(x){x[MAc.use]})
+	MAc$J = MAc.pos
+
 	MAs = MAfun(obj$CAs)       ## surveys mean age
+	MAs.pos = match(SAnames,Snames)
+	MAs.use = grep(paste0("^",MAs.pos,"-",collapse="|"),names(MAs$MAobs))
+	MAs.old = MAs
+	MAs = lapply(MAs[setdiff(names(MAs),"J")],function(x){x[MAs.use]})
+	MAs$J = MAs.pos
+#browser();return()
+
 	nseries = 0
 	MAp = character()
 	if (useCA) {
-		nseries = nseries + length(sort(unique(obj$CAc$Series)))
+		#nseries = nseries + length(sort(unique(obj$CAc$Series)))
+		nseries = nseries + length(MAc$J)
 		MAp = c(MAp, "MAc") }
 	if (useSA) {
-		nseries = nseries + length(sort(unique(obj$CAs$Series)))
+		#nseries = nseries + length(sort(unique(obj$CAs$Series)))
+		nseries = nseries + length(MAs$J)
 		MAp = c(MAp, "MAs") }
-	
+
 	if (nseries>0) {
 		MA.pjs = list()
 		par(mfrow=c(nseries,1), mar=c(1.75,3,2,1), oma=c(2.5,2.5,0,0), mgp=c(2,0.75,0))
@@ -1568,7 +1779,6 @@ plotMeanAge =function(obj, useCA=TRUE, useSA=TRUE, CAnames, lang="e")
 				lines(xCI,yCI,col="green4",lwd=2)
 				points(MA$Yr[z],MA$MAobs[z], pch=21, col="green4", bg="green", cex=1.5)
 				if (m=="MAc") {
-					if (missing(CAnames)) CAnames=tcall(PBSawatea)$Cnames[MAc$J]
 						mtext(linguaFranca(CAnames[i],lang), side=3, line=0.25, cex=1, outer=FALSE)
 					} else {
 						surveyHeadName = if (!exists("tcall")) ssnames[MAs$J] else tcall(PBSawatea)$Snames[MAs$J]
@@ -1659,14 +1869,14 @@ plotRmcmcPOP=function(obj,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotRmcmcPOP
 
 
-## plotSnail----------------------------2020-06-24
+## plotSnail----------------------------2022-01-17
 ## Plot snail-trail plots for MCMC analysis.
 ##  AME: replacing "2010" with as.character(currYear - 1)
 ##  RH: added assYrs = years past with estimated Bcurr
 ##      from previous assessment(s), e.g., 5ABC QCS c(2011, 2017)
 ## -----------------------------------------AME/RH
 plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL, 
-	Lwd=1.5, ngear=1, currYear=2020, assYrs=NULL, outs=FALSE, Cnames, lang="e") ## outs = outliers
+	Lwd=1.5, ngear=1, currYear=2021, assYrs=NULL, outs=FALSE, Cnames, lang="e") ## outs = outliers
 {
 	if (missing(Cnames))
 		Cnames  = tcall("PBSawatea")$Cnames        ## names of commercial gear
@@ -1683,8 +1893,9 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 		} else {
 			gfile = UoverUmsy
 		}
-		BUlist[[g+1]] = gfile
+		BUlist[[g+1]] = gfile[,1:ncol(BUlist[[1]])] ## SS has same lengths of B and u
 	}
+#browser();return()
 	# Calculate medians to be plotted
 	BUmed    = sapply(BUlist,function(x){apply(x,2,median)},simplify=FALSE)  # median each year
 	colPal   = colorRampPalette(c("grey95", "grey30"))
@@ -1707,8 +1918,8 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 		P = list (o=c(0,1), p=p)
 
 	plot(0,0, xlim=xLim, ylim=yLim, type="n", 
-		xlab = switch(lang, 'e'=expression(paste(italic(B[t])/italic(B)[MSY])),   'f'=expression(paste(italic(B[t])/italic(B)[RMS])) ),
-		ylab = switch(lang, 'e'=expression(paste(italic(u[t-1])/italic(u)[MSY])), 'f'=expression(paste(italic(u[t-1])/italic(u)[RMS])) ),
+		xlab = switch(lang, 'e'=expression(paste(italic(B[t])/italic(B)[MSY])),   'f'=expression(paste(italic(B[t])/italic(B)[RMD])) ),
+		ylab = switch(lang, 'e'=expression(paste(italic(u[t-1])/italic(u)[MSY])), 'f'=expression(paste(italic(u[t-1])/italic(u)[RMD])) ),
 		cex.lab=1.25, cex.axis=1.0, las=1)
 	abline(h=1, col=c("grey20"), lwd=2, lty=3)
 	abline(v=c(0.4,0.8), col=c("red","green4"), lwd=2, lty=2)
@@ -1727,10 +1938,10 @@ plotSnail=function (BoverBmsy, UoverUmsy, p=c(0.05,0.95), xLim=NULL, yLim=NULL,
 			lty = ifelse(j==1 && outs, 3, 1)
 			lwd = ifelse(j==1 && outs, 1, 2)
 			## Plot horizontal (BtB0) quantile range
+#browser();return()
 			xqlo = quantile(BUlist[[1]][,as.character(currYear)],q[1])
 			xqhi = quantile(BUlist[[1]][,as.character(currYear)], q[2])
 			segments(xqlo, yend, xqhi, yend, col=lucent(colLim[i],0.5), lty=lty, lwd=lwd)
-#browser();return()
 			## Plot vertical (UtU0) quantile range
 			yqlo = quantile(BUlist[[i+1]][, as.character(currYear-1)], q[1])
 			yqhi = quantile(BUlist[[i+1]][, as.character(currYear-1)], q[2])
@@ -1832,7 +2043,7 @@ plotTracePOP = function (mcmc, axes = FALSE, same.limits = FALSE, between = list
 ## Show all median trajectories (base+sens) in one figure.
 ## ---------------------------------------------RH
 plotTraj = function(sdat, index, traj="B", bdat=NULL, y0=FALSE, lab.stock, 
-   startYear=1935, currYear=2020, sen.lab,
+   startYear=1935, currYear=2021, sen.lab,
    col = c("black","green4","blue","red","purple","orange"), 
    lty = c(2:6), logR=FALSE, 
    png=FALSE, pngres=400, PIN=c(8,8), lang=c("e","f"), ...)
@@ -1954,7 +2165,7 @@ plotVBcatch=function(obj, currentRes1=currentRes,
    xLab="Year",
    yLab="Catch and vulnerable biomass (t)",
    textLab=c("catch", "vulnerable"),
-   yaxis.by=10000, tcl.val=-0.2,
+   yaxis.by=10000, tcl.val=-0.1, cex.axis=1,
    gear=1, lang="e", ...)
    # xLab - x position for label, etc.
 {
@@ -2007,17 +2218,20 @@ plotVBcatch=function(obj, currentRes1=currentRes,
 	points(currentRes1$B$Year[zpos], Cgears[,gear][zpos], type="h", lwd=3)	 ## gear-specific catch -- RH: use in case Ngear > 1
 	# points(obj$B$Year, currentRes1$B$VB, type="p") ## was vuln biom MPD
 	# text( xLab, yLab, linguaFranca(textLab,lang), pos=4, offset=0)   # Taking out as not really needed if give a decent caption
-	axis(1, at=intersect(seq(1900,3000,5),xLim[1]:xLim[2]), tcl=tcl.val, labels=FALSE)
-	axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
-	axis(2, at=pretty(yLim), labels=format(pretty(yLim), scientific=FALSE, big.mark=options()$big.mark))
+	axis(1, at=intersect(seq(1900,3000,5),xLim[1]:xLim[2]), tcl=tcl.val*2, labels=FALSE)
+	axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val*2, labels=FALSE)
+	#axis(2, at=pretty(yLim), labels=format(pretty(yLim), scientific=FALSE, big.mark=options()$big.mark))
+	t2bg = pretty(yLim, n=5)
+	t2bg3 = dfoAxis(2, t2bg)
+	axis(2, at=t2bg3, tcl=tcl.val*4, labels=names(t2bg3), cex.axis=cex.axis)
 
 	# legend(xLegPos, yLegPos, linguaFranca(c("Vulnerable","Spawning","Catch"),lang), bty="n")
 	# points(xLegPos-2, yLegPos, type="p")
 	# mtext( side=1, line=2, cex=1.0, linguaFranca("Year",lang))
 	# mtext( side=2, line=2, cex=1.0, linguaFranca("Biomass",lang))
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotVBcatch
-# RH -- following 3 lines for debugging only
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plotVBcatch
+## RH -- following 3 lines for debugging only
 #g=1; ngear=1
 #test = currentMCMC$VB[,grep(paste0("_",g),names(currentMCMC$VB))]; names(test) = substring(names(test),1,4)
 #plotVBcatch(test, currentRes, gear=g, yLab=ifelse(ngear==1,"Catch and vulnerable biomass (t)",Cnames[g]), yLim=c(0,max(sapply(test,quantile,tcall(quants5)[5]))),cex.lab=1.25)
@@ -2298,7 +2512,7 @@ plt.biomass = function(years, Bt, xint=5, yint=2500,
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.biomass
 
 
-## plt.bubbles--------------------------2018-07-11
+## plt.bubbles--------------------------2020-02-07
 ## Bubble plots of observed and fitted ages
 ## transferred from Sweave `run-master.Snw'
 ## <<bubbleplots, results=hide, echo=FALSE>>=
@@ -2308,6 +2522,7 @@ plt.bubbles = function(mpdObj, nsex=2,
 {
 	blow.bubbles = function(obj, cac, mod, sex, surnames=NULL) {
 		series = sort(unique(obj[[cac]][["Series"]]))
+		series = intersect(series, match(surnames, switch(cac, 'CAc'=Cnames, 'CAs'=Snames)))  ## this is way more convoluted than it needs to be
 		ages   = sort(unique(obj[[cac]][["Age"]]))
 		CAlist = as.list(series); names(CAlist)=series
 		for (i in names(CAlist)) {
@@ -2317,6 +2532,7 @@ plt.bubbles = function(mpdObj, nsex=2,
 			dimnames(CAlist[[i]])[[1]] = ages
 			dimnames(CAlist[[i]])[[2]] = yrCA
 		}
+#browser();return()
 		if (!is.null(surnames) && length(surnames)==length(CAlist))
 			names(CAlist) = surnames
 		return(CAlist)
@@ -2325,11 +2541,11 @@ plt.bubbles = function(mpdObj, nsex=2,
 	#SAnames   = tcall("PBSawatea")$Snames[tcall("PBSawatea")$SApos] # names of surveys with ages
 	#CAnames   = tcall("PBSawatea")$Cnames[tcall("PBSawatea")$CApos] # names of commercial gear with ages
 	
-#browser();return()
 	CAcObsFem = blow.bubbles(mpdObj,"CAc","Obs",c("Female","Unisex"),surnames=CAnames)
 	CAcFitFem = blow.bubbles(mpdObj,"CAc","Fit",c("Female","Unisex"),surnames=CAnames)
 	CAsObsFem = blow.bubbles(mpdObj,"CAs","Obs",c("Female","Unisex"),surnames=SAnames)
 	CAsFitFem = blow.bubbles(mpdObj,"CAs","Fit",c("Female","Unisex"),surnames=SAnames)
+#browser();return()
 	if (nsex >1) {
 		CAcObsMale = blow.bubbles(mpdObj,"CAc","Obs","Male",surnames=CAnames)
 		CAcFitMale = blow.bubbles(mpdObj,"CAc","Fit","Male",surnames=CAnames)
@@ -2368,6 +2584,7 @@ plt.bubbles = function(mpdObj, nsex=2,
 			}
 		}
 	}
+#browser();return()
 	if (useCA) {
 		do.call("assign", args=list(x="residsCAcFem", value=sapply(CAcFitFem,function(x){prod(dim(x)+c(-1,0))}), envir=.GlobalEnv))
 		if (nsex>1)
@@ -2445,7 +2662,7 @@ plt.cpue = function(cpueObj, #xint=5, yint=2.5,
 	zobs = !is.na(cpueObj$Obs)
 	xlim = range(cpueObj$Year[zobs])
 	ylim = range(c(cpueObj$Obs[zobs],cpueObj$Fit[zobs]))
-	fout = fout.e = "CPUEfit"
+	fout.e = "CPUEfit"
 	for (l in lang) {  ## could switch to other languages if available in 'linguaFranca'.
 		changeLangOpts(L=l)
 		fout = switch(l, 'e' = fout.e, 'f' = paste0("./french/",fout.e) )
@@ -2780,7 +2997,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
    p = tcall(quants5), xyType="quantBox", lineType=c(3,2,1,2,3),
    delta=0.25, lwd=0.75, refLines=NULL, xLim=NULL, yLim=NULL,
    userPrompt=FALSE, save=TRUE, main="", cex.main="",
-   tcl.val=-0.1, xaxis.by=1, yaxis.by=10000,
+   tcl.val=-0.1, xaxis.by=1, yaxis.by=10000, cex.axis=1, cex.lab=1,
    xaxis.lab="Year", yaxis.lab= "Spawning biomass", lang="e")
 {
 	plt.qB <- function( obj, xyType="lines", new=TRUE, xLim, yLim, line.col="black", med.col="black", lwd, ... )   #AME line.col="black", col is for filling rect med.col is for median
@@ -2885,16 +3102,19 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
 			#  lines( yrs2,result2[[j]][i,],lty=lineType[i],lwd=2,col=2 )
 
 			abline( v=yrs2[1]-0.5, lty=2, lwd=lwd)
-			t1sm = seq(1900,3000,5)[seq(1900,2100,5) %in% floor(xLim[1]):ceiling(xLim[2])]
-			t1bg = seq(1900,3000,10)[seq(1900,2100,10) %in% floor(xLim[1]):ceiling(xLim[2])]
+			t1sm = seq(1900,2100,5)[seq(1900,2100,5) %in% floor(xLim[1]):ceiling(xLim[2])]
+			t1bg = seq(1900,2100,10)[seq(1900,2100,10) %in% floor(xLim[1]):ceiling(xLim[2])]
 			axis(1, at=t1sm, tcl=tcl.val, labels=FALSE)
-			axis(1, at=t1bg, tcl=tcl.val*2, labels=TRUE)
+			axis(1, at=t1bg, tcl=tcl.val*2, labels=TRUE, cex.axis=cex.axis)
 			#axis(1, at=seq(xLim[1], xLim[2], by=xaxis.by), tcl=tcl.val, labels=FALSE)
-#browser();return()
 			t2sm = pretty(yLim, n=10)
 			t2bg = pretty(yLim, n=5)
+			t2bg2 = dropLast(t2bg, par()$usr[4])
+			t2bg3 = dfoAxis(2, t2bg)
 			axis(2, at=t2sm, tcl=tcl.val, labels=FALSE)
-			axis(2, at=t2bg, tcl=tcl.val*2, labels=TRUE)
+			axis(2, at=t2bg3, tcl=tcl.val*2, labels=names(t2bg3), cex.axis=cex.axis)
+#browser();return()
+			#axis(2, at=t2bg2, tcl=tcl.val*2, labels=format(t2bg2, scientific=FALSE, big.mark=options()$big.mark), cex.axis=cex.axis)
 			#axis(2, at=seq(0, yLim[2], by=yaxis.by), tcl=tcl.val, labels=FALSE)
 		}
 	}
@@ -2902,7 +3122,7 @@ plt.quantBioBB0 <- function( obj, projObj=NULL, policy=NULL,
 	val <- list( recon=result1, proj=result2 )
 	return(val)
 }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.quantBioBB0
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~plt.quantBioBB0
 
 
 ## plt.recdev---------------------------2018-07-11
