@@ -132,8 +132,8 @@ runMCMC(prefix=c("spp","area"), runs=1, rwts=0, ...)
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-29}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \note{
   Example Sweave files (\code{run-master.Snw|run-masterMCMC.Snw}) can be found in the library directory: \cr

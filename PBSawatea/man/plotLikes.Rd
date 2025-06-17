@@ -43,11 +43,11 @@ plotLikes(M=seq(0.02, 0.15, 0.01), A=c(40, 45, 50), R0=NULL,
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-07-04}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \seealso{
-\pkg{PBSawatea}:
+In package \pkg{PBSawatea}:\cr
 \code{\link[PBSawatea]{repeatMPD}}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
@@ -57,5 +57,5 @@ plotLikes(M=seq(0.02, 0.15, 0.01), A=c(40, 45, 50), R0=NULL,
 % Use only one keyword per line.
 % For non-standard keywords, use \concept instead of \keyword:
 % \concept{ ~cpt1 }
-\concept{likelihood profiles}
+\concept{plotFuns.r}
 % Use only one concept per line.

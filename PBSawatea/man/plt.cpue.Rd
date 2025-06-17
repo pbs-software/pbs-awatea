@@ -27,8 +27,8 @@ plt.cpue(cpueObj, ptypes=tcall(PBSawatea)$ptype, pngres=400, lang=c("e","f"))
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-26}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \seealso{
   \code{\link{plt.catch}}, \code{\link{plt.recdev}}, \code{\link{plt.bubbles}}

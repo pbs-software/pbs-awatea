@@ -43,8 +43,8 @@ plotVBcatch(obj, currentRes1=currentRes,
 
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-28}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \note{
   This function is essentially a tweak of \code{plotBmcmcPOP} (AME),

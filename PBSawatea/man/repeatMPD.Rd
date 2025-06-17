@@ -32,10 +32,11 @@ repeatMPD(M=seq(0.07,0.08,0.01), A=c(40,45,50), R0=NULL,
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-29}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \seealso{
+In package \pkg{PBSawatea}:\cr
 \code{\link[PBSawatea]{plotLikes}}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
@@ -44,6 +45,6 @@ repeatMPD(M=seq(0.07,0.08,0.01), A=c(40,45,50), R0=NULL,
 % \keyword{ ~kwd2 }
 % Use only one keyword per line.
 % For non-standard keywords, use \concept instead of \keyword:
-\concept{likelihood profiles}
+\concept{utilFuns.r}
 % \concept{ ~cpt2 }
 % Use only one concept per line.

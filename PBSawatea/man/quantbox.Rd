@@ -10,10 +10,10 @@
 quantbox(x, use.cols = TRUE, ...)
 }
 \arguments{
-  \item{x}{Data from which quantile plots are created.
-    Either a numeric vector, a numeric matrix, or a single list containing numeric vectors.}
-  \item{use.cols}{logical indicating if columns (by default) or rows (use.cols = FALSE) should be plotted.}
-  \item{\dots}{Further arguments to \code{\link[graphics]{boxplot}}.}
+  \item{x}{\code{numeric} -- data from which quantile plots are created;
+    either a numeric vector, a numeric matrix, or a single list containing numeric vectors}
+  \item{use.cols}{\code{logical} -- if \code{TRUE}, plot columns, otherwise, plot rows}
+  \item{\dots}{\code{dots} -- further arguments to \code{\link[graphics]{boxplot}}.}
 }
 \details{
   The objects \code{'myboxplot.stats'} and \code{'qboxplot'} (boxplot modified to render quantiles)
@@ -38,20 +38,20 @@ quantbox(x, use.cols = TRUE, ...)
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-28}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \note{
   This function is a clone of the \pkg{PBStools} function \code{'quantBox'}.
   Why would anyone choose a boxplot over a quantile plot?
 }
 \seealso{
-\pkg{graphics}:
+In package \pkg{graphics}:\cr
   \code{\link[graphics]{boxplot}},
   \code{\link[graphics]{boxplot.matrix}}\cr
-\pkg{PBSmodelling}:
+In package \pkg{PBSmodelling}:\cr
   \code{\link[PBSmodelling]{tget}}\cr
-\pkg{PBSawatea}:
+In package \pkg{PBSawatea}:\cr
   \code{\link[PBSawatea]{compB0}},
   \code{\link[PBSawatea]{panelBoxes}},
   \code{\link[PBSawatea]{plt.ageResidsPOP}},
@@ -67,4 +67,5 @@ local(envir=.PBSmodEnv,expr={
 }
 }
 \keyword{hplot}
+\concept{plotFuns.r}
 

@@ -31,15 +31,17 @@ calc.projProbs2 (obj, projObj, refList)
   \item{verbose}{\code{logical} -- if \code{TRUE}, splatter the command line with vomit.}
 }
 \details{
-  \code{calc.refProbs......}{Calculate the reference probabilities for decision tables.}\cr
-  \code{calc.refProbsHist..}{Calculate the historical reference probabilities for decision tables.}\cr\cr
-  \code{calc.projExpect....}{Calculate the expectation of projection to reference.}\cr
-  \code{...................}{Compare reference years to projection years.}\cr
-  \code{calc.projExpect2...}{Calculate expectation (projection biomass / reference biomass).}\cr\cr
-  \code{calc.projProbs.....}{Calculate the probability of being greater than \code{refYrs}.}\cr
-  \code{...................}{Compare reference years to projection years.}\cr
-  \code{calc.projProbs2....}{Calculate the probability of being greater than \code{refYrs}.}\cr
-  \code{...................}{Compare reference years to projection years.}
+  \tabular{ll}{
+    \code{calc.refProbs}     \tab Calculate the reference probabilities for decision tables\cr
+    \code{calc.refProbsHist} \tab Calculate the historical reference probabilities for decision tables\cr\cr
+    \code{calc.projExpect}   \tab Calculate the expectation of projection to reference\cr
+                             \tab Compare reference years to projection years\cr
+    \code{calc.projExpect2}  \tab Calculate expectation (projection biomass / reference biomass)\cr\cr
+    \code{calc.projProbs}    \tab Calculate the probability of being greater than \code{refYrs}\cr
+                             \tab Compare reference years to projection years\cr
+    \code{calc.projProbs2}   \tab Calculate the probability of being greater than \code{refYrs}\cr
+                             \tab Compare reference years to projection years
+  }
 }
 \value{
   Decision tables -- probability of projected biomass (or harvest rate)
@@ -50,16 +52,18 @@ calc.projProbs2 (obj, projObj, refList)
 
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-28}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-17}
 }
 \note{
   Functions probably deprecated because they are only called in \sQuote{\code{menu.r}}:\cr
   \code{calc.projExpect}, \code{calc.projExpect2}, \code{calc.projProbs}, \code{calc.projProbs2}
 }
 \seealso{
+In package \pkg{PBSawatea}:\cr
   \code{\link[PBSawatea]{calc.refVal}}
 }
 \keyword{array}
 \keyword{list}
+\concept{PBSscape.r}
 

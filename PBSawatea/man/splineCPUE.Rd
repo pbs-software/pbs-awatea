@@ -64,8 +64,8 @@ splineCPUE(dat, ndf=50, png=FALSE, pngres=400, PIN=c(8,8))
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-28}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \note{
   This procedure was first used in the 2019 BC Widow Rockfish stock assessment (Starr and Haigh 2021).

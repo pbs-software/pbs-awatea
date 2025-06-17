@@ -13,24 +13,31 @@ cquantile(z, probs)
 cquantile.vec(z, prob)
 }
 \arguments{
-  \item{z}{an MCMC object.}
-  \item{probs}{vector of quantiles.}
-  \item{prob}{single quantile.}
+  \item{z}{\code{numeric} -- an MCMC object}
+  \item{probs}{\code{numeric} -- vector of quantiles}
+  \item{prob}{\code{numeric} -- single quantile}
 }
 \value{
-  \code{cquantile.......}{running quantile matrix} \cr
-  \code{cquantile.vec...}{running quantile vector}
+  \tabular{ll}{
+    \code{cquantile}     \tab running quantile matrix\cr
+    \code{cquantile.vec} \tab running quantile vector
+  }
 }
 \author{
-  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC\cr
+  Last modified \code{Rd: 2025-06-17}
 }
 \note{
   Arni Magnusson describes a running quantile as: \cr
   \dQuote{\emph{the evolution of the sample quantiles as a function of the number of iterations}}
 }
 \seealso{
-  \code{\link[coda]{cumuplot}}, \code{\link{plotTracePOP}}
+In package \pkg{coda}:\cr
+  \code{\link[coda]{cumuplot}}\cr
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{plotTracePOP}}
 }
 \keyword{arith}
 \keyword{ts}% __ONLY ONE__ keyword per line
+\concept{utilFuns.r}
 

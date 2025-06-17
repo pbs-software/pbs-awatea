@@ -1,6 +1,6 @@
 Package:     PBSawatea
-Version:     1.8.0
-Date:        2023-07-04
+Version:     1.8.1
+Date:        2025-06-17
 Title:       Tools for Running Awatea and Visualizing Results
 Authors@R: c(
    person("Rowan", "Haigh", role = c("aut", "cre"), email = "rowan.haigh@dfo-mpo.gc.ca"),
@@ -9,9 +9,10 @@ Authors@R: c(
    )
 Author: Rowan Haigh [aut, cre], Andrew M. Edwards [aut], Paul J. Starr [ctb]
 Maintainer:  Rowan Haigh <rowan.haigh@dfo-mpo.gc.ca>
-Copyright:   2011-2023, Fisheries and Oceans Canada
+Copyright:   2011-2025, Fisheries and Oceans Canada
 Depends:     R (>= 3.5.0), PBSmodelling
 Imports:     methods, lattice, scape, plotMCMC, xtable, Hmisc, akima, PBStools
+NeedsCompilation: no
 Description: Most excellent tools for running fish population models
              using 'Awatea', which is a variant of 'Coleraine' modified
              by 'Allan Hicks' and 'Paul J. Starr'. The Sweave manipulation

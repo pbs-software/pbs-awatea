@@ -53,13 +53,13 @@
 
   R Development Core Team (2018)
   R: A language and environment for statistical computing. 
-  href{https://www.r-project.org/}{R Foundation for Statistical Computing}, Vienna, Austria.
+  \href{https://www.r-project.org/}{R Foundation for Statistical Computing}, Vienna, Austria.
 }
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-07-25}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \keyword{package}
 

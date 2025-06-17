@@ -42,26 +42,28 @@ reweight(obj, A.rwt=1, C.rwt=1, cvpro=0, ...)
 }
 \value{
   An \code{AWATEA} class object with the slots outlined in \code{\link{readAD}} 
-  with the following slot populated by this function: \cr
-  \code{reweight...}{list of reweight results:} \cr
-  \code{..nrwt.....}{the number of the current reweighting,} \cr
-  \code{..survey...}{survey indices with CV values (observed, fitted, normalised residuals, reweighted),} \cr
-  \code{..cpue.....}{if used in the model, CPUE indices with CV values (as above),} \cr
-  \code{..wNcpa....}{reweigthed effective \eqn{N} for commercial compositions (proportions-at-age),} \cr
-  \code{..wNspa....}{reweigthed effective \eqn{N} for survey compositions,} \cr
-  \code{..SDNR.....}{standard deviation of normalised residuals for abundance and composition data,} \cr
-  \code{..wj.......}{weights for composition data from a mean-age weighted calculation (Francis 2011).}
+  with the following slot populated by this function:
+  \tabular{ll}{
+    \code{reweight} \tab list of reweight results:\cr
+    \code{..nrwt}   \tab the number of the current reweighting\cr
+    \code{..survey} \tab survey indices with CV values (observed, fitted, normalised residuals, reweighted)\cr
+    \code{..cpue}   \tab if used in the model, CPUE indices with CV values (as above)\cr
+    \code{..wNcpa}  \tab reweigthed effective \eqn{N} for commercial compositions (proportions-at-age)\cr
+    \code{..wNspa}  \tab reweigthed effective \eqn{N} for survey compositions\cr
+    \code{..SDNR}   \tab standard deviation of normalised residuals for abundance and composition data\cr
+    \code{..wj}     \tab weights for composition data from a mean-age weighted calculation (Francis 2011)
+  }
 }
 \references{
   Francis, R.I.C.C. (2011)
   \href{https://doi.org/10.1139/f2011-025}{Data weighting in statistical fisheries stock assessment models}.
-  Can. J. Fish. Aquat. Sci. 68(6): 1124-1138.
+  \emph{Can. J. Fish. Aquat. Sci.} \bold{68}(6): 1124--1138.
 }
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-28}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-17}
 }
 \seealso{
 In package \pkg{PBSawatea}:\cr
@@ -73,4 +75,5 @@ In package \pkg{PBSawatea}:\cr
 }
 \keyword{models}
 \keyword{methods}
+\concept{runADMB.r}
 

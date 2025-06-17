@@ -30,10 +30,12 @@ plt.cohortResids(obj, ages=NULL, main=NULL, lang="e")
   \item{...}{\code{dots} -- additional arguments for function \code{'quantbox'}.}
 }
 \details{
-  \code{plt.ageResidsPOP.....}{plot age class residuals as quantile boxes.} \cr
-  \code{plt.ageResidsqqPOP...}{plot age class residuals as qq-plot.} \cr
-  \code{plt.yearResidsPOP....}{plot age residuals by year as quantile boxes.} \cr
-  \code{plt.cohortResids.....}{plot age residuals by cohort as quantile boxes.} \cr
+  \tabular{ll}{
+    \code{plt.ageResidsPOP}   \tab plot age class residuals as quantile boxes\cr
+    \code{plt.ageResidsqqPOP} \tab plot age class residuals as qq-plot\cr
+    \code{plt.yearResidsPOP}  \tab plot age residuals by year as quantile boxes\cr
+    \code{plt.cohortResids}   \tab plot age residuals by cohort as quantile boxes
+  }
 }
 \author{
 First created by:\cr
@@ -42,8 +44,8 @@ First created by:\cr
 Modified by:\cr
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-28}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-17}
 }
 \note{
   Some trouble noted adding text and legend.
@@ -62,3 +64,4 @@ In package \pkg{PBSawatea}:\cr
 }
 \keyword{hplot}
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\concept{plotFuns.r}

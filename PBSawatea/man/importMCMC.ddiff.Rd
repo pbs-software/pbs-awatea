@@ -16,21 +16,26 @@ importMCMC.ddiff()
 importProj.ddiff(yrVal="2006")
 }
 \arguments{
-  \item{yrVal}{character year for delay-difference model (?).}
+  \item{yrVal}{\code{character} -- year for delay-difference model}
 }
 \value{
   \code{importMCMC.ddiff} returns a list object containing: \cr
-    \code{L...}{likelihood MCMCs,} \cr
-    \code{P...}{parameter MCMCs,} \cr
-    \code{B...}{spawning biomass MCMCs,} \cr
-    \code{R...}{recruitment MCMCs.}
+  \tabular{ll}{
+    \code{L} \tab likelihood MCMCs\cr
+    \code{P} \tab parameter MCMCs\cr
+    \code{B} \tab spawning biomass MCMCs\cr
+    \code{R} \tab recruitment MCMCs
+  }
 
   \code{importProj.ddiff} returns a list object containing: \cr
-    \code{B...}{projected biomass,} \cr
-    \code{Y...}{projected yields.}
+  \tabular{ll}{
+    \code{B} \tab projected biomass\cr
+    \code{Y} \tab projected yields
+  }
 }
 \author{
-  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC
+  Andrew Edwards, Pacific Biological Station, Fisheries and Oceans Canada, Nanaimo BC\cr
+  Last modified \code{Rd: 2025-06-17}
 }
 \note{
   Get the biomass projection -- PJS does 1 year ahead projection.
@@ -40,10 +45,14 @@ importProj.ddiff(yrVal="2006")
   \code{"cat."} in \code{read.table}.
 }
 \seealso{
-  \code{\link[scape]{importMCMC}}, \code{\link[scape]{importProj}},
+In package \pkg{scape}:\cr
+  \code{\link[scape]{importMCMC}},
+  \code{\link[scape]{importProj}}\cr
+In package \pkg{utils}:\cr
   \code{\link[utils]{read.table}}
 }
 % Programming
 \keyword{file}
 \keyword{interface}
+\concept{PBSscape.r}
 

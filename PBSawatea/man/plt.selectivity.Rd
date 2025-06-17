@@ -27,15 +27,14 @@ plt.selectivity(obj, mainTitle="Rockfish", ptypes=tcall(PBSawatea)$ptype,
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-07-04}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \seealso{
-\pkg{PBSawatea}:
+In package \pkg{PBSawatea}:\cr
 \code{\link[PBSawatea]{plt.mpdGraphs}},
-\code{\link[PBSawatea]{plotAges}}
-
-\pkg{PBSmodelling}:
+\code{\link[PBSawatea]{plotAges}}\cr
+In package \pkg{PBSmodelling}:\cr
 \code{\link[PBSmodelling]{tcall}}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
@@ -44,6 +43,6 @@ plt.selectivity(obj, mainTitle="Rockfish", ptypes=tcall(PBSawatea)$ptype,
 % \keyword{ ~kwd2 }
 % Use only one keyword per line.
 % For non-standard keywords, use \concept instead of \keyword:
-\concept{selectivity}
+\concept{plotFuns.r}
 % \concept{ ~cpt2 }
 % Use only one concept per line.

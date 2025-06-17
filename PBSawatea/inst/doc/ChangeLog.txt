@@ -1,9 +1,20 @@
 PBSawatea Changes
-=================
+===================================
 Authors : RH  = Rowan Haigh
           AME = Andrew Edwards
           PJS = Paul Starr
           CG  = Chris Grandin
+-----------------------------------
+CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), where: 
+	Major: Indicates a significant change that might break existing code.
+	Minor: Indicates the addition of new features or improvements, while generally maintaining backward compatibility.
+	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
+-----------------------------------
+
+1.8.1 (2025-06-17) [Rcheck=T, Rbuild=T]
+  * Documentation
+    + Updated a number of Rd files regarding my current office (RH 250616)
+    + Changed braced lines to tabular lines in Rd files (RH 250617)
 
 1.8.0 (2023-06-27) [Rcheck=T, Rbuild=T]
   * plotFuns.r

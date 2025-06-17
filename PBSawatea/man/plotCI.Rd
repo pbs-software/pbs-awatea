@@ -36,8 +36,8 @@ plotCI(x, y=NULL, ui, li, uiw=0.05, liw=uiw, clipNA=TRUE, gap=1,
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus: Institute of Ocean Sciences (IOS), Sidney BC}\cr
-  Last modified \code{Rd: 2018-05-23}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \note{
   This function offers a pale imitation of \code{gplots::plotCI}, and was created to reduce package dependenciesin \code{PBSawatea}.

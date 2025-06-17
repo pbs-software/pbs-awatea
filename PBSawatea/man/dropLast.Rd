@@ -28,8 +28,8 @@ dropLast(vec, target, prng=0.1)
 \author{
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Vivian Smith-Smythe-Smith}, Program Headless -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Regional Headquarters (RHQ), Vancouver BC\cr
-  Last modified \code{Rd: 2023-06-29}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-16}
 }
 \seealso{
 \code{\link[PBSawatea]{dfoAxis}}

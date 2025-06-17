@@ -17,24 +17,28 @@ msyCalc(dir=getwd(), error.rep=0, despike=FALSE)
 }
 \value{
   Returns a list object containing: \cr
-    \code{yield...}{maximum sustainable yield,} \cr
-    \code{u.......}{exploitation rate at MSY,} \cr
-    \code{VB......}{vulnerable biomass at MSY,} \cr 
-    \code{B.......}{spawning biomass at MSY,} \cr
-    \code{nProj...}{numnber of projections needed to reach MSY.}
+  \tabular{ll}{
+    \code{yield} \tab maximum sustainable yield\cr
+    \code{u}     \tab exploitation rate at MSY\cr
+    \code{VB}    \tab vulnerable biomass at MSY\cr 
+    \code{B}     \tab spawning biomass at MSY\cr
+    \code{nProj} \tab number of projections needed to reach MSY
+  }
 }
 \author{
-  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew Edwards}, Research Scientist, PBS, DFO, Nanaimo BC\cr
+  \href{mailto:andrew.edwards@dfo-mpo.gc.ca}{Andrew Edwards}, Research Scientist, PBS, DFO, Nanaimo BC
+
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
-  \emph{locus opus}: Institute of Ocean Sciences (IOS), Sidney BC\cr
-  Last modified \code{Rd: 2020-05-20}
+  \emph{locus opus}: remote office, Vancouver BC\cr
+  Last modified \code{Rd: 2025-06-17}
 }
 \note{
   See \code{msyTestCreating.r} for full details when figuring this out.
 }
 \seealso{
-  \code{\link{findTarget}}
+In package \pkg{PBSawatea}:\cr
+  \code{\link[PBSawatea]{findTarget}}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
@@ -42,6 +46,6 @@ msyCalc(dir=getwd(), error.rep=0, despike=FALSE)
 \keyword{manip}
 % Use only one keyword per line.
 % For non-standard keywords, use \concept instead of \keyword:
-\concept{MSY}
+\concept{PBSscape.r}
 % Use only one concept per line.
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
